@@ -1,0 +1,247 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          whatson/util/DateTime.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package whatson.util
+</span>2 <span style=''>
+</span>3 <span style=''>import java.sql.Timestamp
+</span>4 <span style=''>import java.text.SimpleDateFormat
+</span>5 <span style=''>
+</span>6 <span style=''>import play.api.libs.json._
+</span>7 <span style=''>
+</span>8 <span style=''>object DateTime {
+</span>9 <span style=''>  implicit object timestampFormat extends Format[Timestamp] {
+</span>10 <span style=''>    val format = </span><span style='background: #F0ADAD'>new SimpleDateFormat(&quot;yyyy-MM-dd HH:mm:ss&quot;)</span><span style=''>
+</span>11 <span style=''>    def reads(json: JsValue) = {
+</span>12 <span style=''>      val str = </span><span style='background: #F0ADAD'>json.as[String]</span><span style=''>
+</span>13 <span style=''>      </span><span style='background: #F0ADAD'>JsSuccess(new Timestamp(format.parse(str).getTime))</span><span style=''>
+</span>14 <span style=''>    }
+</span>15 <span style=''>    def writes(ts: Timestamp) = </span><span style='background: #F0ADAD'>JsString(format.format(ts))</span><span style=''>
+</span>16 <span style=''>  }
+</span>17 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          10
+        </td>
+        <td>
+          2162
+        </td>
+        <td>
+          209
+          -
+          252
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.text.SimpleDateFormat.&lt;init&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          new java.text.SimpleDateFormat(&quot;yyyy-MM-dd HH:mm:ss&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          12
+        </td>
+        <td>
+          2164
+        </td>
+        <td>
+          302
+          -
+          317
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          play.api.libs.json.JsReadable.as
+        </td>
+        <td style="background: #F0ADAD">
+          json.as[String](json.this.Reads.StringReads)
+        </td>
+      </tr><tr>
+        <td>
+          12
+        </td>
+        <td>
+          2163
+        </td>
+        <td>
+          309
+          -
+          309
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.libs.json.DefaultReads.StringReads
+        </td>
+        <td style="background: #F0ADAD">
+          json.this.Reads.StringReads
+        </td>
+      </tr><tr>
+        <td>
+          13
+        </td>
+        <td>
+          2165
+        </td>
+        <td>
+          348
+          -
+          373
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.Date.getTime
+        </td>
+        <td style="background: #F0ADAD">
+          timestampFormat.this.format.parse(str).getTime()
+        </td>
+      </tr><tr>
+        <td>
+          13
+        </td>
+        <td>
+          2167
+        </td>
+        <td>
+          324
+          -
+          324
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          play.api.libs.json.JsSuccess.apply$default$2
+        </td>
+        <td style="background: #F0ADAD">
+          play.api.libs.json.JsSuccess.apply$default$2[Nothing]
+        </td>
+      </tr><tr>
+        <td>
+          13
+        </td>
+        <td>
+          2166
+        </td>
+        <td>
+          334
+          -
+          374
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.sql.Timestamp.&lt;init&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          new java.sql.Timestamp(timestampFormat.this.format.parse(str).getTime())
+        </td>
+      </tr><tr>
+        <td>
+          13
+        </td>
+        <td>
+          2168
+        </td>
+        <td>
+          324
+          -
+          375
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          play.api.libs.json.JsSuccess.apply
+        </td>
+        <td style="background: #F0ADAD">
+          play.api.libs.json.JsSuccess.apply[java.sql.Timestamp](new java.sql.Timestamp(timestampFormat.this.format.parse(str).getTime()), play.api.libs.json.JsSuccess.apply$default$2[Nothing])
+        </td>
+      </tr><tr>
+        <td>
+          15
+        </td>
+        <td>
+          2170
+        </td>
+        <td>
+          414
+          -
+          441
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          play.api.libs.json.JsString.apply
+        </td>
+        <td style="background: #F0ADAD">
+          play.api.libs.json.JsString.apply(timestampFormat.this.format.format(ts))
+        </td>
+      </tr><tr>
+        <td>
+          15
+        </td>
+        <td>
+          2169
+        </td>
+        <td>
+          423
+          -
+          440
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.text.DateFormat.format
+        </td>
+        <td style="background: #F0ADAD">
+          timestampFormat.this.format.format(ts)
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

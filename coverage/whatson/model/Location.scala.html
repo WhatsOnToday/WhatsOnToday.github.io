@@ -1,0 +1,622 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          whatson/model/Location.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package whatson.model
+</span>2 <span style=''>
+</span>3 <span style=''>import play.api.libs.json._
+</span>4 <span style=''>
+</span>5 <span style=''>case class Location(id: Option[Int], name: String, latitude: Float, longitude: Float) extends HasCopy[Location] {
+</span>6 <span style=''>  def cpy(i: Option[Int]) = </span><span style='background: #F0ADAD'>this.copy(id = i)</span><span style=''>
+</span>7 <span style=''>  
+</span>8 <span style=''>  def distance(b: Location) = {
+</span>9 <span style=''>    //TODO: This is the haversine formula, currently the law of cosines is used. Test wich one is faster (especially for DB)
+</span>10 <span style=''>    /*val a = scala.math.pow(Math.sin(fromAngle(this.latitude-b.latitude)/2),2)+
+</span>11 <span style=''>      Math.cos(latitude)+Math.cos(b.latitude)+
+</span>12 <span style=''>      scala.math.pow(fromAngle(longitude-b.longitude)/2, 2)
+</span>13 <span style=''>    
+</span>14 <span style=''>    val c = 2*Math.atan2(Math.sqrt(a), Math.sqrt(1-a))
+</span>15 <span style=''>    
+</span>16 <span style=''>    c*LocationH.earthRadius*/
+</span>17 <span style=''>    
+</span>18 <span style=''>    </span><span style='background: #F0ADAD'>Math.acos( Math.sin(fromAngle(latitude)) * Math.sin(fromAngle(b.latitude)) 
+</span>19 <span style=''></span><span style='background: #F0ADAD'>        + Math.cos(fromAngle(latitude)) * Math.cos(fromAngle(b.latitude))
+</span>20 <span style=''></span><span style='background: #F0ADAD'>        + Math.cos(fromAngle(longitude-b.longitude))) * Location.earthRadius</span><span style=''>
+</span>21 <span style=''>  }
+</span>22 <span style=''>  
+</span>23 <span style=''>  private def fromAngle(a: Float) = </span><span style='background: #F0ADAD'>a/180*Math.PI</span><span style=''>;
+</span>24 <span style=''>}
+</span>25 <span style=''>
+</span>26 <span style=''>object Location {
+</span>27 <span style=''>  implicit val locationReads = Json.reads[Location]
+</span>28 <span style=''>  implicit val locationWrites = Json.writes[Location]
+</span>29 <span style=''>  
+</span>30 <span style=''>  val earthRadius = </span><span style='background: #F0ADAD'>6371</span><span style=''>
+</span>31 <span style=''>  
+</span>32 <span style=''>  val tupled = (</span><span style='background: #F0ADAD'>this.apply _).tupled</span><span style=''>
+</span>33 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          6
+        </td>
+        <td>
+          1536
+        </td>
+        <td>
+          199
+          -
+          199
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.model.Location.copy$default$3
+        </td>
+        <td style="background: #F0ADAD">
+          this.copy$default$3
+        </td>
+      </tr><tr>
+        <td>
+          6
+        </td>
+        <td>
+          1535
+        </td>
+        <td>
+          199
+          -
+          199
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.model.Location.copy$default$2
+        </td>
+        <td style="background: #F0ADAD">
+          this.copy$default$2
+        </td>
+      </tr><tr>
+        <td>
+          6
+        </td>
+        <td>
+          1538
+        </td>
+        <td>
+          194
+          -
+          211
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          whatson.model.Location.copy
+        </td>
+        <td style="background: #F0ADAD">
+          this.copy(i, this.copy$default$2, this.copy$default$3, this.copy$default$4)
+        </td>
+      </tr><tr>
+        <td>
+          6
+        </td>
+        <td>
+          1537
+        </td>
+        <td>
+          199
+          -
+          199
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.model.Location.copy$default$4
+        </td>
+        <td style="background: #F0ADAD">
+          this.copy$default$4
+        </td>
+      </tr><tr>
+        <td>
+          18
+        </td>
+        <td>
+          1539
+        </td>
+        <td>
+          694
+          -
+          702
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.model.Location.latitude
+        </td>
+        <td style="background: #F0ADAD">
+          Location.this.latitude
+        </td>
+      </tr><tr>
+        <td>
+          18
+        </td>
+        <td>
+          1542
+        </td>
+        <td>
+          716
+          -
+          737
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          whatson.model.Location.fromAngle
+        </td>
+        <td style="background: #F0ADAD">
+          Location.this.fromAngle(b.latitude)
+        </td>
+      </tr><tr>
+        <td>
+          18
+        </td>
+        <td>
+          1541
+        </td>
+        <td>
+          726
+          -
+          736
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.model.Location.latitude
+        </td>
+        <td style="background: #F0ADAD">
+          b.latitude
+        </td>
+      </tr><tr>
+        <td>
+          18
+        </td>
+        <td>
+          1540
+        </td>
+        <td>
+          684
+          -
+          703
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          whatson.model.Location.fromAngle
+        </td>
+        <td style="background: #F0ADAD">
+          Location.this.fromAngle(Location.this.latitude)
+        </td>
+      </tr><tr>
+        <td>
+          18
+        </td>
+        <td>
+          1543
+        </td>
+        <td>
+          707
+          -
+          738
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Math.sin
+        </td>
+        <td style="background: #F0ADAD">
+          java.lang.Math.sin(Location.this.fromAngle(b.latitude))
+        </td>
+      </tr><tr>
+        <td>
+          19
+        </td>
+        <td>
+          1545
+        </td>
+        <td>
+          759
+          -
+          778
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          whatson.model.Location.fromAngle
+        </td>
+        <td style="background: #F0ADAD">
+          Location.this.fromAngle(Location.this.latitude)
+        </td>
+      </tr><tr>
+        <td>
+          19
+        </td>
+        <td>
+          1548
+        </td>
+        <td>
+          782
+          -
+          813
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Math.cos
+        </td>
+        <td style="background: #F0ADAD">
+          java.lang.Math.cos(Location.this.fromAngle(b.latitude))
+        </td>
+      </tr><tr>
+        <td>
+          19
+        </td>
+        <td>
+          1544
+        </td>
+        <td>
+          769
+          -
+          777
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.model.Location.latitude
+        </td>
+        <td style="background: #F0ADAD">
+          Location.this.latitude
+        </td>
+      </tr><tr>
+        <td>
+          19
+        </td>
+        <td>
+          1547
+        </td>
+        <td>
+          791
+          -
+          812
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          whatson.model.Location.fromAngle
+        </td>
+        <td style="background: #F0ADAD">
+          Location.this.fromAngle(b.latitude)
+        </td>
+      </tr><tr>
+        <td>
+          19
+        </td>
+        <td>
+          1546
+        </td>
+        <td>
+          801
+          -
+          811
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.model.Location.latitude
+        </td>
+        <td style="background: #F0ADAD">
+          b.latitude
+        </td>
+      </tr><tr>
+        <td>
+          19
+        </td>
+        <td>
+          1549
+        </td>
+        <td>
+          750
+          -
+          813
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Double.*
+        </td>
+        <td style="background: #F0ADAD">
+          java.lang.Math.cos(Location.this.fromAngle(Location.this.latitude)).*(java.lang.Math.cos(Location.this.fromAngle(b.latitude)))
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          1554
+        </td>
+        <td>
+          675
+          -
+          866
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Double.+
+        </td>
+        <td style="background: #F0ADAD">
+          java.lang.Math.sin(Location.this.fromAngle(Location.this.latitude)).*(java.lang.Math.sin(Location.this.fromAngle(b.latitude))).+(java.lang.Math.cos(Location.this.fromAngle(Location.this.latitude)).*(java.lang.Math.cos(Location.this.fromAngle(b.latitude)))).+(java.lang.Math.cos(Location.this.fromAngle(Location.this.longitude.-(b.longitude))))
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          1551
+        </td>
+        <td>
+          843
+          -
+          864
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Float.-
+        </td>
+        <td style="background: #F0ADAD">
+          Location.this.longitude.-(b.longitude)
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          1550
+        </td>
+        <td>
+          853
+          -
+          864
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.model.Location.longitude
+        </td>
+        <td style="background: #F0ADAD">
+          b.longitude
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          1553
+        </td>
+        <td>
+          824
+          -
+          866
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Math.cos
+        </td>
+        <td style="background: #F0ADAD">
+          java.lang.Math.cos(Location.this.fromAngle(Location.this.longitude.-(b.longitude)))
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          1556
+        </td>
+        <td>
+          664
+          -
+          890
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Double.*
+        </td>
+        <td style="background: #F0ADAD">
+          java.lang.Math.acos(java.lang.Math.sin(Location.this.fromAngle(Location.this.latitude)).*(java.lang.Math.sin(Location.this.fromAngle(b.latitude))).+(java.lang.Math.cos(Location.this.fromAngle(Location.this.latitude)).*(java.lang.Math.cos(Location.this.fromAngle(b.latitude)))).+(java.lang.Math.cos(Location.this.fromAngle(Location.this.longitude.-(b.longitude))))).*(Location.earthRadius)
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          1555
+        </td>
+        <td>
+          870
+          -
+          890
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.model.Location.earthRadius
+        </td>
+        <td style="background: #F0ADAD">
+          Location.earthRadius
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          1552
+        </td>
+        <td>
+          833
+          -
+          865
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          whatson.model.Location.fromAngle
+        </td>
+        <td style="background: #F0ADAD">
+          Location.this.fromAngle(Location.this.longitude.-(b.longitude))
+        </td>
+      </tr><tr>
+        <td>
+          23
+        </td>
+        <td>
+          1557
+        </td>
+        <td>
+          934
+          -
+          947
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Float.*
+        </td>
+        <td style="background: #F0ADAD">
+          a./(180).*(3.141592653589793)
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          1558
+        </td>
+        <td>
+          1099
+          -
+          1103
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          6371
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          1560
+        </td>
+        <td>
+          1123
+          -
+          1143
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Function4.tupled
+        </td>
+        <td style="background: #F0ADAD">
+          {
+  ((id: Option[Int], name: String, latitude: Float, longitude: Float) =&gt; this.apply(id, name, latitude, longitude))
+}.tupled
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          1559
+        </td>
+        <td>
+          1123
+          -
+          1133
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          whatson.model.Location.apply
+        </td>
+        <td style="background: #F0ADAD">
+          this.apply(id, name, latitude, longitude)
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

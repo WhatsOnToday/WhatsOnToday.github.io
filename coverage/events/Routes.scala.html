@@ -1,0 +1,2273 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          events/Routes.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>
+</span>2 <span style=''>// @GENERATOR:play-routes-compiler
+</span>3 <span style=''>// @SOURCE:/home/travis/build/WhatsOnToday/whatsontoday-web/conf/events.routes
+</span>4 <span style=''>// @DATE:Wed Jan 24 15:43:48 UTC 2018
+</span>5 <span style=''>
+</span>6 <span style=''>package events
+</span>7 <span style=''>
+</span>8 <span style=''>import play.core.routing._
+</span>9 <span style=''>import play.core.routing.HandlerInvokerFactory._
+</span>10 <span style=''>
+</span>11 <span style=''>import play.api.mvc._
+</span>12 <span style=''>
+</span>13 <span style=''>import _root_.controllers.Assets.Asset
+</span>14 <span style=''>
+</span>15 <span style=''>class Routes(
+</span>16 <span style=''>  override val errorHandler: play.api.http.HttpErrorHandler, 
+</span>17 <span style=''>  // @LINE:30
+</span>18 <span style=''>  EventController_0: controllers.EventController,
+</span>19 <span style=''>  val prefix: String
+</span>20 <span style=''>) extends GeneratedRouter {
+</span>21 <span style=''>
+</span>22 <span style=''>   @javax.inject.Inject()
+</span>23 <span style=''>   def this(errorHandler: play.api.http.HttpErrorHandler,
+</span>24 <span style=''>    // @LINE:30
+</span>25 <span style=''>    EventController_0: controllers.EventController
+</span>26 <span style=''>  ) = </span><span style='background: #AEF1AE'>this(errorHandler, EventController_0, &quot;/&quot;)</span><span style=''>
+</span>27 <span style=''>
+</span>28 <span style=''>  def withPrefix(prefix: String): Routes = {
+</span>29 <span style=''>    </span><span style='background: #AEF1AE'>events.RoutesPrefix.setPrefix(prefix)</span><span style=''>
+</span>30 <span style=''>    </span><span style='background: #AEF1AE'>new Routes(errorHandler, EventController_0, prefix)</span><span style=''>
+</span>31 <span style=''>  }
+</span>32 <span style=''>
+</span>33 <span style=''>  private[this] val defaultPrefix: String = {
+</span>34 <span style=''>    if (</span><span style='background: #AEF1AE'>this.prefix.endsWith(&quot;/&quot;)</span><span style=''>) </span><span style='background: #AEF1AE'>&quot;&quot;</span><span style=''> else </span><span style='background: #AEF1AE'>&quot;/&quot;</span><span style=''>
+</span>35 <span style=''>  }
+</span>36 <span style=''>
+</span>37 <span style=''>  def documentation = </span><span style='background: #F0ADAD'>List(
+</span>38 <span style=''></span><span style='background: #F0ADAD'>    (&quot;&quot;&quot;GET&quot;&quot;&quot;, this.prefix, &quot;&quot;&quot;controllers.EventController.searchEvents(search:Option[String], location:Option[Int], category:Option[Int], sort:Option[String], sortDir:Boolean)&quot;&quot;&quot;),
+</span>39 <span style=''></span><span style='background: #F0ADAD'>    (&quot;&quot;&quot;GET&quot;&quot;&quot;, this.prefix + (if(this.prefix.endsWith(&quot;/&quot;)) &quot;&quot; else &quot;/&quot;) + &quot;&quot;&quot;&quot;&quot;&quot; + &quot;$&quot; + &quot;&quot;&quot;id&lt;[^/]+&gt;&quot;&quot;&quot;, &quot;&quot;&quot;controllers.EventController.getEvent(id:Int)&quot;&quot;&quot;),
+</span>40 <span style=''></span><span style='background: #F0ADAD'>    (&quot;&quot;&quot;DELETE&quot;&quot;&quot;, this.prefix + (if(this.prefix.endsWith(&quot;/&quot;)) &quot;&quot; else &quot;/&quot;) + &quot;&quot;&quot;&quot;&quot;&quot; + &quot;$&quot; + &quot;&quot;&quot;id&lt;[^/]+&gt;&quot;&quot;&quot;, &quot;&quot;&quot;controllers.EventController.deleteEvent(id:Int)&quot;&quot;&quot;),
+</span>41 <span style=''></span><span style='background: #F0ADAD'>    (&quot;&quot;&quot;POST&quot;&quot;&quot;, this.prefix, &quot;&quot;&quot;controllers.EventController.createEvent&quot;&quot;&quot;),
+</span>42 <span style=''></span><span style='background: #F0ADAD'>    (&quot;&quot;&quot;PUT&quot;&quot;&quot;, this.prefix + (if(this.prefix.endsWith(&quot;/&quot;)) &quot;&quot; else &quot;/&quot;) + &quot;&quot;&quot;&quot;&quot;&quot; + &quot;$&quot; + &quot;&quot;&quot;id&lt;[^/]+&gt;&quot;&quot;&quot;, &quot;&quot;&quot;controllers.EventController.updateEvent(id:Int)&quot;&quot;&quot;),
+</span>43 <span style=''></span><span style='background: #F0ADAD'>    Nil
+</span>44 <span style=''></span><span style='background: #F0ADAD'>  ).foldLeft(List.empty[(String,String,String)]) { (s,e) =&gt; e.asInstanceOf[Any] match {
+</span>45 <span style=''></span><span style='background: #F0ADAD'>    case r @ (_,_,_) =&gt; s :+ r.asInstanceOf[(String,String,String)]
+</span>46 <span style=''></span><span style='background: #F0ADAD'>    case l =&gt; s ++ l.asInstanceOf[List[(String,String,String)]]
+</span>47 <span style=''></span><span style='background: #F0ADAD'>  }}</span><span style=''>
+</span>48 <span style=''>
+</span>49 <span style=''>
+</span>50 <span style=''>  // @LINE:30
+</span>51 <span style=''>  private[this] lazy val controllers_EventController_searchEvents0_route = Route(&quot;GET&quot;,
+</span>52 <span style=''>    PathPattern(List(StaticPart(this.prefix)))
+</span>53 <span style=''>  )
+</span>54 <span style=''>  private[this] lazy val controllers_EventController_searchEvents0_invoker = createInvoker(
+</span>55 <span style=''>    EventController_0.searchEvents(fakeValue[Option[String]], fakeValue[Option[Int]], fakeValue[Option[Int]], fakeValue[Option[String]], fakeValue[Boolean]),
+</span>56 <span style=''>    play.api.routing.HandlerDef(this.getClass.getClassLoader,
+</span>57 <span style=''>      &quot;events&quot;,
+</span>58 <span style=''>      &quot;controllers.EventController&quot;,
+</span>59 <span style=''>      &quot;searchEvents&quot;,
+</span>60 <span style=''>      Seq(classOf[Option[String]], classOf[Option[Int]], classOf[Option[Int]], classOf[Option[String]], classOf[Boolean]),
+</span>61 <span style=''>      &quot;GET&quot;,
+</span>62 <span style=''>      this.prefix + &quot;&quot;&quot;&quot;&quot;&quot;,
+</span>63 <span style=''>      &quot;&quot;&quot;##
+</span>64 <span style=''>  summary: Query all events by name, location, categories
+</span>65 <span style=''>  parameters:
+</span>66 <span style=''>  - in: header
+</span>67 <span style=''>    name: X-Page
+</span>68 <span style=''>    schema:
+</span>69 <span style=''>      type: integer
+</span>70 <span style=''>    default: 0
+</span>71 <span style=''>  - in: header
+</span>72 <span style=''>    name: X-Page-Size
+</span>73 <span style=''>    schema:
+</span>74 <span style=''>      type: integer
+</span>75 <span style=''>    default: 20
+</span>76 <span style=''>  - name: sort
+</span>77 <span style=''>    description: Specifies wich column to sort by
+</span>78 <span style=''>    default: &quot;id&quot;
+</span>79 <span style=''>    enum: [&quot;id&quot;,&quot;name&quot;,&quot;from&quot;,&quot;to&quot;,&quot;rating&quot;,&quot;location&quot;]
+</span>80 <span style=''>  - name: sortDir
+</span>81 <span style=''>    description: Specifies wether to sort ascending(true) or descending
+</span>82 <span style=''>  - name: location
+</span>83 <span style=''>    description: If sort is set to location, events will be ordered by distance to the given location
+</span>84 <span style=''>  - name: category
+</span>85 <span style=''>    description: Specifies the category of the event
+</span>86 <span style=''>  responses:
+</span>87 <span style=''>    200:
+</span>88 <span style=''>      description: success
+</span>89 <span style=''>      schema:
+</span>90 <span style=''>        &quot;&quot;&quot; + &quot;$&quot; + &quot;&quot;&quot;ref: '#/definitions/whatson.model.Event'
+</span>91 <span style=''>##&quot;&quot;&quot;,
+</span>92 <span style=''>      Seq()
+</span>93 <span style=''>    )
+</span>94 <span style=''>  )
+</span>95 <span style=''>
+</span>96 <span style=''>  // @LINE:40
+</span>97 <span style=''>  private[this] lazy val controllers_EventController_getEvent1_route = Route(&quot;GET&quot;,
+</span>98 <span style=''>    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), DynamicPart(&quot;id&quot;, &quot;&quot;&quot;[^/]+&quot;&quot;&quot;,true)))
+</span>99 <span style=''>  )
+</span>100 <span style=''>  private[this] lazy val controllers_EventController_getEvent1_invoker = createInvoker(
+</span>101 <span style=''>    EventController_0.getEvent(fakeValue[Int]),
+</span>102 <span style=''>    play.api.routing.HandlerDef(this.getClass.getClassLoader,
+</span>103 <span style=''>      &quot;events&quot;,
+</span>104 <span style=''>      &quot;controllers.EventController&quot;,
+</span>105 <span style=''>      &quot;getEvent&quot;,
+</span>106 <span style=''>      Seq(classOf[Int]),
+</span>107 <span style=''>      &quot;GET&quot;,
+</span>108 <span style=''>      this.prefix + &quot;&quot;&quot;&quot;&quot;&quot; + &quot;$&quot; + &quot;&quot;&quot;id&lt;[^/]+&gt;&quot;&quot;&quot;,
+</span>109 <span style=''>      &quot;&quot;&quot;##
+</span>110 <span style=''>  summary: Query the event with a specific id
+</span>111 <span style=''>  responses:
+</span>112 <span style=''>    200:
+</span>113 <span style=''>      description: success
+</span>114 <span style=''>      schema:
+</span>115 <span style=''>        &quot;&quot;&quot; + &quot;$&quot; + &quot;&quot;&quot;ref: '#/definitions/whatson.model.Event'
+</span>116 <span style=''>##&quot;&quot;&quot;,
+</span>117 <span style=''>      Seq()
+</span>118 <span style=''>    )
+</span>119 <span style=''>  )
+</span>120 <span style=''>
+</span>121 <span style=''>  // @LINE:53
+</span>122 <span style=''>  private[this] lazy val controllers_EventController_deleteEvent2_route = Route(&quot;DELETE&quot;,
+</span>123 <span style=''>    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), DynamicPart(&quot;id&quot;, &quot;&quot;&quot;[^/]+&quot;&quot;&quot;,true)))
+</span>124 <span style=''>  )
+</span>125 <span style=''>  private[this] lazy val controllers_EventController_deleteEvent2_invoker = createInvoker(
+</span>126 <span style=''>    EventController_0.deleteEvent(fakeValue[Int]),
+</span>127 <span style=''>    play.api.routing.HandlerDef(this.getClass.getClassLoader,
+</span>128 <span style=''>      &quot;events&quot;,
+</span>129 <span style=''>      &quot;controllers.EventController&quot;,
+</span>130 <span style=''>      &quot;deleteEvent&quot;,
+</span>131 <span style=''>      Seq(classOf[Int]),
+</span>132 <span style=''>      &quot;DELETE&quot;,
+</span>133 <span style=''>      this.prefix + &quot;&quot;&quot;&quot;&quot;&quot; + &quot;$&quot; + &quot;&quot;&quot;id&lt;[^/]+&gt;&quot;&quot;&quot;,
+</span>134 <span style=''>      &quot;&quot;&quot;##
+</span>135 <span style=''>  summary: Delete an event
+</span>136 <span style=''>  parameters:
+</span>137 <span style=''>  - in: header
+</span>138 <span style=''>    name: x-auth-token
+</span>139 <span style=''>    schema:
+</span>140 <span style=''>      type: string
+</span>141 <span style=''>  responses:
+</span>142 <span style=''>    200:
+</span>143 <span style=''>      description: Event deleted
+</span>144 <span style=''>##&quot;&quot;&quot;,
+</span>145 <span style=''>      Seq()
+</span>146 <span style=''>    )
+</span>147 <span style=''>  )
+</span>148 <span style=''>
+</span>149 <span style=''>  // @LINE:72
+</span>150 <span style=''>  private[this] lazy val controllers_EventController_createEvent3_route = Route(&quot;POST&quot;,
+</span>151 <span style=''>    PathPattern(List(StaticPart(this.prefix)))
+</span>152 <span style=''>  )
+</span>153 <span style=''>  private[this] lazy val controllers_EventController_createEvent3_invoker = createInvoker(
+</span>154 <span style=''>    EventController_0.createEvent,
+</span>155 <span style=''>    play.api.routing.HandlerDef(this.getClass.getClassLoader,
+</span>156 <span style=''>      &quot;events&quot;,
+</span>157 <span style=''>      &quot;controllers.EventController&quot;,
+</span>158 <span style=''>      &quot;createEvent&quot;,
+</span>159 <span style=''>      Nil,
+</span>160 <span style=''>      &quot;POST&quot;,
+</span>161 <span style=''>      this.prefix + &quot;&quot;&quot;&quot;&quot;&quot;,
+</span>162 <span style=''>      &quot;&quot;&quot;##
+</span>163 <span style=''>  summary: Create an event
+</span>164 <span style=''>  parameters:
+</span>165 <span style=''>  - in: header
+</span>166 <span style=''>    name: x-auth-token
+</span>167 <span style=''>    schema:
+</span>168 <span style=''>      type: string
+</span>169 <span style=''>  - name: body
+</span>170 <span style=''>    schema:
+</span>171 <span style=''>      &quot;&quot;&quot; + &quot;$&quot; + &quot;&quot;&quot;ref: '#/definitions/whatson.model.Event'
+</span>172 <span style=''>    description: Dates (from and to), should be in the format 'yyyy-MM-dd HH:mm:ss' (example &quot;2017-05-23 23:05:22&quot;)
+</span>173 <span style=''>  responses:
+</span>174 <span style=''>    200:
+</span>175 <span style=''>      description: success
+</span>176 <span style=''>      schema:
+</span>177 <span style=''>        &quot;&quot;&quot; + &quot;$&quot; + &quot;&quot;&quot;ref: '#/definitions/whatson.model.Event'
+</span>178 <span style=''>##&quot;&quot;&quot;,
+</span>179 <span style=''>      Seq()
+</span>180 <span style=''>    )
+</span>181 <span style=''>  )
+</span>182 <span style=''>
+</span>183 <span style=''>  // @LINE:90
+</span>184 <span style=''>  private[this] lazy val controllers_EventController_updateEvent4_route = Route(&quot;PUT&quot;,
+</span>185 <span style=''>    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), DynamicPart(&quot;id&quot;, &quot;&quot;&quot;[^/]+&quot;&quot;&quot;,true)))
+</span>186 <span style=''>  )
+</span>187 <span style=''>  private[this] lazy val controllers_EventController_updateEvent4_invoker = createInvoker(
+</span>188 <span style=''>    EventController_0.updateEvent(fakeValue[Int]),
+</span>189 <span style=''>    play.api.routing.HandlerDef(this.getClass.getClassLoader,
+</span>190 <span style=''>      &quot;events&quot;,
+</span>191 <span style=''>      &quot;controllers.EventController&quot;,
+</span>192 <span style=''>      &quot;updateEvent&quot;,
+</span>193 <span style=''>      Seq(classOf[Int]),
+</span>194 <span style=''>      &quot;PUT&quot;,
+</span>195 <span style=''>      this.prefix + &quot;&quot;&quot;&quot;&quot;&quot; + &quot;$&quot; + &quot;&quot;&quot;id&lt;[^/]+&gt;&quot;&quot;&quot;,
+</span>196 <span style=''>      &quot;&quot;&quot;##
+</span>197 <span style=''>  summary: Update an event with a specific id
+</span>198 <span style=''>  parameters:
+</span>199 <span style=''>  - in: header
+</span>200 <span style=''>    name: x-auth-token
+</span>201 <span style=''>    schema:
+</span>202 <span style=''>      type: string
+</span>203 <span style=''>  - name: body
+</span>204 <span style=''>    schema:
+</span>205 <span style=''>      &quot;&quot;&quot; + &quot;$&quot; + &quot;&quot;&quot;ref: '#/definitions/whatson.model.Event'
+</span>206 <span style=''>  responses:
+</span>207 <span style=''>    200:
+</span>208 <span style=''>      description: success
+</span>209 <span style=''>      schema:
+</span>210 <span style=''>        &quot;&quot;&quot; + &quot;$&quot; + &quot;&quot;&quot;ref: '#/definitions/whatson.model.Event'
+</span>211 <span style=''>##&quot;&quot;&quot;,
+</span>212 <span style=''>      Seq()
+</span>213 <span style=''>    )
+</span>214 <span style=''>  )
+</span>215 <span style=''>
+</span>216 <span style=''>
+</span>217 <span style=''>  def routes: PartialFunction[RequestHeader, Handler] = {
+</span>218 <span style=''>  
+</span>219 <span style=''>    // @LINE:30
+</span>220 <span style=''>    case controllers_EventController_searchEvents0_route(params) =&gt;
+</span>221 <span style=''>      </span><span style='background: #F0ADAD'>call(params.fromQuery[Option[String]](&quot;search&quot;, None), params.fromQuery[Option[Int]](&quot;location&quot;, None), params.fromQuery[Option[Int]](&quot;category&quot;, None), params.fromQuery[Option[String]](&quot;sort&quot;, None), params.fromQuery[Boolean](&quot;sortDir&quot;, None)) { (search, location, category, sort, sortDir) =&gt;
+</span>222 <span style=''></span><span style='background: #F0ADAD'>        controllers_EventController_searchEvents0_invoker.call(EventController_0.searchEvents(search, location, category, sort, sortDir))
+</span>223 <span style=''></span><span style='background: #F0ADAD'>      }</span><span style=''>
+</span>224 <span style=''>  
+</span>225 <span style=''>    // @LINE:40
+</span>226 <span style=''>    case controllers_EventController_getEvent1_route(params) =&gt;
+</span>227 <span style=''>      </span><span style='background: #F0ADAD'>call(params.fromPath[Int](&quot;id&quot;, None)) { (id) =&gt;
+</span>228 <span style=''></span><span style='background: #F0ADAD'>        controllers_EventController_getEvent1_invoker.call(EventController_0.getEvent(id))
+</span>229 <span style=''></span><span style='background: #F0ADAD'>      }</span><span style=''>
+</span>230 <span style=''>  
+</span>231 <span style=''>    // @LINE:53
+</span>232 <span style=''>    case controllers_EventController_deleteEvent2_route(params) =&gt;
+</span>233 <span style=''>      </span><span style='background: #F0ADAD'>call(params.fromPath[Int](&quot;id&quot;, None)) { (id) =&gt;
+</span>234 <span style=''></span><span style='background: #F0ADAD'>        controllers_EventController_deleteEvent2_invoker.call(EventController_0.deleteEvent(id))
+</span>235 <span style=''></span><span style='background: #F0ADAD'>      }</span><span style=''>
+</span>236 <span style=''>  
+</span>237 <span style=''>    // @LINE:72
+</span>238 <span style=''>    case controllers_EventController_createEvent3_route(params) =&gt;
+</span>239 <span style=''>      </span><span style='background: #F0ADAD'>call { 
+</span>240 <span style=''></span><span style='background: #F0ADAD'>        controllers_EventController_createEvent3_invoker.call(EventController_0.createEvent)
+</span>241 <span style=''></span><span style='background: #F0ADAD'>      }</span><span style=''>
+</span>242 <span style=''>  
+</span>243 <span style=''>    // @LINE:90
+</span>244 <span style=''>    case controllers_EventController_updateEvent4_route(params) =&gt;
+</span>245 <span style=''>      </span><span style='background: #F0ADAD'>call(params.fromPath[Int](&quot;id&quot;, None)) { (id) =&gt;
+</span>246 <span style=''></span><span style='background: #F0ADAD'>        controllers_EventController_updateEvent4_invoker.call(EventController_0.updateEvent(id))
+</span>247 <span style=''></span><span style='background: #F0ADAD'>      }</span><span style=''>
+</span>248 <span style=''>  }
+</span>249 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          2359
+        </td>
+        <td>
+          657
+          -
+          699
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          events.Routes.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          Routes.this.&lt;init&gt;(errorHandler, EventController_0, &quot;/&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          2360
+        </td>
+        <td>
+          657
+          -
+          657
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          2361
+        </td>
+        <td>
+          750
+          -
+          787
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          events.RoutesPrefix.setPrefix
+        </td>
+        <td style="background: #AEF1AE">
+          events.RoutesPrefix.setPrefix(prefix)
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          2362
+        </td>
+        <td>
+          803
+          -
+          815
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          events.Routes.errorHandler
+        </td>
+        <td style="background: #AEF1AE">
+          Routes.this.errorHandler
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          2364
+        </td>
+        <td>
+          792
+          -
+          843
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          events.Routes.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new Routes(Routes.this.errorHandler, Routes.this.EventController_0, prefix)
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          2363
+        </td>
+        <td>
+          817
+          -
+          834
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          events.Routes.EventController_0
+        </td>
+        <td style="background: #AEF1AE">
+          Routes.this.EventController_0
+        </td>
+      </tr><tr>
+        <td>
+          34
+        </td>
+        <td>
+          2365
+        </td>
+        <td>
+          903
+          -
+          928
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.endsWith
+        </td>
+        <td style="background: #AEF1AE">
+          this.prefix.endsWith(&quot;/&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          34
+        </td>
+        <td>
+          2368
+        </td>
+        <td>
+          938
+          -
+          941
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;/&quot;
+        </td>
+      </tr><tr>
+        <td>
+          34
+        </td>
+        <td>
+          2367
+        </td>
+        <td>
+          930
+          -
+          932
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          34
+        </td>
+        <td>
+          2366
+        </td>
+        <td>
+          930
+          -
+          932
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          34
+        </td>
+        <td>
+          2369
+        </td>
+        <td>
+          938
+          -
+          941
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;/&quot;
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          2371
+        </td>
+        <td>
+          991
+          -
+          1002
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          events.Routes.prefix
+        </td>
+        <td style="background: #F0ADAD">
+          this.prefix
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          2370
+        </td>
+        <td>
+          980
+          -
+          989
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;GET&quot;
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          2373
+        </td>
+        <td>
+          979
+          -
+          1156
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Tuple3.apply
+        </td>
+        <td style="background: #F0ADAD">
+          scala.Tuple3.apply[String, String, String](&quot;GET&quot;, this.prefix, &quot;controllers.EventController.searchEvents(search:Option[String], location:Option[Int], category:Option[Int], sort:Option[String], sortDir:Boolean)&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          2372
+        </td>
+        <td>
+          1004
+          -
+          1155
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;controllers.EventController.searchEvents(search:Option[String], location:Option[Int], category:Option[Int], sort:Option[String], sortDir:Boolean)&quot;
+        </td>
+      </tr><tr>
+        <td>
+          39
+        </td>
+        <td>
+          2374
+        </td>
+        <td>
+          1163
+          -
+          1172
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;GET&quot;
+        </td>
+      </tr><tr>
+        <td>
+          39
+        </td>
+        <td>
+          2376
+        </td>
+        <td>
+          1266
+          -
+          1316
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;controllers.EventController.getEvent(id:Int)&quot;
+        </td>
+      </tr><tr>
+        <td>
+          39
+        </td>
+        <td>
+          2375
+        </td>
+        <td>
+          1174
+          -
+          1264
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.+
+        </td>
+        <td style="background: #F0ADAD">
+          this.prefix.+(if (this.prefix.endsWith(&quot;/&quot;))
+  &quot;&quot;
+else
+  &quot;/&quot;).+(&quot;&quot;).+(&quot;$&quot;).+(&quot;id&lt;[^/]+&gt;&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          39
+        </td>
+        <td>
+          2377
+        </td>
+        <td>
+          1162
+          -
+          1317
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Tuple3.apply
+        </td>
+        <td style="background: #F0ADAD">
+          scala.Tuple3.apply[String, String, String](&quot;GET&quot;, this.prefix.+(if (this.prefix.endsWith(&quot;/&quot;))
+  &quot;&quot;
+else
+  &quot;/&quot;).+(&quot;&quot;).+(&quot;$&quot;).+(&quot;id&lt;[^/]+&gt;&quot;), &quot;controllers.EventController.getEvent(id:Int)&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          40
+        </td>
+        <td>
+          2380
+        </td>
+        <td>
+          1430
+          -
+          1483
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;controllers.EventController.deleteEvent(id:Int)&quot;
+        </td>
+      </tr><tr>
+        <td>
+          40
+        </td>
+        <td>
+          2379
+        </td>
+        <td>
+          1338
+          -
+          1428
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.+
+        </td>
+        <td style="background: #F0ADAD">
+          this.prefix.+(if (this.prefix.endsWith(&quot;/&quot;))
+  &quot;&quot;
+else
+  &quot;/&quot;).+(&quot;&quot;).+(&quot;$&quot;).+(&quot;id&lt;[^/]+&gt;&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          40
+        </td>
+        <td>
+          2381
+        </td>
+        <td>
+          1323
+          -
+          1484
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Tuple3.apply
+        </td>
+        <td style="background: #F0ADAD">
+          scala.Tuple3.apply[String, String, String](&quot;DELETE&quot;, this.prefix.+(if (this.prefix.endsWith(&quot;/&quot;))
+  &quot;&quot;
+else
+  &quot;/&quot;).+(&quot;&quot;).+(&quot;$&quot;).+(&quot;id&lt;[^/]+&gt;&quot;), &quot;controllers.EventController.deleteEvent(id:Int)&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          40
+        </td>
+        <td>
+          2378
+        </td>
+        <td>
+          1324
+          -
+          1336
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;DELETE&quot;
+        </td>
+      </tr><tr>
+        <td>
+          41
+        </td>
+        <td>
+          2383
+        </td>
+        <td>
+          1503
+          -
+          1514
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          events.Routes.prefix
+        </td>
+        <td style="background: #F0ADAD">
+          this.prefix
+        </td>
+      </tr><tr>
+        <td>
+          41
+        </td>
+        <td>
+          2385
+        </td>
+        <td>
+          1490
+          -
+          1562
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Tuple3.apply
+        </td>
+        <td style="background: #F0ADAD">
+          scala.Tuple3.apply[String, String, String](&quot;POST&quot;, this.prefix, &quot;controllers.EventController.createEvent&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          41
+        </td>
+        <td>
+          2382
+        </td>
+        <td>
+          1491
+          -
+          1501
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;POST&quot;
+        </td>
+      </tr><tr>
+        <td>
+          41
+        </td>
+        <td>
+          2384
+        </td>
+        <td>
+          1516
+          -
+          1561
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;controllers.EventController.createEvent&quot;
+        </td>
+      </tr><tr>
+        <td>
+          42
+        </td>
+        <td>
+          2389
+        </td>
+        <td>
+          1568
+          -
+          1726
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Tuple3.apply
+        </td>
+        <td style="background: #F0ADAD">
+          scala.Tuple3.apply[String, String, String](&quot;PUT&quot;, this.prefix.+(if (this.prefix.endsWith(&quot;/&quot;))
+  &quot;&quot;
+else
+  &quot;/&quot;).+(&quot;&quot;).+(&quot;$&quot;).+(&quot;id&lt;[^/]+&gt;&quot;), &quot;controllers.EventController.updateEvent(id:Int)&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          42
+        </td>
+        <td>
+          2388
+        </td>
+        <td>
+          1672
+          -
+          1725
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;controllers.EventController.updateEvent(id:Int)&quot;
+        </td>
+      </tr><tr>
+        <td>
+          42
+        </td>
+        <td>
+          2387
+        </td>
+        <td>
+          1580
+          -
+          1670
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.+
+        </td>
+        <td style="background: #F0ADAD">
+          this.prefix.+(if (this.prefix.endsWith(&quot;/&quot;))
+  &quot;&quot;
+else
+  &quot;/&quot;).+(&quot;&quot;).+(&quot;$&quot;).+(&quot;id&lt;[^/]+&gt;&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          42
+        </td>
+        <td>
+          2386
+        </td>
+        <td>
+          1569
+          -
+          1578
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;PUT&quot;
+        </td>
+      </tr><tr>
+        <td>
+          43
+        </td>
+        <td>
+          2390
+        </td>
+        <td>
+          1732
+          -
+          1735
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.immutable.Nil
+        </td>
+        <td style="background: #F0ADAD">
+          scala.collection.immutable.Nil
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          2392
+        </td>
+        <td>
+          1796
+          -
+          1815
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Any.asInstanceOf
+        </td>
+        <td style="background: #F0ADAD">
+          e.asInstanceOf[Any]
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          2391
+        </td>
+        <td>
+          1749
+          -
+          1783
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.immutable.List.empty
+        </td>
+        <td style="background: #F0ADAD">
+          scala.collection.immutable.List.empty[(String, String, String)]
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          2399
+        </td>
+        <td>
+          969
+          -
+          1960
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.LinearSeqOptimized.foldLeft
+        </td>
+        <td style="background: #F0ADAD">
+          scala.collection.immutable.List.apply[Product with Serializable](scala.Tuple3.apply[String, String, String](&quot;GET&quot;, this.prefix, &quot;controllers.EventController.searchEvents(search:Option[String], location:Option[Int], category:Option[Int], sort:Option[String], sortDir:Boolean)&quot;), scala.Tuple3.apply[String, String, String](&quot;GET&quot;, this.prefix.+(if (this.prefix.endsWith(&quot;/&quot;))
+  &quot;&quot;
+else
+  &quot;/&quot;).+(&quot;&quot;).+(&quot;$&quot;).+(&quot;id&lt;[^/]+&gt;&quot;), &quot;controllers.EventController.getEvent(id:Int)&quot;), scala.Tuple3.apply[String, String, String](&quot;DELETE&quot;, this.prefix.+(if (this.prefix.endsWith(&quot;/&quot;))
+  &quot;&quot;
+else
+  &quot;/&quot;).+(&quot;&quot;).+(&quot;$&quot;).+(&quot;id&lt;[^/]+&gt;&quot;), &quot;controllers.EventController.deleteEvent(id:Int)&quot;), scala.Tuple3.apply[String, String, String](&quot;POST&quot;, this.prefix, &quot;controllers.EventController.createEvent&quot;), scala.Tuple3.apply[String, String, String](&quot;PUT&quot;, this.prefix.+(if (this.prefix.endsWith(&quot;/&quot;))
+  &quot;&quot;
+else
+  &quot;/&quot;).+(&quot;&quot;).+(&quot;$&quot;).+(&quot;id&lt;[^/]+&gt;&quot;), &quot;controllers.EventController.updateEvent(id:Int)&quot;), scala.collection.immutable.Nil).foldLeft[List[(String, String, String)]](scala.collection.immutable.List.empty[(String, String, String)])(((s: List[(String, String, String)], e: Product with Serializable) =&gt; e.asInstanceOf[Any] match {
+  case (r @ (_1: Any, _2: Any, _3: Any)(Any, Any, Any)(_, _, _)) =&gt; s.:+[(String, String, String), List[(String, String, String)]](r.asInstanceOf[(String, String, String)])(immutable.this.List.canBuildFrom[(String, String, String)])
+  case (l @ _) =&gt; s.++[(String, String, String), List[(String, String, String)]](l.asInstanceOf[List[(String, String, String)]])(immutable.this.List.canBuildFrom[(String, String, String)])
+}))
+        </td>
+      </tr><tr>
+        <td>
+          45
+        </td>
+        <td>
+          2394
+        </td>
+        <td>
+          1850
+          -
+          1850
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.immutable.List.canBuildFrom
+        </td>
+        <td style="background: #F0ADAD">
+          immutable.this.List.canBuildFrom[(String, String, String)]
+        </td>
+      </tr><tr>
+        <td>
+          45
+        </td>
+        <td>
+          2393
+        </td>
+        <td>
+          1853
+          -
+          1891
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Any.asInstanceOf
+        </td>
+        <td style="background: #F0ADAD">
+          r.asInstanceOf[(String, String, String)]
+        </td>
+      </tr><tr>
+        <td>
+          45
+        </td>
+        <td>
+          2395
+        </td>
+        <td>
+          1848
+          -
+          1891
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.SeqLike.:+
+        </td>
+        <td style="background: #F0ADAD">
+          s.:+[(String, String, String), List[(String, String, String)]](r.asInstanceOf[(String, String, String)])(immutable.this.List.canBuildFrom[(String, String, String)])
+        </td>
+      </tr><tr>
+        <td>
+          46
+        </td>
+        <td>
+          2398
+        </td>
+        <td>
+          1906
+          -
+          1955
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.immutable.List.++
+        </td>
+        <td style="background: #F0ADAD">
+          s.++[(String, String, String), List[(String, String, String)]](l.asInstanceOf[List[(String, String, String)]])(immutable.this.List.canBuildFrom[(String, String, String)])
+        </td>
+      </tr><tr>
+        <td>
+          46
+        </td>
+        <td>
+          2397
+        </td>
+        <td>
+          1908
+          -
+          1908
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.immutable.List.canBuildFrom
+        </td>
+        <td style="background: #F0ADAD">
+          immutable.this.List.canBuildFrom[(String, String, String)]
+        </td>
+      </tr><tr>
+        <td>
+          46
+        </td>
+        <td>
+          2396
+        </td>
+        <td>
+          1911
+          -
+          1955
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Any.asInstanceOf
+        </td>
+        <td style="background: #F0ADAD">
+          l.asInstanceOf[List[(String, String, String)]]
+        </td>
+      </tr><tr>
+        <td>
+          217
+        </td>
+        <td>
+          2451
+        </td>
+        <td>
+          7073
+          -
+          7073
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          events.Routes.$anonfun.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new $anonfun()
+        </td>
+      </tr><tr>
+        <td>
+          221
+        </td>
+        <td>
+          2407
+        </td>
+        <td>
+          7252
+          -
+          7252
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.mvc.QueryStringBindable.bindableInt
+        </td>
+        <td style="background: #F0ADAD">
+          mvc.this.QueryStringBindable.bindableInt
+        </td>
+      </tr><tr>
+        <td>
+          221
+        </td>
+        <td>
+          2416
+        </td>
+        <td>
+          7362
+          -
+          7366
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #F0ADAD">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          221
+        </td>
+        <td>
+          2419
+        </td>
+        <td>
+          7321
+          -
+          7367
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          play.core.routing.RouteParams.fromQuery
+        </td>
+        <td style="background: #F0ADAD">
+          params.fromQuery[Option[String]](&quot;sort&quot;, scala.None)(mvc.this.QueryStringBindable.bindableOption[String](mvc.this.QueryStringBindable.bindableString))
+        </td>
+      </tr><tr>
+        <td>
+          221
+        </td>
+        <td>
+          2401
+        </td>
+        <td>
+          7216
+          -
+          7220
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #F0ADAD">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          221
+        </td>
+        <td>
+          2410
+        </td>
+        <td>
+          7302
+          -
+          7312
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;category&quot;
+        </td>
+      </tr><tr>
+        <td>
+          221
+        </td>
+        <td>
+          2400
+        </td>
+        <td>
+          7206
+          -
+          7214
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;search&quot;
+        </td>
+      </tr><tr>
+        <td>
+          221
+        </td>
+        <td>
+          2409
+        </td>
+        <td>
+          7223
+          -
+          7270
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          play.core.routing.RouteParams.fromQuery
+        </td>
+        <td style="background: #F0ADAD">
+          params.fromQuery[Option[Int]](&quot;location&quot;, scala.None)(mvc.this.QueryStringBindable.bindableOption[Int](mvc.this.QueryStringBindable.bindableInt))
+        </td>
+      </tr><tr>
+        <td>
+          221
+        </td>
+        <td>
+          2418
+        </td>
+        <td>
+          7353
+          -
+          7353
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          play.api.mvc.QueryStringBindable.bindableOption
+        </td>
+        <td style="background: #F0ADAD">
+          mvc.this.QueryStringBindable.bindableOption[String](mvc.this.QueryStringBindable.bindableString)
+        </td>
+      </tr><tr>
+        <td>
+          221
+        </td>
+        <td>
+          2421
+        </td>
+        <td>
+          7406
+          -
+          7410
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #F0ADAD">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          221
+        </td>
+        <td>
+          2412
+        </td>
+        <td>
+          7301
+          -
+          7301
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.mvc.QueryStringBindable.bindableInt
+        </td>
+        <td style="background: #F0ADAD">
+          mvc.this.QueryStringBindable.bindableInt
+        </td>
+      </tr><tr>
+        <td>
+          221
+        </td>
+        <td>
+          2403
+        </td>
+        <td>
+          7205
+          -
+          7205
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          play.api.mvc.QueryStringBindable.bindableOption
+        </td>
+        <td style="background: #F0ADAD">
+          mvc.this.QueryStringBindable.bindableOption[String](mvc.this.QueryStringBindable.bindableString)
+        </td>
+      </tr><tr>
+        <td>
+          221
+        </td>
+        <td>
+          2406
+        </td>
+        <td>
+          7265
+          -
+          7269
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #F0ADAD">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          221
+        </td>
+        <td>
+          2415
+        </td>
+        <td>
+          7354
+          -
+          7360
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;sort&quot;
+        </td>
+      </tr><tr>
+        <td>
+          221
+        </td>
+        <td>
+          2414
+        </td>
+        <td>
+          7272
+          -
+          7319
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          play.core.routing.RouteParams.fromQuery
+        </td>
+        <td style="background: #F0ADAD">
+          params.fromQuery[Option[Int]](&quot;category&quot;, scala.None)(mvc.this.QueryStringBindable.bindableOption[Int](mvc.this.QueryStringBindable.bindableInt))
+        </td>
+      </tr><tr>
+        <td>
+          221
+        </td>
+        <td>
+          2423
+        </td>
+        <td>
+          7369
+          -
+          7411
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          play.core.routing.RouteParams.fromQuery
+        </td>
+        <td style="background: #F0ADAD">
+          params.fromQuery[Boolean](&quot;sortDir&quot;, scala.None)(mvc.this.QueryStringBindable.bindableBoolean)
+        </td>
+      </tr><tr>
+        <td>
+          221
+        </td>
+        <td>
+          2417
+        </td>
+        <td>
+          7353
+          -
+          7353
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.mvc.QueryStringBindable.bindableString
+        </td>
+        <td style="background: #F0ADAD">
+          mvc.this.QueryStringBindable.bindableString
+        </td>
+      </tr><tr>
+        <td>
+          221
+        </td>
+        <td>
+          2426
+        </td>
+        <td>
+          7168
+          -
+          7607
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          play.core.routing.GeneratedRouter.call
+        </td>
+        <td style="background: #F0ADAD">
+          Routes.this.call[Option[String], Option[Int], Option[Int], Option[String], Boolean](params.fromQuery[Option[String]](&quot;search&quot;, scala.None)(mvc.this.QueryStringBindable.bindableOption[String](mvc.this.QueryStringBindable.bindableString)), params.fromQuery[Option[Int]](&quot;location&quot;, scala.None)(mvc.this.QueryStringBindable.bindableOption[Int](mvc.this.QueryStringBindable.bindableInt)), params.fromQuery[Option[Int]](&quot;category&quot;, scala.None)(mvc.this.QueryStringBindable.bindableOption[Int](mvc.this.QueryStringBindable.bindableInt)), params.fromQuery[Option[String]](&quot;sort&quot;, scala.None)(mvc.this.QueryStringBindable.bindableOption[String](mvc.this.QueryStringBindable.bindableString)), params.fromQuery[Boolean](&quot;sortDir&quot;, scala.None)(mvc.this.QueryStringBindable.bindableBoolean))(((search: Option[String], location: Option[Int], category: Option[Int], sort: Option[String], sortDir: Boolean) =&gt; Routes.this.controllers_EventController_searchEvents0_invoker.call(Routes.this.EventController_0.searchEvents(search, location, category, sort, sortDir))))
+        </td>
+      </tr><tr>
+        <td>
+          221
+        </td>
+        <td>
+          2408
+        </td>
+        <td>
+          7252
+          -
+          7252
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          play.api.mvc.QueryStringBindable.bindableOption
+        </td>
+        <td style="background: #F0ADAD">
+          mvc.this.QueryStringBindable.bindableOption[Int](mvc.this.QueryStringBindable.bindableInt)
+        </td>
+      </tr><tr>
+        <td>
+          221
+        </td>
+        <td>
+          2420
+        </td>
+        <td>
+          7395
+          -
+          7404
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;sortDir&quot;
+        </td>
+      </tr><tr>
+        <td>
+          221
+        </td>
+        <td>
+          2402
+        </td>
+        <td>
+          7205
+          -
+          7205
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.mvc.QueryStringBindable.bindableString
+        </td>
+        <td style="background: #F0ADAD">
+          mvc.this.QueryStringBindable.bindableString
+        </td>
+      </tr><tr>
+        <td>
+          221
+        </td>
+        <td>
+          2411
+        </td>
+        <td>
+          7314
+          -
+          7318
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #F0ADAD">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          221
+        </td>
+        <td>
+          2405
+        </td>
+        <td>
+          7253
+          -
+          7263
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;location&quot;
+        </td>
+      </tr><tr>
+        <td>
+          221
+        </td>
+        <td>
+          2422
+        </td>
+        <td>
+          7394
+          -
+          7394
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.mvc.QueryStringBindable.bindableBoolean
+        </td>
+        <td style="background: #F0ADAD">
+          mvc.this.QueryStringBindable.bindableBoolean
+        </td>
+      </tr><tr>
+        <td>
+          221
+        </td>
+        <td>
+          2404
+        </td>
+        <td>
+          7173
+          -
+          7221
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          play.core.routing.RouteParams.fromQuery
+        </td>
+        <td style="background: #F0ADAD">
+          params.fromQuery[Option[String]](&quot;search&quot;, scala.None)(mvc.this.QueryStringBindable.bindableOption[String](mvc.this.QueryStringBindable.bindableString))
+        </td>
+      </tr><tr>
+        <td>
+          221
+        </td>
+        <td>
+          2413
+        </td>
+        <td>
+          7301
+          -
+          7301
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          play.api.mvc.QueryStringBindable.bindableOption
+        </td>
+        <td style="background: #F0ADAD">
+          mvc.this.QueryStringBindable.bindableOption[Int](mvc.this.QueryStringBindable.bindableInt)
+        </td>
+      </tr><tr>
+        <td>
+          222
+        </td>
+        <td>
+          2425
+        </td>
+        <td>
+          7470
+          -
+          7599
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          play.core.routing.HandlerInvoker.call
+        </td>
+        <td style="background: #F0ADAD">
+          Routes.this.controllers_EventController_searchEvents0_invoker.call(Routes.this.EventController_0.searchEvents(search, location, category, sort, sortDir))
+        </td>
+      </tr><tr>
+        <td>
+          222
+        </td>
+        <td>
+          2424
+        </td>
+        <td>
+          7525
+          -
+          7598
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          controllers.EventController.searchEvents
+        </td>
+        <td style="background: #F0ADAD">
+          Routes.this.EventController_0.searchEvents(search, location, category, sort, sortDir)
+        </td>
+      </tr><tr>
+        <td>
+          227
+        </td>
+        <td>
+          2428
+        </td>
+        <td>
+          7729
+          -
+          7733
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #F0ADAD">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          227
+        </td>
+        <td>
+          2427
+        </td>
+        <td>
+          7723
+          -
+          7727
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;id&quot;
+        </td>
+      </tr><tr>
+        <td>
+          227
+        </td>
+        <td>
+          2430
+        </td>
+        <td>
+          7702
+          -
+          7734
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          play.core.routing.RouteParams.fromPath
+        </td>
+        <td style="background: #F0ADAD">
+          params.fromPath[Int](&quot;id&quot;, scala.None)(mvc.this.PathBindable.bindableInt)
+        </td>
+      </tr><tr>
+        <td>
+          227
+        </td>
+        <td>
+          2433
+        </td>
+        <td>
+          7697
+          -
+          7844
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          play.core.routing.GeneratedRouter.call
+        </td>
+        <td style="background: #F0ADAD">
+          Routes.this.call[Int](params.fromPath[Int](&quot;id&quot;, scala.None)(mvc.this.PathBindable.bindableInt))(((id: Int) =&gt; Routes.this.controllers_EventController_getEvent1_invoker.call(Routes.this.EventController_0.getEvent(id))))
+        </td>
+      </tr><tr>
+        <td>
+          227
+        </td>
+        <td>
+          2429
+        </td>
+        <td>
+          7722
+          -
+          7722
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.mvc.PathBindable.bindableInt
+        </td>
+        <td style="background: #F0ADAD">
+          mvc.this.PathBindable.bindableInt
+        </td>
+      </tr><tr>
+        <td>
+          228
+        </td>
+        <td>
+          2432
+        </td>
+        <td>
+          7754
+          -
+          7836
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          play.core.routing.HandlerInvoker.call
+        </td>
+        <td style="background: #F0ADAD">
+          Routes.this.controllers_EventController_getEvent1_invoker.call(Routes.this.EventController_0.getEvent(id))
+        </td>
+      </tr><tr>
+        <td>
+          228
+        </td>
+        <td>
+          2431
+        </td>
+        <td>
+          7805
+          -
+          7835
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          controllers.EventController.getEvent
+        </td>
+        <td style="background: #F0ADAD">
+          Routes.this.EventController_0.getEvent(id)
+        </td>
+      </tr><tr>
+        <td>
+          233
+        </td>
+        <td>
+          2434
+        </td>
+        <td>
+          7963
+          -
+          7967
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;id&quot;
+        </td>
+      </tr><tr>
+        <td>
+          233
+        </td>
+        <td>
+          2436
+        </td>
+        <td>
+          7962
+          -
+          7962
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.mvc.PathBindable.bindableInt
+        </td>
+        <td style="background: #F0ADAD">
+          mvc.this.PathBindable.bindableInt
+        </td>
+      </tr><tr>
+        <td>
+          233
+        </td>
+        <td>
+          2435
+        </td>
+        <td>
+          7969
+          -
+          7973
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #F0ADAD">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          233
+        </td>
+        <td>
+          2437
+        </td>
+        <td>
+          7942
+          -
+          7974
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          play.core.routing.RouteParams.fromPath
+        </td>
+        <td style="background: #F0ADAD">
+          params.fromPath[Int](&quot;id&quot;, scala.None)(mvc.this.PathBindable.bindableInt)
+        </td>
+      </tr><tr>
+        <td>
+          233
+        </td>
+        <td>
+          2440
+        </td>
+        <td>
+          7937
+          -
+          8090
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          play.core.routing.GeneratedRouter.call
+        </td>
+        <td style="background: #F0ADAD">
+          Routes.this.call[Int](params.fromPath[Int](&quot;id&quot;, scala.None)(mvc.this.PathBindable.bindableInt))(((id: Int) =&gt; Routes.this.controllers_EventController_deleteEvent2_invoker.call(Routes.this.EventController_0.deleteEvent(id))))
+        </td>
+      </tr><tr>
+        <td>
+          234
+        </td>
+        <td>
+          2439
+        </td>
+        <td>
+          7994
+          -
+          8082
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          play.core.routing.HandlerInvoker.call
+        </td>
+        <td style="background: #F0ADAD">
+          Routes.this.controllers_EventController_deleteEvent2_invoker.call(Routes.this.EventController_0.deleteEvent(id))
+        </td>
+      </tr><tr>
+        <td>
+          234
+        </td>
+        <td>
+          2438
+        </td>
+        <td>
+          8048
+          -
+          8081
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          controllers.EventController.deleteEvent
+        </td>
+        <td style="background: #F0ADAD">
+          Routes.this.EventController_0.deleteEvent(id)
+        </td>
+      </tr><tr>
+        <td>
+          239
+        </td>
+        <td>
+          2443
+        </td>
+        <td>
+          8183
+          -
+          8291
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          play.core.routing.GeneratedRouter.call
+        </td>
+        <td style="background: #F0ADAD">
+          Routes.this.call(Routes.this.controllers_EventController_createEvent3_invoker.call(Routes.this.EventController_0.createEvent()))
+        </td>
+      </tr><tr>
+        <td>
+          240
+        </td>
+        <td>
+          2442
+        </td>
+        <td>
+          8199
+          -
+          8283
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          play.core.routing.HandlerInvoker.call
+        </td>
+        <td style="background: #F0ADAD">
+          Routes.this.controllers_EventController_createEvent3_invoker.call(Routes.this.EventController_0.createEvent())
+        </td>
+      </tr><tr>
+        <td>
+          240
+        </td>
+        <td>
+          2441
+        </td>
+        <td>
+          8253
+          -
+          8282
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          controllers.EventController.createEvent
+        </td>
+        <td style="background: #F0ADAD">
+          Routes.this.EventController_0.createEvent()
+        </td>
+      </tr><tr>
+        <td>
+          245
+        </td>
+        <td>
+          2445
+        </td>
+        <td>
+          8416
+          -
+          8420
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #F0ADAD">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          245
+        </td>
+        <td>
+          2450
+        </td>
+        <td>
+          8384
+          -
+          8537
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          play.core.routing.GeneratedRouter.call
+        </td>
+        <td style="background: #F0ADAD">
+          Routes.this.call[Int](params.fromPath[Int](&quot;id&quot;, scala.None)(mvc.this.PathBindable.bindableInt))(((id: Int) =&gt; Routes.this.controllers_EventController_updateEvent4_invoker.call(Routes.this.EventController_0.updateEvent(id))))
+        </td>
+      </tr><tr>
+        <td>
+          245
+        </td>
+        <td>
+          2444
+        </td>
+        <td>
+          8410
+          -
+          8414
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;id&quot;
+        </td>
+      </tr><tr>
+        <td>
+          245
+        </td>
+        <td>
+          2447
+        </td>
+        <td>
+          8389
+          -
+          8421
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          play.core.routing.RouteParams.fromPath
+        </td>
+        <td style="background: #F0ADAD">
+          params.fromPath[Int](&quot;id&quot;, scala.None)(mvc.this.PathBindable.bindableInt)
+        </td>
+      </tr><tr>
+        <td>
+          245
+        </td>
+        <td>
+          2446
+        </td>
+        <td>
+          8409
+          -
+          8409
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.mvc.PathBindable.bindableInt
+        </td>
+        <td style="background: #F0ADAD">
+          mvc.this.PathBindable.bindableInt
+        </td>
+      </tr><tr>
+        <td>
+          246
+        </td>
+        <td>
+          2448
+        </td>
+        <td>
+          8495
+          -
+          8528
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          controllers.EventController.updateEvent
+        </td>
+        <td style="background: #F0ADAD">
+          Routes.this.EventController_0.updateEvent(id)
+        </td>
+      </tr><tr>
+        <td>
+          246
+        </td>
+        <td>
+          2449
+        </td>
+        <td>
+          8441
+          -
+          8529
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          play.core.routing.HandlerInvoker.call
+        </td>
+        <td style="background: #F0ADAD">
+          Routes.this.controllers_EventController_updateEvent4_invoker.call(Routes.this.EventController_0.updateEvent(id))
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>
