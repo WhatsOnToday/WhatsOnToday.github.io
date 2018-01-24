@@ -1,0 +1,1802 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          controllers/ImageController.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package controllers
+</span>2 <span style=''>
+</span>3 <span style=''>import scala.concurrent.ExecutionContext
+</span>4 <span style=''>
+</span>5 <span style=''>import javax.inject._
+</span>6 <span style=''>import play.api._
+</span>7 <span style=''>import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
+</span>8 <span style=''>import play.api.libs.json._
+</span>9 <span style=''>import play.api.mvc._
+</span>10 <span style=''>import slick.jdbc.JdbcProfile
+</span>11 <span style=''>import slick.jdbc.PostgresProfile.api._
+</span>12 <span style=''>import whatson.db._
+</span>13 <span style=''>import whatson.db.ImageTable._
+</span>14 <span style=''>import whatson.db.Util._
+</span>15 <span style=''>import whatson.model._
+</span>16 <span style=''>import whatson.model.Image._
+</span>17 <span style=''>
+</span>18 <span style=''>
+</span>19 <span style=''>class ImageController @Inject()(cc: ControllerComponents, protected val dbConfigProvider: DatabaseConfigProvider)
+</span>20 <span style=''>    (implicit context: ExecutionContext)
+</span>21 <span style=''>    extends AbstractController(cc)
+</span>22 <span style=''>    with HasDatabaseConfigProvider[JdbcProfile] {
+</span>23 <span style=''>
+</span>24 <span style=''>  val log = </span><span style='background: #AEF1AE'>Logger(&quot;api.location&quot;)</span><span style=''>
+</span>25 <span style=''>
+</span>26 <span style=''>  def get(id: Int) = </span><span style='background: #F0ADAD'>Action.async { implicit request: Request[AnyContent] =&gt;
+</span>27 <span style=''></span><span style='background: #F0ADAD'>    log.debug(&quot;Rest request to get image&quot;)
+</span>28 <span style=''></span><span style='background: #F0ADAD'>
+</span>29 <span style=''></span><span style='background: #F0ADAD'>    val q = for(l &lt;- image if l.id === id.bind) yield l;
+</span>30 <span style=''></span><span style='background: #F0ADAD'>
+</span>31 <span style=''></span><span style='background: #F0ADAD'>    db.run(q.result).map(x =&gt; x.headOption match {
+</span>32 <span style=''></span><span style='background: #F0ADAD'>      case Some(r) =&gt; Ok(Json.toJson(r))
+</span>33 <span style=''></span><span style='background: #F0ADAD'>      case _ =&gt; NotFound
+</span>34 <span style=''></span><span style='background: #F0ADAD'>    })
+</span>35 <span style=''></span><span style='background: #F0ADAD'>  }</span><span style=''>
+</span>36 <span style=''>
+</span>37 <span style=''>  def getBytes(id: Int) = </span><span style='background: #F0ADAD'>Action.async { implicit request: Request[AnyContent] =&gt;
+</span>38 <span style=''></span><span style='background: #F0ADAD'>    log.debug(&quot;Rest request to get image bytes&quot;)
+</span>39 <span style=''></span><span style='background: #F0ADAD'>
+</span>40 <span style=''></span><span style='background: #F0ADAD'>    val q = for(l &lt;- image if l.id === id.bind) yield l;
+</span>41 <span style=''></span><span style='background: #F0ADAD'>
+</span>42 <span style=''></span><span style='background: #F0ADAD'>    db.run(q.result).map(x =&gt; x.headOption match {
+</span>43 <span style=''></span><span style='background: #F0ADAD'>      case Some(r) =&gt; Ok(r.data)
+</span>44 <span style=''></span><span style='background: #F0ADAD'>      case _ =&gt; NotFound
+</span>45 <span style=''></span><span style='background: #F0ADAD'>    })
+</span>46 <span style=''></span><span style='background: #F0ADAD'>  }</span><span style=''>
+</span>47 <span style=''>
+</span>48 <span style=''>  def createImage() = </span><span style='background: #F0ADAD'>Action.async(parse.json(imageReads)) { implicit request: Request[Image] =&gt;
+</span>49 <span style=''></span><span style='background: #F0ADAD'>    log.debug(&quot;Rest request to create image&quot;) //TODO: Test
+</span>50 <span style=''></span><span style='background: #F0ADAD'>
+</span>51 <span style=''></span><span style='background: #F0ADAD'>    val inserted = db.run(insertAndReturn[Image,ImageTable](image,request.body))
+</span>52 <span style=''></span><span style='background: #F0ADAD'>
+</span>53 <span style=''></span><span style='background: #F0ADAD'>    inserted.map(x =&gt; Ok(Json.toJson(x)))
+</span>54 <span style=''></span><span style='background: #F0ADAD'>  }</span><span style=''>
+</span>55 <span style=''>
+</span>56 <span style=''>  def attachImage(id: Int, entityType: String, entityId: Int) = </span><span style='background: #F0ADAD'>Action.async { implicit request =&gt;
+</span>57 <span style=''></span><span style='background: #F0ADAD'>    log.debug(&quot;Rest request to attach image&quot;)
+</span>58 <span style=''></span><span style='background: #F0ADAD'>
+</span>59 <span style=''></span><span style='background: #F0ADAD'>    val imgEnt = ImageEntity(id, entityId, EntityType.withName(entityType))
+</span>60 <span style=''></span><span style='background: #F0ADAD'>    val inserted = db.run(ImageEntityTable.imageEntity += imgEnt)
+</span>61 <span style=''></span><span style='background: #F0ADAD'>
+</span>62 <span style=''></span><span style='background: #F0ADAD'>    inserted.map {
+</span>63 <span style=''></span><span style='background: #F0ADAD'>      case 0 =&gt; NotFound
+</span>64 <span style=''></span><span style='background: #F0ADAD'>      case _ =&gt; Ok(Json.toJson(imgEnt))
+</span>65 <span style=''></span><span style='background: #F0ADAD'>    }
+</span>66 <span style=''></span><span style='background: #F0ADAD'>  }</span><span style=''>
+</span>67 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          24
+        </td>
+        <td>
+          299
+        </td>
+        <td>
+          683
+          -
+          705
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          play.api.Logger.apply
+        </td>
+        <td style="background: #AEF1AE">
+          play.api.Logger.apply(&quot;api.location&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          323
+        </td>
+        <td>
+          728
+          -
+          1013
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          play.api.mvc.ActionBuilder.async
+        </td>
+        <td style="background: #F0ADAD">
+          ImageController.this.Action.async(((implicit request: play.api.mvc.Request[play.api.mvc.AnyContent]) =&gt; {
+  ImageController.this.log.debug(&quot;Rest request to get image&quot;)(api.this.MarkerContext.NoMarker);
+  val q: slick.lifted.Query[whatson.db.ImageTable,whatson.model.Image,Seq] = whatson.db.ImageTable.image.withFilter[slick.lifted.Rep[Boolean]](((l: whatson.db.ImageTable) =&gt; slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](l.id)(slick.jdbc.PostgresProfile.api.intColumnType).===[Int, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[Int](id)(slick.jdbc.PostgresProfile.api.intColumnType).bind)(lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType))))(lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition).map[whatson.db.ImageTable, whatson.db.ImageTable, whatson.model.Image](((l: whatson.db.ImageTable) =&gt; l))(lifted.this.Shape.tableShape[slick.lifted.FlatShapeLevel, whatson.model.Image, whatson.db.ImageTable](scala.Predef.$conforms[whatson.db.ImageTable]));
+  ImageController.this.db.run[Seq[whatson.model.Image]](slick.jdbc.PostgresProfile.api.streamableQueryActionExtensionMethods[whatson.model.Image, Seq](q).result).map[play.api.mvc.Result](((x: Seq[whatson.model.Image]) =&gt; x.headOption match {
+    case (value: whatson.model.Image)Some[whatson.model.Image]((r @ _)) =&gt; ImageController.this.Ok.apply[play.api.libs.json.JsValue](play.api.libs.json.Json.toJson[whatson.model.Image](r)(whatson.model.Image.imageWrites))(http.this.Writeable.writeableOf_JsValue)
+    case _ =&gt; ImageController.this.NotFound
+  }))(ImageController.this.context)
+}))
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          301
+        </td>
+        <td>
+          797
+          -
+          797
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.LowPriorityMarkerContextImplicits.NoMarker
+        </td>
+        <td style="background: #F0ADAD">
+          api.this.MarkerContext.NoMarker
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          300
+        </td>
+        <td>
+          798
+          -
+          825
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;Rest request to get image&quot;
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          302
+        </td>
+        <td>
+          788
+          -
+          826
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          play.api.LoggerLike.debug
+        </td>
+        <td style="background: #F0ADAD">
+          ImageController.this.log.debug(&quot;Rest request to get image&quot;)(api.this.MarkerContext.NoMarker)
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          304
+        </td>
+        <td>
+          860
+          -
+          860
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
+        </td>
+        <td style="background: #F0ADAD">
+          slick.jdbc.PostgresProfile.api.intColumnType
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          313
+        </td>
+        <td>
+          840
+          -
+          883
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.Query.map
+        </td>
+        <td style="background: #F0ADAD">
+          whatson.db.ImageTable.image.withFilter[slick.lifted.Rep[Boolean]](((l: whatson.db.ImageTable) =&gt; slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](l.id)(slick.jdbc.PostgresProfile.api.intColumnType).===[Int, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[Int](id)(slick.jdbc.PostgresProfile.api.intColumnType).bind)(lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType))))(lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition).map[whatson.db.ImageTable, whatson.db.ImageTable, whatson.model.Image](((l: whatson.db.ImageTable) =&gt; l))(lifted.this.Shape.tableShape[slick.lifted.FlatShapeLevel, whatson.model.Image, whatson.db.ImageTable](scala.Predef.$conforms[whatson.db.ImageTable]))
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          307
+        </td>
+        <td>
+          863
+          -
+          863
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
+        </td>
+        <td style="background: #F0ADAD">
+          slick.jdbc.PostgresProfile.api.intColumnType
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          310
+        </td>
+        <td>
+          849
+          -
+          849
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.lifted.CanBeQueryCondition.BooleanColumnCanBeQueryCondition
+        </td>
+        <td style="background: #F0ADAD">
+          lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          309
+        </td>
+        <td>
+          858
+          -
+          874
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.ColumnExtensionMethods.===
+        </td>
+        <td style="background: #F0ADAD">
+          slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](l.id)(slick.jdbc.PostgresProfile.api.intColumnType).===[Int, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[Int](id)(slick.jdbc.PostgresProfile.api.intColumnType).bind)(lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType))
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          312
+        </td>
+        <td>
+          846
+          -
+          846
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.AbstractTableShapeImplicits.tableShape
+        </td>
+        <td style="background: #F0ADAD">
+          lifted.this.Shape.tableShape[slick.lifted.FlatShapeLevel, whatson.model.Image, whatson.db.ImageTable](scala.Predef.$conforms[whatson.db.ImageTable])
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          303
+        </td>
+        <td>
+          858
+          -
+          862
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.db.ImageTable.id
+        </td>
+        <td style="background: #F0ADAD">
+          l.id
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          306
+        </td>
+        <td>
+          867
+          -
+          874
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.lifted.LiteralColumn.bind
+        </td>
+        <td style="background: #F0ADAD">
+          slick.jdbc.PostgresProfile.api.valueToConstColumn[Int](id)(slick.jdbc.PostgresProfile.api.intColumnType).bind
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          308
+        </td>
+        <td>
+          863
+          -
+          863
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.OptionMapper2.getOptionMapper2TT
+        </td>
+        <td style="background: #F0ADAD">
+          lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType)
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          311
+        </td>
+        <td>
+          846
+          -
+          846
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Predef.$conforms
+        </td>
+        <td style="background: #F0ADAD">
+          scala.Predef.$conforms[whatson.db.ImageTable]
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          305
+        </td>
+        <td>
+          867
+          -
+          867
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
+        </td>
+        <td style="background: #F0ADAD">
+          slick.jdbc.PostgresProfile.api.intColumnType
+        </td>
+      </tr><tr>
+        <td>
+          31
+        </td>
+        <td>
+          322
+        </td>
+        <td>
+          890
+          -
+          1009
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.concurrent.Future.map
+        </td>
+        <td style="background: #F0ADAD">
+          ImageController.this.db.run[Seq[whatson.model.Image]](slick.jdbc.PostgresProfile.api.streamableQueryActionExtensionMethods[whatson.model.Image, Seq](q).result).map[play.api.mvc.Result](((x: Seq[whatson.model.Image]) =&gt; x.headOption match {
+  case (value: whatson.model.Image)Some[whatson.model.Image]((r @ _)) =&gt; ImageController.this.Ok.apply[play.api.libs.json.JsValue](play.api.libs.json.Json.toJson[whatson.model.Image](r)(whatson.model.Image.imageWrites))(http.this.Writeable.writeableOf_JsValue)
+  case _ =&gt; ImageController.this.NotFound
+}))(ImageController.this.context)
+        </td>
+      </tr><tr>
+        <td>
+          31
+        </td>
+        <td>
+          321
+        </td>
+        <td>
+          910
+          -
+          910
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          controllers.ImageController.context
+        </td>
+        <td style="background: #F0ADAD">
+          ImageController.this.context
+        </td>
+      </tr><tr>
+        <td>
+          31
+        </td>
+        <td>
+          315
+        </td>
+        <td>
+          916
+          -
+          928
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.TraversableLike.headOption
+        </td>
+        <td style="background: #F0ADAD">
+          x.headOption
+        </td>
+      </tr><tr>
+        <td>
+          31
+        </td>
+        <td>
+          314
+        </td>
+        <td>
+          897
+          -
+          905
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcActionComponent.StreamingQueryActionExtensionMethodsImpl.result
+        </td>
+        <td style="background: #F0ADAD">
+          slick.jdbc.PostgresProfile.api.streamableQueryActionExtensionMethods[whatson.model.Image, Seq](q).result
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          316
+        </td>
+        <td>
+          973
+          -
+          973
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.model.Image.imageWrites
+        </td>
+        <td style="background: #F0ADAD">
+          whatson.model.Image.imageWrites
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          319
+        </td>
+        <td>
+          959
+          -
+          977
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          play.api.mvc.Results.Status.apply
+        </td>
+        <td style="background: #F0ADAD">
+          ImageController.this.Ok.apply[play.api.libs.json.JsValue](play.api.libs.json.Json.toJson[whatson.model.Image](r)(whatson.model.Image.imageWrites))(http.this.Writeable.writeableOf_JsValue)
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          318
+        </td>
+        <td>
+          961
+          -
+          961
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.http.DefaultWriteables.writeableOf_JsValue
+        </td>
+        <td style="background: #F0ADAD">
+          http.this.Writeable.writeableOf_JsValue
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          317
+        </td>
+        <td>
+          962
+          -
+          976
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          play.api.libs.json.Json.toJson
+        </td>
+        <td style="background: #F0ADAD">
+          play.api.libs.json.Json.toJson[whatson.model.Image](r)(whatson.model.Image.imageWrites)
+        </td>
+      </tr><tr>
+        <td>
+          33
+        </td>
+        <td>
+          320
+        </td>
+        <td>
+          994
+          -
+          1002
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.mvc.Results.NotFound
+        </td>
+        <td style="background: #F0ADAD">
+          ImageController.this.NotFound
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          346
+        </td>
+        <td>
+          1041
+          -
+          1324
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          play.api.mvc.ActionBuilder.async
+        </td>
+        <td style="background: #F0ADAD">
+          ImageController.this.Action.async(((implicit request: play.api.mvc.Request[play.api.mvc.AnyContent]) =&gt; {
+  ImageController.this.log.debug(&quot;Rest request to get image bytes&quot;)(api.this.MarkerContext.NoMarker);
+  val q: slick.lifted.Query[whatson.db.ImageTable,whatson.model.Image,Seq] = whatson.db.ImageTable.image.withFilter[slick.lifted.Rep[Boolean]](((l: whatson.db.ImageTable) =&gt; slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](l.id)(slick.jdbc.PostgresProfile.api.intColumnType).===[Int, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[Int](id)(slick.jdbc.PostgresProfile.api.intColumnType).bind)(lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType))))(lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition).map[whatson.db.ImageTable, whatson.db.ImageTable, whatson.model.Image](((l: whatson.db.ImageTable) =&gt; l))(lifted.this.Shape.tableShape[slick.lifted.FlatShapeLevel, whatson.model.Image, whatson.db.ImageTable](scala.Predef.$conforms[whatson.db.ImageTable]));
+  ImageController.this.db.run[Seq[whatson.model.Image]](slick.jdbc.PostgresProfile.api.streamableQueryActionExtensionMethods[whatson.model.Image, Seq](q).result).map[play.api.mvc.Result](((x: Seq[whatson.model.Image]) =&gt; x.headOption match {
+    case (value: whatson.model.Image)Some[whatson.model.Image]((r @ _)) =&gt; ImageController.this.Ok.apply[Array[Byte]](r.data)(http.this.Writeable.wByteArray)
+    case _ =&gt; ImageController.this.NotFound
+  }))(ImageController.this.context)
+}))
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          325
+        </td>
+        <td>
+          1110
+          -
+          1110
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.LowPriorityMarkerContextImplicits.NoMarker
+        </td>
+        <td style="background: #F0ADAD">
+          api.this.MarkerContext.NoMarker
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          324
+        </td>
+        <td>
+          1111
+          -
+          1144
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;Rest request to get image bytes&quot;
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          326
+        </td>
+        <td>
+          1101
+          -
+          1145
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          play.api.LoggerLike.debug
+        </td>
+        <td style="background: #F0ADAD">
+          ImageController.this.log.debug(&quot;Rest request to get image bytes&quot;)(api.this.MarkerContext.NoMarker)
+        </td>
+      </tr><tr>
+        <td>
+          40
+        </td>
+        <td>
+          331
+        </td>
+        <td>
+          1182
+          -
+          1182
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
+        </td>
+        <td style="background: #F0ADAD">
+          slick.jdbc.PostgresProfile.api.intColumnType
+        </td>
+      </tr><tr>
+        <td>
+          40
+        </td>
+        <td>
+          334
+        </td>
+        <td>
+          1168
+          -
+          1168
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.lifted.CanBeQueryCondition.BooleanColumnCanBeQueryCondition
+        </td>
+        <td style="background: #F0ADAD">
+          lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition
+        </td>
+      </tr><tr>
+        <td>
+          40
+        </td>
+        <td>
+          337
+        </td>
+        <td>
+          1159
+          -
+          1202
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.Query.map
+        </td>
+        <td style="background: #F0ADAD">
+          whatson.db.ImageTable.image.withFilter[slick.lifted.Rep[Boolean]](((l: whatson.db.ImageTable) =&gt; slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](l.id)(slick.jdbc.PostgresProfile.api.intColumnType).===[Int, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[Int](id)(slick.jdbc.PostgresProfile.api.intColumnType).bind)(lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType))))(lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition).map[whatson.db.ImageTable, whatson.db.ImageTable, whatson.model.Image](((l: whatson.db.ImageTable) =&gt; l))(lifted.this.Shape.tableShape[slick.lifted.FlatShapeLevel, whatson.model.Image, whatson.db.ImageTable](scala.Predef.$conforms[whatson.db.ImageTable]))
+        </td>
+      </tr><tr>
+        <td>
+          40
+        </td>
+        <td>
+          328
+        </td>
+        <td>
+          1179
+          -
+          1179
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
+        </td>
+        <td style="background: #F0ADAD">
+          slick.jdbc.PostgresProfile.api.intColumnType
+        </td>
+      </tr><tr>
+        <td>
+          40
+        </td>
+        <td>
+          336
+        </td>
+        <td>
+          1165
+          -
+          1165
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.AbstractTableShapeImplicits.tableShape
+        </td>
+        <td style="background: #F0ADAD">
+          lifted.this.Shape.tableShape[slick.lifted.FlatShapeLevel, whatson.model.Image, whatson.db.ImageTable](scala.Predef.$conforms[whatson.db.ImageTable])
+        </td>
+      </tr><tr>
+        <td>
+          40
+        </td>
+        <td>
+          327
+        </td>
+        <td>
+          1177
+          -
+          1181
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.db.ImageTable.id
+        </td>
+        <td style="background: #F0ADAD">
+          l.id
+        </td>
+      </tr><tr>
+        <td>
+          40
+        </td>
+        <td>
+          330
+        </td>
+        <td>
+          1186
+          -
+          1193
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.lifted.LiteralColumn.bind
+        </td>
+        <td style="background: #F0ADAD">
+          slick.jdbc.PostgresProfile.api.valueToConstColumn[Int](id)(slick.jdbc.PostgresProfile.api.intColumnType).bind
+        </td>
+      </tr><tr>
+        <td>
+          40
+        </td>
+        <td>
+          333
+        </td>
+        <td>
+          1177
+          -
+          1193
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.ColumnExtensionMethods.===
+        </td>
+        <td style="background: #F0ADAD">
+          slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](l.id)(slick.jdbc.PostgresProfile.api.intColumnType).===[Int, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[Int](id)(slick.jdbc.PostgresProfile.api.intColumnType).bind)(lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType))
+        </td>
+      </tr><tr>
+        <td>
+          40
+        </td>
+        <td>
+          332
+        </td>
+        <td>
+          1182
+          -
+          1182
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.OptionMapper2.getOptionMapper2TT
+        </td>
+        <td style="background: #F0ADAD">
+          lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType)
+        </td>
+      </tr><tr>
+        <td>
+          40
+        </td>
+        <td>
+          335
+        </td>
+        <td>
+          1165
+          -
+          1165
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Predef.$conforms
+        </td>
+        <td style="background: #F0ADAD">
+          scala.Predef.$conforms[whatson.db.ImageTable]
+        </td>
+      </tr><tr>
+        <td>
+          40
+        </td>
+        <td>
+          329
+        </td>
+        <td>
+          1186
+          -
+          1186
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
+        </td>
+        <td style="background: #F0ADAD">
+          slick.jdbc.PostgresProfile.api.intColumnType
+        </td>
+      </tr><tr>
+        <td>
+          42
+        </td>
+        <td>
+          345
+        </td>
+        <td>
+          1209
+          -
+          1320
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.concurrent.Future.map
+        </td>
+        <td style="background: #F0ADAD">
+          ImageController.this.db.run[Seq[whatson.model.Image]](slick.jdbc.PostgresProfile.api.streamableQueryActionExtensionMethods[whatson.model.Image, Seq](q).result).map[play.api.mvc.Result](((x: Seq[whatson.model.Image]) =&gt; x.headOption match {
+  case (value: whatson.model.Image)Some[whatson.model.Image]((r @ _)) =&gt; ImageController.this.Ok.apply[Array[Byte]](r.data)(http.this.Writeable.wByteArray)
+  case _ =&gt; ImageController.this.NotFound
+}))(ImageController.this.context)
+        </td>
+      </tr><tr>
+        <td>
+          42
+        </td>
+        <td>
+          339
+        </td>
+        <td>
+          1235
+          -
+          1247
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.TraversableLike.headOption
+        </td>
+        <td style="background: #F0ADAD">
+          x.headOption
+        </td>
+      </tr><tr>
+        <td>
+          42
+        </td>
+        <td>
+          344
+        </td>
+        <td>
+          1229
+          -
+          1229
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          controllers.ImageController.context
+        </td>
+        <td style="background: #F0ADAD">
+          ImageController.this.context
+        </td>
+      </tr><tr>
+        <td>
+          42
+        </td>
+        <td>
+          338
+        </td>
+        <td>
+          1216
+          -
+          1224
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcActionComponent.StreamingQueryActionExtensionMethodsImpl.result
+        </td>
+        <td style="background: #F0ADAD">
+          slick.jdbc.PostgresProfile.api.streamableQueryActionExtensionMethods[whatson.model.Image, Seq](q).result
+        </td>
+      </tr><tr>
+        <td>
+          43
+        </td>
+        <td>
+          340
+        </td>
+        <td>
+          1281
+          -
+          1287
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.model.Image.data
+        </td>
+        <td style="background: #F0ADAD">
+          r.data
+        </td>
+      </tr><tr>
+        <td>
+          43
+        </td>
+        <td>
+          342
+        </td>
+        <td>
+          1278
+          -
+          1288
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          play.api.mvc.Results.Status.apply
+        </td>
+        <td style="background: #F0ADAD">
+          ImageController.this.Ok.apply[Array[Byte]](r.data)(http.this.Writeable.wByteArray)
+        </td>
+      </tr><tr>
+        <td>
+          43
+        </td>
+        <td>
+          341
+        </td>
+        <td>
+          1280
+          -
+          1280
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.http.DefaultWriteables.wByteArray
+        </td>
+        <td style="background: #F0ADAD">
+          http.this.Writeable.wByteArray
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          343
+        </td>
+        <td>
+          1305
+          -
+          1313
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.mvc.Results.NotFound
+        </td>
+        <td style="background: #F0ADAD">
+          ImageController.this.NotFound
+        </td>
+      </tr><tr>
+        <td>
+          48
+        </td>
+        <td>
+          348
+        </td>
+        <td>
+          1361
+          -
+          1383
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          play.api.mvc.PlayBodyParsers.json
+        </td>
+        <td style="background: #F0ADAD">
+          ImageController.this.parse.json[whatson.model.Image](whatson.model.Image.imageReads)
+        </td>
+      </tr><tr>
+        <td>
+          48
+        </td>
+        <td>
+          362
+        </td>
+        <td>
+          1348
+          -
+          1610
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          play.api.mvc.ActionBuilder.async
+        </td>
+        <td style="background: #F0ADAD">
+          ImageController.this.Action.async[whatson.model.Image](ImageController.this.parse.json[whatson.model.Image](whatson.model.Image.imageReads))(((implicit request: play.api.mvc.Request[whatson.model.Image]) =&gt; {
+  ImageController.this.log.debug(&quot;Rest request to create image&quot;)(api.this.MarkerContext.NoMarker);
+  val inserted: scala.concurrent.Future[whatson.model.Image] = ImageController.this.db.run[whatson.model.Image](whatson.db.Util.insertAndReturn[whatson.model.Image, whatson.db.ImageTable](whatson.db.ImageTable.image, request.body));
+  inserted.map[play.api.mvc.Result](((x: whatson.model.Image) =&gt; ImageController.this.Ok.apply[play.api.libs.json.JsValue](play.api.libs.json.Json.toJson[whatson.model.Image](x)(whatson.model.Image.imageWrites))(http.this.Writeable.writeableOf_JsValue)))(ImageController.this.context)
+}))
+        </td>
+      </tr><tr>
+        <td>
+          48
+        </td>
+        <td>
+          347
+        </td>
+        <td>
+          1372
+          -
+          1382
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.model.Image.imageReads
+        </td>
+        <td style="background: #F0ADAD">
+          whatson.model.Image.imageReads
+        </td>
+      </tr><tr>
+        <td>
+          49
+        </td>
+        <td>
+          349
+        </td>
+        <td>
+          1437
+          -
+          1467
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;Rest request to create image&quot;
+        </td>
+      </tr><tr>
+        <td>
+          49
+        </td>
+        <td>
+          351
+        </td>
+        <td>
+          1427
+          -
+          1468
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          play.api.LoggerLike.debug
+        </td>
+        <td style="background: #F0ADAD">
+          ImageController.this.log.debug(&quot;Rest request to create image&quot;)(api.this.MarkerContext.NoMarker)
+        </td>
+      </tr><tr>
+        <td>
+          49
+        </td>
+        <td>
+          350
+        </td>
+        <td>
+          1436
+          -
+          1436
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.LowPriorityMarkerContextImplicits.NoMarker
+        </td>
+        <td style="background: #F0ADAD">
+          api.this.MarkerContext.NoMarker
+        </td>
+      </tr><tr>
+        <td>
+          51
+        </td>
+        <td>
+          355
+        </td>
+        <td>
+          1502
+          -
+          1563
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          slick.basic.BasicBackend.DatabaseDef.run
+        </td>
+        <td style="background: #F0ADAD">
+          ImageController.this.db.run[whatson.model.Image](whatson.db.Util.insertAndReturn[whatson.model.Image, whatson.db.ImageTable](whatson.db.ImageTable.image, request.body))
+        </td>
+      </tr><tr>
+        <td>
+          51
+        </td>
+        <td>
+          352
+        </td>
+        <td>
+          1543
+          -
+          1548
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.db.ImageTable.image
+        </td>
+        <td style="background: #F0ADAD">
+          whatson.db.ImageTable.image
+        </td>
+      </tr><tr>
+        <td>
+          51
+        </td>
+        <td>
+          354
+        </td>
+        <td>
+          1509
+          -
+          1562
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          whatson.db.Util.insertAndReturn
+        </td>
+        <td style="background: #F0ADAD">
+          whatson.db.Util.insertAndReturn[whatson.model.Image, whatson.db.ImageTable](whatson.db.ImageTable.image, request.body)
+        </td>
+      </tr><tr>
+        <td>
+          51
+        </td>
+        <td>
+          353
+        </td>
+        <td>
+          1549
+          -
+          1561
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.mvc.Request.body
+        </td>
+        <td style="background: #F0ADAD">
+          request.body
+        </td>
+      </tr><tr>
+        <td>
+          53
+        </td>
+        <td>
+          358
+        </td>
+        <td>
+          1589
+          -
+          1589
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.http.DefaultWriteables.writeableOf_JsValue
+        </td>
+        <td style="background: #F0ADAD">
+          http.this.Writeable.writeableOf_JsValue
+        </td>
+      </tr><tr>
+        <td>
+          53
+        </td>
+        <td>
+          361
+        </td>
+        <td>
+          1569
+          -
+          1606
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.concurrent.Future.map
+        </td>
+        <td style="background: #F0ADAD">
+          inserted.map[play.api.mvc.Result](((x: whatson.model.Image) =&gt; ImageController.this.Ok.apply[play.api.libs.json.JsValue](play.api.libs.json.Json.toJson[whatson.model.Image](x)(whatson.model.Image.imageWrites))(http.this.Writeable.writeableOf_JsValue)))(ImageController.this.context)
+        </td>
+      </tr><tr>
+        <td>
+          53
+        </td>
+        <td>
+          360
+        </td>
+        <td>
+          1581
+          -
+          1581
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          controllers.ImageController.context
+        </td>
+        <td style="background: #F0ADAD">
+          ImageController.this.context
+        </td>
+      </tr><tr>
+        <td>
+          53
+        </td>
+        <td>
+          357
+        </td>
+        <td>
+          1590
+          -
+          1604
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          play.api.libs.json.Json.toJson
+        </td>
+        <td style="background: #F0ADAD">
+          play.api.libs.json.Json.toJson[whatson.model.Image](x)(whatson.model.Image.imageWrites)
+        </td>
+      </tr><tr>
+        <td>
+          53
+        </td>
+        <td>
+          359
+        </td>
+        <td>
+          1587
+          -
+          1605
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          play.api.mvc.Results.Status.apply
+        </td>
+        <td style="background: #F0ADAD">
+          ImageController.this.Ok.apply[play.api.libs.json.JsValue](play.api.libs.json.Json.toJson[whatson.model.Image](x)(whatson.model.Image.imageWrites))(http.this.Writeable.writeableOf_JsValue)
+        </td>
+      </tr><tr>
+        <td>
+          53
+        </td>
+        <td>
+          356
+        </td>
+        <td>
+          1601
+          -
+          1601
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.model.Image.imageWrites
+        </td>
+        <td style="background: #F0ADAD">
+          whatson.model.Image.imageWrites
+        </td>
+      </tr><tr>
+        <td>
+          56
+        </td>
+        <td>
+          377
+        </td>
+        <td>
+          1676
+          -
+          1994
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          play.api.mvc.ActionBuilder.async
+        </td>
+        <td style="background: #F0ADAD">
+          ImageController.this.Action.async(((implicit request: play.api.mvc.Request[play.api.mvc.AnyContent]) =&gt; {
+  ImageController.this.log.debug(&quot;Rest request to attach image&quot;)(api.this.MarkerContext.NoMarker);
+  val imgEnt: whatson.model.ImageEntity = whatson.model.ImageEntity.apply(id, entityId, whatson.model.EntityType.withName(entityType));
+  val inserted: scala.concurrent.Future[Int] = ImageController.this.db.run[Int](slick.jdbc.PostgresProfile.api.queryInsertActionExtensionMethods[whatson.db.ImageEntityTable#TableElementType, Seq](whatson.db.ImageEntityTable.imageEntity).+=(imgEnt));
+  inserted.map[play.api.mvc.Result](((x0$1: Int) =&gt; x0$1 match {
+    case 0 =&gt; ImageController.this.NotFound
+    case _ =&gt; ImageController.this.Ok.apply[play.api.libs.json.JsValue](play.api.libs.json.Json.toJson[whatson.model.ImageEntity](imgEnt)(model.this.ImageEntity.imageEntityWrites))(http.this.Writeable.writeableOf_JsValue)
+  }))(ImageController.this.context)
+}))
+        </td>
+      </tr><tr>
+        <td>
+          57
+        </td>
+        <td>
+          364
+        </td>
+        <td>
+          1724
+          -
+          1724
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.LowPriorityMarkerContextImplicits.NoMarker
+        </td>
+        <td style="background: #F0ADAD">
+          api.this.MarkerContext.NoMarker
+        </td>
+      </tr><tr>
+        <td>
+          57
+        </td>
+        <td>
+          363
+        </td>
+        <td>
+          1725
+          -
+          1755
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;Rest request to attach image&quot;
+        </td>
+      </tr><tr>
+        <td>
+          57
+        </td>
+        <td>
+          365
+        </td>
+        <td>
+          1715
+          -
+          1756
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          play.api.LoggerLike.debug
+        </td>
+        <td style="background: #F0ADAD">
+          ImageController.this.log.debug(&quot;Rest request to attach image&quot;)(api.this.MarkerContext.NoMarker)
+        </td>
+      </tr><tr>
+        <td>
+          59
+        </td>
+        <td>
+          367
+        </td>
+        <td>
+          1775
+          -
+          1833
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          whatson.model.ImageEntity.apply
+        </td>
+        <td style="background: #F0ADAD">
+          whatson.model.ImageEntity.apply(id, entityId, whatson.model.EntityType.withName(entityType))
+        </td>
+      </tr><tr>
+        <td>
+          59
+        </td>
+        <td>
+          366
+        </td>
+        <td>
+          1801
+          -
+          1832
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Enumeration.withName
+        </td>
+        <td style="background: #F0ADAD">
+          whatson.model.EntityType.withName(entityType)
+        </td>
+      </tr><tr>
+        <td>
+          60
+        </td>
+        <td>
+          369
+        </td>
+        <td>
+          1853
+          -
+          1899
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          slick.basic.BasicBackend.DatabaseDef.run
+        </td>
+        <td style="background: #F0ADAD">
+          ImageController.this.db.run[Int](slick.jdbc.PostgresProfile.api.queryInsertActionExtensionMethods[whatson.db.ImageEntityTable#TableElementType, Seq](whatson.db.ImageEntityTable.imageEntity).+=(imgEnt))
+        </td>
+      </tr><tr>
+        <td>
+          60
+        </td>
+        <td>
+          368
+        </td>
+        <td>
+          1860
+          -
+          1898
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          slick.jdbc.JdbcActionComponent.SimpleInsertActionComposer.+=
+        </td>
+        <td style="background: #F0ADAD">
+          slick.jdbc.PostgresProfile.api.queryInsertActionExtensionMethods[whatson.db.ImageEntityTable#TableElementType, Seq](whatson.db.ImageEntityTable.imageEntity).+=(imgEnt)
+        </td>
+      </tr><tr>
+        <td>
+          62
+        </td>
+        <td>
+          376
+        </td>
+        <td>
+          1905
+          -
+          1990
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.concurrent.Future.map
+        </td>
+        <td style="background: #F0ADAD">
+          inserted.map[play.api.mvc.Result](((x0$1: Int) =&gt; x0$1 match {
+  case 0 =&gt; ImageController.this.NotFound
+  case _ =&gt; ImageController.this.Ok.apply[play.api.libs.json.JsValue](play.api.libs.json.Json.toJson[whatson.model.ImageEntity](imgEnt)(model.this.ImageEntity.imageEntityWrites))(http.this.Writeable.writeableOf_JsValue)
+}))(ImageController.this.context)
+        </td>
+      </tr><tr>
+        <td>
+          62
+        </td>
+        <td>
+          375
+        </td>
+        <td>
+          1918
+          -
+          1918
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          controllers.ImageController.context
+        </td>
+        <td style="background: #F0ADAD">
+          ImageController.this.context
+        </td>
+      </tr><tr>
+        <td>
+          63
+        </td>
+        <td>
+          370
+        </td>
+        <td>
+          1936
+          -
+          1944
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.mvc.Results.NotFound
+        </td>
+        <td style="background: #F0ADAD">
+          ImageController.this.NotFound
+        </td>
+      </tr><tr>
+        <td>
+          64
+        </td>
+        <td>
+          373
+        </td>
+        <td>
+          1963
+          -
+          1963
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.http.DefaultWriteables.writeableOf_JsValue
+        </td>
+        <td style="background: #F0ADAD">
+          http.this.Writeable.writeableOf_JsValue
+        </td>
+      </tr><tr>
+        <td>
+          64
+        </td>
+        <td>
+          372
+        </td>
+        <td>
+          1964
+          -
+          1983
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          play.api.libs.json.Json.toJson
+        </td>
+        <td style="background: #F0ADAD">
+          play.api.libs.json.Json.toJson[whatson.model.ImageEntity](imgEnt)(model.this.ImageEntity.imageEntityWrites)
+        </td>
+      </tr><tr>
+        <td>
+          64
+        </td>
+        <td>
+          371
+        </td>
+        <td>
+          1975
+          -
+          1975
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.model.ImageEntity.imageEntityWrites
+        </td>
+        <td style="background: #F0ADAD">
+          model.this.ImageEntity.imageEntityWrites
+        </td>
+      </tr><tr>
+        <td>
+          64
+        </td>
+        <td>
+          374
+        </td>
+        <td>
+          1961
+          -
+          1984
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          play.api.mvc.Results.Status.apply
+        </td>
+        <td style="background: #F0ADAD">
+          ImageController.this.Ok.apply[play.api.libs.json.JsValue](play.api.libs.json.Json.toJson[whatson.model.ImageEntity](imgEnt)(model.this.ImageEntity.imageEntityWrites))(http.this.Writeable.writeableOf_JsValue)
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

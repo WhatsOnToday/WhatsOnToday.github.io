@@ -1,0 +1,507 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          controllers/RatingController.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package controllers
+</span>2 <span style=''>
+</span>3 <span style=''>import scala.concurrent.ExecutionContext
+</span>4 <span style=''>
+</span>5 <span style=''>import javax.inject._
+</span>6 <span style=''>import play.api._
+</span>7 <span style=''>import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
+</span>8 <span style=''>import play.api.libs.json._
+</span>9 <span style=''>import play.api.mvc._
+</span>10 <span style=''>import slick.jdbc.JdbcProfile
+</span>11 <span style=''>import whatson.db._
+</span>12 <span style=''>import whatson.db.RatingTable._
+</span>13 <span style=''>import whatson.model._
+</span>14 <span style=''>import whatson.db.Util._
+</span>15 <span style=''>import whatson.model.Rating
+</span>16 <span style=''>import whatson.service._
+</span>17 <span style=''>import com.mohiva.play.silhouette.api._
+</span>18 <span style=''>import whatson.auth._
+</span>19 <span style=''>
+</span>20 <span style=''>class RatingController @Inject()(cc: ControllerComponents,
+</span>21 <span style=''>                                 protected val dbConfigProvider: DatabaseConfigProvider,
+</span>22 <span style=''>                                 val silhouette: Silhouette[AuthEnv],
+</span>23 <span style=''>                                 val organizerService: OrganizerService,
+</span>24 <span style=''>                                 val userService: UserService)
+</span>25 <span style=''>    (implicit context: ExecutionContext)
+</span>26 <span style=''>    extends AbstractController(cc)
+</span>27 <span style=''>    with HasDatabaseConfigProvider[JdbcProfile] with Util {
+</span>28 <span style=''>
+</span>29 <span style=''>  val log = </span><span style='background: #AEF1AE'>Logger(&quot;api.categories&quot;)</span><span style=''>
+</span>30 <span style=''>
+</span>31 <span style=''>  def rateEntity(id: Int, entityType: String, rate: Float) = </span><span style='background: #F0ADAD'>userRequest(parse.default) { case (request,user) =&gt;
+</span>32 <span style=''></span><span style='background: #F0ADAD'>    log.debug(&quot;Rest request to rate entity&quot;)
+</span>33 <span style=''></span><span style='background: #F0ADAD'>
+</span>34 <span style=''></span><span style='background: #F0ADAD'>    val r = Rating(None,rate,user.id.getOrElse(1), id, EntityType.withName(entityType))
+</span>35 <span style=''></span><span style='background: #F0ADAD'>    val inserted = db.run(insertAndReturn[Rating,RatingTable](rating,r))
+</span>36 <span style=''></span><span style='background: #F0ADAD'>
+</span>37 <span style=''></span><span style='background: #F0ADAD'>    inserted.map(x =&gt; Ok(Json.toJson(x)))
+</span>38 <span style=''></span><span style='background: #F0ADAD'>  }</span><span style=''>
+</span>39 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          731
+        </td>
+        <td>
+          979
+          -
+          1003
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          play.api.Logger.apply
+        </td>
+        <td style="background: #AEF1AE">
+          play.api.Logger.apply(&quot;api.categories&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          31
+        </td>
+        <td>
+          732
+        </td>
+        <td>
+          1078
+          -
+          1091
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.mvc.PlayBodyParsers.default
+        </td>
+        <td style="background: #F0ADAD">
+          RatingController.this.parse.default
+        </td>
+      </tr><tr>
+        <td>
+          31
+        </td>
+        <td>
+          750
+        </td>
+        <td>
+          1066
+          -
+          1371
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          controllers.Util.userRequest
+        </td>
+        <td style="background: #F0ADAD">
+          RatingController.this.userRequest[play.api.mvc.AnyContent](RatingController.this.parse.default)(((x0$1: com.mohiva.play.silhouette.api.actions.SecuredRequest[whatson.auth.AuthEnv,play.api.mvc.AnyContent], x1$1: whatson.model.User) =&gt; scala.Tuple2.apply[com.mohiva.play.silhouette.api.actions.SecuredRequest[whatson.auth.AuthEnv,play.api.mvc.AnyContent], whatson.model.User](x0$1, x1$1) match {
+  case (_1: com.mohiva.play.silhouette.api.actions.SecuredRequest[whatson.auth.AuthEnv,play.api.mvc.AnyContent], _2: whatson.model.User)(com.mohiva.play.silhouette.api.actions.SecuredRequest[whatson.auth.AuthEnv,play.api.mvc.AnyContent], whatson.model.User)((request @ _), (user @ _)) =&gt; {
+    RatingController.this.log.debug(&quot;Rest request to rate entity&quot;)(api.this.MarkerContext.NoMarker);
+    val r: whatson.model.Rating = whatson.model.Rating.apply(scala.None, rate, user.id.getOrElse[Int](1), id, whatson.model.EntityType.withName(entityType));
+    val inserted: scala.concurrent.Future[whatson.model.Rating] = RatingController.this.db.run[whatson.model.Rating](whatson.db.Util.insertAndReturn[whatson.model.Rating, whatson.db.RatingTable](whatson.db.RatingTable.rating, r));
+    inserted.map[play.api.mvc.Result](((x: whatson.model.Rating) =&gt; RatingController.this.Ok.apply[play.api.libs.json.JsValue](play.api.libs.json.Json.toJson[whatson.model.Rating](x)(model.this.Rating.ratingWrites))(http.this.Writeable.writeableOf_JsValue)))(RatingController.this.context)
+  }
+}))(RatingController.this.context)
+        </td>
+      </tr><tr>
+        <td>
+          31
+        </td>
+        <td>
+          749
+        </td>
+        <td>
+          1093
+          -
+          1093
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          controllers.RatingController.context
+        </td>
+        <td style="background: #F0ADAD">
+          RatingController.this.context
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          735
+        </td>
+        <td>
+          1122
+          -
+          1162
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          play.api.LoggerLike.debug
+        </td>
+        <td style="background: #F0ADAD">
+          RatingController.this.log.debug(&quot;Rest request to rate entity&quot;)(api.this.MarkerContext.NoMarker)
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          734
+        </td>
+        <td>
+          1131
+          -
+          1131
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.LowPriorityMarkerContextImplicits.NoMarker
+        </td>
+        <td style="background: #F0ADAD">
+          api.this.MarkerContext.NoMarker
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          733
+        </td>
+        <td>
+          1132
+          -
+          1161
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;Rest request to rate entity&quot;
+        </td>
+      </tr><tr>
+        <td>
+          34
+        </td>
+        <td>
+          738
+        </td>
+        <td>
+          1219
+          -
+          1250
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Enumeration.withName
+        </td>
+        <td style="background: #F0ADAD">
+          whatson.model.EntityType.withName(entityType)
+        </td>
+      </tr><tr>
+        <td>
+          34
+        </td>
+        <td>
+          737
+        </td>
+        <td>
+          1193
+          -
+          1213
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Option.getOrElse
+        </td>
+        <td style="background: #F0ADAD">
+          user.id.getOrElse[Int](1)
+        </td>
+      </tr><tr>
+        <td>
+          34
+        </td>
+        <td>
+          736
+        </td>
+        <td>
+          1183
+          -
+          1187
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #F0ADAD">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          34
+        </td>
+        <td>
+          739
+        </td>
+        <td>
+          1176
+          -
+          1251
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          whatson.model.Rating.apply
+        </td>
+        <td style="background: #F0ADAD">
+          whatson.model.Rating.apply(scala.None, rate, user.id.getOrElse[Int](1), id, whatson.model.EntityType.withName(entityType))
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          741
+        </td>
+        <td>
+          1278
+          -
+          1323
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          whatson.db.Util.insertAndReturn
+        </td>
+        <td style="background: #F0ADAD">
+          whatson.db.Util.insertAndReturn[whatson.model.Rating, whatson.db.RatingTable](whatson.db.RatingTable.rating, r)
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          740
+        </td>
+        <td>
+          1314
+          -
+          1320
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.db.RatingTable.rating
+        </td>
+        <td style="background: #F0ADAD">
+          whatson.db.RatingTable.rating
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          742
+        </td>
+        <td>
+          1271
+          -
+          1324
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          slick.basic.BasicBackend.DatabaseDef.run
+        </td>
+        <td style="background: #F0ADAD">
+          RatingController.this.db.run[whatson.model.Rating](whatson.db.Util.insertAndReturn[whatson.model.Rating, whatson.db.RatingTable](whatson.db.RatingTable.rating, r))
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          747
+        </td>
+        <td>
+          1342
+          -
+          1342
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          controllers.RatingController.context
+        </td>
+        <td style="background: #F0ADAD">
+          RatingController.this.context
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          744
+        </td>
+        <td>
+          1351
+          -
+          1365
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          play.api.libs.json.Json.toJson
+        </td>
+        <td style="background: #F0ADAD">
+          play.api.libs.json.Json.toJson[whatson.model.Rating](x)(model.this.Rating.ratingWrites)
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          743
+        </td>
+        <td>
+          1362
+          -
+          1362
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.model.Rating.ratingWrites
+        </td>
+        <td style="background: #F0ADAD">
+          model.this.Rating.ratingWrites
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          746
+        </td>
+        <td>
+          1348
+          -
+          1366
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          play.api.mvc.Results.Status.apply
+        </td>
+        <td style="background: #F0ADAD">
+          RatingController.this.Ok.apply[play.api.libs.json.JsValue](play.api.libs.json.Json.toJson[whatson.model.Rating](x)(model.this.Rating.ratingWrites))(http.this.Writeable.writeableOf_JsValue)
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          745
+        </td>
+        <td>
+          1350
+          -
+          1350
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.http.DefaultWriteables.writeableOf_JsValue
+        </td>
+        <td style="background: #F0ADAD">
+          http.this.Writeable.writeableOf_JsValue
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          748
+        </td>
+        <td>
+          1330
+          -
+          1367
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.concurrent.Future.map
+        </td>
+        <td style="background: #F0ADAD">
+          inserted.map[play.api.mvc.Result](((x: whatson.model.Rating) =&gt; RatingController.this.Ok.apply[play.api.libs.json.JsValue](play.api.libs.json.Json.toJson[whatson.model.Rating](x)(model.this.Rating.ratingWrites))(http.this.Writeable.writeableOf_JsValue)))(RatingController.this.context)
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

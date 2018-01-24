@@ -1,0 +1,838 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          whatson/db/EventCategoryTable.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package whatson.db
+</span>2 <span style=''>
+</span>3 <span style=''>import slick.jdbc.PostgresProfile.api._
+</span>4 <span style=''>import slick.lifted.ProvenShape.proveShapeOf
+</span>5 <span style=''>import whatson.db.CategoryTable._
+</span>6 <span style=''>import whatson.db.EventTable._
+</span>7 <span style=''>
+</span>8 <span style=''>class EventCategoryTable(tag: Tag) extends Table[(Int,Int)](tag, &quot;eventcategory&quot;) {
+</span>9 <span style=''>  def categoryID = </span><span style='background: #F0ADAD'>column[Int](&quot;category_fk&quot;)</span><span style=''>
+</span>10 <span style=''>  def eventID = </span><span style='background: #F0ADAD'>column[Int](&quot;event_fk&quot;)</span><span style=''>
+</span>11 <span style=''>    
+</span>12 <span style=''>  def * = </span><span style='background: #F0ADAD'>(categoryID,eventID)</span><span style=''>
+</span>13 <span style=''>    
+</span>14 <span style=''>  def categoryFK = </span><span style='background: #F0ADAD'>foreignKey(&quot;category&quot;, eventID,category)(_.id)</span><span style=''>
+</span>15 <span style=''>  def eventFK = </span><span style='background: #F0ADAD'>foreignKey(&quot;event&quot;, eventID,event)(_.id)</span><span style=''>
+</span>16 <span style=''>}
+</span>17 <span style=''>
+</span>18 <span style=''>object EventCategoryTable {
+</span>19 <span style=''>  val eventCategory = TableQuery[EventCategoryTable]
+</span>20 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          9
+        </td>
+        <td>
+          873
+        </td>
+        <td>
+          286
+          -
+          299
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;category_fk&quot;
+        </td>
+      </tr><tr>
+        <td>
+          9
+        </td>
+        <td>
+          875
+        </td>
+        <td>
+          274
+          -
+          300
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.relational.RelationalTableComponent.Table.column
+        </td>
+        <td style="background: #F0ADAD">
+          EventCategoryTable.this.column[Int](&quot;category_fk&quot;)(slick.jdbc.PostgresProfile.api.intColumnType)
+        </td>
+      </tr><tr>
+        <td>
+          9
+        </td>
+        <td>
+          874
+        </td>
+        <td>
+          285
+          -
+          285
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
+        </td>
+        <td style="background: #F0ADAD">
+          slick.jdbc.PostgresProfile.api.intColumnType
+        </td>
+      </tr><tr>
+        <td>
+          10
+        </td>
+        <td>
+          878
+        </td>
+        <td>
+          317
+          -
+          340
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.relational.RelationalTableComponent.Table.column
+        </td>
+        <td style="background: #F0ADAD">
+          EventCategoryTable.this.column[Int](&quot;event_fk&quot;)(slick.jdbc.PostgresProfile.api.intColumnType)
+        </td>
+      </tr><tr>
+        <td>
+          10
+        </td>
+        <td>
+          877
+        </td>
+        <td>
+          328
+          -
+          328
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
+        </td>
+        <td style="background: #F0ADAD">
+          slick.jdbc.PostgresProfile.api.intColumnType
+        </td>
+      </tr><tr>
+        <td>
+          10
+        </td>
+        <td>
+          876
+        </td>
+        <td>
+          329
+          -
+          339
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;event_fk&quot;
+        </td>
+      </tr><tr>
+        <td>
+          12
+        </td>
+        <td>
+          882
+        </td>
+        <td>
+          356
+          -
+          356
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
+        </td>
+        <td style="background: #F0ADAD">
+          slick.jdbc.PostgresProfile.api.intColumnType
+        </td>
+      </tr><tr>
+        <td>
+          12
+        </td>
+        <td>
+          881
+        </td>
+        <td>
+          356
+          -
+          376
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Tuple2.apply
+        </td>
+        <td style="background: #F0ADAD">
+          scala.Tuple2.apply[slick.lifted.Rep[Int], slick.lifted.Rep[Int]](EventCategoryTable.this.categoryID, EventCategoryTable.this.eventID)
+        </td>
+      </tr><tr>
+        <td>
+          12
+        </td>
+        <td>
+          884
+        </td>
+        <td>
+          356
+          -
+          356
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
+        </td>
+        <td style="background: #F0ADAD">
+          slick.jdbc.PostgresProfile.api.intColumnType
+        </td>
+      </tr><tr>
+        <td>
+          12
+        </td>
+        <td>
+          887
+        </td>
+        <td>
+          356
+          -
+          376
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.ProvenShape.proveShapeOf
+        </td>
+        <td style="background: #F0ADAD">
+          slick.lifted.ProvenShape.proveShapeOf[(slick.lifted.Rep[Int], slick.lifted.Rep[Int]), (Int, Int)](scala.Tuple2.apply[slick.lifted.Rep[Int], slick.lifted.Rep[Int]](EventCategoryTable.this.categoryID, EventCategoryTable.this.eventID))(lifted.this.Shape.tuple2Shape[slick.lifted.FlatShapeLevel, slick.lifted.Rep[Int], slick.lifted.Rep[Int], Int, Int, slick.lifted.Rep[Int], slick.lifted.Rep[Int]](lifted.this.Shape.repColumnShape[Int, Nothing](slick.jdbc.PostgresProfile.api.intColumnType), lifted.this.Shape.repColumnShape[Int, Nothing](slick.jdbc.PostgresProfile.api.intColumnType)))
+        </td>
+      </tr><tr>
+        <td>
+          12
+        </td>
+        <td>
+          886
+        </td>
+        <td>
+          356
+          -
+          356
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.TupleShapeImplicits.tuple2Shape
+        </td>
+        <td style="background: #F0ADAD">
+          lifted.this.Shape.tuple2Shape[slick.lifted.FlatShapeLevel, slick.lifted.Rep[Int], slick.lifted.Rep[Int], Int, Int, slick.lifted.Rep[Int], slick.lifted.Rep[Int]](lifted.this.Shape.repColumnShape[Int, Nothing](slick.jdbc.PostgresProfile.api.intColumnType), lifted.this.Shape.repColumnShape[Int, Nothing](slick.jdbc.PostgresProfile.api.intColumnType))
+        </td>
+      </tr><tr>
+        <td>
+          12
+        </td>
+        <td>
+          880
+        </td>
+        <td>
+          368
+          -
+          375
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.db.EventCategoryTable.eventID
+        </td>
+        <td style="background: #F0ADAD">
+          EventCategoryTable.this.eventID
+        </td>
+      </tr><tr>
+        <td>
+          12
+        </td>
+        <td>
+          883
+        </td>
+        <td>
+          356
+          -
+          356
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.RepShapeImplicits.repColumnShape
+        </td>
+        <td style="background: #F0ADAD">
+          lifted.this.Shape.repColumnShape[Int, Nothing](slick.jdbc.PostgresProfile.api.intColumnType)
+        </td>
+      </tr><tr>
+        <td>
+          12
+        </td>
+        <td>
+          885
+        </td>
+        <td>
+          356
+          -
+          356
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.RepShapeImplicits.repColumnShape
+        </td>
+        <td style="background: #F0ADAD">
+          lifted.this.Shape.repColumnShape[Int, Nothing](slick.jdbc.PostgresProfile.api.intColumnType)
+        </td>
+      </tr><tr>
+        <td>
+          12
+        </td>
+        <td>
+          879
+        </td>
+        <td>
+          357
+          -
+          367
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.db.EventCategoryTable.categoryID
+        </td>
+        <td style="background: #F0ADAD">
+          EventCategoryTable.this.categoryID
+        </td>
+      </tr><tr>
+        <td>
+          14
+        </td>
+        <td>
+          891
+        </td>
+        <td>
+          442
+          -
+          446
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.db.CategoryTable.id
+        </td>
+        <td style="background: #F0ADAD">
+          x$1.id
+        </td>
+      </tr><tr>
+        <td>
+          14
+        </td>
+        <td>
+          890
+        </td>
+        <td>
+          432
+          -
+          440
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.db.CategoryTable.category
+        </td>
+        <td style="background: #F0ADAD">
+          whatson.db.CategoryTable.category
+        </td>
+      </tr><tr>
+        <td>
+          14
+        </td>
+        <td>
+          893
+        </td>
+        <td>
+          411
+          -
+          411
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          slick.lifted.AbstractTable.foreignKey$default$6
+        </td>
+        <td style="background: #F0ADAD">
+          EventCategoryTable.this.foreignKey$default$6[slick.lifted.Rep[Int], Int, whatson.db.CategoryTable, whatson.model.Category](x$3, x$4, x$5)
+        </td>
+      </tr><tr>
+        <td>
+          14
+        </td>
+        <td>
+          896
+        </td>
+        <td>
+          441
+          -
+          441
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
+        </td>
+        <td style="background: #F0ADAD">
+          slick.jdbc.PostgresProfile.api.intColumnType
+        </td>
+      </tr><tr>
+        <td>
+          14
+        </td>
+        <td>
+          895
+        </td>
+        <td>
+          441
+          -
+          441
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.AbstractTableShapeImplicits.tableShape
+        </td>
+        <td style="background: #F0ADAD">
+          lifted.this.Shape.tableShape[slick.lifted.FlatShapeLevel, whatson.model.Category, whatson.db.CategoryTable](scala.Predef.$conforms[whatson.db.CategoryTable])
+        </td>
+      </tr><tr>
+        <td>
+          14
+        </td>
+        <td>
+          889
+        </td>
+        <td>
+          424
+          -
+          431
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.db.EventCategoryTable.eventID
+        </td>
+        <td style="background: #F0ADAD">
+          EventCategoryTable.this.eventID
+        </td>
+      </tr><tr>
+        <td>
+          14
+        </td>
+        <td>
+          898
+        </td>
+        <td>
+          401
+          -
+          447
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          slick.lifted.AbstractTable.foreignKey
+        </td>
+        <td style="background: #F0ADAD">
+          EventCategoryTable.this.foreignKey[slick.lifted.Rep[Int], Int, whatson.db.CategoryTable, whatson.model.Category](x$3, x$4, x$5)(x$6, x$7, x$8)(lifted.this.Shape.tableShape[slick.lifted.FlatShapeLevel, whatson.model.Category, whatson.db.CategoryTable](scala.Predef.$conforms[whatson.db.CategoryTable]), lifted.this.Shape.repColumnShape[Int, Nothing](slick.jdbc.PostgresProfile.api.intColumnType))
+        </td>
+      </tr><tr>
+        <td>
+          14
+        </td>
+        <td>
+          892
+        </td>
+        <td>
+          411
+          -
+          411
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          slick.lifted.AbstractTable.foreignKey$default$5
+        </td>
+        <td style="background: #F0ADAD">
+          EventCategoryTable.this.foreignKey$default$5[slick.lifted.Rep[Int], Int, whatson.db.CategoryTable, whatson.model.Category](x$3, x$4, x$5)
+        </td>
+      </tr><tr>
+        <td>
+          14
+        </td>
+        <td>
+          894
+        </td>
+        <td>
+          441
+          -
+          441
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Predef.$conforms
+        </td>
+        <td style="background: #F0ADAD">
+          scala.Predef.$conforms[whatson.db.CategoryTable]
+        </td>
+      </tr><tr>
+        <td>
+          14
+        </td>
+        <td>
+          888
+        </td>
+        <td>
+          412
+          -
+          422
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;category&quot;
+        </td>
+      </tr><tr>
+        <td>
+          14
+        </td>
+        <td>
+          897
+        </td>
+        <td>
+          441
+          -
+          441
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.RepShapeImplicits.repColumnShape
+        </td>
+        <td style="background: #F0ADAD">
+          lifted.this.Shape.repColumnShape[Int, Nothing](slick.jdbc.PostgresProfile.api.intColumnType)
+        </td>
+      </tr><tr>
+        <td>
+          15
+        </td>
+        <td>
+          908
+        </td>
+        <td>
+          498
+          -
+          498
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.RepShapeImplicits.repColumnShape
+        </td>
+        <td style="background: #F0ADAD">
+          lifted.this.Shape.repColumnShape[Int, Nothing](slick.jdbc.PostgresProfile.api.intColumnType)
+        </td>
+      </tr><tr>
+        <td>
+          15
+        </td>
+        <td>
+          899
+        </td>
+        <td>
+          475
+          -
+          482
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;event&quot;
+        </td>
+      </tr><tr>
+        <td>
+          15
+        </td>
+        <td>
+          902
+        </td>
+        <td>
+          499
+          -
+          503
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.db.EventTable.id
+        </td>
+        <td style="background: #F0ADAD">
+          x$2.id
+        </td>
+      </tr><tr>
+        <td>
+          15
+        </td>
+        <td>
+          905
+        </td>
+        <td>
+          498
+          -
+          498
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Predef.$conforms
+        </td>
+        <td style="background: #F0ADAD">
+          scala.Predef.$conforms[whatson.db.EventTable]
+        </td>
+      </tr><tr>
+        <td>
+          15
+        </td>
+        <td>
+          904
+        </td>
+        <td>
+          474
+          -
+          474
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          slick.lifted.AbstractTable.foreignKey$default$6
+        </td>
+        <td style="background: #F0ADAD">
+          EventCategoryTable.this.foreignKey$default$6[slick.lifted.Rep[Int], Int, whatson.db.EventTable, whatson.model.Event](x$9, x$10, x$11)
+        </td>
+      </tr><tr>
+        <td>
+          15
+        </td>
+        <td>
+          907
+        </td>
+        <td>
+          498
+          -
+          498
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
+        </td>
+        <td style="background: #F0ADAD">
+          slick.jdbc.PostgresProfile.api.intColumnType
+        </td>
+      </tr><tr>
+        <td>
+          15
+        </td>
+        <td>
+          901
+        </td>
+        <td>
+          492
+          -
+          497
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.db.EventTable.event
+        </td>
+        <td style="background: #F0ADAD">
+          whatson.db.EventTable.event
+        </td>
+      </tr><tr>
+        <td>
+          15
+        </td>
+        <td>
+          909
+        </td>
+        <td>
+          464
+          -
+          504
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          slick.lifted.AbstractTable.foreignKey
+        </td>
+        <td style="background: #F0ADAD">
+          EventCategoryTable.this.foreignKey[slick.lifted.Rep[Int], Int, whatson.db.EventTable, whatson.model.Event](x$9, x$10, x$11)(x$12, x$13, x$14)(lifted.this.Shape.tableShape[slick.lifted.FlatShapeLevel, whatson.model.Event, whatson.db.EventTable](scala.Predef.$conforms[whatson.db.EventTable]), lifted.this.Shape.repColumnShape[Int, Nothing](slick.jdbc.PostgresProfile.api.intColumnType))
+        </td>
+      </tr><tr>
+        <td>
+          15
+        </td>
+        <td>
+          900
+        </td>
+        <td>
+          484
+          -
+          491
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.db.EventCategoryTable.eventID
+        </td>
+        <td style="background: #F0ADAD">
+          EventCategoryTable.this.eventID
+        </td>
+      </tr><tr>
+        <td>
+          15
+        </td>
+        <td>
+          903
+        </td>
+        <td>
+          474
+          -
+          474
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          slick.lifted.AbstractTable.foreignKey$default$5
+        </td>
+        <td style="background: #F0ADAD">
+          EventCategoryTable.this.foreignKey$default$5[slick.lifted.Rep[Int], Int, whatson.db.EventTable, whatson.model.Event](x$9, x$10, x$11)
+        </td>
+      </tr><tr>
+        <td>
+          15
+        </td>
+        <td>
+          906
+        </td>
+        <td>
+          498
+          -
+          498
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.AbstractTableShapeImplicits.tableShape
+        </td>
+        <td style="background: #F0ADAD">
+          lifted.this.Shape.tableShape[slick.lifted.FlatShapeLevel, whatson.model.Event, whatson.db.EventTable](scala.Predef.$conforms[whatson.db.EventTable])
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

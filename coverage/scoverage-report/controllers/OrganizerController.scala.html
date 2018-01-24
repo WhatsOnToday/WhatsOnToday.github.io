@@ -1,0 +1,2065 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          controllers/OrganizerController.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package controllers
+</span>2 <span style=''>
+</span>3 <span style=''>import scala.concurrent.Future
+</span>4 <span style=''>import scala.concurrent.duration._
+</span>5 <span style=''>
+</span>6 <span style=''>import com.mohiva.play.silhouette.api._
+</span>7 <span style=''>import com.mohiva.play.silhouette.api.exceptions.ProviderException
+</span>8 <span style=''>import com.mohiva.play.silhouette.api.repositories.AuthInfoRepository
+</span>9 <span style=''>import com.mohiva.play.silhouette.api.services._
+</span>10 <span style=''>import com.mohiva.play.silhouette.api.util.{Clock, PasswordHasher}
+</span>11 <span style=''>import com.mohiva.play.silhouette.impl.providers._
+</span>12 <span style=''>import javax.inject._
+</span>13 <span style=''>import play.api.{Configuration, Logger}
+</span>14 <span style=''>import play.api.cache.AsyncCacheApi
+</span>15 <span style=''>import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
+</span>16 <span style=''>import play.api.libs.concurrent.Execution.Implicits._
+</span>17 <span style=''>import play.api.libs.json._
+</span>18 <span style=''>import play.api.mvc._
+</span>19 <span style=''>import slick.jdbc.JdbcProfile
+</span>20 <span style=''>import slick.jdbc.PostgresProfile.api._
+</span>21 <span style=''>import whatson.auth._
+</span>22 <span style=''>import whatson.db._
+</span>23 <span style=''>import whatson.model._
+</span>24 <span style=''>import whatson.model.detail.OrganizerPublic._
+</span>25 <span style=''>import whatson.service._
+</span>26 <span style=''>import whatson.util.FormErrorJson._
+</span>27 <span style=''>
+</span>28 <span style=''>class OrganizerController@Inject() (
+</span>29 <span style=''>  silhouette: Silhouette[AuthEnv],
+</span>30 <span style=''>  loginService: LoginService,
+</span>31 <span style=''>  authInfoRepository: AuthInfoRepository,
+</span>32 <span style=''>  credentialsProvider: CredentialsProvider,
+</span>33 <span style=''>  socialProviderRegistry: SocialProviderRegistry,
+</span>34 <span style=''>  configuration: Configuration,
+</span>35 <span style=''>  clock: Clock,
+</span>36 <span style=''>  cc: ControllerComponents,
+</span>37 <span style=''>  cache: AsyncCacheApi,
+</span>38 <span style=''>  passwordHasher: PasswordHasher,
+</span>39 <span style=''>  protected val dbConfigProvider: DatabaseConfigProvider,
+</span>40 <span style=''>  organizerService: OrganizerService,
+</span>41 <span style=''>  mailService: MailService,
+</span>42 <span style=''>  avatarService: AvatarService)
+</span>43 <span style=''>    extends AbstractController(cc) with HasDatabaseConfigProvider[JdbcProfile] {
+</span>44 <span style=''>
+</span>45 <span style=''>  val log = </span><span style='background: #AEF1AE'>Logger(&quot;api.organizer&quot;)</span><span style=''>
+</span>46 <span style=''>
+</span>47 <span style=''>  def get(id: Int) = </span><span style='background: #F0ADAD'>Action.async { implicit request: Request[AnyContent] =&gt;
+</span>48 <span style=''></span><span style='background: #F0ADAD'>    log.debug(&quot;Rest request to get organizer&quot;)
+</span>49 <span style=''></span><span style='background: #F0ADAD'>
+</span>50 <span style=''></span><span style='background: #F0ADAD'>    val q = for(o &lt;- OrganizerTable.organizer  if o.id === id.bind) yield o;
+</span>51 <span style=''></span><span style='background: #F0ADAD'>
+</span>52 <span style=''></span><span style='background: #F0ADAD'>    db.run(q.public).map(x =&gt; x.headOption match {
+</span>53 <span style=''></span><span style='background: #F0ADAD'>                             case Some(r) =&gt; Ok(Json.toJson(r))
+</span>54 <span style=''></span><span style='background: #F0ADAD'>                             case _ =&gt; NotFound
+</span>55 <span style=''></span><span style='background: #F0ADAD'>                           })
+</span>56 <span style=''></span><span style='background: #F0ADAD'>  }</span><span style=''>
+</span>57 <span style=''>
+</span>58 <span style=''>  /**
+</span>59 <span style=''>   * Handles the submitted JSON data.
+</span>60 <span style=''>   *
+</span>61 <span style=''>   * @return The result to display.
+</span>62 <span style=''>   */
+</span>63 <span style=''>  def signUp = </span><span style='background: #F0ADAD'>Action.async(parse.json) { implicit request =&gt;
+</span>64 <span style=''></span><span style='background: #F0ADAD'>    OrganizerSignUpForm.form.bindFromRequest.fold(
+</span>65 <span style=''></span><span style='background: #F0ADAD'>      form =&gt; {
+</span>66 <span style=''></span><span style='background: #F0ADAD'>        Future.successful(BadRequest(Json.toJson(form.errors)))
+</span>67 <span style=''></span><span style='background: #F0ADAD'>      }, { data =&gt;
+</span>68 <span style=''></span><span style='background: #F0ADAD'>      val loginInfo = LoginInfo(CredentialsProvider.ID, data.email)
+</span>69 <span style=''></span><span style='background: #F0ADAD'>      loginService.retrieve(loginInfo).flatMap {
+</span>70 <span style=''></span><span style='background: #F0ADAD'>        case Some(login) =&gt;
+</span>71 <span style=''></span><span style='background: #F0ADAD'>          Future.successful(BadRequest(Json.obj(&quot;message&quot; -&gt; &quot;user.exists&quot;)))
+</span>72 <span style=''></span><span style='background: #F0ADAD'>        case None =&gt;
+</span>73 <span style=''></span><span style='background: #F0ADAD'>          val authInfo = passwordHasher.hash(data.password)
+</span>74 <span style=''></span><span style='background: #F0ADAD'>          val login = Login(None, data.email, None, None, None, loginInfo.providerID, loginInfo.providerKey, false)
+</span>75 <span style=''></span><span style='background: #F0ADAD'>          for {
+</span>76 <span style=''></span><span style='background: #F0ADAD'>            login &lt;- loginService.save(login)
+</span>77 <span style=''></span><span style='background: #F0ADAD'>            authInfo &lt;- authInfoRepository.add(loginInfo, authInfo)
+</span>78 <span style=''></span><span style='background: #F0ADAD'>            authenticator &lt;- silhouette.env.authenticatorService.create(loginInfo)
+</span>79 <span style=''></span><span style='background: #F0ADAD'>            token &lt;- silhouette.env.authenticatorService.init(authenticator)
+</span>80 <span style=''></span><span style='background: #F0ADAD'>            avatar &lt;- avatarService.retrieveURL(data.email)
+</span>81 <span style=''></span><span style='background: #F0ADAD'>          } yield {
+</span>82 <span style=''></span><span style='background: #F0ADAD'>            silhouette.env.eventBus.publish(SignUpEvent(login, request))
+</span>83 <span style=''></span><span style='background: #F0ADAD'>            silhouette.env.eventBus.publish(LoginEvent(login, request))
+</span>84 <span style=''></span><span style='background: #F0ADAD'>            organizerService.save(login,data.name,avatar)
+</span>85 <span style=''></span><span style='background: #F0ADAD'>            mailService.sendOrganizerConfirmation(data.email,data.name,token)
+</span>86 <span style=''></span><span style='background: #F0ADAD'>            Ok(Json.obj(&quot;message&quot; -&gt; &quot;mail.sent&quot;))
+</span>87 <span style=''></span><span style='background: #F0ADAD'>          }
+</span>88 <span style=''></span><span style='background: #F0ADAD'>      }
+</span>89 <span style=''></span><span style='background: #F0ADAD'>    })
+</span>90 <span style=''></span><span style='background: #F0ADAD'>  }</span><span style=''>
+</span>91 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          45
+        </td>
+        <td>
+          643
+        </td>
+        <td>
+          1576
+          -
+          1599
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          play.api.Logger.apply
+        </td>
+        <td style="background: #AEF1AE">
+          play.api.Logger.apply(&quot;api.organizer&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          47
+        </td>
+        <td>
+          668
+        </td>
+        <td>
+          1622
+          -
+          2000
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          play.api.mvc.ActionBuilder.async
+        </td>
+        <td style="background: #F0ADAD">
+          OrganizerController.this.Action.async(((implicit request: play.api.mvc.Request[play.api.mvc.AnyContent]) =&gt; {
+  OrganizerController.this.log.debug(&quot;Rest request to get organizer&quot;)(api.this.MarkerContext.NoMarker);
+  val q: slick.lifted.Query[whatson.db.OrganizerTable,whatson.model.Organizer,Seq] = whatson.db.OrganizerTable.organizer.withFilter[slick.lifted.Rep[Boolean]](((o: whatson.db.OrganizerTable) =&gt; slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](o.id)(slick.jdbc.PostgresProfile.api.intColumnType).===[Int, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[Int](id)(slick.jdbc.PostgresProfile.api.intColumnType).bind)(lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType))))(lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition).map[whatson.db.OrganizerTable, whatson.db.OrganizerTable, whatson.model.Organizer](((o: whatson.db.OrganizerTable) =&gt; o))(lifted.this.Shape.tableShape[slick.lifted.FlatShapeLevel, whatson.model.Organizer, whatson.db.OrganizerTable](scala.Predef.$conforms[whatson.db.OrganizerTable]));
+  OrganizerController.this.db.run[Seq[whatson.model.detail.OrganizerPublic]](whatson.model.detail.OrganizerPublic.OrganizerPublicQuery(q).public(play.api.libs.concurrent.Execution.Implicits.defaultContext)).map[play.api.mvc.Result](((x: Seq[whatson.model.detail.OrganizerPublic]) =&gt; x.headOption match {
+    case (value: whatson.model.detail.OrganizerPublic)Some[whatson.model.detail.OrganizerPublic]((r @ _)) =&gt; OrganizerController.this.Ok.apply[play.api.libs.json.JsValue](play.api.libs.json.Json.toJson[whatson.model.detail.OrganizerPublic](r)(whatson.model.detail.OrganizerPublic.organizerPublicWrites))(http.this.Writeable.writeableOf_JsValue)
+    case _ =&gt; OrganizerController.this.NotFound
+  }))(play.api.libs.concurrent.Execution.Implicits.defaultContext)
+}))
+        </td>
+      </tr><tr>
+        <td>
+          48
+        </td>
+        <td>
+          645
+        </td>
+        <td>
+          1691
+          -
+          1691
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.LowPriorityMarkerContextImplicits.NoMarker
+        </td>
+        <td style="background: #F0ADAD">
+          api.this.MarkerContext.NoMarker
+        </td>
+      </tr><tr>
+        <td>
+          48
+        </td>
+        <td>
+          644
+        </td>
+        <td>
+          1692
+          -
+          1723
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;Rest request to get organizer&quot;
+        </td>
+      </tr><tr>
+        <td>
+          48
+        </td>
+        <td>
+          646
+        </td>
+        <td>
+          1682
+          -
+          1724
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          play.api.LoggerLike.debug
+        </td>
+        <td style="background: #F0ADAD">
+          OrganizerController.this.log.debug(&quot;Rest request to get organizer&quot;)(api.this.MarkerContext.NoMarker)
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          654
+        </td>
+        <td>
+          1762
+          -
+          1762
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.lifted.CanBeQueryCondition.BooleanColumnCanBeQueryCondition
+        </td>
+        <td style="background: #F0ADAD">
+          lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          648
+        </td>
+        <td>
+          1778
+          -
+          1778
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
+        </td>
+        <td style="background: #F0ADAD">
+          slick.jdbc.PostgresProfile.api.intColumnType
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          657
+        </td>
+        <td>
+          1738
+          -
+          1801
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.Query.map
+        </td>
+        <td style="background: #F0ADAD">
+          whatson.db.OrganizerTable.organizer.withFilter[slick.lifted.Rep[Boolean]](((o: whatson.db.OrganizerTable) =&gt; slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](o.id)(slick.jdbc.PostgresProfile.api.intColumnType).===[Int, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[Int](id)(slick.jdbc.PostgresProfile.api.intColumnType).bind)(lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType))))(lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition).map[whatson.db.OrganizerTable, whatson.db.OrganizerTable, whatson.model.Organizer](((o: whatson.db.OrganizerTable) =&gt; o))(lifted.this.Shape.tableShape[slick.lifted.FlatShapeLevel, whatson.model.Organizer, whatson.db.OrganizerTable](scala.Predef.$conforms[whatson.db.OrganizerTable]))
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          651
+        </td>
+        <td>
+          1781
+          -
+          1781
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
+        </td>
+        <td style="background: #F0ADAD">
+          slick.jdbc.PostgresProfile.api.intColumnType
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          650
+        </td>
+        <td>
+          1785
+          -
+          1792
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.lifted.LiteralColumn.bind
+        </td>
+        <td style="background: #F0ADAD">
+          slick.jdbc.PostgresProfile.api.valueToConstColumn[Int](id)(slick.jdbc.PostgresProfile.api.intColumnType).bind
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          653
+        </td>
+        <td>
+          1776
+          -
+          1792
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.ColumnExtensionMethods.===
+        </td>
+        <td style="background: #F0ADAD">
+          slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](o.id)(slick.jdbc.PostgresProfile.api.intColumnType).===[Int, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[Int](id)(slick.jdbc.PostgresProfile.api.intColumnType).bind)(lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType))
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          647
+        </td>
+        <td>
+          1776
+          -
+          1780
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.db.OrganizerTable.id
+        </td>
+        <td style="background: #F0ADAD">
+          o.id
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          656
+        </td>
+        <td>
+          1744
+          -
+          1744
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.AbstractTableShapeImplicits.tableShape
+        </td>
+        <td style="background: #F0ADAD">
+          lifted.this.Shape.tableShape[slick.lifted.FlatShapeLevel, whatson.model.Organizer, whatson.db.OrganizerTable](scala.Predef.$conforms[whatson.db.OrganizerTable])
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          655
+        </td>
+        <td>
+          1744
+          -
+          1744
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Predef.$conforms
+        </td>
+        <td style="background: #F0ADAD">
+          scala.Predef.$conforms[whatson.db.OrganizerTable]
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          649
+        </td>
+        <td>
+          1785
+          -
+          1785
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
+        </td>
+        <td style="background: #F0ADAD">
+          slick.jdbc.PostgresProfile.api.intColumnType
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          652
+        </td>
+        <td>
+          1781
+          -
+          1781
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.OptionMapper2.getOptionMapper2TT
+        </td>
+        <td style="background: #F0ADAD">
+          lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType)
+        </td>
+      </tr><tr>
+        <td>
+          52
+        </td>
+        <td>
+          660
+        </td>
+        <td>
+          1834
+          -
+          1846
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.TraversableLike.headOption
+        </td>
+        <td style="background: #F0ADAD">
+          x.headOption
+        </td>
+      </tr><tr>
+        <td>
+          52
+        </td>
+        <td>
+          666
+        </td>
+        <td>
+          1828
+          -
+          1828
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.libs.concurrent.Execution.Implicits.defaultContext
+        </td>
+        <td style="background: #F0ADAD">
+          play.api.libs.concurrent.Execution.Implicits.defaultContext
+        </td>
+      </tr><tr>
+        <td>
+          52
+        </td>
+        <td>
+          659
+        </td>
+        <td>
+          1815
+          -
+          1823
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          whatson.model.detail.OrganizerPublic.OrganizerPublicQuery.public
+        </td>
+        <td style="background: #F0ADAD">
+          whatson.model.detail.OrganizerPublic.OrganizerPublicQuery(q).public(play.api.libs.concurrent.Execution.Implicits.defaultContext)
+        </td>
+      </tr><tr>
+        <td>
+          52
+        </td>
+        <td>
+          658
+        </td>
+        <td>
+          1817
+          -
+          1817
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.libs.concurrent.Execution.Implicits.defaultContext
+        </td>
+        <td style="background: #F0ADAD">
+          play.api.libs.concurrent.Execution.Implicits.defaultContext
+        </td>
+      </tr><tr>
+        <td>
+          52
+        </td>
+        <td>
+          667
+        </td>
+        <td>
+          1808
+          -
+          1996
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.concurrent.Future.map
+        </td>
+        <td style="background: #F0ADAD">
+          OrganizerController.this.db.run[Seq[whatson.model.detail.OrganizerPublic]](whatson.model.detail.OrganizerPublic.OrganizerPublicQuery(q).public(play.api.libs.concurrent.Execution.Implicits.defaultContext)).map[play.api.mvc.Result](((x: Seq[whatson.model.detail.OrganizerPublic]) =&gt; x.headOption match {
+  case (value: whatson.model.detail.OrganizerPublic)Some[whatson.model.detail.OrganizerPublic]((r @ _)) =&gt; OrganizerController.this.Ok.apply[play.api.libs.json.JsValue](play.api.libs.json.Json.toJson[whatson.model.detail.OrganizerPublic](r)(whatson.model.detail.OrganizerPublic.organizerPublicWrites))(http.this.Writeable.writeableOf_JsValue)
+  case _ =&gt; OrganizerController.this.NotFound
+}))(play.api.libs.concurrent.Execution.Implicits.defaultContext)
+        </td>
+      </tr><tr>
+        <td>
+          53
+        </td>
+        <td>
+          663
+        </td>
+        <td>
+          1902
+          -
+          1902
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.http.DefaultWriteables.writeableOf_JsValue
+        </td>
+        <td style="background: #F0ADAD">
+          http.this.Writeable.writeableOf_JsValue
+        </td>
+      </tr><tr>
+        <td>
+          53
+        </td>
+        <td>
+          662
+        </td>
+        <td>
+          1903
+          -
+          1917
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          play.api.libs.json.Json.toJson
+        </td>
+        <td style="background: #F0ADAD">
+          play.api.libs.json.Json.toJson[whatson.model.detail.OrganizerPublic](r)(whatson.model.detail.OrganizerPublic.organizerPublicWrites)
+        </td>
+      </tr><tr>
+        <td>
+          53
+        </td>
+        <td>
+          664
+        </td>
+        <td>
+          1900
+          -
+          1918
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          play.api.mvc.Results.Status.apply
+        </td>
+        <td style="background: #F0ADAD">
+          OrganizerController.this.Ok.apply[play.api.libs.json.JsValue](play.api.libs.json.Json.toJson[whatson.model.detail.OrganizerPublic](r)(whatson.model.detail.OrganizerPublic.organizerPublicWrites))(http.this.Writeable.writeableOf_JsValue)
+        </td>
+      </tr><tr>
+        <td>
+          53
+        </td>
+        <td>
+          661
+        </td>
+        <td>
+          1914
+          -
+          1914
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.model.detail.OrganizerPublic.organizerPublicWrites
+        </td>
+        <td style="background: #F0ADAD">
+          whatson.model.detail.OrganizerPublic.organizerPublicWrites
+        </td>
+      </tr><tr>
+        <td>
+          54
+        </td>
+        <td>
+          665
+        </td>
+        <td>
+          1958
+          -
+          1966
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.mvc.Results.NotFound
+        </td>
+        <td style="background: #F0ADAD">
+          OrganizerController.this.NotFound
+        </td>
+      </tr><tr>
+        <td>
+          63
+        </td>
+        <td>
+          669
+        </td>
+        <td>
+          2121
+          -
+          2131
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.mvc.PlayBodyParsers.json
+        </td>
+        <td style="background: #F0ADAD">
+          OrganizerController.this.parse.json
+        </td>
+      </tr><tr>
+        <td>
+          63
+        </td>
+        <td>
+          730
+        </td>
+        <td>
+          2108
+          -
+          3457
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          play.api.mvc.ActionBuilder.async
+        </td>
+        <td style="background: #F0ADAD">
+          OrganizerController.this.Action.async[play.api.libs.json.JsValue](OrganizerController.this.parse.json)(((implicit request: play.api.mvc.Request[play.api.libs.json.JsValue]) =&gt; whatson.model.OrganizerSignUpForm.form.bindFromRequest()(request).fold[scala.concurrent.Future[play.api.mvc.Result]](((form: play.api.data.Form[whatson.model.OrganizerSignUpForm.Data]) =&gt; scala.concurrent.Future.successful[play.api.mvc.Result](OrganizerController.this.BadRequest.apply[play.api.libs.json.JsValue](play.api.libs.json.Json.toJson[Seq[play.api.data.FormError]](form.errors)(whatson.util.FormErrorJson.formErrorFormat))(http.this.Writeable.writeableOf_JsValue))), ((data: whatson.model.OrganizerSignUpForm.Data) =&gt; {
+  val loginInfo: com.mohiva.play.silhouette.api.LoginInfo = com.mohiva.play.silhouette.api.LoginInfo.apply(com.mohiva.play.silhouette.impl.providers.CredentialsProvider.ID, data.email);
+  OrganizerController.this.loginService.retrieve(loginInfo).flatMap[play.api.mvc.Result](((x0$1: Option[whatson.model.Login]) =&gt; x0$1 match {
+    case (value: whatson.model.Login)Some[whatson.model.Login]((login @ _)) =&gt; scala.concurrent.Future.successful[play.api.mvc.Result](OrganizerController.this.BadRequest.apply[play.api.libs.json.JsObject](play.api.libs.json.Json.obj(scala.Predef.ArrowAssoc[String](&quot;message&quot;).-&gt;[play.api.libs.json.Json.JsValueWrapper](json.this.Json.toJsFieldJsValueWrapper[String](&quot;user.exists&quot;)(json.this.Writes.StringWrites))))(http.this.Writeable.writeableOf_JsValue))
+    case scala.None =&gt; {
+      val authInfo: com.mohiva.play.silhouette.api.util.PasswordInfo = OrganizerController.this.passwordHasher.hash(data.password);
+      val login: whatson.model.Login = whatson.model.Login.apply(scala.None, data.email, scala.None, scala.None, scala.None, loginInfo.providerID, loginInfo.providerKey, false);
+      OrganizerController.this.loginService.save(login).flatMap[play.api.mvc.Result](((login: whatson.model.Login) =&gt; OrganizerController.this.authInfoRepository.add[com.mohiva.play.silhouette.api.util.PasswordInfo](loginInfo, authInfo).flatMap[play.api.mvc.Result](((authInfo: com.mohiva.play.silhouette.api.util.PasswordInfo) =&gt; OrganizerController.this.silhouette.env.authenticatorService.create(loginInfo)(request).flatMap[play.api.mvc.Result](((authenticator: whatson.auth.AuthEnv#A) =&gt; OrganizerController.this.silhouette.env.authenticatorService.init(authenticator)(request).flatMap[play.api.mvc.Result](((token: whatson.auth.AuthEnv#A#Value) =&gt; OrganizerController.this.avatarService.retrieveURL(data.email).map[play.api.mvc.Result](((avatar: Option[String]) =&gt; {
+        OrganizerController.this.silhouette.env.eventBus.publish(com.mohiva.play.silhouette.api.SignUpEvent.apply[whatson.model.Login](login, request));
+        OrganizerController.this.silhouette.env.eventBus.publish(com.mohiva.play.silhouette.api.LoginEvent.apply[whatson.model.Login](login, request));
+        OrganizerController.this.organizerService.save(login, data.name, avatar);
+        OrganizerController.this.mailService.sendOrganizerConfirmation(data.email, data.name, token);
+        OrganizerController.this.Ok.apply[play.api.libs.json.JsObject](play.api.libs.json.Json.obj(scala.Predef.ArrowAssoc[String](&quot;message&quot;).-&gt;[play.api.libs.json.Json.JsValueWrapper](json.this.Json.toJsFieldJsValueWrapper[String](&quot;mail.sent&quot;)(json.this.Writes.StringWrites))))(http.this.Writeable.writeableOf_JsValue)
+      }))(play.api.libs.concurrent.Execution.Implicits.defaultContext)))(play.api.libs.concurrent.Execution.Implicits.defaultContext)))(play.api.libs.concurrent.Execution.Implicits.defaultContext)))(play.api.libs.concurrent.Execution.Implicits.defaultContext)))(play.api.libs.concurrent.Execution.Implicits.defaultContext)
+    }
+  }))(play.api.libs.concurrent.Execution.Implicits.defaultContext)
+}))))
+        </td>
+      </tr><tr>
+        <td>
+          64
+        </td>
+        <td>
+          729
+        </td>
+        <td>
+          2159
+          -
+          3453
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          play.api.data.Form.fold
+        </td>
+        <td style="background: #F0ADAD">
+          whatson.model.OrganizerSignUpForm.form.bindFromRequest()(request).fold[scala.concurrent.Future[play.api.mvc.Result]](((form: play.api.data.Form[whatson.model.OrganizerSignUpForm.Data]) =&gt; scala.concurrent.Future.successful[play.api.mvc.Result](OrganizerController.this.BadRequest.apply[play.api.libs.json.JsValue](play.api.libs.json.Json.toJson[Seq[play.api.data.FormError]](form.errors)(whatson.util.FormErrorJson.formErrorFormat))(http.this.Writeable.writeableOf_JsValue))), ((data: whatson.model.OrganizerSignUpForm.Data) =&gt; {
+  val loginInfo: com.mohiva.play.silhouette.api.LoginInfo = com.mohiva.play.silhouette.api.LoginInfo.apply(com.mohiva.play.silhouette.impl.providers.CredentialsProvider.ID, data.email);
+  OrganizerController.this.loginService.retrieve(loginInfo).flatMap[play.api.mvc.Result](((x0$1: Option[whatson.model.Login]) =&gt; x0$1 match {
+    case (value: whatson.model.Login)Some[whatson.model.Login]((login @ _)) =&gt; scala.concurrent.Future.successful[play.api.mvc.Result](OrganizerController.this.BadRequest.apply[play.api.libs.json.JsObject](play.api.libs.json.Json.obj(scala.Predef.ArrowAssoc[String](&quot;message&quot;).-&gt;[play.api.libs.json.Json.JsValueWrapper](json.this.Json.toJsFieldJsValueWrapper[String](&quot;user.exists&quot;)(json.this.Writes.StringWrites))))(http.this.Writeable.writeableOf_JsValue))
+    case scala.None =&gt; {
+      val authInfo: com.mohiva.play.silhouette.api.util.PasswordInfo = OrganizerController.this.passwordHasher.hash(data.password);
+      val login: whatson.model.Login = whatson.model.Login.apply(scala.None, data.email, scala.None, scala.None, scala.None, loginInfo.providerID, loginInfo.providerKey, false);
+      OrganizerController.this.loginService.save(login).flatMap[play.api.mvc.Result](((login: whatson.model.Login) =&gt; OrganizerController.this.authInfoRepository.add[com.mohiva.play.silhouette.api.util.PasswordInfo](loginInfo, authInfo).flatMap[play.api.mvc.Result](((authInfo: com.mohiva.play.silhouette.api.util.PasswordInfo) =&gt; OrganizerController.this.silhouette.env.authenticatorService.create(loginInfo)(request).flatMap[play.api.mvc.Result](((authenticator: whatson.auth.AuthEnv#A) =&gt; OrganizerController.this.silhouette.env.authenticatorService.init(authenticator)(request).flatMap[play.api.mvc.Result](((token: whatson.auth.AuthEnv#A#Value) =&gt; OrganizerController.this.avatarService.retrieveURL(data.email).map[play.api.mvc.Result](((avatar: Option[String]) =&gt; {
+        OrganizerController.this.silhouette.env.eventBus.publish(com.mohiva.play.silhouette.api.SignUpEvent.apply[whatson.model.Login](login, request));
+        OrganizerController.this.silhouette.env.eventBus.publish(com.mohiva.play.silhouette.api.LoginEvent.apply[whatson.model.Login](login, request));
+        OrganizerController.this.organizerService.save(login, data.name, avatar);
+        OrganizerController.this.mailService.sendOrganizerConfirmation(data.email, data.name, token);
+        OrganizerController.this.Ok.apply[play.api.libs.json.JsObject](play.api.libs.json.Json.obj(scala.Predef.ArrowAssoc[String](&quot;message&quot;).-&gt;[play.api.libs.json.Json.JsValueWrapper](json.this.Json.toJsFieldJsValueWrapper[String](&quot;mail.sent&quot;)(json.this.Writes.StringWrites))))(http.this.Writeable.writeableOf_JsValue)
+      }))(play.api.libs.concurrent.Execution.Implicits.defaultContext)))(play.api.libs.concurrent.Execution.Implicits.defaultContext)))(play.api.libs.concurrent.Execution.Implicits.defaultContext)))(play.api.libs.concurrent.Execution.Implicits.defaultContext)))(play.api.libs.concurrent.Execution.Implicits.defaultContext)
+    }
+  }))(play.api.libs.concurrent.Execution.Implicits.defaultContext)
+}))
+        </td>
+      </tr><tr>
+        <td>
+          66
+        </td>
+        <td>
+          672
+        </td>
+        <td>
+          2259
+          -
+          2283
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          play.api.libs.json.Json.toJson
+        </td>
+        <td style="background: #F0ADAD">
+          play.api.libs.json.Json.toJson[Seq[play.api.data.FormError]](form.errors)(whatson.util.FormErrorJson.formErrorFormat)
+        </td>
+      </tr><tr>
+        <td>
+          66
+        </td>
+        <td>
+          675
+        </td>
+        <td>
+          2230
+          -
+          2285
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.concurrent.Future.successful
+        </td>
+        <td style="background: #F0ADAD">
+          scala.concurrent.Future.successful[play.api.mvc.Result](OrganizerController.this.BadRequest.apply[play.api.libs.json.JsValue](play.api.libs.json.Json.toJson[Seq[play.api.data.FormError]](form.errors)(whatson.util.FormErrorJson.formErrorFormat))(http.this.Writeable.writeableOf_JsValue))
+        </td>
+      </tr><tr>
+        <td>
+          66
+        </td>
+        <td>
+          671
+        </td>
+        <td>
+          2270
+          -
+          2270
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.util.FormErrorJson.formErrorFormat
+        </td>
+        <td style="background: #F0ADAD">
+          whatson.util.FormErrorJson.formErrorFormat
+        </td>
+      </tr><tr>
+        <td>
+          66
+        </td>
+        <td>
+          674
+        </td>
+        <td>
+          2248
+          -
+          2284
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          play.api.mvc.Results.Status.apply
+        </td>
+        <td style="background: #F0ADAD">
+          OrganizerController.this.BadRequest.apply[play.api.libs.json.JsValue](play.api.libs.json.Json.toJson[Seq[play.api.data.FormError]](form.errors)(whatson.util.FormErrorJson.formErrorFormat))(http.this.Writeable.writeableOf_JsValue)
+        </td>
+      </tr><tr>
+        <td>
+          66
+        </td>
+        <td>
+          673
+        </td>
+        <td>
+          2258
+          -
+          2258
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.http.DefaultWriteables.writeableOf_JsValue
+        </td>
+        <td style="background: #F0ADAD">
+          http.this.Writeable.writeableOf_JsValue
+        </td>
+      </tr><tr>
+        <td>
+          66
+        </td>
+        <td>
+          670
+        </td>
+        <td>
+          2271
+          -
+          2282
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.data.Form.errors
+        </td>
+        <td style="background: #F0ADAD">
+          form.errors
+        </td>
+      </tr><tr>
+        <td>
+          68
+        </td>
+        <td>
+          678
+        </td>
+        <td>
+          2327
+          -
+          2372
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.mohiva.play.silhouette.api.LoginInfo.apply
+        </td>
+        <td style="background: #F0ADAD">
+          com.mohiva.play.silhouette.api.LoginInfo.apply(com.mohiva.play.silhouette.impl.providers.CredentialsProvider.ID, data.email)
+        </td>
+      </tr><tr>
+        <td>
+          68
+        </td>
+        <td>
+          677
+        </td>
+        <td>
+          2361
+          -
+          2371
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.model.OrganizerSignUpForm.Data.email
+        </td>
+        <td style="background: #F0ADAD">
+          data.email
+        </td>
+      </tr><tr>
+        <td>
+          68
+        </td>
+        <td>
+          676
+        </td>
+        <td>
+          2337
+          -
+          2359
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.mohiva.play.silhouette.impl.providers.CredentialsProvider.ID
+        </td>
+        <td style="background: #F0ADAD">
+          com.mohiva.play.silhouette.impl.providers.CredentialsProvider.ID
+        </td>
+      </tr><tr>
+        <td>
+          69
+        </td>
+        <td>
+          728
+        </td>
+        <td>
+          2379
+          -
+          3446
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.concurrent.Future.flatMap
+        </td>
+        <td style="background: #F0ADAD">
+          OrganizerController.this.loginService.retrieve(loginInfo).flatMap[play.api.mvc.Result](((x0$1: Option[whatson.model.Login]) =&gt; x0$1 match {
+  case (value: whatson.model.Login)Some[whatson.model.Login]((login @ _)) =&gt; scala.concurrent.Future.successful[play.api.mvc.Result](OrganizerController.this.BadRequest.apply[play.api.libs.json.JsObject](play.api.libs.json.Json.obj(scala.Predef.ArrowAssoc[String](&quot;message&quot;).-&gt;[play.api.libs.json.Json.JsValueWrapper](json.this.Json.toJsFieldJsValueWrapper[String](&quot;user.exists&quot;)(json.this.Writes.StringWrites))))(http.this.Writeable.writeableOf_JsValue))
+  case scala.None =&gt; {
+    val authInfo: com.mohiva.play.silhouette.api.util.PasswordInfo = OrganizerController.this.passwordHasher.hash(data.password);
+    val login: whatson.model.Login = whatson.model.Login.apply(scala.None, data.email, scala.None, scala.None, scala.None, loginInfo.providerID, loginInfo.providerKey, false);
+    OrganizerController.this.loginService.save(login).flatMap[play.api.mvc.Result](((login: whatson.model.Login) =&gt; OrganizerController.this.authInfoRepository.add[com.mohiva.play.silhouette.api.util.PasswordInfo](loginInfo, authInfo).flatMap[play.api.mvc.Result](((authInfo: com.mohiva.play.silhouette.api.util.PasswordInfo) =&gt; OrganizerController.this.silhouette.env.authenticatorService.create(loginInfo)(request).flatMap[play.api.mvc.Result](((authenticator: whatson.auth.AuthEnv#A) =&gt; OrganizerController.this.silhouette.env.authenticatorService.init(authenticator)(request).flatMap[play.api.mvc.Result](((token: whatson.auth.AuthEnv#A#Value) =&gt; OrganizerController.this.avatarService.retrieveURL(data.email).map[play.api.mvc.Result](((avatar: Option[String]) =&gt; {
+      OrganizerController.this.silhouette.env.eventBus.publish(com.mohiva.play.silhouette.api.SignUpEvent.apply[whatson.model.Login](login, request));
+      OrganizerController.this.silhouette.env.eventBus.publish(com.mohiva.play.silhouette.api.LoginEvent.apply[whatson.model.Login](login, request));
+      OrganizerController.this.organizerService.save(login, data.name, avatar);
+      OrganizerController.this.mailService.sendOrganizerConfirmation(data.email, data.name, token);
+      OrganizerController.this.Ok.apply[play.api.libs.json.JsObject](play.api.libs.json.Json.obj(scala.Predef.ArrowAssoc[String](&quot;message&quot;).-&gt;[play.api.libs.json.Json.JsValueWrapper](json.this.Json.toJsFieldJsValueWrapper[String](&quot;mail.sent&quot;)(json.this.Writes.StringWrites))))(http.this.Writeable.writeableOf_JsValue)
+    }))(play.api.libs.concurrent.Execution.Implicits.defaultContext)))(play.api.libs.concurrent.Execution.Implicits.defaultContext)))(play.api.libs.concurrent.Execution.Implicits.defaultContext)))(play.api.libs.concurrent.Execution.Implicits.defaultContext)))(play.api.libs.concurrent.Execution.Implicits.defaultContext)
+  }
+}))(play.api.libs.concurrent.Execution.Implicits.defaultContext)
+        </td>
+      </tr><tr>
+        <td>
+          69
+        </td>
+        <td>
+          727
+        </td>
+        <td>
+          2420
+          -
+          2420
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.libs.concurrent.Execution.Implicits.defaultContext
+        </td>
+        <td style="background: #F0ADAD">
+          play.api.libs.concurrent.Execution.Implicits.defaultContext
+        </td>
+      </tr><tr>
+        <td>
+          71
+        </td>
+        <td>
+          687
+        </td>
+        <td>
+          2460
+          -
+          2527
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.concurrent.Future.successful
+        </td>
+        <td style="background: #F0ADAD">
+          scala.concurrent.Future.successful[play.api.mvc.Result](OrganizerController.this.BadRequest.apply[play.api.libs.json.JsObject](play.api.libs.json.Json.obj(scala.Predef.ArrowAssoc[String](&quot;message&quot;).-&gt;[play.api.libs.json.Json.JsValueWrapper](json.this.Json.toJsFieldJsValueWrapper[String](&quot;user.exists&quot;)(json.this.Writes.StringWrites))))(http.this.Writeable.writeableOf_JsValue))
+        </td>
+      </tr><tr>
+        <td>
+          71
+        </td>
+        <td>
+          681
+        </td>
+        <td>
+          2511
+          -
+          2511
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.libs.json.DefaultWrites.StringWrites
+        </td>
+        <td style="background: #F0ADAD">
+          json.this.Writes.StringWrites
+        </td>
+      </tr><tr>
+        <td>
+          71
+        </td>
+        <td>
+          684
+        </td>
+        <td>
+          2489
+          -
+          2525
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          play.api.libs.json.Json.obj
+        </td>
+        <td style="background: #F0ADAD">
+          play.api.libs.json.Json.obj(scala.Predef.ArrowAssoc[String](&quot;message&quot;).-&gt;[play.api.libs.json.Json.JsValueWrapper](json.this.Json.toJsFieldJsValueWrapper[String](&quot;user.exists&quot;)(json.this.Writes.StringWrites)))
+        </td>
+      </tr><tr>
+        <td>
+          71
+        </td>
+        <td>
+          683
+        </td>
+        <td>
+          2498
+          -
+          2524
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Predef.ArrowAssoc.-&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          scala.Predef.ArrowAssoc[String](&quot;message&quot;).-&gt;[play.api.libs.json.Json.JsValueWrapper](json.this.Json.toJsFieldJsValueWrapper[String](&quot;user.exists&quot;)(json.this.Writes.StringWrites))
+        </td>
+      </tr><tr>
+        <td>
+          71
+        </td>
+        <td>
+          686
+        </td>
+        <td>
+          2478
+          -
+          2526
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          play.api.mvc.Results.Status.apply
+        </td>
+        <td style="background: #F0ADAD">
+          OrganizerController.this.BadRequest.apply[play.api.libs.json.JsObject](play.api.libs.json.Json.obj(scala.Predef.ArrowAssoc[String](&quot;message&quot;).-&gt;[play.api.libs.json.Json.JsValueWrapper](json.this.Json.toJsFieldJsValueWrapper[String](&quot;user.exists&quot;)(json.this.Writes.StringWrites))))(http.this.Writeable.writeableOf_JsValue)
+        </td>
+      </tr><tr>
+        <td>
+          71
+        </td>
+        <td>
+          680
+        </td>
+        <td>
+          2511
+          -
+          2524
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;user.exists&quot;
+        </td>
+      </tr><tr>
+        <td>
+          71
+        </td>
+        <td>
+          682
+        </td>
+        <td>
+          2511
+          -
+          2524
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          play.api.libs.json.Json.toJsFieldJsValueWrapper
+        </td>
+        <td style="background: #F0ADAD">
+          json.this.Json.toJsFieldJsValueWrapper[String](&quot;user.exists&quot;)(json.this.Writes.StringWrites)
+        </td>
+      </tr><tr>
+        <td>
+          71
+        </td>
+        <td>
+          685
+        </td>
+        <td>
+          2488
+          -
+          2488
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.http.DefaultWriteables.writeableOf_JsValue
+        </td>
+        <td style="background: #F0ADAD">
+          http.this.Writeable.writeableOf_JsValue
+        </td>
+      </tr><tr>
+        <td>
+          71
+        </td>
+        <td>
+          679
+        </td>
+        <td>
+          2498
+          -
+          2507
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;message&quot;
+        </td>
+      </tr><tr>
+        <td>
+          73
+        </td>
+        <td>
+          689
+        </td>
+        <td>
+          2574
+          -
+          2608
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.mohiva.play.silhouette.api.util.PasswordHasher.hash
+        </td>
+        <td style="background: #F0ADAD">
+          OrganizerController.this.passwordHasher.hash(data.password)
+        </td>
+      </tr><tr>
+        <td>
+          73
+        </td>
+        <td>
+          688
+        </td>
+        <td>
+          2594
+          -
+          2607
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.model.OrganizerSignUpForm.Data.password
+        </td>
+        <td style="background: #F0ADAD">
+          data.password
+        </td>
+      </tr><tr>
+        <td>
+          74
+        </td>
+        <td>
+          696
+        </td>
+        <td>
+          2695
+          -
+          2716
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.mohiva.play.silhouette.api.LoginInfo.providerKey
+        </td>
+        <td style="background: #F0ADAD">
+          loginInfo.providerKey
+        </td>
+      </tr><tr>
+        <td>
+          74
+        </td>
+        <td>
+          690
+        </td>
+        <td>
+          2637
+          -
+          2641
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #F0ADAD">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          74
+        </td>
+        <td>
+          693
+        </td>
+        <td>
+          2661
+          -
+          2665
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #F0ADAD">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          74
+        </td>
+        <td>
+          692
+        </td>
+        <td>
+          2655
+          -
+          2659
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #F0ADAD">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          74
+        </td>
+        <td>
+          695
+        </td>
+        <td>
+          2673
+          -
+          2693
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.mohiva.play.silhouette.api.LoginInfo.providerID
+        </td>
+        <td style="background: #F0ADAD">
+          loginInfo.providerID
+        </td>
+      </tr><tr>
+        <td>
+          74
+        </td>
+        <td>
+          698
+        </td>
+        <td>
+          2631
+          -
+          2724
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          whatson.model.Login.apply
+        </td>
+        <td style="background: #F0ADAD">
+          whatson.model.Login.apply(scala.None, data.email, scala.None, scala.None, scala.None, loginInfo.providerID, loginInfo.providerKey, false)
+        </td>
+      </tr><tr>
+        <td>
+          74
+        </td>
+        <td>
+          697
+        </td>
+        <td>
+          2718
+          -
+          2723
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          false
+        </td>
+      </tr><tr>
+        <td>
+          74
+        </td>
+        <td>
+          691
+        </td>
+        <td>
+          2643
+          -
+          2653
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.model.OrganizerSignUpForm.Data.email
+        </td>
+        <td style="background: #F0ADAD">
+          data.email
+        </td>
+      </tr><tr>
+        <td>
+          74
+        </td>
+        <td>
+          694
+        </td>
+        <td>
+          2667
+          -
+          2671
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #F0ADAD">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          76
+        </td>
+        <td>
+          726
+        </td>
+        <td>
+          2735
+          -
+          3438
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.concurrent.Future.flatMap
+        </td>
+        <td style="background: #F0ADAD">
+          OrganizerController.this.loginService.save(login).flatMap[play.api.mvc.Result](((login: whatson.model.Login) =&gt; OrganizerController.this.authInfoRepository.add[com.mohiva.play.silhouette.api.util.PasswordInfo](loginInfo, authInfo).flatMap[play.api.mvc.Result](((authInfo: com.mohiva.play.silhouette.api.util.PasswordInfo) =&gt; OrganizerController.this.silhouette.env.authenticatorService.create(loginInfo)(request).flatMap[play.api.mvc.Result](((authenticator: whatson.auth.AuthEnv#A) =&gt; OrganizerController.this.silhouette.env.authenticatorService.init(authenticator)(request).flatMap[play.api.mvc.Result](((token: whatson.auth.AuthEnv#A#Value) =&gt; OrganizerController.this.avatarService.retrieveURL(data.email).map[play.api.mvc.Result](((avatar: Option[String]) =&gt; {
+  OrganizerController.this.silhouette.env.eventBus.publish(com.mohiva.play.silhouette.api.SignUpEvent.apply[whatson.model.Login](login, request));
+  OrganizerController.this.silhouette.env.eventBus.publish(com.mohiva.play.silhouette.api.LoginEvent.apply[whatson.model.Login](login, request));
+  OrganizerController.this.organizerService.save(login, data.name, avatar);
+  OrganizerController.this.mailService.sendOrganizerConfirmation(data.email, data.name, token);
+  OrganizerController.this.Ok.apply[play.api.libs.json.JsObject](play.api.libs.json.Json.obj(scala.Predef.ArrowAssoc[String](&quot;message&quot;).-&gt;[play.api.libs.json.Json.JsValueWrapper](json.this.Json.toJsFieldJsValueWrapper[String](&quot;mail.sent&quot;)(json.this.Writes.StringWrites))))(http.this.Writeable.writeableOf_JsValue)
+}))(play.api.libs.concurrent.Execution.Implicits.defaultContext)))(play.api.libs.concurrent.Execution.Implicits.defaultContext)))(play.api.libs.concurrent.Execution.Implicits.defaultContext)))(play.api.libs.concurrent.Execution.Implicits.defaultContext)))(play.api.libs.concurrent.Execution.Implicits.defaultContext)
+        </td>
+      </tr><tr>
+        <td>
+          76
+        </td>
+        <td>
+          725
+        </td>
+        <td>
+          2759
+          -
+          2759
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.libs.concurrent.Execution.Implicits.defaultContext
+        </td>
+        <td style="background: #F0ADAD">
+          play.api.libs.concurrent.Execution.Implicits.defaultContext
+        </td>
+      </tr><tr>
+        <td>
+          77
+        </td>
+        <td>
+          723
+        </td>
+        <td>
+          2808
+          -
+          2808
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.libs.concurrent.Execution.Implicits.defaultContext
+        </td>
+        <td style="background: #F0ADAD">
+          play.api.libs.concurrent.Execution.Implicits.defaultContext
+        </td>
+      </tr><tr>
+        <td>
+          77
+        </td>
+        <td>
+          724
+        </td>
+        <td>
+          2799
+          -
+          3438
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.concurrent.Future.flatMap
+        </td>
+        <td style="background: #F0ADAD">
+          OrganizerController.this.authInfoRepository.add[com.mohiva.play.silhouette.api.util.PasswordInfo](loginInfo, authInfo).flatMap[play.api.mvc.Result](((authInfo: com.mohiva.play.silhouette.api.util.PasswordInfo) =&gt; OrganizerController.this.silhouette.env.authenticatorService.create(loginInfo)(request).flatMap[play.api.mvc.Result](((authenticator: whatson.auth.AuthEnv#A) =&gt; OrganizerController.this.silhouette.env.authenticatorService.init(authenticator)(request).flatMap[play.api.mvc.Result](((token: whatson.auth.AuthEnv#A#Value) =&gt; OrganizerController.this.avatarService.retrieveURL(data.email).map[play.api.mvc.Result](((avatar: Option[String]) =&gt; {
+  OrganizerController.this.silhouette.env.eventBus.publish(com.mohiva.play.silhouette.api.SignUpEvent.apply[whatson.model.Login](login, request));
+  OrganizerController.this.silhouette.env.eventBus.publish(com.mohiva.play.silhouette.api.LoginEvent.apply[whatson.model.Login](login, request));
+  OrganizerController.this.organizerService.save(login, data.name, avatar);
+  OrganizerController.this.mailService.sendOrganizerConfirmation(data.email, data.name, token);
+  OrganizerController.this.Ok.apply[play.api.libs.json.JsObject](play.api.libs.json.Json.obj(scala.Predef.ArrowAssoc[String](&quot;message&quot;).-&gt;[play.api.libs.json.Json.JsValueWrapper](json.this.Json.toJsFieldJsValueWrapper[String](&quot;mail.sent&quot;)(json.this.Writes.StringWrites))))(http.this.Writeable.writeableOf_JsValue)
+}))(play.api.libs.concurrent.Execution.Implicits.defaultContext)))(play.api.libs.concurrent.Execution.Implicits.defaultContext)))(play.api.libs.concurrent.Execution.Implicits.defaultContext)))(play.api.libs.concurrent.Execution.Implicits.defaultContext)
+        </td>
+      </tr><tr>
+        <td>
+          78
+        </td>
+        <td>
+          722
+        </td>
+        <td>
+          2867
+          -
+          3438
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.concurrent.Future.flatMap
+        </td>
+        <td style="background: #F0ADAD">
+          OrganizerController.this.silhouette.env.authenticatorService.create(loginInfo)(request).flatMap[play.api.mvc.Result](((authenticator: whatson.auth.AuthEnv#A) =&gt; OrganizerController.this.silhouette.env.authenticatorService.init(authenticator)(request).flatMap[play.api.mvc.Result](((token: whatson.auth.AuthEnv#A#Value) =&gt; OrganizerController.this.avatarService.retrieveURL(data.email).map[play.api.mvc.Result](((avatar: Option[String]) =&gt; {
+  OrganizerController.this.silhouette.env.eventBus.publish(com.mohiva.play.silhouette.api.SignUpEvent.apply[whatson.model.Login](login, request));
+  OrganizerController.this.silhouette.env.eventBus.publish(com.mohiva.play.silhouette.api.LoginEvent.apply[whatson.model.Login](login, request));
+  OrganizerController.this.organizerService.save(login, data.name, avatar);
+  OrganizerController.this.mailService.sendOrganizerConfirmation(data.email, data.name, token);
+  OrganizerController.this.Ok.apply[play.api.libs.json.JsObject](play.api.libs.json.Json.obj(scala.Predef.ArrowAssoc[String](&quot;message&quot;).-&gt;[play.api.libs.json.Json.JsValueWrapper](json.this.Json.toJsFieldJsValueWrapper[String](&quot;mail.sent&quot;)(json.this.Writes.StringWrites))))(http.this.Writeable.writeableOf_JsValue)
+}))(play.api.libs.concurrent.Execution.Implicits.defaultContext)))(play.api.libs.concurrent.Execution.Implicits.defaultContext)))(play.api.libs.concurrent.Execution.Implicits.defaultContext)
+        </td>
+      </tr><tr>
+        <td>
+          78
+        </td>
+        <td>
+          721
+        </td>
+        <td>
+          2881
+          -
+          2881
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.libs.concurrent.Execution.Implicits.defaultContext
+        </td>
+        <td style="background: #F0ADAD">
+          play.api.libs.concurrent.Execution.Implicits.defaultContext
+        </td>
+      </tr><tr>
+        <td>
+          79
+        </td>
+        <td>
+          720
+        </td>
+        <td>
+          2950
+          -
+          3438
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.concurrent.Future.flatMap
+        </td>
+        <td style="background: #F0ADAD">
+          OrganizerController.this.silhouette.env.authenticatorService.init(authenticator)(request).flatMap[play.api.mvc.Result](((token: whatson.auth.AuthEnv#A#Value) =&gt; OrganizerController.this.avatarService.retrieveURL(data.email).map[play.api.mvc.Result](((avatar: Option[String]) =&gt; {
+  OrganizerController.this.silhouette.env.eventBus.publish(com.mohiva.play.silhouette.api.SignUpEvent.apply[whatson.model.Login](login, request));
+  OrganizerController.this.silhouette.env.eventBus.publish(com.mohiva.play.silhouette.api.LoginEvent.apply[whatson.model.Login](login, request));
+  OrganizerController.this.organizerService.save(login, data.name, avatar);
+  OrganizerController.this.mailService.sendOrganizerConfirmation(data.email, data.name, token);
+  OrganizerController.this.Ok.apply[play.api.libs.json.JsObject](play.api.libs.json.Json.obj(scala.Predef.ArrowAssoc[String](&quot;message&quot;).-&gt;[play.api.libs.json.Json.JsValueWrapper](json.this.Json.toJsFieldJsValueWrapper[String](&quot;mail.sent&quot;)(json.this.Writes.StringWrites))))(http.this.Writeable.writeableOf_JsValue)
+}))(play.api.libs.concurrent.Execution.Implicits.defaultContext)))(play.api.libs.concurrent.Execution.Implicits.defaultContext)
+        </td>
+      </tr><tr>
+        <td>
+          79
+        </td>
+        <td>
+          719
+        </td>
+        <td>
+          2956
+          -
+          2956
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.libs.concurrent.Execution.Implicits.defaultContext
+        </td>
+        <td style="background: #F0ADAD">
+          play.api.libs.concurrent.Execution.Implicits.defaultContext
+        </td>
+      </tr><tr>
+        <td>
+          80
+        </td>
+        <td>
+          699
+        </td>
+        <td>
+          3063
+          -
+          3073
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.model.OrganizerSignUpForm.Data.email
+        </td>
+        <td style="background: #F0ADAD">
+          data.email
+        </td>
+      </tr><tr>
+        <td>
+          80
+        </td>
+        <td>
+          717
+        </td>
+        <td>
+          3034
+          -
+          3034
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.libs.concurrent.Execution.Implicits.defaultContext
+        </td>
+        <td style="background: #F0ADAD">
+          play.api.libs.concurrent.Execution.Implicits.defaultContext
+        </td>
+      </tr><tr>
+        <td>
+          80
+        </td>
+        <td>
+          718
+        </td>
+        <td>
+          3027
+          -
+          3438
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.concurrent.Future.map
+        </td>
+        <td style="background: #F0ADAD">
+          OrganizerController.this.avatarService.retrieveURL(data.email).map[play.api.mvc.Result](((avatar: Option[String]) =&gt; {
+  OrganizerController.this.silhouette.env.eventBus.publish(com.mohiva.play.silhouette.api.SignUpEvent.apply[whatson.model.Login](login, request));
+  OrganizerController.this.silhouette.env.eventBus.publish(com.mohiva.play.silhouette.api.LoginEvent.apply[whatson.model.Login](login, request));
+  OrganizerController.this.organizerService.save(login, data.name, avatar);
+  OrganizerController.this.mailService.sendOrganizerConfirmation(data.email, data.name, token);
+  OrganizerController.this.Ok.apply[play.api.libs.json.JsObject](play.api.libs.json.Json.obj(scala.Predef.ArrowAssoc[String](&quot;message&quot;).-&gt;[play.api.libs.json.Json.JsValueWrapper](json.this.Json.toJsFieldJsValueWrapper[String](&quot;mail.sent&quot;)(json.this.Writes.StringWrites))))(http.this.Writeable.writeableOf_JsValue)
+}))(play.api.libs.concurrent.Execution.Implicits.defaultContext)
+        </td>
+      </tr><tr>
+        <td>
+          82
+        </td>
+        <td>
+          701
+        </td>
+        <td>
+          3107
+          -
+          3167
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          akka.event.SubchannelClassification.publish
+        </td>
+        <td style="background: #F0ADAD">
+          OrganizerController.this.silhouette.env.eventBus.publish(com.mohiva.play.silhouette.api.SignUpEvent.apply[whatson.model.Login](login, request))
+        </td>
+      </tr><tr>
+        <td>
+          82
+        </td>
+        <td>
+          700
+        </td>
+        <td>
+          3139
+          -
+          3166
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.mohiva.play.silhouette.api.SignUpEvent.apply
+        </td>
+        <td style="background: #F0ADAD">
+          com.mohiva.play.silhouette.api.SignUpEvent.apply[whatson.model.Login](login, request)
+        </td>
+      </tr><tr>
+        <td>
+          83
+        </td>
+        <td>
+          702
+        </td>
+        <td>
+          3212
+          -
+          3238
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.mohiva.play.silhouette.api.LoginEvent.apply
+        </td>
+        <td style="background: #F0ADAD">
+          com.mohiva.play.silhouette.api.LoginEvent.apply[whatson.model.Login](login, request)
+        </td>
+      </tr><tr>
+        <td>
+          83
+        </td>
+        <td>
+          703
+        </td>
+        <td>
+          3180
+          -
+          3239
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          akka.event.SubchannelClassification.publish
+        </td>
+        <td style="background: #F0ADAD">
+          OrganizerController.this.silhouette.env.eventBus.publish(com.mohiva.play.silhouette.api.LoginEvent.apply[whatson.model.Login](login, request))
+        </td>
+      </tr><tr>
+        <td>
+          84
+        </td>
+        <td>
+          705
+        </td>
+        <td>
+          3252
+          -
+          3297
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          whatson.service.OrganizerService.save
+        </td>
+        <td style="background: #F0ADAD">
+          OrganizerController.this.organizerService.save(login, data.name, avatar)
+        </td>
+      </tr><tr>
+        <td>
+          84
+        </td>
+        <td>
+          704
+        </td>
+        <td>
+          3280
+          -
+          3289
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.model.OrganizerSignUpForm.Data.name
+        </td>
+        <td style="background: #F0ADAD">
+          data.name
+        </td>
+      </tr><tr>
+        <td>
+          85
+        </td>
+        <td>
+          708
+        </td>
+        <td>
+          3310
+          -
+          3375
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          whatson.service.MailService.sendOrganizerConfirmation
+        </td>
+        <td style="background: #F0ADAD">
+          OrganizerController.this.mailService.sendOrganizerConfirmation(data.email, data.name, token)
+        </td>
+      </tr><tr>
+        <td>
+          85
+        </td>
+        <td>
+          707
+        </td>
+        <td>
+          3359
+          -
+          3368
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.model.OrganizerSignUpForm.Data.name
+        </td>
+        <td style="background: #F0ADAD">
+          data.name
+        </td>
+      </tr><tr>
+        <td>
+          85
+        </td>
+        <td>
+          706
+        </td>
+        <td>
+          3348
+          -
+          3358
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.model.OrganizerSignUpForm.Data.email
+        </td>
+        <td style="background: #F0ADAD">
+          data.email
+        </td>
+      </tr><tr>
+        <td>
+          86
+        </td>
+        <td>
+          714
+        </td>
+        <td>
+          3391
+          -
+          3425
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          play.api.libs.json.Json.obj
+        </td>
+        <td style="background: #F0ADAD">
+          play.api.libs.json.Json.obj(scala.Predef.ArrowAssoc[String](&quot;message&quot;).-&gt;[play.api.libs.json.Json.JsValueWrapper](json.this.Json.toJsFieldJsValueWrapper[String](&quot;mail.sent&quot;)(json.this.Writes.StringWrites)))
+        </td>
+      </tr><tr>
+        <td>
+          86
+        </td>
+        <td>
+          711
+        </td>
+        <td>
+          3413
+          -
+          3413
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.libs.json.DefaultWrites.StringWrites
+        </td>
+        <td style="background: #F0ADAD">
+          json.this.Writes.StringWrites
+        </td>
+      </tr><tr>
+        <td>
+          86
+        </td>
+        <td>
+          710
+        </td>
+        <td>
+          3413
+          -
+          3424
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;mail.sent&quot;
+        </td>
+      </tr><tr>
+        <td>
+          86
+        </td>
+        <td>
+          713
+        </td>
+        <td>
+          3400
+          -
+          3424
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Predef.ArrowAssoc.-&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          scala.Predef.ArrowAssoc[String](&quot;message&quot;).-&gt;[play.api.libs.json.Json.JsValueWrapper](json.this.Json.toJsFieldJsValueWrapper[String](&quot;mail.sent&quot;)(json.this.Writes.StringWrites))
+        </td>
+      </tr><tr>
+        <td>
+          86
+        </td>
+        <td>
+          716
+        </td>
+        <td>
+          3388
+          -
+          3426
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          play.api.mvc.Results.Status.apply
+        </td>
+        <td style="background: #F0ADAD">
+          OrganizerController.this.Ok.apply[play.api.libs.json.JsObject](play.api.libs.json.Json.obj(scala.Predef.ArrowAssoc[String](&quot;message&quot;).-&gt;[play.api.libs.json.Json.JsValueWrapper](json.this.Json.toJsFieldJsValueWrapper[String](&quot;mail.sent&quot;)(json.this.Writes.StringWrites))))(http.this.Writeable.writeableOf_JsValue)
+        </td>
+      </tr><tr>
+        <td>
+          86
+        </td>
+        <td>
+          715
+        </td>
+        <td>
+          3390
+          -
+          3390
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.http.DefaultWriteables.writeableOf_JsValue
+        </td>
+        <td style="background: #F0ADAD">
+          http.this.Writeable.writeableOf_JsValue
+        </td>
+      </tr><tr>
+        <td>
+          86
+        </td>
+        <td>
+          709
+        </td>
+        <td>
+          3400
+          -
+          3409
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;message&quot;
+        </td>
+      </tr><tr>
+        <td>
+          86
+        </td>
+        <td>
+          712
+        </td>
+        <td>
+          3413
+          -
+          3424
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          play.api.libs.json.Json.toJsFieldJsValueWrapper
+        </td>
+        <td style="background: #F0ADAD">
+          json.this.Json.toJsFieldJsValueWrapper[String](&quot;mail.sent&quot;)(json.this.Writes.StringWrites)
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>
