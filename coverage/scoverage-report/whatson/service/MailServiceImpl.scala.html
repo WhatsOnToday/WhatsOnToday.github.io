@@ -35,12 +35,12 @@
 </span>11 <span style=''>import play.api.libs.mailer._
 </span>12 <span style=''>import views.html._
 </span>13 <span style=''>import play.api._
-</span>14 <span style=''>
-</span>15 <span style=''>class MailServiceImpl @Inject()(mailerClient: MailerClient,
-</span>16 <span style=''>                                config: Configuration)(implicit context: ExecutionContext)
-</span>17 <span style=''>    extends MailService {
-</span>18 <span style=''>
-</span>19 <span style=''>  val url = </span><span style='background: #AEF1AE'>config.underlying.getString(&quot;application.url&quot;)</span><span style=''>
+</span>14 <span style=''>import whatson.util._
+</span>15 <span style=''>
+</span>16 <span style=''>class MailServiceImpl @Inject()(mailerClient: MailerClient,
+</span>17 <span style=''>                                config: Configuration,
+</span>18 <span style=''>                                applicationConfig: ApplicationConfig)(implicit context: ExecutionContext)
+</span>19 <span style=''>    extends MailService {
 </span>20 <span style=''>
 </span>21 <span style=''>  def sendUserConfirmation(userMail: String,
 </span>22 <span style=''>                           confirmationToken: String) = {
@@ -48,23 +48,27 @@
 </span>24 <span style=''></span><span style='background: #F0ADAD'>      &quot;Confirm your email address&quot;,
 </span>25 <span style=''></span><span style='background: #F0ADAD'>      &quot;Whats On &lt;no-reply@whats-on.today&gt;&quot;,
 </span>26 <span style=''></span><span style='background: #F0ADAD'>      Seq(userMail),
-</span>27 <span style=''></span><span style='background: #F0ADAD'>      bodyHtml = Some(new UserAccountConfirmation(userMail,url,confirmationToken)().toString())
+</span>27 <span style=''></span><span style='background: #F0ADAD'>      bodyHtml = Some(new UserAccountConfirmation(userMail,applicationConfig.url,confirmationToken)().toString())
 </span>28 <span style=''></span><span style='background: #F0ADAD'>    )</span><span style=''>
-</span>29 <span style=''>    </span><span style='background: #F0ADAD'>mailerClient.send(email)</span><span style=''>
-</span>30 <span style=''>  }
-</span>31 <span style=''>
-</span>32 <span style=''>  def sendOrganizerConfirmation(userMail: String,
-</span>33 <span style=''>                               name: String,
-</span>34 <span style=''>                               confirmationToken: String) = {
-</span>35 <span style=''>    val email = </span><span style='background: #F0ADAD'>Email(
-</span>36 <span style=''></span><span style='background: #F0ADAD'>      &quot;Confirm your email address&quot;,
-</span>37 <span style=''></span><span style='background: #F0ADAD'>      &quot;Whats On &lt;no-reply@whats-on.today&gt;&quot;,
-</span>38 <span style=''></span><span style='background: #F0ADAD'>      Seq(userMail),
-</span>39 <span style=''></span><span style='background: #F0ADAD'>      bodyHtml = Some(new OrganizerAccountConfirmation(userMail,name,url,confirmationToken)().toString())
-</span>40 <span style=''></span><span style='background: #F0ADAD'>    )</span><span style=''>
-</span>41 <span style=''>    </span><span style='background: #F0ADAD'>mailerClient.send(email)</span><span style=''>
-</span>42 <span style=''>  }
-</span>43 <span style=''>}
+</span>29 <span style=''>
+</span>30 <span style=''>    if(</span><span style='background: #F0ADAD'>applicationConfig.confirmationMails</span><span style=''>)
+</span>31 <span style=''>      </span><span style='background: #F0ADAD'>mailerClient.send(email)</span><span style=''>
+</span>32 <span style=''>  }
+</span>33 <span style=''>
+</span>34 <span style=''>  def sendOrganizerConfirmation(userMail: String,
+</span>35 <span style=''>                               name: String,
+</span>36 <span style=''>                               confirmationToken: String) = {
+</span>37 <span style=''>    val email = </span><span style='background: #F0ADAD'>Email(
+</span>38 <span style=''></span><span style='background: #F0ADAD'>      &quot;Confirm your email address&quot;,
+</span>39 <span style=''></span><span style='background: #F0ADAD'>      &quot;Whats On &lt;no-reply@whats-on.today&gt;&quot;,
+</span>40 <span style=''></span><span style='background: #F0ADAD'>      Seq(userMail),
+</span>41 <span style=''></span><span style='background: #F0ADAD'>      bodyHtml = Some(new OrganizerAccountConfirmation(userMail,name,applicationConfig.url,confirmationToken)().toString())
+</span>42 <span style=''></span><span style='background: #F0ADAD'>    )</span><span style=''>
+</span>43 <span style=''>
+</span>44 <span style=''>    if(</span><span style='background: #F0ADAD'>applicationConfig.confirmationMails</span><span style=''>)
+</span>45 <span style=''>      </span><span style='background: #F0ADAD'>mailerClient.send(email)</span><span style=''>
+</span>46 <span style=''>  }
+</span>47 <span style=''>}
 </span></pre>
           </div>
           <div class="tab-pane" id="statementlist">
@@ -78,36 +82,36 @@
         <th>Code</th>
       </tr><tr>
         <td>
-          19
+          23
         </td>
         <td>
-          2073
+          2093
         </td>
         <td>
-          574
+          773
           -
-          620
+          773
         </td>
         <td>
-          Apply
+          Select
         </td>
         <td>
-          com.typesafe.config.Config.getString
+          play.api.libs.mailer.Email.apply$default$7
         </td>
-        <td style="background: #AEF1AE">
-          MailServiceImpl.this.config.underlying.getString(&quot;application.url&quot;)
+        <td style="background: #F0ADAD">
+          play.api.libs.mailer.Email.apply$default$7
         </td>
       </tr><tr>
         <td>
           23
         </td>
         <td>
-          2084
+          2096
         </td>
         <td>
-          741
+          773
           -
-          741
+          773
         </td>
         <td>
           Select
@@ -123,12 +127,138 @@
           23
         </td>
         <td>
-          2087
+          2095
         </td>
         <td>
-          741
+          773
           -
-          950
+          773
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.libs.mailer.Email.apply$default$9
+        </td>
+        <td style="background: #F0ADAD">
+          play.api.libs.mailer.Email.apply$default$9
+        </td>
+      </tr><tr>
+        <td>
+          23
+        </td>
+        <td>
+          2098
+        </td>
+        <td>
+          773
+          -
+          773
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.libs.mailer.Email.apply$default$12
+        </td>
+        <td style="background: #F0ADAD">
+          play.api.libs.mailer.Email.apply$default$12
+        </td>
+      </tr><tr>
+        <td>
+          23
+        </td>
+        <td>
+          2092
+        </td>
+        <td>
+          773
+          -
+          773
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.libs.mailer.Email.apply$default$6
+        </td>
+        <td style="background: #F0ADAD">
+          play.api.libs.mailer.Email.apply$default$6
+        </td>
+      </tr><tr>
+        <td>
+          23
+        </td>
+        <td>
+          2091
+        </td>
+        <td>
+          773
+          -
+          773
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.libs.mailer.Email.apply$default$4
+        </td>
+        <td style="background: #F0ADAD">
+          play.api.libs.mailer.Email.apply$default$4
+        </td>
+      </tr><tr>
+        <td>
+          23
+        </td>
+        <td>
+          2094
+        </td>
+        <td>
+          773
+          -
+          773
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.libs.mailer.Email.apply$default$8
+        </td>
+        <td style="background: #F0ADAD">
+          play.api.libs.mailer.Email.apply$default$8
+        </td>
+      </tr><tr>
+        <td>
+          23
+        </td>
+        <td>
+          2097
+        </td>
+        <td>
+          773
+          -
+          773
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.libs.mailer.Email.apply$default$11
+        </td>
+        <td style="background: #F0ADAD">
+          play.api.libs.mailer.Email.apply$default$11
+        </td>
+      </tr><tr>
+        <td>
+          23
+        </td>
+        <td>
+          2099
+        </td>
+        <td>
+          773
+          -
+          1000
         </td>
         <td>
           Apply
@@ -141,162 +271,15 @@
         </td>
       </tr><tr>
         <td>
-          23
+          24
         </td>
         <td>
           2086
         </td>
         <td>
-          741
+          786
           -
-          741
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          play.api.libs.mailer.Email.apply$default$12
-        </td>
-        <td style="background: #F0ADAD">
-          play.api.libs.mailer.Email.apply$default$12
-        </td>
-      </tr><tr>
-        <td>
-          23
-        </td>
-        <td>
-          2080
-        </td>
-        <td>
-          741
-          -
-          741
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          play.api.libs.mailer.Email.apply$default$6
-        </td>
-        <td style="background: #F0ADAD">
-          play.api.libs.mailer.Email.apply$default$6
-        </td>
-      </tr><tr>
-        <td>
-          23
-        </td>
-        <td>
-          2083
-        </td>
-        <td>
-          741
-          -
-          741
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          play.api.libs.mailer.Email.apply$default$9
-        </td>
-        <td style="background: #F0ADAD">
-          play.api.libs.mailer.Email.apply$default$9
-        </td>
-      </tr><tr>
-        <td>
-          23
-        </td>
-        <td>
-          2085
-        </td>
-        <td>
-          741
-          -
-          741
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          play.api.libs.mailer.Email.apply$default$11
-        </td>
-        <td style="background: #F0ADAD">
-          play.api.libs.mailer.Email.apply$default$11
-        </td>
-      </tr><tr>
-        <td>
-          23
-        </td>
-        <td>
-          2079
-        </td>
-        <td>
-          741
-          -
-          741
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          play.api.libs.mailer.Email.apply$default$4
-        </td>
-        <td style="background: #F0ADAD">
-          play.api.libs.mailer.Email.apply$default$4
-        </td>
-      </tr><tr>
-        <td>
-          23
-        </td>
-        <td>
-          2082
-        </td>
-        <td>
-          741
-          -
-          741
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          play.api.libs.mailer.Email.apply$default$8
-        </td>
-        <td style="background: #F0ADAD">
-          play.api.libs.mailer.Email.apply$default$8
-        </td>
-      </tr><tr>
-        <td>
-          23
-        </td>
-        <td>
-          2081
-        </td>
-        <td>
-          741
-          -
-          741
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          play.api.libs.mailer.Email.apply$default$7
-        </td>
-        <td style="background: #F0ADAD">
-          play.api.libs.mailer.Email.apply$default$7
-        </td>
-      </tr><tr>
-        <td>
-          24
-        </td>
-        <td>
-          2074
-        </td>
-        <td>
-          754
-          -
-          782
+          814
         </td>
         <td>
           Literal
@@ -312,12 +295,12 @@
           25
         </td>
         <td>
-          2075
+          2087
         </td>
         <td>
-          790
+          822
           -
-          826
+          858
         </td>
         <td>
           Literal
@@ -333,12 +316,12 @@
           26
         </td>
         <td>
-          2076
+          2088
         </td>
         <td>
-          834
+          866
           -
-          847
+          879
         </td>
         <td>
           Apply
@@ -354,33 +337,12 @@
           27
         </td>
         <td>
-          2078
+          2089
         </td>
         <td>
-          866
+          903
           -
-          944
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          scala.Some.apply
-        </td>
-        <td style="background: #F0ADAD">
-          scala.Some.apply[String](new views.html.UserAccountConfirmation(userMail, MailServiceImpl.this.url, confirmationToken).apply().toString())
-        </td>
-      </tr><tr>
-        <td>
-          27
-        </td>
-        <td>
-          2077
-        </td>
-        <td>
-          871
-          -
-          943
+          993
         </td>
         <td>
           Apply
@@ -389,19 +351,61 @@
           play.twirl.api.BufferedContent.toString
         </td>
         <td style="background: #F0ADAD">
-          new views.html.UserAccountConfirmation(userMail, MailServiceImpl.this.url, confirmationToken).apply().toString()
+          new views.html.UserAccountConfirmation(userMail, MailServiceImpl.this.applicationConfig.url, confirmationToken).apply().toString()
         </td>
       </tr><tr>
         <td>
-          29
+          27
         </td>
         <td>
-          2089
+          2090
         </td>
         <td>
-          972
+          898
           -
-          972
+          994
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #F0ADAD">
+          scala.Some.apply[String](new views.html.UserAccountConfirmation(userMail, MailServiceImpl.this.applicationConfig.url, confirmationToken).apply().toString())
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          2105
+        </td>
+        <td>
+          1006
+          -
+          1006
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          2104
+        </td>
+        <td>
+          1006
+          -
+          1006
         </td>
         <td>
           Literal
@@ -414,15 +418,57 @@
         </td>
       </tr><tr>
         <td>
-          29
+          30
         </td>
         <td>
-          2088
+          2100
         </td>
         <td>
-          955
+          1009
           -
-          979
+          1044
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.util.ApplicationConfig.confirmationMails
+        </td>
+        <td style="background: #F0ADAD">
+          MailServiceImpl.this.applicationConfig.confirmationMails
+        </td>
+      </tr><tr>
+        <td>
+          31
+        </td>
+        <td>
+          2102
+        </td>
+        <td>
+          1069
+          -
+          1069
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          31
+        </td>
+        <td>
+          2101
+        </td>
+        <td>
+          1052
+          -
+          1076
         </td>
         <td>
           Apply
@@ -435,141 +481,102 @@
         </td>
       </tr><tr>
         <td>
-          35
-        </td>
-        <td>
-          2102
-        </td>
-        <td>
-          1158
-          -
-          1158
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          play.api.libs.mailer.Email.apply$default$12
-        </td>
-        <td style="background: #F0ADAD">
-          play.api.libs.mailer.Email.apply$default$12
-        </td>
-      </tr><tr>
-        <td>
-          35
-        </td>
-        <td>
-          2096
-        </td>
-        <td>
-          1158
-          -
-          1158
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          play.api.libs.mailer.Email.apply$default$6
-        </td>
-        <td style="background: #F0ADAD">
-          play.api.libs.mailer.Email.apply$default$6
-        </td>
-      </tr><tr>
-        <td>
-          35
-        </td>
-        <td>
-          2095
-        </td>
-        <td>
-          1158
-          -
-          1158
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          play.api.libs.mailer.Email.apply$default$4
-        </td>
-        <td style="background: #F0ADAD">
-          play.api.libs.mailer.Email.apply$default$4
-        </td>
-      </tr><tr>
-        <td>
-          35
-        </td>
-        <td>
-          2098
-        </td>
-        <td>
-          1158
-          -
-          1158
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          play.api.libs.mailer.Email.apply$default$8
-        </td>
-        <td style="background: #F0ADAD">
-          play.api.libs.mailer.Email.apply$default$8
-        </td>
-      </tr><tr>
-        <td>
-          35
-        </td>
-        <td>
-          2101
-        </td>
-        <td>
-          1158
-          -
-          1158
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          play.api.libs.mailer.Email.apply$default$11
-        </td>
-        <td style="background: #F0ADAD">
-          play.api.libs.mailer.Email.apply$default$11
-        </td>
-      </tr><tr>
-        <td>
-          35
-        </td>
-        <td>
-          2100
-        </td>
-        <td>
-          1158
-          -
-          1158
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          play.api.libs.mailer.Email.apply$default$10
-        </td>
-        <td style="background: #F0ADAD">
-          play.api.libs.mailer.Email.apply$default$10
-        </td>
-      </tr><tr>
-        <td>
-          35
+          31
         </td>
         <td>
           2103
         </td>
         <td>
-          1158
+          1052
           -
-          1377
+          1076
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          {
+  MailServiceImpl.this.mailerClient.send(email);
+  ()
+}
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          2111
+        </td>
+        <td>
+          1255
+          -
+          1255
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.libs.mailer.Email.apply$default$4
+        </td>
+        <td style="background: #F0ADAD">
+          play.api.libs.mailer.Email.apply$default$4
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          2113
+        </td>
+        <td>
+          1255
+          -
+          1255
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.libs.mailer.Email.apply$default$7
+        </td>
+        <td style="background: #F0ADAD">
+          play.api.libs.mailer.Email.apply$default$7
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          2116
+        </td>
+        <td>
+          1255
+          -
+          1255
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.libs.mailer.Email.apply$default$10
+        </td>
+        <td style="background: #F0ADAD">
+          play.api.libs.mailer.Email.apply$default$10
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          2119
+        </td>
+        <td>
+          1255
+          -
+          1492
         </td>
         <td>
           Apply
@@ -582,36 +589,57 @@
         </td>
       </tr><tr>
         <td>
-          35
+          37
         </td>
         <td>
-          2097
+          2118
         </td>
         <td>
-          1158
+          1255
           -
-          1158
+          1255
         </td>
         <td>
           Select
         </td>
         <td>
-          play.api.libs.mailer.Email.apply$default$7
+          play.api.libs.mailer.Email.apply$default$12
         </td>
         <td style="background: #F0ADAD">
-          play.api.libs.mailer.Email.apply$default$7
+          play.api.libs.mailer.Email.apply$default$12
         </td>
       </tr><tr>
         <td>
-          35
+          37
         </td>
         <td>
-          2099
+          2112
         </td>
         <td>
-          1158
+          1255
           -
-          1158
+          1255
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.libs.mailer.Email.apply$default$6
+        </td>
+        <td style="background: #F0ADAD">
+          play.api.libs.mailer.Email.apply$default$6
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          2115
+        </td>
+        <td>
+          1255
+          -
+          1255
         </td>
         <td>
           Select
@@ -624,15 +652,57 @@
         </td>
       </tr><tr>
         <td>
-          36
+          37
         </td>
         <td>
-          2090
+          2114
         </td>
         <td>
-          1171
+          1255
           -
-          1199
+          1255
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.libs.mailer.Email.apply$default$8
+        </td>
+        <td style="background: #F0ADAD">
+          play.api.libs.mailer.Email.apply$default$8
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          2117
+        </td>
+        <td>
+          1255
+          -
+          1255
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.libs.mailer.Email.apply$default$11
+        </td>
+        <td style="background: #F0ADAD">
+          play.api.libs.mailer.Email.apply$default$11
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          2106
+        </td>
+        <td>
+          1268
+          -
+          1296
         </td>
         <td>
           Literal
@@ -645,15 +715,15 @@
         </td>
       </tr><tr>
         <td>
-          37
+          39
         </td>
         <td>
-          2091
+          2107
         </td>
         <td>
-          1207
+          1304
           -
-          1243
+          1340
         </td>
         <td>
           Literal
@@ -666,15 +736,15 @@
         </td>
       </tr><tr>
         <td>
-          38
+          40
         </td>
         <td>
-          2092
+          2108
         </td>
         <td>
-          1251
+          1348
           -
-          1264
+          1361
         </td>
         <td>
           Apply
@@ -687,36 +757,15 @@
         </td>
       </tr><tr>
         <td>
-          39
+          41
         </td>
         <td>
-          2093
+          2110
         </td>
         <td>
-          1288
+          1380
           -
-          1370
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          play.twirl.api.BufferedContent.toString
-        </td>
-        <td style="background: #F0ADAD">
-          new views.html.OrganizerAccountConfirmation(userMail, name, MailServiceImpl.this.url, confirmationToken).apply().toString()
-        </td>
-      </tr><tr>
-        <td>
-          39
-        </td>
-        <td>
-          2094
-        </td>
-        <td>
-          1283
-          -
-          1371
+          1486
         </td>
         <td>
           Apply
@@ -725,19 +774,82 @@
           scala.Some.apply
         </td>
         <td style="background: #F0ADAD">
-          scala.Some.apply[String](new views.html.OrganizerAccountConfirmation(userMail, name, MailServiceImpl.this.url, confirmationToken).apply().toString())
+          scala.Some.apply[String](new views.html.OrganizerAccountConfirmation(userMail, name, MailServiceImpl.this.applicationConfig.url, confirmationToken).apply().toString())
         </td>
       </tr><tr>
         <td>
           41
         </td>
         <td>
-          2105
+          2109
         </td>
         <td>
-          1399
+          1385
           -
-          1399
+          1485
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          play.twirl.api.BufferedContent.toString
+        </td>
+        <td style="background: #F0ADAD">
+          new views.html.OrganizerAccountConfirmation(userMail, name, MailServiceImpl.this.applicationConfig.url, confirmationToken).apply().toString()
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          2120
+        </td>
+        <td>
+          1501
+          -
+          1536
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.util.ApplicationConfig.confirmationMails
+        </td>
+        <td style="background: #F0ADAD">
+          MailServiceImpl.this.applicationConfig.confirmationMails
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          2125
+        </td>
+        <td>
+          1498
+          -
+          1498
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          2124
+        </td>
+        <td>
+          1498
+          -
+          1498
         </td>
         <td>
           Literal
@@ -750,15 +862,36 @@
         </td>
       </tr><tr>
         <td>
-          41
+          45
         </td>
         <td>
-          2104
+          2122
         </td>
         <td>
-          1382
+          1561
           -
-          1406
+          1561
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          45
+        </td>
+        <td>
+          2121
+        </td>
+        <td>
+          1544
+          -
+          1568
         </td>
         <td>
           Apply
@@ -768,6 +901,30 @@
         </td>
         <td style="background: #F0ADAD">
           MailServiceImpl.this.mailerClient.send(email)
+        </td>
+      </tr><tr>
+        <td>
+          45
+        </td>
+        <td>
+          2123
+        </td>
+        <td>
+          1544
+          -
+          1568
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          {
+  MailServiceImpl.this.mailerClient.send(email);
+  ()
+}
         </td>
       </tr>
     </table>

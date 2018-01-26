@@ -49,139 +49,149 @@
 </span>25 <span style=''>import play.api.mvc.DefaultCookieHeaderEncoding
 </span>26 <span style=''>import whatson.service._
 </span>27 <span style=''>import whatson.auth._
-</span>28 <span style=''>
-</span>29 <span style=''>class SilhouetteModule extends AbstractModule with ScalaModule {
-</span>30 <span style=''>  override def configure() = {
-</span>31 <span style=''>    </span><span style='background: #AEF1AE'>bind[Silhouette[AuthEnv]].to[SilhouetteProvider[AuthEnv]]</span><span style=''>
-</span>32 <span style=''>    </span><span style='background: #AEF1AE'>bind[PasswordHasher].toInstance(new BCryptPasswordHasher())</span><span style=''>
-</span>33 <span style=''>    </span><span style='background: #AEF1AE'>bind[FingerprintGenerator].toInstance(new DefaultFingerprintGenerator(false))</span><span style=''>
-</span>34 <span style=''>    </span><span style='background: #AEF1AE'>bind[EventBus].toInstance(EventBus())</span><span style=''>
-</span>35 <span style=''>    </span><span style='background: #AEF1AE'>bind[Clock].toInstance(Clock())</span><span style=''>
-</span>36 <span style=''>    </span><span style='background: #AEF1AE'>bind[IDGenerator].toInstance(new SecureRandomIDGenerator())</span><span style=''>
-</span>37 <span style=''>    </span><span style='background: #AEF1AE'>bind[AuthInfoRepository].to[AuthInfoService]</span><span style=''>
-</span>38 <span style=''>    </span><span style='background: #AEF1AE'>bind[LoginService].to[LoginServiceImpl]</span><span style=''>
-</span>39 <span style=''>    </span><span style='background: #AEF1AE'>bind[UserService].to[UserServiceImpl]</span><span style=''>
-</span>40 <span style=''>    </span><span style='background: #AEF1AE'>bind[OrganizerService].to[OrganizerServiceImpl]</span><span style=''>
-</span>41 <span style=''>    </span><span style='background: #AEF1AE'>bind[MailService].to[MailServiceImpl]</span><span style=''>
-</span>42 <span style=''>  }
-</span>43 <span style=''>
-</span>44 <span style=''>  @Provides
-</span>45 <span style=''>  def provideHTTPLayer(client: WSClient): HTTPLayer = </span><span style='background: #AEF1AE'>new PlayHTTPLayer(client)</span><span style=''>
-</span>46 <span style=''>
-</span>47 <span style=''>  @Provides
-</span>48 <span style=''>  def provideEnvironment(
-</span>49 <span style=''>    authenticatorService: AuthenticatorService[JWTAuthenticator],
-</span>50 <span style=''>    eventBus: EventBus,
-</span>51 <span style=''>    loginService: LoginService
-</span>52 <span style=''>  ): Environment[AuthEnv] = {
-</span>53 <span style=''>    </span><span style='background: #AEF1AE'>Environment[AuthEnv](loginService, authenticatorService, Seq.empty, eventBus)</span><span style=''>
-</span>54 <span style=''>  }
-</span>55 <span style=''>
-</span>56 <span style=''>  @Provides
-</span>57 <span style=''>  def provideAuthenticatorCrypter(): Crypter = {
-</span>58 <span style=''>    val settings = </span><span style='background: #AEF1AE'>JcaCrypterSettings(&quot;changeme&quot;)</span><span style=''>
-</span>59 <span style=''>    </span><span style='background: #AEF1AE'>new JcaCrypter(settings)</span><span style=''>
-</span>60 <span style=''>  }
-</span>61 <span style=''>
-</span>62 <span style=''>  @Provides
-</span>63 <span style=''>  def provideCrypterAuthenticatorEncoder(crypter: Crypter): CrypterAuthenticatorEncoder = {
-</span>64 <span style=''>    </span><span style='background: #AEF1AE'>new CrypterAuthenticatorEncoder(crypter)</span><span style=''>
-</span>65 <span style=''>  }
-</span>66 <span style=''>
-</span>67 <span style=''>  @Provides
-</span>68 <span style=''>  def provideCrypterAuthenticatorEncoder(encoder: CrypterAuthenticatorEncoder): AuthenticatorEncoder = encoder
-</span>69 <span style=''>
-</span>70 <span style=''>  @Provides
-</span>71 <span style=''>  def provideJWTAuthenticatorSettings(): JWTAuthenticatorSettings = {
-</span>72 <span style=''>    </span><span style='background: #AEF1AE'>JWTAuthenticatorSettings(sharedSecret = &quot;changeme&quot;)</span><span style=''>
-</span>73 <span style=''>  }
-</span>74 <span style=''>
-</span>75 <span style=''>  @Provides
-</span>76 <span style=''>  def provideJWTAuthenticatorService(
-</span>77 <span style=''>    encoder: CrypterAuthenticatorEncoder, encoding: DefaultCookieHeaderEncoding,
-</span>78 <span style=''>    fpg: FingerprintGenerator, idg: IDGenerator, config: Configuration,
-</span>79 <span style=''>    clock: Clock, settings: JWTAuthenticatorSettings
-</span>80 <span style=''>  ): JWTAuthenticatorService = {
-</span>81 <span style=''>    </span><span style='background: #AEF1AE'>new JWTAuthenticatorService(settings,None,encoder,idg,clock)</span><span style=''>
-</span>82 <span style=''>  }
-</span>83 <span style=''>
-</span>84 <span style=''>  @Provides
-</span>85 <span style=''>  def provideAuthenticatorService(
-</span>86 <span style=''>    jwt: JWTAuthenticatorService): AuthenticatorService[JWTAuthenticator] = jwt
-</span>87 <span style=''>
-</span>88 <span style=''>  @Provides
-</span>89 <span style=''>  def provideCredentialsProvider(authInfoRepository: AuthInfoRepository, passwordHasher: PasswordHasher): CredentialsProvider = {
-</span>90 <span style=''>    val passwordHasherRegisty = </span><span style='background: #AEF1AE'>PasswordHasherRegistry(passwordHasher)</span><span style=''>
-</span>91 <span style=''>    </span><span style='background: #AEF1AE'>new CredentialsProvider(authInfoRepository, passwordHasherRegisty)</span><span style=''>
-</span>92 <span style=''>  }
-</span>93 <span style=''>
-</span>94 <span style=''>  @Provides
-</span>95 <span style=''>  def provideAvatarService(httpLayer: HTTPLayer): AvatarService = </span><span style='background: #AEF1AE'>new GravatarService(httpLayer)</span><span style=''>
-</span>96 <span style=''>
-</span>97 <span style=''>  /**
-</span>98 <span style=''>   * Provides the social provider registry.
-</span>99 <span style=''>   *
-</span>100 <span style=''>   * @param facebookProvider The Facebook provider implementation.
-</span>101 <span style=''>   * @param googleProvider The Google provider implementation.
-</span>102 <span style=''>   * @param vkProvider The VK provider implementation.
-</span>103 <span style=''>   * @param twitterProvider The Twitter provider implementation.
-</span>104 <span style=''>   * @param xingProvider The Xing provider implementation.
-</span>105 <span style=''>   * @return The Silhouette environment.
-</span>106 <span style=''>   */
-</span>107 <span style=''>  @Provides
-</span>108 <span style=''>  def provideSocialProviderRegistry(
-</span>109 <span style=''>    facebookProvider: FacebookProvider): SocialProviderRegistry = {
-</span>110 <span style=''>    </span><span style='background: #AEF1AE'>SocialProviderRegistry(Seq(facebookProvider))</span><span style=''>
-</span>111 <span style=''>  }
-</span>112 <span style=''>
-</span>113 <span style=''>   /**
-</span>114 <span style=''>   * Provides the Facebook provider.
-</span>115 <span style=''>   *
-</span>116 <span style=''>   * @param httpLayer The HTTP layer implementation.
-</span>117 <span style=''>   * @param stateProvider The OAuth2 state provider implementation.
-</span>118 <span style=''>   * @param configuration The Play configuration.
-</span>119 <span style=''>   * @return The Facebook provider.
-</span>120 <span style=''>   */
-</span>121 <span style=''>  @Provides
-</span>122 <span style=''>  def provideFacebookProvider(
-</span>123 <span style=''>    httpLayer: HTTPLayer,
-</span>124 <span style=''>    stateProvider: SocialStateHandler,
-</span>125 <span style=''>    configuration: Configuration): FacebookProvider = {
-</span>126 <span style=''>
-</span>127 <span style=''>    </span><span style='background: #AEF1AE'>new FacebookProvider(httpLayer, stateProvider,
-</span>128 <span style=''></span><span style='background: #AEF1AE'>                         configuration.underlying.as[OAuth2Settings](&quot;silhouette.facebook&quot;))</span><span style=''>
-</span>129 <span style=''>  }
-</span>130 <span style=''>
-</span>131 <span style=''>  /**
-</span>132 <span style=''>    * Provides the SocialStateHandler.
-</span>133 <span style=''>    *
-</span>134 <span style=''>    */
-</span>135 <span style=''>  @Provides
-</span>136 <span style=''>  def provideSocialStateHandler(
-</span>137 <span style=''>    csrfHandler: CsrfStateItemHandler,
-</span>138 <span style=''>    signer: Signer,
-</span>139 <span style=''>    configuration: Configuration): SocialStateHandler = {
-</span>140 <span style=''>    </span><span style='background: #AEF1AE'>new DefaultSocialStateHandler(Set(),signer)</span><span style=''>
-</span>141 <span style=''>  }
-</span>142 <span style=''>
-</span>143 <span style=''>  /**
-</span>144 <span style=''>    * Provides the JcaSigner.
-</span>145 <span style=''>    */
-</span>146 <span style=''>  @Provides
-</span>147 <span style=''>  def provideJcaSigner(
-</span>148 <span style=''>    configuration: Configuration): Signer = {
-</span>149 <span style=''>    </span><span style='background: #AEF1AE'>new JcaSigner(configuration.underlying.as[JcaSignerSettings](&quot;silhouette.signer&quot;))</span><span style=''>
-</span>150 <span style=''>  }
-</span>151 <span style=''>
-</span>152 <span style=''>  /**
-</span>153 <span style=''>    * Provides the CsrfStateSettings.
-</span>154 <span style=''>    */
-</span>155 <span style=''>  @Provides
-</span>156 <span style=''>  def provideCsrfStateSettings(
-</span>157 <span style=''>    configuration: Configuration): CsrfStateSettings = {
-</span>158 <span style=''>    </span><span style='background: #AEF1AE'>configuration.underlying.as[CsrfStateSettings](&quot;silhouette.csrfState&quot;)</span><span style=''>
-</span>159 <span style=''>  }
-</span>160 <span style=''>}
+</span>28 <span style=''>import whatson.util._
+</span>29 <span style=''>
+</span>30 <span style=''>class SilhouetteModule extends AbstractModule with ScalaModule {
+</span>31 <span style=''>  override def configure() = {
+</span>32 <span style=''>    </span><span style='background: #AEF1AE'>bind[Silhouette[AuthEnv]].to[SilhouetteProvider[AuthEnv]]</span><span style=''>
+</span>33 <span style=''>    </span><span style='background: #AEF1AE'>bind[PasswordHasher].toInstance(new BCryptPasswordHasher())</span><span style=''>
+</span>34 <span style=''>    </span><span style='background: #AEF1AE'>bind[FingerprintGenerator].toInstance(new DefaultFingerprintGenerator(false))</span><span style=''>
+</span>35 <span style=''>    </span><span style='background: #AEF1AE'>bind[EventBus].toInstance(EventBus())</span><span style=''>
+</span>36 <span style=''>    </span><span style='background: #AEF1AE'>bind[Clock].toInstance(Clock())</span><span style=''>
+</span>37 <span style=''>    </span><span style='background: #AEF1AE'>bind[IDGenerator].toInstance(new SecureRandomIDGenerator())</span><span style=''>
+</span>38 <span style=''>    </span><span style='background: #AEF1AE'>bind[AuthInfoRepository].to[AuthInfoService]</span><span style=''>
+</span>39 <span style=''>    </span><span style='background: #AEF1AE'>bind[LoginService].to[LoginServiceImpl]</span><span style=''>
+</span>40 <span style=''>    </span><span style='background: #AEF1AE'>bind[UserService].to[UserServiceImpl]</span><span style=''>
+</span>41 <span style=''>    </span><span style='background: #AEF1AE'>bind[OrganizerService].to[OrganizerServiceImpl]</span><span style=''>
+</span>42 <span style=''>    </span><span style='background: #AEF1AE'>bind[MailService].to[MailServiceImpl]</span><span style=''>
+</span>43 <span style=''>  }
+</span>44 <span style=''>
+</span>45 <span style=''>  @Provides
+</span>46 <span style=''>  def provideHTTPLayer(client: WSClient): HTTPLayer = </span><span style='background: #AEF1AE'>new PlayHTTPLayer(client)</span><span style=''>
+</span>47 <span style=''>
+</span>48 <span style=''>  @Provides
+</span>49 <span style=''>  def provideEnvironment(
+</span>50 <span style=''>    authenticatorService: AuthenticatorService[JWTAuthenticator],
+</span>51 <span style=''>    eventBus: EventBus,
+</span>52 <span style=''>    loginService: LoginService
+</span>53 <span style=''>  ): Environment[AuthEnv] = {
+</span>54 <span style=''>    </span><span style='background: #AEF1AE'>Environment[AuthEnv](loginService, authenticatorService, Seq.empty, eventBus)</span><span style=''>
+</span>55 <span style=''>  }
+</span>56 <span style=''>
+</span>57 <span style=''>  @Provides
+</span>58 <span style=''>  def provideAuthenticatorCrypter(): Crypter = {
+</span>59 <span style=''>    val settings = </span><span style='background: #AEF1AE'>JcaCrypterSettings(&quot;changeme&quot;)</span><span style=''>
+</span>60 <span style=''>    </span><span style='background: #AEF1AE'>new JcaCrypter(settings)</span><span style=''>
+</span>61 <span style=''>  }
+</span>62 <span style=''>
+</span>63 <span style=''>  @Provides
+</span>64 <span style=''>  def provideCrypterAuthenticatorEncoder(crypter: Crypter): CrypterAuthenticatorEncoder = {
+</span>65 <span style=''>    </span><span style='background: #AEF1AE'>new CrypterAuthenticatorEncoder(crypter)</span><span style=''>
+</span>66 <span style=''>  }
+</span>67 <span style=''>
+</span>68 <span style=''>  @Provides
+</span>69 <span style=''>  def provideCrypterAuthenticatorEncoder(encoder: CrypterAuthenticatorEncoder): AuthenticatorEncoder = encoder
+</span>70 <span style=''>
+</span>71 <span style=''>  @Provides
+</span>72 <span style=''>  def provideJWTAuthenticatorSettings(): JWTAuthenticatorSettings = {
+</span>73 <span style=''>    </span><span style='background: #AEF1AE'>JWTAuthenticatorSettings(sharedSecret = &quot;changeme&quot;)</span><span style=''>
+</span>74 <span style=''>  }
+</span>75 <span style=''>
+</span>76 <span style=''>  @Provides
+</span>77 <span style=''>  def provideJWTAuthenticatorService(
+</span>78 <span style=''>    encoder: CrypterAuthenticatorEncoder, encoding: DefaultCookieHeaderEncoding,
+</span>79 <span style=''>    fpg: FingerprintGenerator, idg: IDGenerator, config: Configuration,
+</span>80 <span style=''>    clock: Clock, settings: JWTAuthenticatorSettings
+</span>81 <span style=''>  ): JWTAuthenticatorService = {
+</span>82 <span style=''>    </span><span style='background: #AEF1AE'>new JWTAuthenticatorService(settings,None,encoder,idg,clock)</span><span style=''>
+</span>83 <span style=''>  }
+</span>84 <span style=''>
+</span>85 <span style=''>  @Provides
+</span>86 <span style=''>  def provideAuthenticatorService(
+</span>87 <span style=''>    jwt: JWTAuthenticatorService): AuthenticatorService[JWTAuthenticator] = jwt
+</span>88 <span style=''>
+</span>89 <span style=''>  @Provides
+</span>90 <span style=''>  def provideCredentialsProvider(authInfoRepository: AuthInfoRepository, passwordHasher: PasswordHasher): CredentialsProvider = {
+</span>91 <span style=''>    val passwordHasherRegisty = </span><span style='background: #AEF1AE'>PasswordHasherRegistry(passwordHasher)</span><span style=''>
+</span>92 <span style=''>    </span><span style='background: #AEF1AE'>new CredentialsProvider(authInfoRepository, passwordHasherRegisty)</span><span style=''>
+</span>93 <span style=''>  }
+</span>94 <span style=''>
+</span>95 <span style=''>  @Provides
+</span>96 <span style=''>  def provideAvatarService(httpLayer: HTTPLayer): AvatarService = </span><span style='background: #AEF1AE'>new GravatarService(httpLayer)</span><span style=''>
+</span>97 <span style=''>
+</span>98 <span style=''>  /**
+</span>99 <span style=''>   * Provides the social provider registry.
+</span>100 <span style=''>   *
+</span>101 <span style=''>   * @param facebookProvider The Facebook provider implementation.
+</span>102 <span style=''>   * @param googleProvider The Google provider implementation.
+</span>103 <span style=''>   * @param vkProvider The VK provider implementation.
+</span>104 <span style=''>   * @param twitterProvider The Twitter provider implementation.
+</span>105 <span style=''>   * @param xingProvider The Xing provider implementation.
+</span>106 <span style=''>   * @return The Silhouette environment.
+</span>107 <span style=''>   */
+</span>108 <span style=''>  @Provides
+</span>109 <span style=''>  def provideSocialProviderRegistry(
+</span>110 <span style=''>    facebookProvider: FacebookProvider): SocialProviderRegistry = {
+</span>111 <span style=''>    </span><span style='background: #AEF1AE'>SocialProviderRegistry(Seq(facebookProvider))</span><span style=''>
+</span>112 <span style=''>  }
+</span>113 <span style=''>
+</span>114 <span style=''>   /**
+</span>115 <span style=''>   * Provides the Facebook provider.
+</span>116 <span style=''>   *
+</span>117 <span style=''>   * @param httpLayer The HTTP layer implementation.
+</span>118 <span style=''>   * @param stateProvider The OAuth2 state provider implementation.
+</span>119 <span style=''>   * @param configuration The Play configuration.
+</span>120 <span style=''>   * @return The Facebook provider.
+</span>121 <span style=''>   */
+</span>122 <span style=''>  @Provides
+</span>123 <span style=''>  def provideFacebookProvider(
+</span>124 <span style=''>    httpLayer: HTTPLayer,
+</span>125 <span style=''>    stateProvider: SocialStateHandler,
+</span>126 <span style=''>    configuration: Configuration): FacebookProvider = {
+</span>127 <span style=''>
+</span>128 <span style=''>    </span><span style='background: #AEF1AE'>new FacebookProvider(httpLayer, stateProvider,
+</span>129 <span style=''></span><span style='background: #AEF1AE'>                         configuration.underlying.as[OAuth2Settings](&quot;silhouette.facebook&quot;))</span><span style=''>
+</span>130 <span style=''>  }
+</span>131 <span style=''>
+</span>132 <span style=''>  /**
+</span>133 <span style=''>    * Provides the SocialStateHandler.
+</span>134 <span style=''>    *
+</span>135 <span style=''>    */
+</span>136 <span style=''>  @Provides
+</span>137 <span style=''>  def provideSocialStateHandler(
+</span>138 <span style=''>    csrfHandler: CsrfStateItemHandler,
+</span>139 <span style=''>    signer: Signer,
+</span>140 <span style=''>    configuration: Configuration): SocialStateHandler = {
+</span>141 <span style=''>    </span><span style='background: #AEF1AE'>new DefaultSocialStateHandler(Set(),signer)</span><span style=''>
+</span>142 <span style=''>  }
+</span>143 <span style=''>
+</span>144 <span style=''>  /**
+</span>145 <span style=''>    * Provides the JcaSigner.
+</span>146 <span style=''>    */
+</span>147 <span style=''>  @Provides
+</span>148 <span style=''>  def provideJcaSigner(
+</span>149 <span style=''>    configuration: Configuration): Signer = {
+</span>150 <span style=''>    </span><span style='background: #AEF1AE'>new JcaSigner(configuration.underlying.as[JcaSignerSettings](&quot;silhouette.signer&quot;))</span><span style=''>
+</span>151 <span style=''>  }
+</span>152 <span style=''>
+</span>153 <span style=''>  /**
+</span>154 <span style=''>    * Provides the CsrfStateSettings.
+</span>155 <span style=''>    */
+</span>156 <span style=''>  @Provides
+</span>157 <span style=''>  def provideCsrfStateSettings(
+</span>158 <span style=''>    configuration: Configuration): CsrfStateSettings = {
+</span>159 <span style=''>    </span><span style='background: #AEF1AE'>configuration.underlying.as[CsrfStateSettings](&quot;silhouette.csrfState&quot;)</span><span style=''>
+</span>160 <span style=''>  }
+</span>161 <span style=''>
+</span>162 <span style=''>  /**
+</span>163 <span style=''>    * Provides the ApplicationConfig.
+</span>164 <span style=''>    */
+</span>165 <span style=''>  @Provides
+</span>166 <span style=''>  def provideApplicationConfig(
+</span>167 <span style=''>    configuration: Configuration): ApplicationConfig = {
+</span>168 <span style=''>    </span><span style='background: #AEF1AE'>configuration.underlying.as[ApplicationConfig](&quot;application&quot;)</span><span style=''>
+</span>169 <span style=''>  }
+</span>170 <span style=''>}
 </span></pre>
           </div>
           <div class="tab-pane" id="statementlist">
@@ -195,15 +205,15 @@
         <th>Code</th>
       </tr><tr>
         <td>
-          31
+          32
         </td>
         <td>
           1674
         </td>
         <td>
-          1294
+          1316
           -
-          1294
+          1316
         </td>
         <td>
           Apply
@@ -216,15 +226,15 @@
         </td>
       </tr><tr>
         <td>
-          31
+          32
         </td>
         <td>
           1677
         </td>
         <td>
-          1318
+          1340
           -
-          1318
+          1340
         </td>
         <td>
           Apply
@@ -237,15 +247,15 @@
         </td>
       </tr><tr>
         <td>
-          31
+          32
         </td>
         <td>
           1673
         </td>
         <td>
-          1294
+          1316
           -
-          1294
+          1316
         </td>
         <td>
           Apply
@@ -258,15 +268,15 @@
         </td>
       </tr><tr>
         <td>
-          31
+          32
         </td>
         <td>
           1676
         </td>
         <td>
-          1318
+          1340
           -
-          1318
+          1340
         </td>
         <td>
           Apply
@@ -279,15 +289,15 @@
         </td>
       </tr><tr>
         <td>
-          31
+          32
         </td>
         <td>
           1675
         </td>
         <td>
-          1318
+          1340
           -
-          1318
+          1340
         </td>
         <td>
           Literal
@@ -300,15 +310,15 @@
         </td>
       </tr><tr>
         <td>
-          31
+          32
         </td>
         <td>
           1678
         </td>
         <td>
-          1290
+          1312
           -
-          1347
+          1369
         </td>
         <td>
           ApplyToImplicitArgs
@@ -321,15 +331,15 @@
         </td>
       </tr><tr>
         <td>
-          31
+          32
         </td>
         <td>
           1672
         </td>
         <td>
-          1294
+          1316
           -
-          1294
+          1316
         </td>
         <td>
           Literal
@@ -342,15 +352,15 @@
         </td>
       </tr><tr>
         <td>
-          32
+          33
         </td>
         <td>
           1680
         </td>
         <td>
-          1384
+          1406
           -
-          1384
+          1406
         </td>
         <td>
           Select
@@ -363,15 +373,15 @@
         </td>
       </tr><tr>
         <td>
-          32
+          33
         </td>
         <td>
           1679
         </td>
         <td>
-          1356
+          1378
           -
-          1356
+          1378
         </td>
         <td>
           Apply
@@ -384,15 +394,15 @@
         </td>
       </tr><tr>
         <td>
-          32
+          33
         </td>
         <td>
           1682
         </td>
         <td>
-          1352
+          1374
           -
-          1411
+          1433
         </td>
         <td>
           Apply
@@ -405,15 +415,15 @@
         </td>
       </tr><tr>
         <td>
-          32
+          33
         </td>
         <td>
           1681
         </td>
         <td>
-          1384
+          1406
           -
-          1410
+          1432
         </td>
         <td>
           Apply
@@ -426,15 +436,15 @@
         </td>
       </tr><tr>
         <td>
-          33
+          34
         </td>
         <td>
           1683
         </td>
         <td>
-          1420
+          1442
           -
-          1420
+          1442
         </td>
         <td>
           Apply
@@ -447,15 +457,15 @@
         </td>
       </tr><tr>
         <td>
-          33
+          34
         </td>
         <td>
           1685
         </td>
         <td>
-          1416
+          1438
           -
-          1493
+          1515
         </td>
         <td>
           Apply
@@ -468,15 +478,15 @@
         </td>
       </tr><tr>
         <td>
-          33
+          34
         </td>
         <td>
           1684
         </td>
         <td>
-          1454
+          1476
           -
-          1492
+          1514
         </td>
         <td>
           Apply
@@ -489,15 +499,15 @@
         </td>
       </tr><tr>
         <td>
-          34
+          35
         </td>
         <td>
           1686
         </td>
         <td>
-          1502
+          1524
           -
-          1502
+          1524
         </td>
         <td>
           Apply
@@ -510,15 +520,15 @@
         </td>
       </tr><tr>
         <td>
-          34
+          35
         </td>
         <td>
           1688
         </td>
         <td>
-          1498
+          1520
           -
-          1535
+          1557
         </td>
         <td>
           Apply
@@ -531,15 +541,15 @@
         </td>
       </tr><tr>
         <td>
-          34
+          35
         </td>
         <td>
           1687
         </td>
         <td>
-          1524
+          1546
           -
-          1534
+          1556
         </td>
         <td>
           Apply
@@ -552,15 +562,15 @@
         </td>
       </tr><tr>
         <td>
-          35
+          36
         </td>
         <td>
           1689
         </td>
         <td>
-          1544
+          1566
           -
-          1544
+          1566
         </td>
         <td>
           Apply
@@ -573,15 +583,15 @@
         </td>
       </tr><tr>
         <td>
-          35
+          36
         </td>
         <td>
           1691
         </td>
         <td>
-          1540
+          1562
           -
-          1571
+          1593
         </td>
         <td>
           Apply
@@ -594,15 +604,15 @@
         </td>
       </tr><tr>
         <td>
-          35
+          36
         </td>
         <td>
           1690
         </td>
         <td>
-          1563
+          1585
           -
-          1570
+          1592
         </td>
         <td>
           Apply
@@ -615,15 +625,15 @@
         </td>
       </tr><tr>
         <td>
-          36
+          37
         </td>
         <td>
           1692
         </td>
         <td>
-          1580
+          1602
           -
-          1580
+          1602
         </td>
         <td>
           Apply
@@ -636,15 +646,15 @@
         </td>
       </tr><tr>
         <td>
-          36
+          37
         </td>
         <td>
           1695
         </td>
         <td>
-          1605
+          1627
           -
-          1634
+          1656
         </td>
         <td>
           ApplyToImplicitArgs
@@ -657,15 +667,15 @@
         </td>
       </tr><tr>
         <td>
-          36
+          37
         </td>
         <td>
           1694
         </td>
         <td>
-          1605
+          1627
           -
-          1605
+          1627
         </td>
         <td>
           Select
@@ -678,15 +688,15 @@
         </td>
       </tr><tr>
         <td>
-          36
+          37
         </td>
         <td>
           1693
         </td>
         <td>
-          1605
+          1627
           -
-          1605
+          1627
         </td>
         <td>
           Select
@@ -699,15 +709,15 @@
         </td>
       </tr><tr>
         <td>
-          36
+          37
         </td>
         <td>
           1696
         </td>
         <td>
-          1576
+          1598
           -
-          1635
+          1657
         </td>
         <td>
           Apply
@@ -720,15 +730,15 @@
         </td>
       </tr><tr>
         <td>
-          37
+          38
         </td>
         <td>
           1698
         </td>
         <td>
-          1667
+          1689
           -
-          1667
+          1689
         </td>
         <td>
           Apply
@@ -741,15 +751,15 @@
         </td>
       </tr><tr>
         <td>
-          37
+          38
         </td>
         <td>
           1697
         </td>
         <td>
-          1644
+          1666
           -
-          1644
+          1666
         </td>
         <td>
           Apply
@@ -762,15 +772,15 @@
         </td>
       </tr><tr>
         <td>
-          37
+          38
         </td>
         <td>
           1699
         </td>
         <td>
-          1640
+          1662
           -
-          1684
+          1706
         </td>
         <td>
           ApplyToImplicitArgs
@@ -783,15 +793,15 @@
         </td>
       </tr><tr>
         <td>
-          38
+          39
         </td>
         <td>
           1701
         </td>
         <td>
-          1710
+          1732
           -
-          1710
+          1732
         </td>
         <td>
           Apply
@@ -804,15 +814,15 @@
         </td>
       </tr><tr>
         <td>
-          38
+          39
         </td>
         <td>
           1700
         </td>
         <td>
-          1693
+          1715
           -
-          1693
+          1715
         </td>
         <td>
           Apply
@@ -825,15 +835,15 @@
         </td>
       </tr><tr>
         <td>
-          38
+          39
         </td>
         <td>
           1702
         </td>
         <td>
-          1689
+          1711
           -
-          1728
+          1750
         </td>
         <td>
           ApplyToImplicitArgs
@@ -846,15 +856,15 @@
         </td>
       </tr><tr>
         <td>
-          39
+          40
         </td>
         <td>
           1704
         </td>
         <td>
-          1753
+          1775
           -
-          1753
+          1775
         </td>
         <td>
           Apply
@@ -867,15 +877,15 @@
         </td>
       </tr><tr>
         <td>
-          39
+          40
         </td>
         <td>
           1703
         </td>
         <td>
-          1737
+          1759
           -
-          1737
+          1759
         </td>
         <td>
           Apply
@@ -888,15 +898,15 @@
         </td>
       </tr><tr>
         <td>
-          39
+          40
         </td>
         <td>
           1705
         </td>
         <td>
-          1733
+          1755
           -
-          1770
+          1792
         </td>
         <td>
           ApplyToImplicitArgs
@@ -909,15 +919,15 @@
         </td>
       </tr><tr>
         <td>
-          40
+          41
         </td>
         <td>
           1707
         </td>
         <td>
-          1800
+          1822
           -
-          1800
+          1822
         </td>
         <td>
           Apply
@@ -930,15 +940,15 @@
         </td>
       </tr><tr>
         <td>
-          40
+          41
         </td>
         <td>
           1706
         </td>
         <td>
-          1779
+          1801
           -
-          1779
+          1801
         </td>
         <td>
           Apply
@@ -951,15 +961,15 @@
         </td>
       </tr><tr>
         <td>
-          40
+          41
         </td>
         <td>
           1708
         </td>
         <td>
-          1775
+          1797
           -
-          1822
+          1844
         </td>
         <td>
           ApplyToImplicitArgs
@@ -972,15 +982,15 @@
         </td>
       </tr><tr>
         <td>
-          41
+          42
         </td>
         <td>
           1710
         </td>
         <td>
-          1847
+          1869
           -
-          1847
+          1869
         </td>
         <td>
           Apply
@@ -993,15 +1003,15 @@
         </td>
       </tr><tr>
         <td>
-          41
+          42
         </td>
         <td>
           1712
         </td>
         <td>
-          1847
+          1869
           -
-          1847
+          1869
         </td>
         <td>
           Literal
@@ -1014,15 +1024,15 @@
         </td>
       </tr><tr>
         <td>
-          41
+          42
         </td>
         <td>
           1709
         </td>
         <td>
-          1831
+          1853
           -
-          1831
+          1853
         </td>
         <td>
           Apply
@@ -1035,15 +1045,15 @@
         </td>
       </tr><tr>
         <td>
-          41
+          42
         </td>
         <td>
           1711
         </td>
         <td>
-          1827
+          1849
           -
-          1864
+          1886
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1056,15 +1066,15 @@
         </td>
       </tr><tr>
         <td>
-          45
+          46
         </td>
         <td>
           1713
         </td>
         <td>
-          1936
+          1958
           -
-          1936
+          1958
         </td>
         <td>
           Select
@@ -1077,15 +1087,15 @@
         </td>
       </tr><tr>
         <td>
-          45
+          46
         </td>
         <td>
           1714
         </td>
         <td>
-          1936
+          1958
           -
-          1961
+          1983
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1098,15 +1108,15 @@
         </td>
       </tr><tr>
         <td>
-          53
+          54
         </td>
         <td>
           1716
         </td>
         <td>
-          2176
+          2198
           -
-          2176
+          2198
         </td>
         <td>
           Select
@@ -1119,15 +1129,15 @@
         </td>
       </tr><tr>
         <td>
-          53
+          54
         </td>
         <td>
           1715
         </td>
         <td>
-          2213
+          2235
           -
-          2222
+          2244
         </td>
         <td>
           TypeApply
@@ -1140,15 +1150,15 @@
         </td>
       </tr><tr>
         <td>
-          53
+          54
         </td>
         <td>
           1717
         </td>
         <td>
-          2156
+          2178
           -
-          2233
+          2255
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1161,15 +1171,15 @@
         </td>
       </tr><tr>
         <td>
-          58
+          59
         </td>
         <td>
           1718
         </td>
         <td>
-          2319
+          2341
           -
-          2349
+          2371
         </td>
         <td>
           Apply
@@ -1182,15 +1192,15 @@
         </td>
       </tr><tr>
         <td>
-          59
+          60
         </td>
         <td>
           1719
         </td>
         <td>
-          2354
+          2376
           -
-          2378
+          2400
         </td>
         <td>
           Apply
@@ -1203,15 +1213,15 @@
         </td>
       </tr><tr>
         <td>
-          64
+          65
         </td>
         <td>
           1720
         </td>
         <td>
-          2492
+          2514
           -
-          2532
+          2554
         </td>
         <td>
           Apply
@@ -1224,15 +1234,15 @@
         </td>
       </tr><tr>
         <td>
-          72
+          73
         </td>
         <td>
           1725
         </td>
         <td>
-          2748
+          2770
           -
-          2748
+          2770
         </td>
         <td>
           Select
@@ -1245,15 +1255,15 @@
         </td>
       </tr><tr>
         <td>
-          72
+          73
         </td>
         <td>
           1722
         </td>
         <td>
-          2748
+          2770
           -
-          2748
+          2770
         </td>
         <td>
           Select
@@ -1266,15 +1276,15 @@
         </td>
       </tr><tr>
         <td>
-          72
+          73
         </td>
         <td>
           1721
         </td>
         <td>
-          2788
+          2810
           -
-          2798
+          2820
         </td>
         <td>
           Literal
@@ -1287,15 +1297,15 @@
         </td>
       </tr><tr>
         <td>
-          72
+          73
         </td>
         <td>
           1724
         </td>
         <td>
-          2748
+          2770
           -
-          2748
+          2770
         </td>
         <td>
           Select
@@ -1308,15 +1318,15 @@
         </td>
       </tr><tr>
         <td>
-          72
+          73
         </td>
         <td>
           1727
         </td>
         <td>
-          2748
+          2770
           -
-          2799
+          2821
         </td>
         <td>
           Apply
@@ -1329,15 +1339,15 @@
         </td>
       </tr><tr>
         <td>
-          72
+          73
         </td>
         <td>
           1726
         </td>
         <td>
-          2748
+          2770
           -
-          2748
+          2770
         </td>
         <td>
           Select
@@ -1350,15 +1360,15 @@
         </td>
       </tr><tr>
         <td>
-          72
+          73
         </td>
         <td>
           1723
         </td>
         <td>
-          2748
+          2770
           -
-          2748
+          2770
         </td>
         <td>
           Select
@@ -1371,15 +1381,15 @@
         </td>
       </tr><tr>
         <td>
-          81
+          82
         </td>
         <td>
           1728
         </td>
         <td>
-          3135
+          3157
           -
-          3139
+          3161
         </td>
         <td>
           Select
@@ -1392,15 +1402,15 @@
         </td>
       </tr><tr>
         <td>
-          81
+          82
         </td>
         <td>
           1730
         </td>
         <td>
-          3098
+          3120
           -
-          3158
+          3180
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1413,15 +1423,15 @@
         </td>
       </tr><tr>
         <td>
-          81
+          82
         </td>
         <td>
           1729
         </td>
         <td>
-          3098
+          3120
           -
-          3098
+          3120
         </td>
         <td>
           Select
@@ -1434,15 +1444,15 @@
         </td>
       </tr><tr>
         <td>
-          90
+          91
         </td>
         <td>
           1731
         </td>
         <td>
-          3466
+          3488
           -
-          3466
+          3488
         </td>
         <td>
           Select
@@ -1455,15 +1465,15 @@
         </td>
       </tr><tr>
         <td>
-          90
+          91
         </td>
         <td>
           1732
         </td>
         <td>
-          3466
+          3488
           -
-          3504
+          3526
         </td>
         <td>
           Apply
@@ -1476,15 +1486,15 @@
         </td>
       </tr><tr>
         <td>
-          91
+          92
         </td>
         <td>
           1734
         </td>
         <td>
-          3509
+          3531
           -
-          3575
+          3597
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1497,15 +1507,15 @@
         </td>
       </tr><tr>
         <td>
-          91
+          92
         </td>
         <td>
           1733
         </td>
         <td>
-          3509
+          3531
           -
-          3509
+          3531
         </td>
         <td>
           Select
@@ -1518,15 +1528,15 @@
         </td>
       </tr><tr>
         <td>
-          95
+          96
         </td>
         <td>
           1736
         </td>
         <td>
-          3659
+          3681
           -
-          3689
+          3711
         </td>
         <td>
           Apply
@@ -1539,15 +1549,15 @@
         </td>
       </tr><tr>
         <td>
-          95
+          96
         </td>
         <td>
           1735
         </td>
         <td>
-          3659
+          3681
           -
-          3659
+          3681
         </td>
         <td>
           Select
@@ -1560,15 +1570,15 @@
         </td>
       </tr><tr>
         <td>
-          110
+          111
         </td>
         <td>
           1737
         </td>
         <td>
-          4246
+          4268
           -
-          4267
+          4289
         </td>
         <td>
           Apply
@@ -1581,15 +1591,15 @@
         </td>
       </tr><tr>
         <td>
-          110
+          111
         </td>
         <td>
           1738
         </td>
         <td>
-          4223
+          4245
           -
-          4268
+          4290
         </td>
         <td>
           Apply
@@ -1602,15 +1612,15 @@
         </td>
       </tr><tr>
         <td>
-          127
+          128
         </td>
         <td>
           1742
         </td>
         <td>
-          4705
+          4727
           -
-          4844
+          4866
         </td>
         <td>
           Apply
@@ -1662,15 +1672,15 @@ else
         </td>
       </tr><tr>
         <td>
-          128
+          129
         </td>
         <td>
           1739
         </td>
         <td>
-          4777
+          4799
           -
-          4801
+          4823
         </td>
         <td>
           Select
@@ -1683,15 +1693,15 @@ else
         </td>
       </tr><tr>
         <td>
-          128
+          129
         </td>
         <td>
           1741
         </td>
         <td>
-          4777
+          4799
           -
-          4843
+          4865
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1743,15 +1753,15 @@ else
         </td>
       </tr><tr>
         <td>
-          128
+          129
         </td>
         <td>
           1740
         </td>
         <td>
-          4821
+          4843
           -
-          4842
+          4864
         </td>
         <td>
           Literal
@@ -1764,15 +1774,15 @@ else
         </td>
       </tr><tr>
         <td>
-          140
+          141
         </td>
         <td>
           1743
         </td>
         <td>
-          5104
+          5126
           -
-          5109
+          5131
         </td>
         <td>
           Apply
@@ -1785,15 +1795,15 @@ else
         </td>
       </tr><tr>
         <td>
-          140
+          141
         </td>
         <td>
           1744
         </td>
         <td>
-          5074
+          5096
           -
-          5117
+          5139
         </td>
         <td>
           Apply
@@ -1806,15 +1816,15 @@ else
         </td>
       </tr><tr>
         <td>
-          149
+          150
         </td>
         <td>
           1746
         </td>
         <td>
-          5313
+          5335
           -
-          5332
+          5354
         </td>
         <td>
           Literal
@@ -1827,15 +1837,15 @@ else
         </td>
       </tr><tr>
         <td>
-          149
+          150
         </td>
         <td>
           1748
         </td>
         <td>
-          5252
+          5274
           -
-          5334
+          5356
         </td>
         <td>
           Apply
@@ -1863,15 +1873,15 @@ else
         </td>
       </tr><tr>
         <td>
-          149
+          150
         </td>
         <td>
           1745
         </td>
         <td>
-          5266
+          5288
           -
-          5290
+          5312
         </td>
         <td>
           Select
@@ -1884,15 +1894,15 @@ else
         </td>
       </tr><tr>
         <td>
-          149
+          150
         </td>
         <td>
           1747
         </td>
         <td>
-          5266
+          5288
           -
-          5333
+          5355
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1920,15 +1930,15 @@ else
         </td>
       </tr><tr>
         <td>
-          158
+          159
         </td>
         <td>
           1751
         </td>
         <td>
-          5496
+          5518
           -
-          5566
+          5588
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1968,15 +1978,15 @@ else
         </td>
       </tr><tr>
         <td>
-          158
+          159
         </td>
         <td>
           1750
         </td>
         <td>
-          5543
-          -
           5565
+          -
+          5587
         </td>
         <td>
           Literal
@@ -1989,15 +1999,15 @@ else
         </td>
       </tr><tr>
         <td>
-          158
+          159
         </td>
         <td>
           1749
         </td>
         <td>
-          5496
+          5518
           -
-          5520
+          5542
         </td>
         <td>
           Select
@@ -2007,6 +2017,84 @@ else
         </td>
         <td style="background: #AEF1AE">
           configuration.underlying
+        </td>
+      </tr><tr>
+        <td>
+          168
+        </td>
+        <td>
+          1752
+        </td>
+        <td>
+          5750
+          -
+          5774
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.Configuration.underlying
+        </td>
+        <td style="background: #AEF1AE">
+          configuration.underlying
+        </td>
+      </tr><tr>
+        <td>
+          168
+        </td>
+        <td>
+          1754
+        </td>
+        <td>
+          5750
+          -
+          5811
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          net.ceedubs.ficus.FicusConfig.as
+        </td>
+        <td style="background: #AEF1AE">
+          net.ceedubs.ficus.Ficus.toFicusConfig(configuration.underlying).as[whatson.util.ApplicationConfig](&quot;application&quot;)(({
+  final class $anon extends AnyRef with net.ceedubs.ficus.readers.ValueReader[whatson.util.ApplicationConfig] {
+    def &lt;init&gt;(): &lt;$anon: net.ceedubs.ficus.readers.ValueReader[whatson.util.ApplicationConfig]&gt; = {
+      $anon.super.&lt;init&gt;();
+      ()
+    };
+    def read(config: com.typesafe.config.Config, path: String): whatson.util.ApplicationConfig = ApplicationConfig.apply(net.ceedubs.ficus.Ficus.stringValueReader.read(config, if (path.==(&quot;.&quot;))
+      net.ceedubs.ficus.readers.NameMapper.apply()(net.ceedubs.ficus.readers.NameMapper.apply$default$1()).map(&quot;url&quot;)
+    else
+      path.+(&quot;.&quot;).+(net.ceedubs.ficus.readers.NameMapper.apply()(net.ceedubs.ficus.readers.NameMapper.apply$default$1()).map(&quot;url&quot;))), net.ceedubs.ficus.Ficus.booleanValueReader.read(config, if (path.==(&quot;.&quot;))
+      net.ceedubs.ficus.readers.NameMapper.apply()(net.ceedubs.ficus.readers.NameMapper.apply$default$1()).map(&quot;confirmationMails&quot;)
+    else
+      path.+(&quot;.&quot;).+(net.ceedubs.ficus.readers.NameMapper.apply()(net.ceedubs.ficus.readers.NameMapper.apply$default$1()).map(&quot;confirmationMails&quot;))))
+  };
+  new $anon()
+}: net.ceedubs.ficus.readers.ValueReader[whatson.util.ApplicationConfig]))
+        </td>
+      </tr><tr>
+        <td>
+          168
+        </td>
+        <td>
+          1753
+        </td>
+        <td>
+          5797
+          -
+          5810
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;application&quot;
         </td>
       </tr>
     </table>
