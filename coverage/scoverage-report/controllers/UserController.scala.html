@@ -71,35 +71,35 @@
 </span>47 <span style=''>   *
 </span>48 <span style=''>   * @return The result to display.
 </span>49 <span style=''>   */
-</span>50 <span style=''>  def signUp = </span><span style='background: #F0ADAD'>Action.async(parse.json) { implicit request =&gt;
-</span>51 <span style=''></span><span style='background: #F0ADAD'>    UserSignUpForm.form.bindFromRequest.fold(
-</span>52 <span style=''></span><span style='background: #F0ADAD'>      form =&gt; {
-</span>53 <span style=''></span><span style='background: #F0ADAD'>        Future.successful(BadRequest(Json.toJson(form.errors)))
-</span>54 <span style=''></span><span style='background: #F0ADAD'>      },
-</span>55 <span style=''></span><span style='background: #F0ADAD'>      data =&gt; {
-</span>56 <span style=''></span><span style='background: #F0ADAD'>        val loginInfo = LoginInfo(CredentialsProvider.ID, data.email)
-</span>57 <span style=''></span><span style='background: #F0ADAD'>        loginService.retrieve(loginInfo).flatMap {
-</span>58 <span style=''></span><span style='background: #F0ADAD'>          case Some(login) =&gt;
-</span>59 <span style=''></span><span style='background: #F0ADAD'>            Future.successful(BadRequest(Json.obj(&quot;message&quot; -&gt; &quot;user.exists&quot;)))
-</span>60 <span style=''></span><span style='background: #F0ADAD'>          case None =&gt;
-</span>61 <span style=''></span><span style='background: #F0ADAD'>            val authInfo = passwordHasher.hash(data.password)
-</span>62 <span style=''></span><span style='background: #F0ADAD'>            val login = Login(None, data.email, None, None, None, loginInfo.providerID, loginInfo.providerKey, false)
-</span>63 <span style=''></span><span style='background: #F0ADAD'>            for {
-</span>64 <span style=''></span><span style='background: #F0ADAD'>              login &lt;- loginService.save(login)
-</span>65 <span style=''></span><span style='background: #F0ADAD'>              authInfo &lt;- authInfoRepository.add(loginInfo, authInfo)
-</span>66 <span style=''></span><span style='background: #F0ADAD'>              authenticator &lt;- silhouette.env.authenticatorService.create(loginInfo)
-</span>67 <span style=''></span><span style='background: #F0ADAD'>              token &lt;- silhouette.env.authenticatorService.init(authenticator)
-</span>68 <span style=''></span><span style='background: #F0ADAD'>              avatar &lt;- avatarService.retrieveURL(data.email)
-</span>69 <span style=''></span><span style='background: #F0ADAD'>            } yield {
-</span>70 <span style=''></span><span style='background: #F0ADAD'>              silhouette.env.eventBus.publish(SignUpEvent(login, request))
-</span>71 <span style=''></span><span style='background: #F0ADAD'>              silhouette.env.eventBus.publish(LoginEvent(login, request))
-</span>72 <span style=''></span><span style='background: #F0ADAD'>              userService.save(login,avatar)
-</span>73 <span style=''></span><span style='background: #F0ADAD'>              mailService.sendUserConfirmation(data.email,token)
-</span>74 <span style=''></span><span style='background: #F0ADAD'>              Ok(Json.obj(&quot;message&quot; -&gt; &quot;mail.sent&quot;))
-</span>75 <span style=''></span><span style='background: #F0ADAD'>            }
-</span>76 <span style=''></span><span style='background: #F0ADAD'>        }
-</span>77 <span style=''></span><span style='background: #F0ADAD'>      })
-</span>78 <span style=''></span><span style='background: #F0ADAD'>  }</span><span style=''>
+</span>50 <span style=''>  def signUp = </span><span style='background: #AEF1AE'>Action.async(parse.json) { implicit request =&gt;
+</span>51 <span style=''></span><span style='background: #AEF1AE'>    UserSignUpForm.form.bindFromRequest.fold(
+</span>52 <span style=''></span><span style='background: #AEF1AE'>      form =&gt; {
+</span>53 <span style=''></span><span style='background: #AEF1AE'>        Future.successful(BadRequest(Json.toJson(form.errors)))
+</span>54 <span style=''></span><span style='background: #AEF1AE'>      },
+</span>55 <span style=''></span><span style='background: #AEF1AE'>      data =&gt; {
+</span>56 <span style=''></span><span style='background: #AEF1AE'>        val loginInfo = LoginInfo(CredentialsProvider.ID, data.email)
+</span>57 <span style=''></span><span style='background: #AEF1AE'>        loginService.retrieveAll(loginInfo).flatMap {
+</span>58 <span style=''></span><span style='background: #AEF1AE'>          case Some(login) =&gt;
+</span>59 <span style=''></span><span style='background: #AEF1AE'>            Future.successful(BadRequest(Json.obj(&quot;message&quot; -&gt; &quot;user.exists&quot;)))
+</span>60 <span style=''></span><span style='background: #AEF1AE'>          case None =&gt;
+</span>61 <span style=''></span><span style='background: #AEF1AE'>            val authInfo = passwordHasher.hash(data.password)
+</span>62 <span style=''></span><span style='background: #AEF1AE'>            val login = Login(None, data.email, None, None, None, loginInfo.providerID, loginInfo.providerKey, false)
+</span>63 <span style=''></span><span style='background: #AEF1AE'>            for {
+</span>64 <span style=''></span><span style='background: #AEF1AE'>              login &lt;- loginService.save(login)
+</span>65 <span style=''></span><span style='background: #AEF1AE'>              authInfo &lt;- authInfoRepository.add(loginInfo, authInfo)
+</span>66 <span style=''></span><span style='background: #AEF1AE'>              authenticator &lt;- silhouette.env.authenticatorService.create(loginInfo)
+</span>67 <span style=''></span><span style='background: #AEF1AE'>              token &lt;- silhouette.env.authenticatorService.init(authenticator)
+</span>68 <span style=''></span><span style='background: #AEF1AE'>              avatar &lt;- avatarService.retrieveURL(data.email)
+</span>69 <span style=''></span><span style='background: #AEF1AE'>            } yield {
+</span>70 <span style=''></span><span style='background: #AEF1AE'>              silhouette.env.eventBus.publish(SignUpEvent(login, request))
+</span>71 <span style=''></span><span style='background: #AEF1AE'>              silhouette.env.eventBus.publish(LoginEvent(login, request))
+</span>72 <span style=''></span><span style='background: #AEF1AE'>              userService.save(login,avatar)
+</span>73 <span style=''></span><span style='background: #AEF1AE'>              mailService.sendUserConfirmation(data.email,token)
+</span>74 <span style=''></span><span style='background: #AEF1AE'>              Ok(Json.obj(&quot;message&quot; -&gt; &quot;mail.sent&quot;))
+</span>75 <span style=''></span><span style='background: #AEF1AE'>            }
+</span>76 <span style=''></span><span style='background: #AEF1AE'>        }
+</span>77 <span style=''></span><span style='background: #AEF1AE'>      })
+</span>78 <span style=''></span><span style='background: #AEF1AE'>  }</span><span style=''>
 </span>79 <span style=''>}
 </span></pre>
           </div>
@@ -151,7 +151,7 @@
         <td>
           play.api.mvc.PlayBodyParsers.json
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           UserController.this.parse.json
         </td>
       </tr><tr>
@@ -164,7 +164,7 @@
         <td>
           1638
           -
-          3002
+          3005
         </td>
         <td>
           Apply
@@ -172,10 +172,10 @@
         <td>
           play.api.mvc.ActionBuilder.async
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           UserController.this.Action.async[play.api.libs.json.JsValue](UserController.this.parse.json)(((implicit request: play.api.mvc.Request[play.api.libs.json.JsValue]) =&gt; whatson.model.UserSignUpForm.form.bindFromRequest()(request).fold[scala.concurrent.Future[play.api.mvc.Result]](((form: play.api.data.Form[whatson.model.UserSignUpForm.Data]) =&gt; scala.concurrent.Future.successful[play.api.mvc.Result](UserController.this.BadRequest.apply[play.api.libs.json.JsValue](play.api.libs.json.Json.toJson[Seq[play.api.data.FormError]](form.errors)(whatson.util.FormErrorJson.formErrorFormat))(http.this.Writeable.writeableOf_JsValue))), ((data: whatson.model.UserSignUpForm.Data) =&gt; {
   val loginInfo: com.mohiva.play.silhouette.api.LoginInfo = com.mohiva.play.silhouette.api.LoginInfo.apply(com.mohiva.play.silhouette.impl.providers.CredentialsProvider.ID, data.email);
-  UserController.this.loginService.retrieve(loginInfo).flatMap[play.api.mvc.Result](((x0$1: Option[whatson.model.Login]) =&gt; x0$1 match {
+  UserController.this.loginService.retrieveAll(loginInfo).flatMap[play.api.mvc.Result](((x0$1: Option[whatson.model.Login]) =&gt; x0$1 match {
     case (value: whatson.model.Login)Some[whatson.model.Login]((login @ _)) =&gt; scala.concurrent.Future.successful[play.api.mvc.Result](UserController.this.BadRequest.apply[play.api.libs.json.JsObject](play.api.libs.json.Json.obj(scala.Predef.ArrowAssoc[String](&quot;message&quot;).-&gt;[play.api.libs.json.Json.JsValueWrapper](json.this.Json.toJsFieldJsValueWrapper[String](&quot;user.exists&quot;)(json.this.Writes.StringWrites))))(http.this.Writeable.writeableOf_JsValue))
     case scala.None =&gt; {
       val authInfo: com.mohiva.play.silhouette.api.util.PasswordInfo = UserController.this.passwordHasher.hash(data.password);
@@ -201,7 +201,7 @@
         <td>
           1689
           -
-          2998
+          3001
         </td>
         <td>
           Apply
@@ -209,10 +209,10 @@
         <td>
           play.api.data.Form.fold
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           whatson.model.UserSignUpForm.form.bindFromRequest()(request).fold[scala.concurrent.Future[play.api.mvc.Result]](((form: play.api.data.Form[whatson.model.UserSignUpForm.Data]) =&gt; scala.concurrent.Future.successful[play.api.mvc.Result](UserController.this.BadRequest.apply[play.api.libs.json.JsValue](play.api.libs.json.Json.toJson[Seq[play.api.data.FormError]](form.errors)(whatson.util.FormErrorJson.formErrorFormat))(http.this.Writeable.writeableOf_JsValue))), ((data: whatson.model.UserSignUpForm.Data) =&gt; {
   val loginInfo: com.mohiva.play.silhouette.api.LoginInfo = com.mohiva.play.silhouette.api.LoginInfo.apply(com.mohiva.play.silhouette.impl.providers.CredentialsProvider.ID, data.email);
-  UserController.this.loginService.retrieve(loginInfo).flatMap[play.api.mvc.Result](((x0$1: Option[whatson.model.Login]) =&gt; x0$1 match {
+  UserController.this.loginService.retrieveAll(loginInfo).flatMap[play.api.mvc.Result](((x0$1: Option[whatson.model.Login]) =&gt; x0$1 match {
     case (value: whatson.model.Login)Some[whatson.model.Login]((login @ _)) =&gt; scala.concurrent.Future.successful[play.api.mvc.Result](UserController.this.BadRequest.apply[play.api.libs.json.JsObject](play.api.libs.json.Json.obj(scala.Predef.ArrowAssoc[String](&quot;message&quot;).-&gt;[play.api.libs.json.Json.JsValueWrapper](json.this.Json.toJsFieldJsValueWrapper[String](&quot;user.exists&quot;)(json.this.Writes.StringWrites))))(http.this.Writeable.writeableOf_JsValue))
     case scala.None =&gt; {
       val authInfo: com.mohiva.play.silhouette.api.util.PasswordInfo = UserController.this.passwordHasher.hash(data.password);
@@ -246,7 +246,7 @@
         <td>
           play.api.http.DefaultWriteables.writeableOf_JsValue
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           http.this.Writeable.writeableOf_JsValue
         </td>
       </tr><tr>
@@ -267,7 +267,7 @@
         <td>
           play.api.data.Form.errors
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           form.errors
         </td>
       </tr><tr>
@@ -288,7 +288,7 @@
         <td>
           play.api.libs.json.Json.toJson
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           play.api.libs.json.Json.toJson[Seq[play.api.data.FormError]](form.errors)(whatson.util.FormErrorJson.formErrorFormat)
         </td>
       </tr><tr>
@@ -309,7 +309,7 @@
         <td>
           scala.concurrent.Future.successful
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           scala.concurrent.Future.successful[play.api.mvc.Result](UserController.this.BadRequest.apply[play.api.libs.json.JsValue](play.api.libs.json.Json.toJson[Seq[play.api.data.FormError]](form.errors)(whatson.util.FormErrorJson.formErrorFormat))(http.this.Writeable.writeableOf_JsValue))
         </td>
       </tr><tr>
@@ -330,7 +330,7 @@
         <td>
           play.api.mvc.Results.Status.apply
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           UserController.this.BadRequest.apply[play.api.libs.json.JsValue](play.api.libs.json.Json.toJson[Seq[play.api.data.FormError]](form.errors)(whatson.util.FormErrorJson.formErrorFormat))(http.this.Writeable.writeableOf_JsValue)
         </td>
       </tr><tr>
@@ -351,7 +351,7 @@
         <td>
           whatson.util.FormErrorJson.formErrorFormat
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           whatson.util.FormErrorJson.formErrorFormat
         </td>
       </tr><tr>
@@ -372,7 +372,7 @@
         <td>
           com.mohiva.play.silhouette.impl.providers.CredentialsProvider.ID
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           com.mohiva.play.silhouette.impl.providers.CredentialsProvider.ID
         </td>
       </tr><tr>
@@ -393,7 +393,7 @@
         <td>
           com.mohiva.play.silhouette.api.LoginInfo.apply
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           com.mohiva.play.silhouette.api.LoginInfo.apply(com.mohiva.play.silhouette.impl.providers.CredentialsProvider.ID, data.email)
         </td>
       </tr><tr>
@@ -414,7 +414,7 @@
         <td>
           whatson.model.UserSignUpForm.Data.email
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           data.email
         </td>
       </tr><tr>
@@ -427,7 +427,7 @@
         <td>
           1914
           -
-          2989
+          2992
         </td>
         <td>
           ApplyToImplicitArgs
@@ -435,8 +435,8 @@
         <td>
           scala.concurrent.Future.flatMap
         </td>
-        <td style="background: #F0ADAD">
-          UserController.this.loginService.retrieve(loginInfo).flatMap[play.api.mvc.Result](((x0$1: Option[whatson.model.Login]) =&gt; x0$1 match {
+        <td style="background: #AEF1AE">
+          UserController.this.loginService.retrieveAll(loginInfo).flatMap[play.api.mvc.Result](((x0$1: Option[whatson.model.Login]) =&gt; x0$1 match {
   case (value: whatson.model.Login)Some[whatson.model.Login]((login @ _)) =&gt; scala.concurrent.Future.successful[play.api.mvc.Result](UserController.this.BadRequest.apply[play.api.libs.json.JsObject](play.api.libs.json.Json.obj(scala.Predef.ArrowAssoc[String](&quot;message&quot;).-&gt;[play.api.libs.json.Json.JsValueWrapper](json.this.Json.toJsFieldJsValueWrapper[String](&quot;user.exists&quot;)(json.this.Writes.StringWrites))))(http.this.Writeable.writeableOf_JsValue))
   case scala.None =&gt; {
     val authInfo: com.mohiva.play.silhouette.api.util.PasswordInfo = UserController.this.passwordHasher.hash(data.password);
@@ -459,9 +459,9 @@
           808
         </td>
         <td>
-          1955
+          1958
           -
-          1955
+          1958
         </td>
         <td>
           Select
@@ -469,7 +469,7 @@
         <td>
           play.api.libs.concurrent.Execution.Implicits.defaultContext
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           play.api.libs.concurrent.Execution.Implicits.defaultContext
         </td>
       </tr><tr>
@@ -480,9 +480,9 @@
           765
         </td>
         <td>
-          2050
+          2053
           -
-          2063
+          2066
         </td>
         <td>
           ApplyToImplicitArgs
@@ -490,7 +490,7 @@
         <td>
           play.api.libs.json.Json.toJsFieldJsValueWrapper
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           json.this.Json.toJsFieldJsValueWrapper[String](&quot;user.exists&quot;)(json.this.Writes.StringWrites)
         </td>
       </tr><tr>
@@ -501,9 +501,9 @@
           768
         </td>
         <td>
-          2027
+          2030
           -
-          2027
+          2030
         </td>
         <td>
           Select
@@ -511,7 +511,7 @@
         <td>
           play.api.http.DefaultWriteables.writeableOf_JsValue
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           http.this.Writeable.writeableOf_JsValue
         </td>
       </tr><tr>
@@ -522,9 +522,9 @@
           762
         </td>
         <td>
-          2037
+          2040
           -
-          2046
+          2049
         </td>
         <td>
           Literal
@@ -532,7 +532,7 @@
         <td>
           &lt;nosymbol&gt;
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           &quot;message&quot;
         </td>
       </tr><tr>
@@ -543,9 +543,9 @@
           770
         </td>
         <td>
-          1999
+          2002
           -
-          2066
+          2069
         </td>
         <td>
           Apply
@@ -553,7 +553,7 @@
         <td>
           scala.concurrent.Future.successful
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           scala.concurrent.Future.successful[play.api.mvc.Result](UserController.this.BadRequest.apply[play.api.libs.json.JsObject](play.api.libs.json.Json.obj(scala.Predef.ArrowAssoc[String](&quot;message&quot;).-&gt;[play.api.libs.json.Json.JsValueWrapper](json.this.Json.toJsFieldJsValueWrapper[String](&quot;user.exists&quot;)(json.this.Writes.StringWrites))))(http.this.Writeable.writeableOf_JsValue))
         </td>
       </tr><tr>
@@ -564,9 +564,9 @@
           764
         </td>
         <td>
-          2050
+          2053
           -
-          2050
+          2053
         </td>
         <td>
           Select
@@ -574,7 +574,7 @@
         <td>
           play.api.libs.json.DefaultWrites.StringWrites
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           json.this.Writes.StringWrites
         </td>
       </tr><tr>
@@ -585,9 +585,9 @@
           767
         </td>
         <td>
-          2028
+          2031
           -
-          2064
+          2067
         </td>
         <td>
           Apply
@@ -595,7 +595,7 @@
         <td>
           play.api.libs.json.Json.obj
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           play.api.libs.json.Json.obj(scala.Predef.ArrowAssoc[String](&quot;message&quot;).-&gt;[play.api.libs.json.Json.JsValueWrapper](json.this.Json.toJsFieldJsValueWrapper[String](&quot;user.exists&quot;)(json.this.Writes.StringWrites)))
         </td>
       </tr><tr>
@@ -606,9 +606,9 @@
           766
         </td>
         <td>
-          2037
+          2040
           -
-          2063
+          2066
         </td>
         <td>
           Apply
@@ -616,7 +616,7 @@
         <td>
           scala.Predef.ArrowAssoc.-&gt;
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           scala.Predef.ArrowAssoc[String](&quot;message&quot;).-&gt;[play.api.libs.json.Json.JsValueWrapper](json.this.Json.toJsFieldJsValueWrapper[String](&quot;user.exists&quot;)(json.this.Writes.StringWrites))
         </td>
       </tr><tr>
@@ -627,9 +627,9 @@
           769
         </td>
         <td>
-          2017
+          2020
           -
-          2065
+          2068
         </td>
         <td>
           ApplyToImplicitArgs
@@ -637,7 +637,7 @@
         <td>
           play.api.mvc.Results.Status.apply
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           UserController.this.BadRequest.apply[play.api.libs.json.JsObject](play.api.libs.json.Json.obj(scala.Predef.ArrowAssoc[String](&quot;message&quot;).-&gt;[play.api.libs.json.Json.JsValueWrapper](json.this.Json.toJsFieldJsValueWrapper[String](&quot;user.exists&quot;)(json.this.Writes.StringWrites))))(http.this.Writeable.writeableOf_JsValue)
         </td>
       </tr><tr>
@@ -648,9 +648,9 @@
           763
         </td>
         <td>
-          2050
+          2053
           -
-          2063
+          2066
         </td>
         <td>
           Literal
@@ -658,7 +658,7 @@
         <td>
           &lt;nosymbol&gt;
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           &quot;user.exists&quot;
         </td>
       </tr><tr>
@@ -669,9 +669,9 @@
           771
         </td>
         <td>
-          2137
+          2140
           -
-          2150
+          2153
         </td>
         <td>
           Select
@@ -679,7 +679,7 @@
         <td>
           whatson.model.UserSignUpForm.Data.password
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           data.password
         </td>
       </tr><tr>
@@ -690,9 +690,9 @@
           772
         </td>
         <td>
-          2117
+          2120
           -
-          2151
+          2154
         </td>
         <td>
           Apply
@@ -700,7 +700,7 @@
         <td>
           com.mohiva.play.silhouette.api.util.PasswordHasher.hash
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           UserController.this.passwordHasher.hash(data.password)
         </td>
       </tr><tr>
@@ -711,9 +711,9 @@
           774
         </td>
         <td>
-          2188
+          2191
           -
-          2198
+          2201
         </td>
         <td>
           Select
@@ -721,7 +721,7 @@
         <td>
           whatson.model.UserSignUpForm.Data.email
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           data.email
         </td>
       </tr><tr>
@@ -732,9 +732,9 @@
           777
         </td>
         <td>
-          2212
+          2215
           -
-          2216
+          2219
         </td>
         <td>
           Select
@@ -742,7 +742,7 @@
         <td>
           scala.None
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           scala.None
         </td>
       </tr><tr>
@@ -753,9 +753,9 @@
           779
         </td>
         <td>
-          2240
+          2243
           -
-          2261
+          2264
         </td>
         <td>
           Select
@@ -763,7 +763,7 @@
         <td>
           com.mohiva.play.silhouette.api.LoginInfo.providerKey
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           loginInfo.providerKey
         </td>
       </tr><tr>
@@ -774,9 +774,9 @@
           773
         </td>
         <td>
-          2182
+          2185
           -
-          2186
+          2189
         </td>
         <td>
           Select
@@ -784,7 +784,7 @@
         <td>
           scala.None
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           scala.None
         </td>
       </tr><tr>
@@ -795,9 +795,9 @@
           776
         </td>
         <td>
-          2206
+          2209
           -
-          2210
+          2213
         </td>
         <td>
           Select
@@ -805,7 +805,7 @@
         <td>
           scala.None
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           scala.None
         </td>
       </tr><tr>
@@ -816,9 +816,9 @@
           775
         </td>
         <td>
-          2200
+          2203
           -
-          2204
+          2207
         </td>
         <td>
           Select
@@ -826,7 +826,7 @@
         <td>
           scala.None
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           scala.None
         </td>
       </tr><tr>
@@ -837,9 +837,9 @@
           778
         </td>
         <td>
-          2218
+          2221
           -
-          2238
+          2241
         </td>
         <td>
           Select
@@ -847,7 +847,7 @@
         <td>
           com.mohiva.play.silhouette.api.LoginInfo.providerID
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           loginInfo.providerID
         </td>
       </tr><tr>
@@ -858,9 +858,9 @@
           781
         </td>
         <td>
-          2176
+          2179
           -
-          2269
+          2272
         </td>
         <td>
           Apply
@@ -868,7 +868,7 @@
         <td>
           whatson.model.Login.apply
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           whatson.model.Login.apply(scala.None, data.email, scala.None, scala.None, scala.None, loginInfo.providerID, loginInfo.providerKey, false)
         </td>
       </tr><tr>
@@ -879,9 +879,9 @@
           780
         </td>
         <td>
-          2263
+          2266
           -
-          2268
+          2271
         </td>
         <td>
           Literal
@@ -889,7 +889,7 @@
         <td>
           &lt;nosymbol&gt;
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           false
         </td>
       </tr><tr>
@@ -900,9 +900,9 @@
           806
         </td>
         <td>
-          2308
+          2311
           -
-          2308
+          2311
         </td>
         <td>
           Select
@@ -910,7 +910,7 @@
         <td>
           play.api.libs.concurrent.Execution.Implicits.defaultContext
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           play.api.libs.concurrent.Execution.Implicits.defaultContext
         </td>
       </tr><tr>
@@ -921,9 +921,9 @@
           807
         </td>
         <td>
-          2282
+          2285
           -
-          2979
+          2982
         </td>
         <td>
           ApplyToImplicitArgs
@@ -931,7 +931,7 @@
         <td>
           scala.concurrent.Future.flatMap
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           UserController.this.loginService.save(login).flatMap[play.api.mvc.Result](((login: whatson.model.Login) =&gt; UserController.this.authInfoRepository.add[com.mohiva.play.silhouette.api.util.PasswordInfo](loginInfo, authInfo).flatMap[play.api.mvc.Result](((authInfo: com.mohiva.play.silhouette.api.util.PasswordInfo) =&gt; UserController.this.silhouette.env.authenticatorService.create(loginInfo)(request).flatMap[play.api.mvc.Result](((authenticator: whatson.auth.AuthEnv#A) =&gt; UserController.this.silhouette.env.authenticatorService.init(authenticator)(request).flatMap[play.api.mvc.Result](((token: whatson.auth.AuthEnv#A#Value) =&gt; UserController.this.avatarService.retrieveURL(data.email).map[play.api.mvc.Result](((avatar: Option[String]) =&gt; {
   UserController.this.silhouette.env.eventBus.publish(com.mohiva.play.silhouette.api.SignUpEvent.apply[whatson.model.Login](login, request));
   UserController.this.silhouette.env.eventBus.publish(com.mohiva.play.silhouette.api.LoginEvent.apply[whatson.model.Login](login, request));
@@ -948,9 +948,9 @@
           804
         </td>
         <td>
-          2359
+          2362
           -
-          2359
+          2362
         </td>
         <td>
           Select
@@ -958,7 +958,7 @@
         <td>
           play.api.libs.concurrent.Execution.Implicits.defaultContext
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           play.api.libs.concurrent.Execution.Implicits.defaultContext
         </td>
       </tr><tr>
@@ -969,9 +969,9 @@
           805
         </td>
         <td>
-          2350
+          2353
           -
-          2979
+          2982
         </td>
         <td>
           ApplyToImplicitArgs
@@ -979,7 +979,7 @@
         <td>
           scala.concurrent.Future.flatMap
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           UserController.this.authInfoRepository.add[com.mohiva.play.silhouette.api.util.PasswordInfo](loginInfo, authInfo).flatMap[play.api.mvc.Result](((authInfo: com.mohiva.play.silhouette.api.util.PasswordInfo) =&gt; UserController.this.silhouette.env.authenticatorService.create(loginInfo)(request).flatMap[play.api.mvc.Result](((authenticator: whatson.auth.AuthEnv#A) =&gt; UserController.this.silhouette.env.authenticatorService.init(authenticator)(request).flatMap[play.api.mvc.Result](((token: whatson.auth.AuthEnv#A#Value) =&gt; UserController.this.avatarService.retrieveURL(data.email).map[play.api.mvc.Result](((avatar: Option[String]) =&gt; {
   UserController.this.silhouette.env.eventBus.publish(com.mohiva.play.silhouette.api.SignUpEvent.apply[whatson.model.Login](login, request));
   UserController.this.silhouette.env.eventBus.publish(com.mohiva.play.silhouette.api.LoginEvent.apply[whatson.model.Login](login, request));
@@ -996,9 +996,9 @@
           803
         </td>
         <td>
-          2420
+          2423
           -
-          2979
+          2982
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1006,7 +1006,7 @@
         <td>
           scala.concurrent.Future.flatMap
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           UserController.this.silhouette.env.authenticatorService.create(loginInfo)(request).flatMap[play.api.mvc.Result](((authenticator: whatson.auth.AuthEnv#A) =&gt; UserController.this.silhouette.env.authenticatorService.init(authenticator)(request).flatMap[play.api.mvc.Result](((token: whatson.auth.AuthEnv#A#Value) =&gt; UserController.this.avatarService.retrieveURL(data.email).map[play.api.mvc.Result](((avatar: Option[String]) =&gt; {
   UserController.this.silhouette.env.eventBus.publish(com.mohiva.play.silhouette.api.SignUpEvent.apply[whatson.model.Login](login, request));
   UserController.this.silhouette.env.eventBus.publish(com.mohiva.play.silhouette.api.LoginEvent.apply[whatson.model.Login](login, request));
@@ -1023,9 +1023,9 @@
           802
         </td>
         <td>
-          2434
+          2437
           -
-          2434
+          2437
         </td>
         <td>
           Select
@@ -1033,7 +1033,7 @@
         <td>
           play.api.libs.concurrent.Execution.Implicits.defaultContext
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           play.api.libs.concurrent.Execution.Implicits.defaultContext
         </td>
       </tr><tr>
@@ -1044,9 +1044,9 @@
           801
         </td>
         <td>
-          2505
+          2508
           -
-          2979
+          2982
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1054,7 +1054,7 @@
         <td>
           scala.concurrent.Future.flatMap
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           UserController.this.silhouette.env.authenticatorService.init(authenticator)(request).flatMap[play.api.mvc.Result](((token: whatson.auth.AuthEnv#A#Value) =&gt; UserController.this.avatarService.retrieveURL(data.email).map[play.api.mvc.Result](((avatar: Option[String]) =&gt; {
   UserController.this.silhouette.env.eventBus.publish(com.mohiva.play.silhouette.api.SignUpEvent.apply[whatson.model.Login](login, request));
   UserController.this.silhouette.env.eventBus.publish(com.mohiva.play.silhouette.api.LoginEvent.apply[whatson.model.Login](login, request));
@@ -1071,9 +1071,9 @@
           800
         </td>
         <td>
-          2511
+          2514
           -
-          2511
+          2514
         </td>
         <td>
           Select
@@ -1081,7 +1081,7 @@
         <td>
           play.api.libs.concurrent.Execution.Implicits.defaultContext
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           play.api.libs.concurrent.Execution.Implicits.defaultContext
         </td>
       </tr><tr>
@@ -1092,9 +1092,9 @@
           782
         </td>
         <td>
-          2620
+          2623
           -
-          2630
+          2633
         </td>
         <td>
           Select
@@ -1102,7 +1102,7 @@
         <td>
           whatson.model.UserSignUpForm.Data.email
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           data.email
         </td>
       </tr><tr>
@@ -1113,9 +1113,9 @@
           799
         </td>
         <td>
-          2584
+          2587
           -
-          2979
+          2982
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1123,7 +1123,7 @@
         <td>
           scala.concurrent.Future.map
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           UserController.this.avatarService.retrieveURL(data.email).map[play.api.mvc.Result](((avatar: Option[String]) =&gt; {
   UserController.this.silhouette.env.eventBus.publish(com.mohiva.play.silhouette.api.SignUpEvent.apply[whatson.model.Login](login, request));
   UserController.this.silhouette.env.eventBus.publish(com.mohiva.play.silhouette.api.LoginEvent.apply[whatson.model.Login](login, request));
@@ -1140,9 +1140,9 @@
           798
         </td>
         <td>
-          2591
+          2594
           -
-          2591
+          2594
         </td>
         <td>
           Select
@@ -1150,7 +1150,7 @@
         <td>
           play.api.libs.concurrent.Execution.Implicits.defaultContext
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           play.api.libs.concurrent.Execution.Implicits.defaultContext
         </td>
       </tr><tr>
@@ -1161,9 +1161,9 @@
           783
         </td>
         <td>
-          2700
+          2703
           -
-          2727
+          2730
         </td>
         <td>
           Apply
@@ -1171,7 +1171,7 @@
         <td>
           com.mohiva.play.silhouette.api.SignUpEvent.apply
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           com.mohiva.play.silhouette.api.SignUpEvent.apply[whatson.model.Login](login, request)
         </td>
       </tr><tr>
@@ -1182,9 +1182,9 @@
           784
         </td>
         <td>
-          2668
+          2671
           -
-          2728
+          2731
         </td>
         <td>
           Apply
@@ -1192,7 +1192,7 @@
         <td>
           akka.event.SubchannelClassification.publish
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           UserController.this.silhouette.env.eventBus.publish(com.mohiva.play.silhouette.api.SignUpEvent.apply[whatson.model.Login](login, request))
         </td>
       </tr><tr>
@@ -1203,9 +1203,9 @@
           786
         </td>
         <td>
-          2743
+          2746
           -
-          2802
+          2805
         </td>
         <td>
           Apply
@@ -1213,7 +1213,7 @@
         <td>
           akka.event.SubchannelClassification.publish
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           UserController.this.silhouette.env.eventBus.publish(com.mohiva.play.silhouette.api.LoginEvent.apply[whatson.model.Login](login, request))
         </td>
       </tr><tr>
@@ -1224,9 +1224,9 @@
           785
         </td>
         <td>
-          2775
+          2778
           -
-          2801
+          2804
         </td>
         <td>
           Apply
@@ -1234,7 +1234,7 @@
         <td>
           com.mohiva.play.silhouette.api.LoginEvent.apply
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           com.mohiva.play.silhouette.api.LoginEvent.apply[whatson.model.Login](login, request)
         </td>
       </tr><tr>
@@ -1245,9 +1245,9 @@
           787
         </td>
         <td>
-          2817
+          2820
           -
-          2847
+          2850
         </td>
         <td>
           Apply
@@ -1255,7 +1255,7 @@
         <td>
           whatson.service.UserService.save
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           UserController.this.userService.save(login, avatar)
         </td>
       </tr><tr>
@@ -1266,9 +1266,9 @@
           788
         </td>
         <td>
-          2895
+          2898
           -
-          2905
+          2908
         </td>
         <td>
           Select
@@ -1276,7 +1276,7 @@
         <td>
           whatson.model.UserSignUpForm.Data.email
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           data.email
         </td>
       </tr><tr>
@@ -1287,9 +1287,9 @@
           789
         </td>
         <td>
-          2862
+          2865
           -
-          2912
+          2915
         </td>
         <td>
           Apply
@@ -1297,7 +1297,7 @@
         <td>
           whatson.service.MailService.sendUserConfirmation
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           UserController.this.mailService.sendUserConfirmation(data.email, token)
         </td>
       </tr><tr>
@@ -1308,9 +1308,9 @@
           792
         </td>
         <td>
-          2952
+          2955
           -
-          2952
+          2955
         </td>
         <td>
           Select
@@ -1318,7 +1318,7 @@
         <td>
           play.api.libs.json.DefaultWrites.StringWrites
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           json.this.Writes.StringWrites
         </td>
       </tr><tr>
@@ -1329,9 +1329,9 @@
           795
         </td>
         <td>
-          2930
+          2933
           -
-          2964
+          2967
         </td>
         <td>
           Apply
@@ -1339,7 +1339,7 @@
         <td>
           play.api.libs.json.Json.obj
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           play.api.libs.json.Json.obj(scala.Predef.ArrowAssoc[String](&quot;message&quot;).-&gt;[play.api.libs.json.Json.JsValueWrapper](json.this.Json.toJsFieldJsValueWrapper[String](&quot;mail.sent&quot;)(json.this.Writes.StringWrites)))
         </td>
       </tr><tr>
@@ -1350,9 +1350,9 @@
           797
         </td>
         <td>
-          2927
+          2930
           -
-          2965
+          2968
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1360,7 +1360,7 @@
         <td>
           play.api.mvc.Results.Status.apply
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           UserController.this.Ok.apply[play.api.libs.json.JsObject](play.api.libs.json.Json.obj(scala.Predef.ArrowAssoc[String](&quot;message&quot;).-&gt;[play.api.libs.json.Json.JsValueWrapper](json.this.Json.toJsFieldJsValueWrapper[String](&quot;mail.sent&quot;)(json.this.Writes.StringWrites))))(http.this.Writeable.writeableOf_JsValue)
         </td>
       </tr><tr>
@@ -1371,9 +1371,9 @@
           791
         </td>
         <td>
-          2952
+          2955
           -
-          2963
+          2966
         </td>
         <td>
           Literal
@@ -1381,7 +1381,7 @@
         <td>
           &lt;nosymbol&gt;
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           &quot;mail.sent&quot;
         </td>
       </tr><tr>
@@ -1392,9 +1392,9 @@
           794
         </td>
         <td>
-          2939
+          2942
           -
-          2963
+          2966
         </td>
         <td>
           Apply
@@ -1402,7 +1402,7 @@
         <td>
           scala.Predef.ArrowAssoc.-&gt;
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           scala.Predef.ArrowAssoc[String](&quot;message&quot;).-&gt;[play.api.libs.json.Json.JsValueWrapper](json.this.Json.toJsFieldJsValueWrapper[String](&quot;mail.sent&quot;)(json.this.Writes.StringWrites))
         </td>
       </tr><tr>
@@ -1413,9 +1413,9 @@
           793
         </td>
         <td>
-          2952
+          2955
           -
-          2963
+          2966
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1423,7 +1423,7 @@
         <td>
           play.api.libs.json.Json.toJsFieldJsValueWrapper
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           json.this.Json.toJsFieldJsValueWrapper[String](&quot;mail.sent&quot;)(json.this.Writes.StringWrites)
         </td>
       </tr><tr>
@@ -1434,9 +1434,9 @@
           796
         </td>
         <td>
-          2929
+          2932
           -
-          2929
+          2932
         </td>
         <td>
           Select
@@ -1444,7 +1444,7 @@
         <td>
           play.api.http.DefaultWriteables.writeableOf_JsValue
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           http.this.Writeable.writeableOf_JsValue
         </td>
       </tr><tr>
@@ -1455,9 +1455,9 @@
           790
         </td>
         <td>
-          2939
+          2942
           -
-          2948
+          2951
         </td>
         <td>
           Literal
@@ -1465,7 +1465,7 @@
         <td>
           &lt;nosymbol&gt;
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           &quot;message&quot;
         </td>
       </tr>

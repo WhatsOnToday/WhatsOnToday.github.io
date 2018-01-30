@@ -36,30 +36,30 @@
 </span>12 <span style=''>import whatson.model.HasID
 </span>13 <span style=''>
 </span>14 <span style=''>object Util extends Results {
-</span>15 <span style=''>  val fromAngle = </span><span style='background: #F0ADAD'>SimpleFunction.unary[Float, Float](&quot;fromangle&quot;)</span><span style=''>
+</span>15 <span style=''>  val fromAngle = </span><span style='background: #AEF1AE'>SimpleFunction.unary[Float, Float](&quot;fromangle&quot;)</span><span style=''>
 </span>16 <span style=''>  def geoDistance(a: Rep[Float], b:Rep[Float], c:Rep[Float], d:Rep[Float]) =
 </span>17 <span style=''>    </span><span style='background: #F0ADAD'>SimpleFunction[Float](&quot;geodistance&quot;).apply(Seq(a,b,c,d))</span><span style=''>
 </span>18 <span style=''>
 </span>19 <span style=''>
 </span>20 <span style=''>  def insertAndReturn[T, U &lt;: HasID[T]](a: TableQuery[U], b: U#TableElementType) = {
-</span>21 <span style=''>    (</span><span style='background: #F0ADAD'>a returning a.map(x =&gt; x.id) into ((event,i) =&gt; event.cpy(Some(i))) += b</span><span style=''>)
+</span>21 <span style=''>    (</span><span style='background: #AEF1AE'>a returning a.map(x =&gt; x.id) into ((event,i) =&gt; event.cpy(Some(i))) += b</span><span style=''>)
 </span>22 <span style=''>  }
 </span>23 <span style=''>
 </span>24 <span style=''>  def runTwo[A,B,C](a: (Query[A,B, Seq], Rep[C]), db: Database) =
 </span>25 <span style=''>    </span><span style='background: #F0ADAD'>db.run(a._1.result).zip(db.run(a._2.result))</span><span style=''>
 </span>26 <span style=''>
 </span>27 <span style=''>  def returnPaged[A,B,C](a: DBIOAction[Seq[A],NoStream,Nothing], q: Query[B,C,Seq], db: Database)(implicit request: Request[_], ec: ExecutionContext, tjs: Writes[A]) = {
-</span>28 <span style=''>    </span><span style='background: #F0ADAD'>db.run(a).zip(db.run(q.length.result)).map(x =&gt; {
-</span>29 <span style=''></span><span style='background: #F0ADAD'>      Ok(Json.toJson(x._1)).withHeaders(&quot;X-Number-Items&quot; -&gt; x._2.toString())
-</span>30 <span style=''></span><span style='background: #F0ADAD'>    })</span><span style=''>
+</span>28 <span style=''>    </span><span style='background: #AEF1AE'>db.run(a).zip(db.run(q.length.result)).map(x =&gt; {
+</span>29 <span style=''></span><span style='background: #AEF1AE'>      Ok(Json.toJson(x._1)).withHeaders(&quot;X-Number-Items&quot; -&gt; x._2.toString())
+</span>30 <span style=''></span><span style='background: #AEF1AE'>    })</span><span style=''>
 </span>31 <span style=''>  }
 </span>32 <span style=''>
 </span>33 <span style=''>  implicit class QueryUtils[B,C](q: Query[B,C,Seq]) {
 </span>34 <span style=''>    def queryPaged[A,B,C](implicit request: Request[A]) = {
-</span>35 <span style=''>      val page = </span><span style='background: #F0ADAD'>request.headers.get(&quot;X-Page&quot;).map(_.toInt).getOrElse(0)</span><span style=''>
-</span>36 <span style=''>      val pageSize = </span><span style='background: #F0ADAD'>request.headers.get(&quot;X-Page-Size&quot;).map(_.toInt).getOrElse(20)</span><span style=''>
+</span>35 <span style=''>      val page = </span><span style='background: #AEF1AE'>request.headers.get(&quot;X-Page&quot;).map(_.toInt).getOrElse(0)</span><span style=''>
+</span>36 <span style=''>      val pageSize = </span><span style='background: #AEF1AE'>request.headers.get(&quot;X-Page-Size&quot;).map(_.toInt).getOrElse(20)</span><span style=''>
 </span>37 <span style=''>
-</span>38 <span style=''>      </span><span style='background: #F0ADAD'>q.drop(page*pageSize).take(pageSize)</span><span style=''>
+</span>38 <span style=''>      </span><span style='background: #AEF1AE'>q.drop(page*pageSize).take(pageSize)</span><span style=''>
 </span>39 <span style=''>    }
 </span>40 <span style=''>
 </span>41 <span style=''>    def returnPaged(db: Database)(implicit request: Request[_], ec: ExecutionContext, tjs: Writes[C]) = {
@@ -75,7 +75,7 @@
 </span>51 <span style=''>  }
 </span>52 <span style=''>
 </span>53 <span style=''>  implicit class RepUtils[A](rep: Rep[A]) {
-</span>54 <span style=''>    def dir(b: Boolean)(implicit t: TypedType[A]) = if(b) </span><span style='background: #F0ADAD'>columnToOrdered(rep).asc</span><span style=''> else </span><span style='background: #F0ADAD'>columnToOrdered(rep).desc</span><span style=''>
+</span>54 <span style=''>    def dir(b: Boolean)(implicit t: TypedType[A]) = if(b) </span><span style='background: #AEF1AE'>columnToOrdered(rep).asc</span><span style=''> else </span><span style='background: #F0ADAD'>columnToOrdered(rep).desc</span><span style=''>
 </span>55 <span style=''>  }
 </span>56 <span style=''>}
 </span></pre>
@@ -107,7 +107,7 @@
         <td>
           &lt;nosymbol&gt;
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           &quot;fromangle&quot;
         </td>
       </tr><tr>
@@ -128,7 +128,7 @@
         <td>
           slick.lifted.SimpleFunction.unary
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           slick.jdbc.PostgresProfile.api.SimpleFunction.unary[Float, Float](&quot;fromangle&quot;, slick.jdbc.PostgresProfile.api.SimpleFunction.unary$default$2[Float, Float])(slick.jdbc.PostgresProfile.api.floatColumnType)
         </td>
       </tr><tr>
@@ -149,7 +149,7 @@
         <td>
           slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.floatColumnType
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           slick.jdbc.PostgresProfile.api.floatColumnType
         </td>
       </tr><tr>
@@ -170,7 +170,7 @@
         <td>
           slick.lifted.SimpleFunction.unary$default$2
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           slick.jdbc.PostgresProfile.api.SimpleFunction.unary$default$2[Float, Float]
         </td>
       </tr><tr>
@@ -296,7 +296,7 @@
         <td>
           slick.jdbc.JdbcActionComponent.SimpleInsertActionComposer.+=
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           slick.jdbc.PostgresProfile.api.queryInsertActionExtensionMethods[U#TableElementType, Seq](a).returning[slick.lifted.Rep[Int], Int, Seq](a.map[slick.lifted.Rep[Int], slick.lifted.Rep[Int], Int](((x: U) =&gt; x.id))(lifted.this.Shape.repColumnShape[Int, Nothing](slick.jdbc.PostgresProfile.api.intColumnType))).into[T](((event: U#TableElementType, i: Int) =&gt; event.cpy(scala.Some.apply[Int](i)))).+=(b)
         </td>
       </tr><tr>
@@ -443,7 +443,7 @@
         <td>
           scala.concurrent.Future.map
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           db.run[Seq[A]](a).zip[Int](db.run[Int](slick.jdbc.PostgresProfile.api.repQueryActionExtensionMethods[Int](q.length).result)).map[play.api.mvc.Result](((x: (Seq[A], Int)) =&gt; Util.this.Ok.apply[play.api.libs.json.JsValue](play.api.libs.json.Json.toJson[Seq[A]](x._1)(json.this.Writes.traversableWrites[A](tjs)))(http.this.Writeable.writeableOf_JsValue).withHeaders(scala.Predef.ArrowAssoc[String](&quot;X-Number-Items&quot;).-&gt;[String](x._2.toString()))))(ec)
         </td>
       </tr><tr>
@@ -464,7 +464,7 @@
         <td>
           scala.Option.getOrElse
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           request.headers.get(&quot;X-Page&quot;).map[Int](((x$1: String) =&gt; scala.Predef.augmentString(x$1).toInt)).getOrElse[Int](0)
         </td>
       </tr><tr>
@@ -485,7 +485,7 @@
         <td>
           scala.Option.getOrElse
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           request.headers.get(&quot;X-Page-Size&quot;).map[Int](((x$2: String) =&gt; scala.Predef.augmentString(x$2).toInt)).getOrElse[Int](20)
         </td>
       </tr><tr>
@@ -506,7 +506,7 @@
         <td>
           slick.lifted.Query.take
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           QueryUtils.this.q.drop(page.*(pageSize)).take(pageSize)
         </td>
       </tr><tr>
@@ -695,7 +695,7 @@
         <td>
           slick.lifted.ColumnOrdered.asc
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           slick.jdbc.PostgresProfile.api.columnToOrdered[A](RepUtils.this.rep)(t).asc
         </td>
       </tr><tr>
@@ -737,7 +737,7 @@
         <td>
           whatson.db.Util.RepUtils.rep
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           RepUtils.this.rep
         </td>
       </tr><tr>
@@ -758,7 +758,7 @@
         <td>
           slick.lifted.ColumnOrdered.asc
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           slick.jdbc.PostgresProfile.api.columnToOrdered[A](RepUtils.this.rep)(t).asc
         </td>
       </tr>

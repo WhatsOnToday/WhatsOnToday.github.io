@@ -42,29 +42,29 @@
 </span>18 <span style=''>  implicit val eventDetailReads = Json.reads[EventDetail]
 </span>19 <span style=''>  implicit val eventDetailWrites = Json.writes[EventDetail]
 </span>20 <span style=''>
-</span>21 <span style=''>  val tupled = (</span><span style='background: #F0ADAD'>this.apply _).tupled</span><span style=''>
+</span>21 <span style=''>  val tupled = (</span><span style='background: #F0ADAD'>this.apply</span><span style='background: #AEF1AE'> _).tupled</span><span style=''>
 </span>22 <span style=''>
 </span>23 <span style=''>  implicit class EventDetailQuery(q: Query[EventTable, Event, Seq]) {
 </span>24 <span style=''>    def detailed(implicit ec: ExecutionContext) = {
-</span>25 <span style=''>      val s = </span><span style='background: #F0ADAD'>q.join(OrganizerTable.organizer).on(_.creatorId === _.id).join(LocationTable.location).on(_._1.locationId === _.id)</span><span style=''>
-</span>26 <span style=''>      val t = </span><span style='background: #F0ADAD'>s.result.flatMap(y =&gt; {
-</span>27 <span style=''></span><span style='background: #F0ADAD'>        DBIO.sequence(y.map {
-</span>28 <span style=''></span><span style='background: #F0ADAD'>          case ((event, creator), location) =&gt; {
-</span>29 <span style=''></span><span style='background: #F0ADAD'>            val s = EventTable.event.filter(_.id === event.id).map(_.avgRating)
-</span>30 <span style=''></span><span style='background: #F0ADAD'>            val imgs = EventTable.event.filter(_.id === event.id).flatMap(_.images).map(_.id)
-</span>31 <span style=''></span><span style='background: #F0ADAD'>            val c = for (
-</span>32 <span style=''></span><span style='background: #F0ADAD'>              j &lt;- EventCategoryTable.eventCategory if j.eventID === event.id;
-</span>33 <span style=''></span><span style='background: #F0ADAD'>              c &lt;- CategoryTable.category if c.id === j.categoryID
-</span>34 <span style=''></span><span style='background: #F0ADAD'>            ) yield c
-</span>35 <span style=''></span><span style='background: #F0ADAD'>
-</span>36 <span style=''></span><span style='background: #F0ADAD'>            s.result.zip(c.result).zip(imgs.result).map(o =&gt; {
-</span>37 <span style=''></span><span style='background: #F0ADAD'>              EventDetail(event.id, event.name, event.from, event.to, creator,
-</span>38 <span style=''></span><span style='background: #F0ADAD'>                          o._1._2.toList, o._1._1.headOption.flatten,
-</span>39 <span style=''></span><span style='background: #F0ADAD'>                          location, o._2.toList)
-</span>40 <span style=''></span><span style='background: #F0ADAD'>            })
-</span>41 <span style=''></span><span style='background: #F0ADAD'>          }
-</span>42 <span style=''></span><span style='background: #F0ADAD'>        })
-</span>43 <span style=''></span><span style='background: #F0ADAD'>      })</span><span style=''>
+</span>25 <span style=''>      val s = </span><span style='background: #AEF1AE'>q.join(OrganizerTable.organizer).on(_.creatorId === _.id).join(LocationTable.location).on(_._1.locationId === _.id)</span><span style=''>
+</span>26 <span style=''>      val t = </span><span style='background: #AEF1AE'>s.result.flatMap(y =&gt; {
+</span>27 <span style=''></span><span style='background: #AEF1AE'>        DBIO.sequence(y.map {
+</span>28 <span style=''></span><span style='background: #AEF1AE'>          case ((event, creator), location) =&gt; {
+</span>29 <span style=''></span><span style='background: #AEF1AE'>            val s = EventTable.event.filter(_.id === event.id).map(_.avgRating)
+</span>30 <span style=''></span><span style='background: #AEF1AE'>            val imgs = EventTable.event.filter(_.id === event.id).flatMap(_.images).map(_.id)
+</span>31 <span style=''></span><span style='background: #AEF1AE'>            val c = for (
+</span>32 <span style=''></span><span style='background: #AEF1AE'>              j &lt;- EventCategoryTable.eventCategory if j.eventID === event.id;
+</span>33 <span style=''></span><span style='background: #AEF1AE'>              c &lt;- CategoryTable.category if c.id === j.categoryID
+</span>34 <span style=''></span><span style='background: #AEF1AE'>            ) yield c
+</span>35 <span style=''></span><span style='background: #AEF1AE'>
+</span>36 <span style=''></span><span style='background: #AEF1AE'>            s.result.zip(c.result).zip(imgs.result).map(o =&gt; {
+</span>37 <span style=''></span><span style='background: #AEF1AE'>              EventDetail(event.id, event.name, event.from, event.to, creator,
+</span>38 <span style=''></span><span style='background: #AEF1AE'>                          o._1._2.toList, o._1._1.headOption.flatten,
+</span>39 <span style=''></span><span style='background: #AEF1AE'>                          location, o._2.toList)
+</span>40 <span style=''></span><span style='background: #AEF1AE'>            })
+</span>41 <span style=''></span><span style='background: #AEF1AE'>          }
+</span>42 <span style=''></span><span style='background: #AEF1AE'>        })
+</span>43 <span style=''></span><span style='background: #AEF1AE'>      })</span><span style=''>
 </span>44 <span style=''>      t
 </span>45 <span style=''>    }
 </span>46 <span style=''>  }
@@ -98,7 +98,7 @@
         <td>
           scala.Function9.tupled
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           {
   ((id: Option[Int], name: String, from: java.sql.Timestamp, to: java.sql.Timestamp, creator: whatson.model.Organizer, categories: List[whatson.model.Category], avgRating: Option[Float], location: whatson.model.Location, images: List[Int]) =&gt; this.apply(id, name, from, to, creator, categories, avgRating, location, images))
 }.tupled
@@ -142,7 +142,7 @@
         <td>
           whatson.db.LocationTable.id
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           x$4.id
         </td>
       </tr><tr>
@@ -163,7 +163,7 @@
         <td>
           slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           slick.jdbc.PostgresProfile.api.intColumnType
         </td>
       </tr><tr>
@@ -184,7 +184,7 @@
         <td>
           slick.lifted.OptionMapper2.getOptionMapper2OT
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           lifted.this.OptionMapper2.getOptionMapper2OT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType)
         </td>
       </tr><tr>
@@ -205,7 +205,7 @@
         <td>
           slick.lifted.ColumnExtensionMethods.===
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](x$3._1.locationId)(slick.jdbc.PostgresProfile.api.intColumnType).===[Int, Boolean](x$4.id)(lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType))
         </td>
       </tr><tr>
@@ -226,7 +226,7 @@
         <td>
           whatson.db.LocationTable.location
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           whatson.db.LocationTable.location
         </td>
       </tr><tr>
@@ -247,7 +247,7 @@
         <td>
           slick.lifted.BaseJoinQuery.on
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           EventDetailQuery.this.q.join[whatson.db.OrganizerTable, whatson.db.OrganizerTable#TableElementType, Seq](whatson.db.OrganizerTable.organizer).on[slick.lifted.Rep[Option[Boolean]]](((x$1: whatson.db.EventTable, x$2: whatson.db.OrganizerTable) =&gt; slick.jdbc.PostgresProfile.api.optionColumnExtensionMethods[Int](x$1.creatorId)(slick.jdbc.PostgresProfile.api.intColumnType).===[Int, Option[Boolean]](x$2.id)(lifted.this.OptionMapper2.getOptionMapper2OT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType))))(lifted.this.CanBeQueryCondition.BooleanOptionColumnCanBeQueryCondition).join[whatson.db.LocationTable, whatson.db.LocationTable#TableElementType, Seq](whatson.db.LocationTable.location).on[slick.lifted.Rep[Boolean]](((x$3: (whatson.db.EventTable, whatson.db.OrganizerTable), x$4: whatson.db.LocationTable) =&gt; slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](x$3._1.locationId)(slick.jdbc.PostgresProfile.api.intColumnType).===[Int, Boolean](x$4.id)(lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType))))(lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition)
         </td>
       </tr><tr>
@@ -268,7 +268,7 @@
         <td>
           slick.lifted.CanBeQueryCondition.BooleanOptionColumnCanBeQueryCondition
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           lifted.this.CanBeQueryCondition.BooleanOptionColumnCanBeQueryCondition
         </td>
       </tr><tr>
@@ -289,7 +289,7 @@
         <td>
           slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           slick.jdbc.PostgresProfile.api.intColumnType
         </td>
       </tr><tr>
@@ -310,7 +310,7 @@
         <td>
           whatson.db.EventTable.creatorId
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           x$1.creatorId
         </td>
       </tr><tr>
@@ -331,7 +331,7 @@
         <td>
           slick.lifted.OptionMapper2.getOptionMapper2TT
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType)
         </td>
       </tr><tr>
@@ -352,7 +352,7 @@
         <td>
           slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           slick.jdbc.PostgresProfile.api.intColumnType
         </td>
       </tr><tr>
@@ -373,7 +373,7 @@
         <td>
           slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           slick.jdbc.PostgresProfile.api.intColumnType
         </td>
       </tr><tr>
@@ -394,7 +394,7 @@
         <td>
           slick.lifted.CanBeQueryCondition.BooleanColumnCanBeQueryCondition
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition
         </td>
       </tr><tr>
@@ -415,7 +415,7 @@
         <td>
           slick.lifted.ColumnExtensionMethods.===
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           slick.jdbc.PostgresProfile.api.optionColumnExtensionMethods[Int](x$1.creatorId)(slick.jdbc.PostgresProfile.api.intColumnType).===[Int, Option[Boolean]](x$2.id)(lifted.this.OptionMapper2.getOptionMapper2OT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType))
         </td>
       </tr><tr>
@@ -436,7 +436,7 @@
         <td>
           whatson.db.EventTable.locationId
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           x$3._1.locationId
         </td>
       </tr><tr>
@@ -457,7 +457,7 @@
         <td>
           whatson.db.OrganizerTable.organizer
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           whatson.db.OrganizerTable.organizer
         </td>
       </tr><tr>
@@ -478,7 +478,7 @@
         <td>
           whatson.db.OrganizerTable.id
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           x$2.id
         </td>
       </tr><tr>
@@ -499,7 +499,7 @@
         <td>
           slick.dbio.DBIOAction.flatMap
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           slick.jdbc.PostgresProfile.api.streamableQueryActionExtensionMethods[((whatson.model.Event, whatson.db.OrganizerTable#TableElementType), whatson.db.LocationTable#TableElementType), Seq](s).result.flatMap[Seq[whatson.model.detail.EventDetail], slick.dbio.NoStream, slick.dbio.Effect.Read with slick.dbio.Effect.Read with slick.dbio.Effect.Read](((y: Seq[((whatson.model.Event, whatson.db.OrganizerTable#TableElementType), whatson.db.LocationTable#TableElementType)]) =&gt; slick.jdbc.PostgresProfile.api.DBIO.sequence[whatson.model.detail.EventDetail, Seq, slick.dbio.Effect.Read with slick.dbio.Effect.Read with slick.dbio.Effect.Read](y.map[slick.dbio.DBIOAction[whatson.model.detail.EventDetail,slick.dbio.NoStream,slick.dbio.Effect.Read with slick.dbio.Effect.Read with slick.dbio.Effect.Read], Seq[slick.dbio.DBIOAction[whatson.model.detail.EventDetail,slick.dbio.NoStream,slick.dbio.Effect.Read with slick.dbio.Effect.Read with slick.dbio.Effect.Read]]](((x0$2: ((whatson.model.Event, whatson.db.OrganizerTable#TableElementType), whatson.db.LocationTable#TableElementType)) =&gt; x0$2 match {
   case (_1: (whatson.model.Event, whatson.db.OrganizerTable#TableElementType), _2: whatson.db.LocationTable#TableElementType)((whatson.model.Event, whatson.db.OrganizerTable#TableElementType), whatson.db.LocationTable#TableElementType)((_1: whatson.model.Event, _2: whatson.db.OrganizerTable#TableElementType)(whatson.model.Event, whatson.db.OrganizerTable#TableElementType)((event @ _), (creator @ _)), (location @ _)) =&gt; {
     val s: slick.lifted.Query[slick.lifted.Rep[Option[Float]],Option[Float],Seq] = whatson.db.EventTable.event.filter[slick.lifted.Rep[Option[Boolean]]](((x$5: whatson.db.EventTable) =&gt; slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](x$5.id)(slick.jdbc.PostgresProfile.api.intColumnType).===[Option[Int], Option[Boolean]](slick.jdbc.PostgresProfile.api.valueToConstColumn[Option[Int]](event.id)(ast.this.TypedType.typedTypeToOptionTypedType[Int](slick.jdbc.PostgresProfile.api.intColumnType)))(lifted.this.OptionMapper2.getOptionMapper2TO[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType))))(lifted.this.CanBeQueryCondition.BooleanOptionColumnCanBeQueryCondition).map[slick.lifted.Rep[Option[Float]], slick.lifted.Rep[Option[Float]], Option[Float]](((x$6: whatson.db.EventTable) =&gt; x$6.avgRating))(lifted.this.Shape.optionShape[Float, Float, Float, Nothing](lifted.this.Shape.repColumnShape[Float, Nothing](slick.jdbc.PostgresProfile.api.floatColumnType)));
