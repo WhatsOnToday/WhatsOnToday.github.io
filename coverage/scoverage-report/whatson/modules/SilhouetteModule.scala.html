@@ -130,9 +130,9 @@
 </span>106 <span style=''>   * @return The Silhouette environment.
 </span>107 <span style=''>   */
 </span>108 <span style=''>  @Provides
-</span>109 <span style=''>  def provideSocialProviderRegistry(
+</span>109 <span style=''>  def provideSocialProviderRegistry(googleProvider: GoogleProvider,
 </span>110 <span style=''>    facebookProvider: FacebookProvider): SocialProviderRegistry = {
-</span>111 <span style=''>    </span><span style='background: #AEF1AE'>SocialProviderRegistry(Seq(facebookProvider))</span><span style=''>
+</span>111 <span style=''>    </span><span style='background: #AEF1AE'>SocialProviderRegistry(Seq(facebookProvider,googleProvider))</span><span style=''>
 </span>112 <span style=''>  }
 </span>113 <span style=''>
 </span>114 <span style=''>   /**
@@ -154,44 +154,62 @@
 </span>130 <span style=''>  }
 </span>131 <span style=''>
 </span>132 <span style=''>  /**
-</span>133 <span style=''>    * Provides the SocialStateHandler.
+</span>133 <span style=''>    * Provides the Facebook provider.
 </span>134 <span style=''>    *
-</span>135 <span style=''>    */
-</span>136 <span style=''>  @Provides
-</span>137 <span style=''>  def provideSocialStateHandler(
-</span>138 <span style=''>    csrfHandler: CsrfStateItemHandler,
-</span>139 <span style=''>    signer: Signer,
-</span>140 <span style=''>    configuration: Configuration): SocialStateHandler = {
-</span>141 <span style=''>    </span><span style='background: #AEF1AE'>new DefaultSocialStateHandler(Set(),signer)</span><span style=''>
-</span>142 <span style=''>  }
-</span>143 <span style=''>
-</span>144 <span style=''>  /**
-</span>145 <span style=''>    * Provides the JcaSigner.
-</span>146 <span style=''>    */
-</span>147 <span style=''>  @Provides
-</span>148 <span style=''>  def provideJcaSigner(
-</span>149 <span style=''>    configuration: Configuration): Signer = {
-</span>150 <span style=''>    </span><span style='background: #AEF1AE'>new JcaSigner(configuration.underlying.as[JcaSignerSettings](&quot;silhouette.signer&quot;))</span><span style=''>
-</span>151 <span style=''>  }
-</span>152 <span style=''>
-</span>153 <span style=''>  /**
-</span>154 <span style=''>    * Provides the CsrfStateSettings.
-</span>155 <span style=''>    */
-</span>156 <span style=''>  @Provides
-</span>157 <span style=''>  def provideCsrfStateSettings(
-</span>158 <span style=''>    configuration: Configuration): CsrfStateSettings = {
-</span>159 <span style=''>    </span><span style='background: #AEF1AE'>configuration.underlying.as[CsrfStateSettings](&quot;silhouette.csrfState&quot;)</span><span style=''>
+</span>135 <span style=''>    * @param httpLayer The HTTP layer implementation.
+</span>136 <span style=''>    * @param stateProvider The OAuth2 state provider implementation.
+</span>137 <span style=''>    * @param configuration The Play configuration.
+</span>138 <span style=''>    * @return The Facebook provider.
+</span>139 <span style=''>    */
+</span>140 <span style=''>  @Provides
+</span>141 <span style=''>  def provideGoogleProvider(
+</span>142 <span style=''>    httpLayer: HTTPLayer,
+</span>143 <span style=''>    stateProvider: SocialStateHandler,
+</span>144 <span style=''>    configuration: Configuration): GoogleProvider = {
+</span>145 <span style=''>
+</span>146 <span style=''>    </span><span style='background: #AEF1AE'>new GoogleProvider(httpLayer, stateProvider,
+</span>147 <span style=''></span><span style='background: #AEF1AE'>                         configuration.underlying.as[OAuth2Settings](&quot;silhouette.google&quot;))</span><span style=''>
+</span>148 <span style=''>  }
+</span>149 <span style=''>
+</span>150 <span style=''>  /**
+</span>151 <span style=''>    * Provides the SocialStateHandler.
+</span>152 <span style=''>    *
+</span>153 <span style=''>    */
+</span>154 <span style=''>  @Provides
+</span>155 <span style=''>  def provideSocialStateHandler(
+</span>156 <span style=''>    csrfHandler: CsrfStateItemHandler,
+</span>157 <span style=''>    signer: Signer,
+</span>158 <span style=''>    configuration: Configuration): SocialStateHandler = {
+</span>159 <span style=''>    </span><span style='background: #AEF1AE'>new DefaultSocialStateHandler(Set(),signer)</span><span style=''>
 </span>160 <span style=''>  }
 </span>161 <span style=''>
 </span>162 <span style=''>  /**
-</span>163 <span style=''>    * Provides the ApplicationConfig.
+</span>163 <span style=''>    * Provides the JcaSigner.
 </span>164 <span style=''>    */
 </span>165 <span style=''>  @Provides
-</span>166 <span style=''>  def provideApplicationConfig(
-</span>167 <span style=''>    configuration: Configuration): ApplicationConfig = {
-</span>168 <span style=''>    </span><span style='background: #AEF1AE'>configuration.underlying.as[ApplicationConfig](&quot;application&quot;)</span><span style=''>
+</span>166 <span style=''>  def provideJcaSigner(
+</span>167 <span style=''>    configuration: Configuration): Signer = {
+</span>168 <span style=''>    </span><span style='background: #AEF1AE'>new JcaSigner(configuration.underlying.as[JcaSignerSettings](&quot;silhouette.signer&quot;))</span><span style=''>
 </span>169 <span style=''>  }
-</span>170 <span style=''>}
+</span>170 <span style=''>
+</span>171 <span style=''>  /**
+</span>172 <span style=''>    * Provides the CsrfStateSettings.
+</span>173 <span style=''>    */
+</span>174 <span style=''>  @Provides
+</span>175 <span style=''>  def provideCsrfStateSettings(
+</span>176 <span style=''>    configuration: Configuration): CsrfStateSettings = {
+</span>177 <span style=''>    </span><span style='background: #AEF1AE'>configuration.underlying.as[CsrfStateSettings](&quot;silhouette.csrfState&quot;)</span><span style=''>
+</span>178 <span style=''>  }
+</span>179 <span style=''>
+</span>180 <span style=''>  /**
+</span>181 <span style=''>    * Provides the ApplicationConfig.
+</span>182 <span style=''>    */
+</span>183 <span style=''>  @Provides
+</span>184 <span style=''>  def provideApplicationConfig(
+</span>185 <span style=''>    configuration: Configuration): ApplicationConfig = {
+</span>186 <span style=''>    </span><span style='background: #AEF1AE'>configuration.underlying.as[ApplicationConfig](&quot;application&quot;)</span><span style=''>
+</span>187 <span style=''>  }
+</span>188 <span style=''>}
 </span></pre>
           </div>
           <div class="tab-pane" id="statementlist">
@@ -1576,9 +1594,9 @@
           1737
         </td>
         <td>
-          4268
+          4299
           -
-          4289
+          4335
         </td>
         <td>
           Apply
@@ -1587,7 +1605,7 @@
           scala.collection.generic.GenericCompanion.apply
         </td>
         <td style="background: #AEF1AE">
-          scala.collection.immutable.Seq.apply[com.mohiva.play.silhouette.impl.providers.oauth2.FacebookProvider](facebookProvider)
+          scala.collection.immutable.Seq.apply[com.mohiva.play.silhouette.impl.providers.OAuth2Provider with com.mohiva.play.silhouette.impl.providers.CommonSocialProfileBuilder{def withSettings(f: this.Settings =&gt; this.Settings): com.mohiva.play.silhouette.impl.providers.OAuth2Provider with com.mohiva.play.silhouette.impl.providers.CommonSocialProfileBuilder; type Self &gt;: com.mohiva.play.silhouette.impl.providers.oauth2.GoogleProvider with com.mohiva.play.silhouette.impl.providers.oauth2.FacebookProvider &lt;: com.mohiva.play.silhouette.impl.providers.OAuth2Provider with com.mohiva.play.silhouette.impl.providers.CommonSocialProfileBuilder; type Content &lt;: play.api.libs.json.JsValue}](facebookProvider, googleProvider)
         </td>
       </tr><tr>
         <td>
@@ -1597,9 +1615,9 @@
           1738
         </td>
         <td>
-          4245
+          4276
           -
-          4290
+          4336
         </td>
         <td>
           Apply
@@ -1608,7 +1626,7 @@
           com.mohiva.play.silhouette.impl.providers.SocialProviderRegistry.apply
         </td>
         <td style="background: #AEF1AE">
-          com.mohiva.play.silhouette.impl.providers.SocialProviderRegistry.apply(scala.collection.immutable.Seq.apply[com.mohiva.play.silhouette.impl.providers.oauth2.FacebookProvider](facebookProvider))
+          com.mohiva.play.silhouette.impl.providers.SocialProviderRegistry.apply(scala.collection.immutable.Seq.apply[com.mohiva.play.silhouette.impl.providers.OAuth2Provider with com.mohiva.play.silhouette.impl.providers.CommonSocialProfileBuilder{def withSettings(f: this.Settings =&gt; this.Settings): com.mohiva.play.silhouette.impl.providers.OAuth2Provider with com.mohiva.play.silhouette.impl.providers.CommonSocialProfileBuilder; type Self &gt;: com.mohiva.play.silhouette.impl.providers.oauth2.GoogleProvider with com.mohiva.play.silhouette.impl.providers.oauth2.FacebookProvider &lt;: com.mohiva.play.silhouette.impl.providers.OAuth2Provider with com.mohiva.play.silhouette.impl.providers.CommonSocialProfileBuilder; type Content &lt;: play.api.libs.json.JsValue}](facebookProvider, googleProvider))
         </td>
       </tr><tr>
         <td>
@@ -1618,9 +1636,9 @@
           1742
         </td>
         <td>
-          4727
+          4773
           -
-          4866
+          4912
         </td>
         <td>
           Apply
@@ -1678,9 +1696,9 @@ else
           1739
         </td>
         <td>
-          4799
+          4845
           -
-          4823
+          4869
         </td>
         <td>
           Select
@@ -1699,9 +1717,9 @@ else
           1741
         </td>
         <td>
-          4799
+          4845
           -
-          4865
+          4911
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1759,9 +1777,9 @@ else
           1740
         </td>
         <td>
-          4843
+          4889
           -
-          4864
+          4910
         </td>
         <td>
           Literal
@@ -1774,36 +1792,177 @@ else
         </td>
       </tr><tr>
         <td>
-          141
+          146
         </td>
         <td>
-          1743
+          1746
         </td>
         <td>
-          5126
+          5351
           -
-          5131
+          5486
         </td>
         <td>
           Apply
         </td>
         <td>
-          scala.collection.generic.GenericCompanion.apply
+          com.mohiva.play.silhouette.impl.providers.oauth2.GoogleProvider.&lt;init&gt;
         </td>
         <td style="background: #AEF1AE">
-          scala.collection.immutable.Set.apply[com.mohiva.play.silhouette.impl.providers.SocialStateItemHandler]()
+          new com.mohiva.play.silhouette.impl.providers.oauth2.GoogleProvider(httpLayer, stateProvider, net.ceedubs.ficus.Ficus.toFicusConfig(configuration.underlying).as[com.mohiva.play.silhouette.impl.providers.OAuth2Settings](&quot;silhouette.google&quot;)(({
+  final class $anon extends AnyRef with net.ceedubs.ficus.readers.ValueReader[com.mohiva.play.silhouette.impl.providers.OAuth2Settings] {
+    def &lt;init&gt;(): &lt;$anon: net.ceedubs.ficus.readers.ValueReader[com.mohiva.play.silhouette.impl.providers.OAuth2Settings]&gt; = {
+      $anon.super.&lt;init&gt;();
+      ()
+    };
+    def read(config: com.typesafe.config.Config, path: String): com.mohiva.play.silhouette.impl.providers.OAuth2Settings = OAuth2Settings.apply(net.ceedubs.ficus.Ficus.optionValueReader[Option[String]](net.ceedubs.ficus.Ficus.optionValueReader[String](net.ceedubs.ficus.Ficus.stringValueReader)).read(config, if (path.==(&quot;.&quot;))
+  net.ceedubs.ficus.readers.NameMapper.apply()(net.ceedubs.ficus.readers.NameMapper.apply$default$1()).map(&quot;authorizationURL&quot;)
+else
+  path.+(&quot;.&quot;).+(net.ceedubs.ficus.readers.NameMapper.apply()(net.ceedubs.ficus.readers.NameMapper.apply$default$1()).map(&quot;authorizationURL&quot;))).getOrElse[Option[String]](OAuth2Settings.apply$default$1), net.ceedubs.ficus.Ficus.stringValueReader.read(config, if (path.==(&quot;.&quot;))
+      net.ceedubs.ficus.readers.NameMapper.apply()(net.ceedubs.ficus.readers.NameMapper.apply$default$1()).map(&quot;accessTokenURL&quot;)
+    else
+      path.+(&quot;.&quot;).+(net.ceedubs.ficus.readers.NameMapper.apply()(net.ceedubs.ficus.readers.NameMapper.apply$default$1()).map(&quot;accessTokenURL&quot;))), net.ceedubs.ficus.Ficus.optionValueReader[Option[String]](net.ceedubs.ficus.Ficus.optionValueReader[String](net.ceedubs.ficus.Ficus.stringValueReader)).read(config, if (path.==(&quot;.&quot;))
+  net.ceedubs.ficus.readers.NameMapper.apply()(net.ceedubs.ficus.readers.NameMapper.apply$default$1()).map(&quot;redirectURL&quot;)
+else
+  path.+(&quot;.&quot;).+(net.ceedubs.ficus.readers.NameMapper.apply()(net.ceedubs.ficus.readers.NameMapper.apply$default$1()).map(&quot;redirectURL&quot;))).getOrElse[Option[String]](OAuth2Settings.apply$default$3), net.ceedubs.ficus.Ficus.optionValueReader[Option[String]](net.ceedubs.ficus.Ficus.optionValueReader[String](net.ceedubs.ficus.Ficus.stringValueReader)).read(config, if (path.==(&quot;.&quot;))
+  net.ceedubs.ficus.readers.NameMapper.apply()(net.ceedubs.ficus.readers.NameMapper.apply$default$1()).map(&quot;apiURL&quot;)
+else
+  path.+(&quot;.&quot;).+(net.ceedubs.ficus.readers.NameMapper.apply()(net.ceedubs.ficus.readers.NameMapper.apply$default$1()).map(&quot;apiURL&quot;))).getOrElse[Option[String]](OAuth2Settings.apply$default$4), net.ceedubs.ficus.Ficus.stringValueReader.read(config, if (path.==(&quot;.&quot;))
+      net.ceedubs.ficus.readers.NameMapper.apply()(net.ceedubs.ficus.readers.NameMapper.apply$default$1()).map(&quot;clientID&quot;)
+    else
+      path.+(&quot;.&quot;).+(net.ceedubs.ficus.readers.NameMapper.apply()(net.ceedubs.ficus.readers.NameMapper.apply$default$1()).map(&quot;clientID&quot;))), net.ceedubs.ficus.Ficus.stringValueReader.read(config, if (path.==(&quot;.&quot;))
+      net.ceedubs.ficus.readers.NameMapper.apply()(net.ceedubs.ficus.readers.NameMapper.apply$default$1()).map(&quot;clientSecret&quot;)
+    else
+      path.+(&quot;.&quot;).+(net.ceedubs.ficus.readers.NameMapper.apply()(net.ceedubs.ficus.readers.NameMapper.apply$default$1()).map(&quot;clientSecret&quot;))), net.ceedubs.ficus.Ficus.optionValueReader[Option[String]](net.ceedubs.ficus.Ficus.optionValueReader[String](net.ceedubs.ficus.Ficus.stringValueReader)).read(config, if (path.==(&quot;.&quot;))
+  net.ceedubs.ficus.readers.NameMapper.apply()(net.ceedubs.ficus.readers.NameMapper.apply$default$1()).map(&quot;scope&quot;)
+else
+  path.+(&quot;.&quot;).+(net.ceedubs.ficus.readers.NameMapper.apply()(net.ceedubs.ficus.readers.NameMapper.apply$default$1()).map(&quot;scope&quot;))).getOrElse[Option[String]](OAuth2Settings.apply$default$7), net.ceedubs.ficus.Ficus.optionValueReader[Map[String,String]](net.ceedubs.ficus.Ficus.mapValueReader[String](net.ceedubs.ficus.Ficus.stringValueReader)).read(config, if (path.==(&quot;.&quot;))
+  net.ceedubs.ficus.readers.NameMapper.apply()(net.ceedubs.ficus.readers.NameMapper.apply$default$1()).map(&quot;authorizationParams&quot;)
+else
+  path.+(&quot;.&quot;).+(net.ceedubs.ficus.readers.NameMapper.apply()(net.ceedubs.ficus.readers.NameMapper.apply$default$1()).map(&quot;authorizationParams&quot;))).getOrElse[Map[String,String]](OAuth2Settings.apply$default$8), net.ceedubs.ficus.Ficus.optionValueReader[Map[String,String]](net.ceedubs.ficus.Ficus.mapValueReader[String](net.ceedubs.ficus.Ficus.stringValueReader)).read(config, if (path.==(&quot;.&quot;))
+  net.ceedubs.ficus.readers.NameMapper.apply()(net.ceedubs.ficus.readers.NameMapper.apply$default$1()).map(&quot;accessTokenParams&quot;)
+else
+  path.+(&quot;.&quot;).+(net.ceedubs.ficus.readers.NameMapper.apply()(net.ceedubs.ficus.readers.NameMapper.apply$default$1()).map(&quot;accessTokenParams&quot;))).getOrElse[Map[String,String]](OAuth2Settings.apply$default$9), net.ceedubs.ficus.Ficus.optionValueReader[Map[String,String]](net.ceedubs.ficus.Ficus.mapValueReader[String](net.ceedubs.ficus.Ficus.stringValueReader)).read(config, if (path.==(&quot;.&quot;))
+  net.ceedubs.ficus.readers.NameMapper.apply()(net.ceedubs.ficus.readers.NameMapper.apply$default$1()).map(&quot;customProperties&quot;)
+else
+  path.+(&quot;.&quot;).+(net.ceedubs.ficus.readers.NameMapper.apply()(net.ceedubs.ficus.readers.NameMapper.apply$default$1()).map(&quot;customProperties&quot;))).getOrElse[Map[String,String]](OAuth2Settings.apply$default$10))
+  };
+  new $anon()
+}: net.ceedubs.ficus.readers.ValueReader[com.mohiva.play.silhouette.impl.providers.OAuth2Settings])))
         </td>
       </tr><tr>
         <td>
-          141
+          147
+        </td>
+        <td>
+          1743
+        </td>
+        <td>
+          5421
+          -
+          5445
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.Configuration.underlying
+        </td>
+        <td style="background: #AEF1AE">
+          configuration.underlying
+        </td>
+      </tr><tr>
+        <td>
+          147
+        </td>
+        <td>
+          1745
+        </td>
+        <td>
+          5421
+          -
+          5485
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          net.ceedubs.ficus.FicusConfig.as
+        </td>
+        <td style="background: #AEF1AE">
+          net.ceedubs.ficus.Ficus.toFicusConfig(configuration.underlying).as[com.mohiva.play.silhouette.impl.providers.OAuth2Settings](&quot;silhouette.google&quot;)(({
+  final class $anon extends AnyRef with net.ceedubs.ficus.readers.ValueReader[com.mohiva.play.silhouette.impl.providers.OAuth2Settings] {
+    def &lt;init&gt;(): &lt;$anon: net.ceedubs.ficus.readers.ValueReader[com.mohiva.play.silhouette.impl.providers.OAuth2Settings]&gt; = {
+      $anon.super.&lt;init&gt;();
+      ()
+    };
+    def read(config: com.typesafe.config.Config, path: String): com.mohiva.play.silhouette.impl.providers.OAuth2Settings = OAuth2Settings.apply(net.ceedubs.ficus.Ficus.optionValueReader[Option[String]](net.ceedubs.ficus.Ficus.optionValueReader[String](net.ceedubs.ficus.Ficus.stringValueReader)).read(config, if (path.==(&quot;.&quot;))
+  net.ceedubs.ficus.readers.NameMapper.apply()(net.ceedubs.ficus.readers.NameMapper.apply$default$1()).map(&quot;authorizationURL&quot;)
+else
+  path.+(&quot;.&quot;).+(net.ceedubs.ficus.readers.NameMapper.apply()(net.ceedubs.ficus.readers.NameMapper.apply$default$1()).map(&quot;authorizationURL&quot;))).getOrElse[Option[String]](OAuth2Settings.apply$default$1), net.ceedubs.ficus.Ficus.stringValueReader.read(config, if (path.==(&quot;.&quot;))
+      net.ceedubs.ficus.readers.NameMapper.apply()(net.ceedubs.ficus.readers.NameMapper.apply$default$1()).map(&quot;accessTokenURL&quot;)
+    else
+      path.+(&quot;.&quot;).+(net.ceedubs.ficus.readers.NameMapper.apply()(net.ceedubs.ficus.readers.NameMapper.apply$default$1()).map(&quot;accessTokenURL&quot;))), net.ceedubs.ficus.Ficus.optionValueReader[Option[String]](net.ceedubs.ficus.Ficus.optionValueReader[String](net.ceedubs.ficus.Ficus.stringValueReader)).read(config, if (path.==(&quot;.&quot;))
+  net.ceedubs.ficus.readers.NameMapper.apply()(net.ceedubs.ficus.readers.NameMapper.apply$default$1()).map(&quot;redirectURL&quot;)
+else
+  path.+(&quot;.&quot;).+(net.ceedubs.ficus.readers.NameMapper.apply()(net.ceedubs.ficus.readers.NameMapper.apply$default$1()).map(&quot;redirectURL&quot;))).getOrElse[Option[String]](OAuth2Settings.apply$default$3), net.ceedubs.ficus.Ficus.optionValueReader[Option[String]](net.ceedubs.ficus.Ficus.optionValueReader[String](net.ceedubs.ficus.Ficus.stringValueReader)).read(config, if (path.==(&quot;.&quot;))
+  net.ceedubs.ficus.readers.NameMapper.apply()(net.ceedubs.ficus.readers.NameMapper.apply$default$1()).map(&quot;apiURL&quot;)
+else
+  path.+(&quot;.&quot;).+(net.ceedubs.ficus.readers.NameMapper.apply()(net.ceedubs.ficus.readers.NameMapper.apply$default$1()).map(&quot;apiURL&quot;))).getOrElse[Option[String]](OAuth2Settings.apply$default$4), net.ceedubs.ficus.Ficus.stringValueReader.read(config, if (path.==(&quot;.&quot;))
+      net.ceedubs.ficus.readers.NameMapper.apply()(net.ceedubs.ficus.readers.NameMapper.apply$default$1()).map(&quot;clientID&quot;)
+    else
+      path.+(&quot;.&quot;).+(net.ceedubs.ficus.readers.NameMapper.apply()(net.ceedubs.ficus.readers.NameMapper.apply$default$1()).map(&quot;clientID&quot;))), net.ceedubs.ficus.Ficus.stringValueReader.read(config, if (path.==(&quot;.&quot;))
+      net.ceedubs.ficus.readers.NameMapper.apply()(net.ceedubs.ficus.readers.NameMapper.apply$default$1()).map(&quot;clientSecret&quot;)
+    else
+      path.+(&quot;.&quot;).+(net.ceedubs.ficus.readers.NameMapper.apply()(net.ceedubs.ficus.readers.NameMapper.apply$default$1()).map(&quot;clientSecret&quot;))), net.ceedubs.ficus.Ficus.optionValueReader[Option[String]](net.ceedubs.ficus.Ficus.optionValueReader[String](net.ceedubs.ficus.Ficus.stringValueReader)).read(config, if (path.==(&quot;.&quot;))
+  net.ceedubs.ficus.readers.NameMapper.apply()(net.ceedubs.ficus.readers.NameMapper.apply$default$1()).map(&quot;scope&quot;)
+else
+  path.+(&quot;.&quot;).+(net.ceedubs.ficus.readers.NameMapper.apply()(net.ceedubs.ficus.readers.NameMapper.apply$default$1()).map(&quot;scope&quot;))).getOrElse[Option[String]](OAuth2Settings.apply$default$7), net.ceedubs.ficus.Ficus.optionValueReader[Map[String,String]](net.ceedubs.ficus.Ficus.mapValueReader[String](net.ceedubs.ficus.Ficus.stringValueReader)).read(config, if (path.==(&quot;.&quot;))
+  net.ceedubs.ficus.readers.NameMapper.apply()(net.ceedubs.ficus.readers.NameMapper.apply$default$1()).map(&quot;authorizationParams&quot;)
+else
+  path.+(&quot;.&quot;).+(net.ceedubs.ficus.readers.NameMapper.apply()(net.ceedubs.ficus.readers.NameMapper.apply$default$1()).map(&quot;authorizationParams&quot;))).getOrElse[Map[String,String]](OAuth2Settings.apply$default$8), net.ceedubs.ficus.Ficus.optionValueReader[Map[String,String]](net.ceedubs.ficus.Ficus.mapValueReader[String](net.ceedubs.ficus.Ficus.stringValueReader)).read(config, if (path.==(&quot;.&quot;))
+  net.ceedubs.ficus.readers.NameMapper.apply()(net.ceedubs.ficus.readers.NameMapper.apply$default$1()).map(&quot;accessTokenParams&quot;)
+else
+  path.+(&quot;.&quot;).+(net.ceedubs.ficus.readers.NameMapper.apply()(net.ceedubs.ficus.readers.NameMapper.apply$default$1()).map(&quot;accessTokenParams&quot;))).getOrElse[Map[String,String]](OAuth2Settings.apply$default$9), net.ceedubs.ficus.Ficus.optionValueReader[Map[String,String]](net.ceedubs.ficus.Ficus.mapValueReader[String](net.ceedubs.ficus.Ficus.stringValueReader)).read(config, if (path.==(&quot;.&quot;))
+  net.ceedubs.ficus.readers.NameMapper.apply()(net.ceedubs.ficus.readers.NameMapper.apply$default$1()).map(&quot;customProperties&quot;)
+else
+  path.+(&quot;.&quot;).+(net.ceedubs.ficus.readers.NameMapper.apply()(net.ceedubs.ficus.readers.NameMapper.apply$default$1()).map(&quot;customProperties&quot;))).getOrElse[Map[String,String]](OAuth2Settings.apply$default$10))
+  };
+  new $anon()
+}: net.ceedubs.ficus.readers.ValueReader[com.mohiva.play.silhouette.impl.providers.OAuth2Settings]))
+        </td>
+      </tr><tr>
+        <td>
+          147
         </td>
         <td>
           1744
         </td>
         <td>
-          5096
+          5465
           -
-          5139
+          5484
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;silhouette.google&quot;
+        </td>
+      </tr><tr>
+        <td>
+          159
+        </td>
+        <td>
+          1748
+        </td>
+        <td>
+          5716
+          -
+          5759
         </td>
         <td>
           Apply
@@ -1816,36 +1975,36 @@ else
         </td>
       </tr><tr>
         <td>
-          150
+          159
         </td>
         <td>
-          1746
+          1747
         </td>
         <td>
-          5335
+          5746
           -
-          5354
+          5751
         </td>
         <td>
-          Literal
+          Apply
         </td>
         <td>
-          &lt;nosymbol&gt;
+          scala.collection.generic.GenericCompanion.apply
         </td>
         <td style="background: #AEF1AE">
-          &quot;silhouette.signer&quot;
+          scala.collection.immutable.Set.apply[com.mohiva.play.silhouette.impl.providers.SocialStateItemHandler]()
         </td>
       </tr><tr>
         <td>
-          150
+          168
         </td>
         <td>
-          1748
+          1752
         </td>
         <td>
-          5274
+          5894
           -
-          5356
+          5976
         </td>
         <td>
           Apply
@@ -1873,36 +2032,15 @@ else
         </td>
       </tr><tr>
         <td>
-          150
+          168
         </td>
         <td>
-          1745
+          1751
         </td>
         <td>
-          5288
+          5908
           -
-          5312
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          play.api.Configuration.underlying
-        </td>
-        <td style="background: #AEF1AE">
-          configuration.underlying
-        </td>
-      </tr><tr>
-        <td>
-          150
-        </td>
-        <td>
-          1747
-        </td>
-        <td>
-          5288
-          -
-          5355
+          5975
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1930,15 +2068,57 @@ else
         </td>
       </tr><tr>
         <td>
-          159
+          168
         </td>
         <td>
-          1751
+          1750
         </td>
         <td>
-          5518
+          5955
           -
-          5588
+          5974
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;silhouette.signer&quot;
+        </td>
+      </tr><tr>
+        <td>
+          168
+        </td>
+        <td>
+          1749
+        </td>
+        <td>
+          5908
+          -
+          5932
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.Configuration.underlying
+        </td>
+        <td style="background: #AEF1AE">
+          configuration.underlying
+        </td>
+      </tr><tr>
+        <td>
+          177
+        </td>
+        <td>
+          1755
+        </td>
+        <td>
+          6138
+          -
+          6208
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1978,15 +2158,15 @@ else
         </td>
       </tr><tr>
         <td>
-          159
+          177
         </td>
         <td>
-          1750
+          1754
         </td>
         <td>
-          5565
+          6185
           -
-          5587
+          6207
         </td>
         <td>
           Literal
@@ -1999,15 +2179,15 @@ else
         </td>
       </tr><tr>
         <td>
-          159
+          177
         </td>
         <td>
-          1749
+          1753
         </td>
         <td>
-          5518
+          6138
           -
-          5542
+          6162
         </td>
         <td>
           Select
@@ -2020,15 +2200,36 @@ else
         </td>
       </tr><tr>
         <td>
-          168
+          186
         </td>
         <td>
-          1752
+          1757
         </td>
         <td>
-          5750
+          6417
           -
-          5774
+          6430
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;application&quot;
+        </td>
+      </tr><tr>
+        <td>
+          186
+        </td>
+        <td>
+          1756
+        </td>
+        <td>
+          6370
+          -
+          6394
         </td>
         <td>
           Select
@@ -2041,15 +2242,15 @@ else
         </td>
       </tr><tr>
         <td>
-          168
+          186
         </td>
         <td>
-          1754
+          1758
         </td>
         <td>
-          5750
+          6370
           -
-          5811
+          6431
         </td>
         <td>
           ApplyToImplicitArgs
@@ -2074,27 +2275,6 @@ else
   };
   new $anon()
 }: net.ceedubs.ficus.readers.ValueReader[whatson.util.ApplicationConfig]))
-        </td>
-      </tr><tr>
-        <td>
-          168
-        </td>
-        <td>
-          1753
-        </td>
-        <td>
-          5797
-          -
-          5810
-        </td>
-        <td>
-          Literal
-        </td>
-        <td>
-          &lt;nosymbol&gt;
-        </td>
-        <td style="background: #AEF1AE">
-          &quot;application&quot;
         </td>
       </tr>
     </table>
