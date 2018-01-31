@@ -84,34 +84,34 @@
 </span>60 <span style=''>   *
 </span>61 <span style=''>   * @return The result to display.
 </span>62 <span style=''>   */
-</span>63 <span style=''>  def signUp = </span><span style='background: #F0ADAD'>Action.async(parse.json) { implicit request =&gt;
-</span>64 <span style=''></span><span style='background: #F0ADAD'>    OrganizerSignUpForm.form.bindFromRequest.fold(
-</span>65 <span style=''></span><span style='background: #F0ADAD'>      form =&gt; {
-</span>66 <span style=''></span><span style='background: #F0ADAD'>        Future.successful(BadRequest(Json.toJson(form.errors)))
-</span>67 <span style=''></span><span style='background: #F0ADAD'>      }, { data =&gt;
-</span>68 <span style=''></span><span style='background: #F0ADAD'>      val loginInfo = LoginInfo(CredentialsProvider.ID, data.email)
-</span>69 <span style=''></span><span style='background: #F0ADAD'>      loginService.retrieveAll(loginInfo).flatMap {
-</span>70 <span style=''></span><span style='background: #F0ADAD'>        case Some(login) =&gt;
-</span>71 <span style=''></span><span style='background: #F0ADAD'>          Future.successful(BadRequest(Json.obj(&quot;message&quot; -&gt; &quot;user.exists&quot;)))
-</span>72 <span style=''></span><span style='background: #F0ADAD'>        case None =&gt;
-</span>73 <span style=''></span><span style='background: #F0ADAD'>          val authInfo = passwordHasher.hash(data.password)
-</span>74 <span style=''></span><span style='background: #F0ADAD'>          val login = Login(None, data.email, None, None, None, loginInfo.providerID, loginInfo.providerKey, false)
-</span>75 <span style=''></span><span style='background: #F0ADAD'>          for {
-</span>76 <span style=''></span><span style='background: #F0ADAD'>            login &lt;- loginService.save(login)
-</span>77 <span style=''></span><span style='background: #F0ADAD'>            authInfo &lt;- authInfoRepository.add(loginInfo, authInfo)
-</span>78 <span style=''></span><span style='background: #F0ADAD'>            authenticator &lt;- silhouette.env.authenticatorService.create(loginInfo)
-</span>79 <span style=''></span><span style='background: #F0ADAD'>            token &lt;- silhouette.env.authenticatorService.init(authenticator)
-</span>80 <span style=''></span><span style='background: #F0ADAD'>            avatar &lt;- avatarService.retrieveURL(data.email)
-</span>81 <span style=''></span><span style='background: #F0ADAD'>          } yield {
-</span>82 <span style=''></span><span style='background: #F0ADAD'>            silhouette.env.eventBus.publish(SignUpEvent(login, request))
-</span>83 <span style=''></span><span style='background: #F0ADAD'>            silhouette.env.eventBus.publish(LoginEvent(login, request))
-</span>84 <span style=''></span><span style='background: #F0ADAD'>            organizerService.save(login,data.name,avatar)
-</span>85 <span style=''></span><span style='background: #F0ADAD'>            mailService.sendOrganizerConfirmation(data.email,data.name,token)
-</span>86 <span style=''></span><span style='background: #F0ADAD'>            Ok(Json.obj(&quot;message&quot; -&gt; &quot;mail.sent&quot;))
-</span>87 <span style=''></span><span style='background: #F0ADAD'>          }
-</span>88 <span style=''></span><span style='background: #F0ADAD'>      }
-</span>89 <span style=''></span><span style='background: #F0ADAD'>    })
-</span>90 <span style=''></span><span style='background: #F0ADAD'>  }</span><span style=''>
+</span>63 <span style=''>  def signUp = </span><span style='background: #AEF1AE'>Action.async(parse.json) { implicit request =&gt;
+</span>64 <span style=''></span><span style='background: #AEF1AE'>    OrganizerSignUpForm.form.bindFromRequest.fold(
+</span>65 <span style=''></span><span style='background: #AEF1AE'>      form =&gt; {
+</span>66 <span style=''></span><span style='background: #AEF1AE'>        Future.successful(BadRequest(Json.toJson(form.errors)))
+</span>67 <span style=''></span><span style='background: #AEF1AE'>      }, { data =&gt;
+</span>68 <span style=''></span><span style='background: #AEF1AE'>      val loginInfo = LoginInfo(CredentialsProvider.ID, data.email)
+</span>69 <span style=''></span><span style='background: #AEF1AE'>      loginService.retrieveAll(loginInfo).flatMap {
+</span>70 <span style=''></span><span style='background: #AEF1AE'>        case Some(login) =&gt;
+</span>71 <span style=''></span><span style='background: #AEF1AE'>          Future.successful(BadRequest(Json.obj(&quot;message&quot; -&gt; &quot;user.exists&quot;)))
+</span>72 <span style=''></span><span style='background: #AEF1AE'>        case None =&gt;
+</span>73 <span style=''></span><span style='background: #AEF1AE'>          val authInfo = passwordHasher.hash(data.password)
+</span>74 <span style=''></span><span style='background: #AEF1AE'>          val login = Login(None, data.email, None, None, None, loginInfo.providerID, loginInfo.providerKey, false)
+</span>75 <span style=''></span><span style='background: #AEF1AE'>          for {
+</span>76 <span style=''></span><span style='background: #AEF1AE'>            login &lt;- loginService.save(login)
+</span>77 <span style=''></span><span style='background: #AEF1AE'>            authInfo &lt;- authInfoRepository.add(loginInfo, authInfo)
+</span>78 <span style=''></span><span style='background: #AEF1AE'>            authenticator &lt;- silhouette.env.authenticatorService.create(loginInfo)
+</span>79 <span style=''></span><span style='background: #AEF1AE'>            token &lt;- silhouette.env.authenticatorService.init(authenticator)
+</span>80 <span style=''></span><span style='background: #AEF1AE'>            avatar &lt;- avatarService.retrieveURL(data.email)
+</span>81 <span style=''></span><span style='background: #AEF1AE'>          } yield {
+</span>82 <span style=''></span><span style='background: #AEF1AE'>            silhouette.env.eventBus.publish(SignUpEvent(login, request))
+</span>83 <span style=''></span><span style='background: #AEF1AE'>            silhouette.env.eventBus.publish(LoginEvent(login, request))
+</span>84 <span style=''></span><span style='background: #AEF1AE'>            organizerService.save(login,data.name,avatar)
+</span>85 <span style=''></span><span style='background: #AEF1AE'>            mailService.sendOrganizerConfirmation(data.email,data.name,token)
+</span>86 <span style=''></span><span style='background: #AEF1AE'>            Ok(Json.obj(&quot;message&quot; -&gt; &quot;mail.sent&quot;))
+</span>87 <span style=''></span><span style='background: #AEF1AE'>          }
+</span>88 <span style=''></span><span style='background: #AEF1AE'>      }
+</span>89 <span style=''></span><span style='background: #AEF1AE'>    })
+</span>90 <span style=''></span><span style='background: #AEF1AE'>  }</span><span style=''>
 </span>91 <span style=''>}
 </span></pre>
           </div>
@@ -698,7 +698,7 @@
         <td>
           play.api.mvc.PlayBodyParsers.json
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           OrganizerController.this.parse.json
         </td>
       </tr><tr>
@@ -719,7 +719,7 @@
         <td>
           play.api.mvc.ActionBuilder.async
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           OrganizerController.this.Action.async[play.api.libs.json.JsValue](OrganizerController.this.parse.json)(((implicit request: play.api.mvc.Request[play.api.libs.json.JsValue]) =&gt; whatson.model.OrganizerSignUpForm.form.bindFromRequest()(request).fold[scala.concurrent.Future[play.api.mvc.Result]](((form: play.api.data.Form[whatson.model.OrganizerSignUpForm.Data]) =&gt; scala.concurrent.Future.successful[play.api.mvc.Result](OrganizerController.this.BadRequest.apply[play.api.libs.json.JsValue](play.api.libs.json.Json.toJson[Seq[play.api.data.FormError]](form.errors)(whatson.util.FormErrorJson.formErrorFormat))(http.this.Writeable.writeableOf_JsValue))), ((data: whatson.model.OrganizerSignUpForm.Data) =&gt; {
   val loginInfo: com.mohiva.play.silhouette.api.LoginInfo = com.mohiva.play.silhouette.api.LoginInfo.apply(com.mohiva.play.silhouette.impl.providers.CredentialsProvider.ID, data.email);
   OrganizerController.this.loginService.retrieveAll(loginInfo).flatMap[play.api.mvc.Result](((x0$1: Option[whatson.model.Login]) =&gt; x0$1 match {
@@ -756,7 +756,7 @@
         <td>
           play.api.data.Form.fold
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           whatson.model.OrganizerSignUpForm.form.bindFromRequest()(request).fold[scala.concurrent.Future[play.api.mvc.Result]](((form: play.api.data.Form[whatson.model.OrganizerSignUpForm.Data]) =&gt; scala.concurrent.Future.successful[play.api.mvc.Result](OrganizerController.this.BadRequest.apply[play.api.libs.json.JsValue](play.api.libs.json.Json.toJson[Seq[play.api.data.FormError]](form.errors)(whatson.util.FormErrorJson.formErrorFormat))(http.this.Writeable.writeableOf_JsValue))), ((data: whatson.model.OrganizerSignUpForm.Data) =&gt; {
   val loginInfo: com.mohiva.play.silhouette.api.LoginInfo = com.mohiva.play.silhouette.api.LoginInfo.apply(com.mohiva.play.silhouette.impl.providers.CredentialsProvider.ID, data.email);
   OrganizerController.this.loginService.retrieveAll(loginInfo).flatMap[play.api.mvc.Result](((x0$1: Option[whatson.model.Login]) =&gt; x0$1 match {
@@ -793,7 +793,7 @@
         <td>
           play.api.libs.json.Json.toJson
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           play.api.libs.json.Json.toJson[Seq[play.api.data.FormError]](form.errors)(whatson.util.FormErrorJson.formErrorFormat)
         </td>
       </tr><tr>
@@ -814,7 +814,7 @@
         <td>
           scala.concurrent.Future.successful
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           scala.concurrent.Future.successful[play.api.mvc.Result](OrganizerController.this.BadRequest.apply[play.api.libs.json.JsValue](play.api.libs.json.Json.toJson[Seq[play.api.data.FormError]](form.errors)(whatson.util.FormErrorJson.formErrorFormat))(http.this.Writeable.writeableOf_JsValue))
         </td>
       </tr><tr>
@@ -835,7 +835,7 @@
         <td>
           whatson.util.FormErrorJson.formErrorFormat
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           whatson.util.FormErrorJson.formErrorFormat
         </td>
       </tr><tr>
@@ -856,7 +856,7 @@
         <td>
           play.api.mvc.Results.Status.apply
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           OrganizerController.this.BadRequest.apply[play.api.libs.json.JsValue](play.api.libs.json.Json.toJson[Seq[play.api.data.FormError]](form.errors)(whatson.util.FormErrorJson.formErrorFormat))(http.this.Writeable.writeableOf_JsValue)
         </td>
       </tr><tr>
@@ -877,7 +877,7 @@
         <td>
           play.api.http.DefaultWriteables.writeableOf_JsValue
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           http.this.Writeable.writeableOf_JsValue
         </td>
       </tr><tr>
@@ -898,7 +898,7 @@
         <td>
           play.api.data.Form.errors
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           form.errors
         </td>
       </tr><tr>
@@ -919,7 +919,7 @@
         <td>
           com.mohiva.play.silhouette.api.LoginInfo.apply
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           com.mohiva.play.silhouette.api.LoginInfo.apply(com.mohiva.play.silhouette.impl.providers.CredentialsProvider.ID, data.email)
         </td>
       </tr><tr>
@@ -940,7 +940,7 @@
         <td>
           whatson.model.OrganizerSignUpForm.Data.email
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           data.email
         </td>
       </tr><tr>
@@ -961,7 +961,7 @@
         <td>
           com.mohiva.play.silhouette.impl.providers.CredentialsProvider.ID
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           com.mohiva.play.silhouette.impl.providers.CredentialsProvider.ID
         </td>
       </tr><tr>
@@ -982,7 +982,7 @@
         <td>
           scala.concurrent.Future.flatMap
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           OrganizerController.this.loginService.retrieveAll(loginInfo).flatMap[play.api.mvc.Result](((x0$1: Option[whatson.model.Login]) =&gt; x0$1 match {
   case (value: whatson.model.Login)Some[whatson.model.Login]((login @ _)) =&gt; scala.concurrent.Future.successful[play.api.mvc.Result](OrganizerController.this.BadRequest.apply[play.api.libs.json.JsObject](play.api.libs.json.Json.obj(scala.Predef.ArrowAssoc[String](&quot;message&quot;).-&gt;[play.api.libs.json.Json.JsValueWrapper](json.this.Json.toJsFieldJsValueWrapper[String](&quot;user.exists&quot;)(json.this.Writes.StringWrites))))(http.this.Writeable.writeableOf_JsValue))
   case scala.None =&gt; {
@@ -1016,7 +1016,7 @@
         <td>
           play.api.libs.concurrent.Execution.Implicits.defaultContext
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           play.api.libs.concurrent.Execution.Implicits.defaultContext
         </td>
       </tr><tr>
@@ -1037,7 +1037,7 @@
         <td>
           scala.concurrent.Future.successful
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           scala.concurrent.Future.successful[play.api.mvc.Result](OrganizerController.this.BadRequest.apply[play.api.libs.json.JsObject](play.api.libs.json.Json.obj(scala.Predef.ArrowAssoc[String](&quot;message&quot;).-&gt;[play.api.libs.json.Json.JsValueWrapper](json.this.Json.toJsFieldJsValueWrapper[String](&quot;user.exists&quot;)(json.this.Writes.StringWrites))))(http.this.Writeable.writeableOf_JsValue))
         </td>
       </tr><tr>
@@ -1058,7 +1058,7 @@
         <td>
           play.api.libs.json.DefaultWrites.StringWrites
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           json.this.Writes.StringWrites
         </td>
       </tr><tr>
@@ -1079,7 +1079,7 @@
         <td>
           play.api.libs.json.Json.obj
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           play.api.libs.json.Json.obj(scala.Predef.ArrowAssoc[String](&quot;message&quot;).-&gt;[play.api.libs.json.Json.JsValueWrapper](json.this.Json.toJsFieldJsValueWrapper[String](&quot;user.exists&quot;)(json.this.Writes.StringWrites)))
         </td>
       </tr><tr>
@@ -1100,7 +1100,7 @@
         <td>
           scala.Predef.ArrowAssoc.-&gt;
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           scala.Predef.ArrowAssoc[String](&quot;message&quot;).-&gt;[play.api.libs.json.Json.JsValueWrapper](json.this.Json.toJsFieldJsValueWrapper[String](&quot;user.exists&quot;)(json.this.Writes.StringWrites))
         </td>
       </tr><tr>
@@ -1121,7 +1121,7 @@
         <td>
           play.api.mvc.Results.Status.apply
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           OrganizerController.this.BadRequest.apply[play.api.libs.json.JsObject](play.api.libs.json.Json.obj(scala.Predef.ArrowAssoc[String](&quot;message&quot;).-&gt;[play.api.libs.json.Json.JsValueWrapper](json.this.Json.toJsFieldJsValueWrapper[String](&quot;user.exists&quot;)(json.this.Writes.StringWrites))))(http.this.Writeable.writeableOf_JsValue)
         </td>
       </tr><tr>
@@ -1142,7 +1142,7 @@
         <td>
           &lt;nosymbol&gt;
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           &quot;user.exists&quot;
         </td>
       </tr><tr>
@@ -1163,7 +1163,7 @@
         <td>
           play.api.libs.json.Json.toJsFieldJsValueWrapper
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           json.this.Json.toJsFieldJsValueWrapper[String](&quot;user.exists&quot;)(json.this.Writes.StringWrites)
         </td>
       </tr><tr>
@@ -1184,7 +1184,7 @@
         <td>
           play.api.http.DefaultWriteables.writeableOf_JsValue
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           http.this.Writeable.writeableOf_JsValue
         </td>
       </tr><tr>
@@ -1205,7 +1205,7 @@
         <td>
           &lt;nosymbol&gt;
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           &quot;message&quot;
         </td>
       </tr><tr>
@@ -1226,7 +1226,7 @@
         <td>
           com.mohiva.play.silhouette.api.util.PasswordHasher.hash
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           OrganizerController.this.passwordHasher.hash(data.password)
         </td>
       </tr><tr>
@@ -1247,7 +1247,7 @@
         <td>
           whatson.model.OrganizerSignUpForm.Data.password
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           data.password
         </td>
       </tr><tr>
@@ -1268,7 +1268,7 @@
         <td>
           com.mohiva.play.silhouette.api.LoginInfo.providerKey
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           loginInfo.providerKey
         </td>
       </tr><tr>
@@ -1289,7 +1289,7 @@
         <td>
           scala.None
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           scala.None
         </td>
       </tr><tr>
@@ -1310,7 +1310,7 @@
         <td>
           scala.None
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           scala.None
         </td>
       </tr><tr>
@@ -1331,7 +1331,7 @@
         <td>
           scala.None
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           scala.None
         </td>
       </tr><tr>
@@ -1352,7 +1352,7 @@
         <td>
           com.mohiva.play.silhouette.api.LoginInfo.providerID
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           loginInfo.providerID
         </td>
       </tr><tr>
@@ -1373,7 +1373,7 @@
         <td>
           whatson.model.Login.apply
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           whatson.model.Login.apply(scala.None, data.email, scala.None, scala.None, scala.None, loginInfo.providerID, loginInfo.providerKey, false)
         </td>
       </tr><tr>
@@ -1394,7 +1394,7 @@
         <td>
           &lt;nosymbol&gt;
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           false
         </td>
       </tr><tr>
@@ -1415,7 +1415,7 @@
         <td>
           whatson.model.OrganizerSignUpForm.Data.email
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           data.email
         </td>
       </tr><tr>
@@ -1436,7 +1436,7 @@
         <td>
           scala.None
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           scala.None
         </td>
       </tr><tr>
@@ -1457,7 +1457,7 @@
         <td>
           scala.concurrent.Future.flatMap
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           OrganizerController.this.loginService.save(login).flatMap[play.api.mvc.Result](((login: whatson.model.Login) =&gt; OrganizerController.this.authInfoRepository.add[com.mohiva.play.silhouette.api.util.PasswordInfo](loginInfo, authInfo).flatMap[play.api.mvc.Result](((authInfo: com.mohiva.play.silhouette.api.util.PasswordInfo) =&gt; OrganizerController.this.silhouette.env.authenticatorService.create(loginInfo)(request).flatMap[play.api.mvc.Result](((authenticator: whatson.auth.AuthEnv#A) =&gt; OrganizerController.this.silhouette.env.authenticatorService.init(authenticator)(request).flatMap[play.api.mvc.Result](((token: whatson.auth.AuthEnv#A#Value) =&gt; OrganizerController.this.avatarService.retrieveURL(data.email).map[play.api.mvc.Result](((avatar: Option[String]) =&gt; {
   OrganizerController.this.silhouette.env.eventBus.publish(com.mohiva.play.silhouette.api.SignUpEvent.apply[whatson.model.Login](login, request));
   OrganizerController.this.silhouette.env.eventBus.publish(com.mohiva.play.silhouette.api.LoginEvent.apply[whatson.model.Login](login, request));
@@ -1484,7 +1484,7 @@
         <td>
           play.api.libs.concurrent.Execution.Implicits.defaultContext
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           play.api.libs.concurrent.Execution.Implicits.defaultContext
         </td>
       </tr><tr>
@@ -1505,7 +1505,7 @@
         <td>
           play.api.libs.concurrent.Execution.Implicits.defaultContext
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           play.api.libs.concurrent.Execution.Implicits.defaultContext
         </td>
       </tr><tr>
@@ -1526,7 +1526,7 @@
         <td>
           scala.concurrent.Future.flatMap
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           OrganizerController.this.authInfoRepository.add[com.mohiva.play.silhouette.api.util.PasswordInfo](loginInfo, authInfo).flatMap[play.api.mvc.Result](((authInfo: com.mohiva.play.silhouette.api.util.PasswordInfo) =&gt; OrganizerController.this.silhouette.env.authenticatorService.create(loginInfo)(request).flatMap[play.api.mvc.Result](((authenticator: whatson.auth.AuthEnv#A) =&gt; OrganizerController.this.silhouette.env.authenticatorService.init(authenticator)(request).flatMap[play.api.mvc.Result](((token: whatson.auth.AuthEnv#A#Value) =&gt; OrganizerController.this.avatarService.retrieveURL(data.email).map[play.api.mvc.Result](((avatar: Option[String]) =&gt; {
   OrganizerController.this.silhouette.env.eventBus.publish(com.mohiva.play.silhouette.api.SignUpEvent.apply[whatson.model.Login](login, request));
   OrganizerController.this.silhouette.env.eventBus.publish(com.mohiva.play.silhouette.api.LoginEvent.apply[whatson.model.Login](login, request));
@@ -1553,7 +1553,7 @@
         <td>
           scala.concurrent.Future.flatMap
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           OrganizerController.this.silhouette.env.authenticatorService.create(loginInfo)(request).flatMap[play.api.mvc.Result](((authenticator: whatson.auth.AuthEnv#A) =&gt; OrganizerController.this.silhouette.env.authenticatorService.init(authenticator)(request).flatMap[play.api.mvc.Result](((token: whatson.auth.AuthEnv#A#Value) =&gt; OrganizerController.this.avatarService.retrieveURL(data.email).map[play.api.mvc.Result](((avatar: Option[String]) =&gt; {
   OrganizerController.this.silhouette.env.eventBus.publish(com.mohiva.play.silhouette.api.SignUpEvent.apply[whatson.model.Login](login, request));
   OrganizerController.this.silhouette.env.eventBus.publish(com.mohiva.play.silhouette.api.LoginEvent.apply[whatson.model.Login](login, request));
@@ -1580,7 +1580,7 @@
         <td>
           play.api.libs.concurrent.Execution.Implicits.defaultContext
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           play.api.libs.concurrent.Execution.Implicits.defaultContext
         </td>
       </tr><tr>
@@ -1601,7 +1601,7 @@
         <td>
           scala.concurrent.Future.flatMap
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           OrganizerController.this.silhouette.env.authenticatorService.init(authenticator)(request).flatMap[play.api.mvc.Result](((token: whatson.auth.AuthEnv#A#Value) =&gt; OrganizerController.this.avatarService.retrieveURL(data.email).map[play.api.mvc.Result](((avatar: Option[String]) =&gt; {
   OrganizerController.this.silhouette.env.eventBus.publish(com.mohiva.play.silhouette.api.SignUpEvent.apply[whatson.model.Login](login, request));
   OrganizerController.this.silhouette.env.eventBus.publish(com.mohiva.play.silhouette.api.LoginEvent.apply[whatson.model.Login](login, request));
@@ -1628,7 +1628,7 @@
         <td>
           play.api.libs.concurrent.Execution.Implicits.defaultContext
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           play.api.libs.concurrent.Execution.Implicits.defaultContext
         </td>
       </tr><tr>
@@ -1649,7 +1649,7 @@
         <td>
           whatson.model.OrganizerSignUpForm.Data.email
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           data.email
         </td>
       </tr><tr>
@@ -1670,7 +1670,7 @@
         <td>
           play.api.libs.concurrent.Execution.Implicits.defaultContext
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           play.api.libs.concurrent.Execution.Implicits.defaultContext
         </td>
       </tr><tr>
@@ -1691,7 +1691,7 @@
         <td>
           scala.concurrent.Future.map
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           OrganizerController.this.avatarService.retrieveURL(data.email).map[play.api.mvc.Result](((avatar: Option[String]) =&gt; {
   OrganizerController.this.silhouette.env.eventBus.publish(com.mohiva.play.silhouette.api.SignUpEvent.apply[whatson.model.Login](login, request));
   OrganizerController.this.silhouette.env.eventBus.publish(com.mohiva.play.silhouette.api.LoginEvent.apply[whatson.model.Login](login, request));
@@ -1718,7 +1718,7 @@
         <td>
           akka.event.SubchannelClassification.publish
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           OrganizerController.this.silhouette.env.eventBus.publish(com.mohiva.play.silhouette.api.SignUpEvent.apply[whatson.model.Login](login, request))
         </td>
       </tr><tr>
@@ -1739,7 +1739,7 @@
         <td>
           com.mohiva.play.silhouette.api.SignUpEvent.apply
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           com.mohiva.play.silhouette.api.SignUpEvent.apply[whatson.model.Login](login, request)
         </td>
       </tr><tr>
@@ -1760,7 +1760,7 @@
         <td>
           com.mohiva.play.silhouette.api.LoginEvent.apply
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           com.mohiva.play.silhouette.api.LoginEvent.apply[whatson.model.Login](login, request)
         </td>
       </tr><tr>
@@ -1781,7 +1781,7 @@
         <td>
           akka.event.SubchannelClassification.publish
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           OrganizerController.this.silhouette.env.eventBus.publish(com.mohiva.play.silhouette.api.LoginEvent.apply[whatson.model.Login](login, request))
         </td>
       </tr><tr>
@@ -1802,7 +1802,7 @@
         <td>
           whatson.service.OrganizerService.save
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           OrganizerController.this.organizerService.save(login, data.name, avatar)
         </td>
       </tr><tr>
@@ -1823,7 +1823,7 @@
         <td>
           whatson.model.OrganizerSignUpForm.Data.name
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           data.name
         </td>
       </tr><tr>
@@ -1844,7 +1844,7 @@
         <td>
           whatson.service.MailService.sendOrganizerConfirmation
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           OrganizerController.this.mailService.sendOrganizerConfirmation(data.email, data.name, token)
         </td>
       </tr><tr>
@@ -1865,7 +1865,7 @@
         <td>
           whatson.model.OrganizerSignUpForm.Data.name
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           data.name
         </td>
       </tr><tr>
@@ -1886,7 +1886,7 @@
         <td>
           whatson.model.OrganizerSignUpForm.Data.email
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           data.email
         </td>
       </tr><tr>
@@ -1907,7 +1907,7 @@
         <td>
           play.api.libs.json.Json.obj
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           play.api.libs.json.Json.obj(scala.Predef.ArrowAssoc[String](&quot;message&quot;).-&gt;[play.api.libs.json.Json.JsValueWrapper](json.this.Json.toJsFieldJsValueWrapper[String](&quot;mail.sent&quot;)(json.this.Writes.StringWrites)))
         </td>
       </tr><tr>
@@ -1928,7 +1928,7 @@
         <td>
           play.api.libs.json.DefaultWrites.StringWrites
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           json.this.Writes.StringWrites
         </td>
       </tr><tr>
@@ -1949,7 +1949,7 @@
         <td>
           &lt;nosymbol&gt;
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           &quot;mail.sent&quot;
         </td>
       </tr><tr>
@@ -1970,7 +1970,7 @@
         <td>
           scala.Predef.ArrowAssoc.-&gt;
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           scala.Predef.ArrowAssoc[String](&quot;message&quot;).-&gt;[play.api.libs.json.Json.JsValueWrapper](json.this.Json.toJsFieldJsValueWrapper[String](&quot;mail.sent&quot;)(json.this.Writes.StringWrites))
         </td>
       </tr><tr>
@@ -1991,7 +1991,7 @@
         <td>
           play.api.mvc.Results.Status.apply
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           OrganizerController.this.Ok.apply[play.api.libs.json.JsObject](play.api.libs.json.Json.obj(scala.Predef.ArrowAssoc[String](&quot;message&quot;).-&gt;[play.api.libs.json.Json.JsValueWrapper](json.this.Json.toJsFieldJsValueWrapper[String](&quot;mail.sent&quot;)(json.this.Writes.StringWrites))))(http.this.Writeable.writeableOf_JsValue)
         </td>
       </tr><tr>
@@ -2012,7 +2012,7 @@
         <td>
           play.api.http.DefaultWriteables.writeableOf_JsValue
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           http.this.Writeable.writeableOf_JsValue
         </td>
       </tr><tr>
@@ -2033,7 +2033,7 @@
         <td>
           &lt;nosymbol&gt;
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           &quot;message&quot;
         </td>
       </tr><tr>
@@ -2054,7 +2054,7 @@
         <td>
           play.api.libs.json.Json.toJsFieldJsValueWrapper
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           json.this.Json.toJsFieldJsValueWrapper[String](&quot;mail.sent&quot;)(json.this.Writes.StringWrites)
         </td>
       </tr>
