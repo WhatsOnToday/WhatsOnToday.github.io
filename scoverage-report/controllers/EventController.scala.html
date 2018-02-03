@@ -82,37 +82,37 @@
 </span>58 <span style=''></span><span style='background: #AEF1AE'>    returnPaged(s,q,db)
 </span>59 <span style=''></span><span style='background: #AEF1AE'>  }</span><span style=''>
 </span>60 <span style=''>
-</span>61 <span style=''>  def deleteEvent(id: Int) = </span><span style='background: #F0ADAD'>organizerRequest(parse.default) { (request,organizer) =&gt;
-</span>62 <span style=''></span><span style='background: #F0ADAD'>    log.debug(&quot;Rest request to get event&quot;)
-</span>63 <span style=''></span><span style='background: #F0ADAD'>
-</span>64 <span style=''></span><span style='background: #F0ADAD'>    val q = event.filter(x =&gt; x.id === id.bind &amp;&amp; x.creatorId === organizer.id).delete
-</span>65 <span style=''></span><span style='background: #F0ADAD'>
-</span>66 <span style=''></span><span style='background: #F0ADAD'>    db.run(q).map {
-</span>67 <span style=''></span><span style='background: #F0ADAD'>      case 0 =&gt; NotFound
-</span>68 <span style=''></span><span style='background: #F0ADAD'>      case x =&gt; Ok(Json.toJson(x))
-</span>69 <span style=''></span><span style='background: #F0ADAD'>    }
-</span>70 <span style=''></span><span style='background: #F0ADAD'>  }</span><span style=''>
+</span>61 <span style=''>  def deleteEvent(id: Int) = </span><span style='background: #AEF1AE'>organizerRequest(parse.default) { (request,organizer) =&gt;
+</span>62 <span style=''></span><span style='background: #AEF1AE'>    log.debug(&quot;Rest request to get event&quot;)
+</span>63 <span style=''></span><span style='background: #AEF1AE'>
+</span>64 <span style=''></span><span style='background: #AEF1AE'>    val q = event.filter(x =&gt; x.id === id.bind &amp;&amp; x.creatorId === organizer.id).delete
+</span>65 <span style=''></span><span style='background: #AEF1AE'>
+</span>66 <span style=''></span><span style='background: #AEF1AE'>    db.run(q).map {
+</span>67 <span style=''></span><span style='background: #AEF1AE'>      case 0 =&gt; NotFound
+</span>68 <span style=''></span><span style='background: #AEF1AE'>      case x =&gt; Ok(Json.toJson(x))
+</span>69 <span style=''></span><span style='background: #AEF1AE'>    }
+</span>70 <span style=''></span><span style='background: #AEF1AE'>  }</span><span style=''>
 </span>71 <span style=''>
-</span>72 <span style=''>  def createEvent() = </span><span style='background: #F0ADAD'>organizerRequest(parse.json(eventReads)) { case (request,organizer) =&gt;
-</span>73 <span style=''></span><span style='background: #F0ADAD'>    log.debug(&quot;Rest request to create event&quot;)
-</span>74 <span style=''></span><span style='background: #F0ADAD'>
-</span>75 <span style=''></span><span style='background: #F0ADAD'>    val e = request.body.copy(creatorId = organizer.id)
-</span>76 <span style=''></span><span style='background: #F0ADAD'>
-</span>77 <span style=''></span><span style='background: #F0ADAD'>    val inserted = db.run(insertAndReturn[Event,EventTable](event,e))
-</span>78 <span style=''></span><span style='background: #F0ADAD'>
-</span>79 <span style=''></span><span style='background: #F0ADAD'>    inserted.map(x =&gt; Ok(Json.toJson(x)))
-</span>80 <span style=''></span><span style='background: #F0ADAD'>  }</span><span style=''>
+</span>72 <span style=''>  def createEvent() = </span><span style='background: #AEF1AE'>organizerRequest(parse.json(eventReads)) { case (request,organizer) =&gt;
+</span>73 <span style=''></span><span style='background: #AEF1AE'>    log.debug(&quot;Rest request to create event&quot;)
+</span>74 <span style=''></span><span style='background: #AEF1AE'>
+</span>75 <span style=''></span><span style='background: #AEF1AE'>    val e = request.body.copy(creatorId = organizer.id)
+</span>76 <span style=''></span><span style='background: #AEF1AE'>
+</span>77 <span style=''></span><span style='background: #AEF1AE'>    val inserted = db.run(insertAndReturn[Event,EventTable](event,e))
+</span>78 <span style=''></span><span style='background: #AEF1AE'>
+</span>79 <span style=''></span><span style='background: #AEF1AE'>    inserted.map(x =&gt; Ok(Json.toJson(x)))
+</span>80 <span style=''></span><span style='background: #AEF1AE'>  }</span><span style=''>
 </span>81 <span style=''>
-</span>82 <span style=''>  def updateEvent(id: Int) = </span><span style='background: #F0ADAD'>organizerRequest(parse.json(eventReads)) { (request,organizer) =&gt;
-</span>83 <span style=''></span><span style='background: #F0ADAD'>    log.debug(&quot;Rest request to update event&quot;)
-</span>84 <span style=''></span><span style='background: #F0ADAD'>
-</span>85 <span style=''></span><span style='background: #F0ADAD'>    val q = event.filter(x =&gt; x.id === id.bind &amp;&amp; x.creatorId === organizer.id).update(request.body)
-</span>86 <span style=''></span><span style='background: #F0ADAD'>
-</span>87 <span style=''></span><span style='background: #F0ADAD'>    db.run(q).map {
-</span>88 <span style=''></span><span style='background: #F0ADAD'>      case 0 =&gt; NotFound
-</span>89 <span style=''></span><span style='background: #F0ADAD'>      case x =&gt; Ok(Json.toJson(x))
-</span>90 <span style=''></span><span style='background: #F0ADAD'>    }
-</span>91 <span style=''></span><span style='background: #F0ADAD'>  }</span><span style=''>
+</span>82 <span style=''>  def updateEvent(id: Int) = </span><span style='background: #AEF1AE'>organizerRequest(parse.json(eventReads)) { (request,organizer) =&gt;
+</span>83 <span style=''></span><span style='background: #AEF1AE'>    log.debug(&quot;Rest request to update event&quot;)
+</span>84 <span style=''></span><span style='background: #AEF1AE'>
+</span>85 <span style=''></span><span style='background: #AEF1AE'>    val q = event.filter(x =&gt; x.id === id.bind &amp;&amp; x.creatorId === organizer.id).update(request.body)
+</span>86 <span style=''></span><span style='background: #AEF1AE'>
+</span>87 <span style=''></span><span style='background: #AEF1AE'>    db.run(q).map {
+</span>88 <span style=''></span><span style='background: #AEF1AE'>      case 0 =&gt; NotFound
+</span>89 <span style=''></span><span style='background: #AEF1AE'>      case x =&gt; Ok(Json.toJson(x))
+</span>90 <span style=''></span><span style='background: #AEF1AE'>    }
+</span>91 <span style=''></span><span style='background: #AEF1AE'>  }</span><span style=''>
 </span>92 <span style=''>}
 </span></pre>
           </div>
@@ -2331,7 +2331,7 @@
         <td>
           play.api.mvc.PlayBodyParsers.default
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           EventController.this.parse.default
         </td>
       </tr><tr>
@@ -2352,7 +2352,7 @@
         <td>
           controllers.Util.organizerRequest
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           EventController.this.organizerRequest[play.api.mvc.AnyContent](EventController.this.parse.default)(((request: com.mohiva.play.silhouette.api.actions.SecuredRequest[whatson.auth.AuthEnv,play.api.mvc.AnyContent], organizer: whatson.model.Organizer) =&gt; {
   EventController.this.log.debug(&quot;Rest request to get event&quot;)(api.this.MarkerContext.NoMarker);
   val q: slick.jdbc.PostgresProfile.ProfileAction[Int,slick.dbio.NoStream,slick.dbio.Effect.Write] = slick.jdbc.PostgresProfile.api.queryDeleteActionExtensionMethods[Seq](whatson.db.EventTable.event.filter[slick.lifted.Rep[Option[Boolean]]](((x: whatson.db.EventTable) =&gt; slick.jdbc.PostgresProfile.api.booleanColumnExtensionMethods(slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](x.id)(slick.jdbc.PostgresProfile.api.intColumnType).===[Int, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[Int](id)(slick.jdbc.PostgresProfile.api.intColumnType).bind)(lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType))).&amp;&amp;[Option[Boolean], Option[Boolean]](slick.jdbc.PostgresProfile.api.optionColumnExtensionMethods[Int](x.creatorId)(slick.jdbc.PostgresProfile.api.intColumnType).===[Option[Int], Option[Boolean]](slick.jdbc.PostgresProfile.api.valueToConstColumn[Option[Int]](organizer.id)(ast.this.TypedType.typedTypeToOptionTypedType[Int](slick.jdbc.PostgresProfile.api.intColumnType)))(lifted.this.OptionMapper2.getOptionMapper2OO[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType)))(lifted.this.OptionMapper2.getOptionMapper2TO[Boolean, Boolean, Boolean](slick.jdbc.PostgresProfile.api.booleanColumnType))))(lifted.this.CanBeQueryCondition.BooleanOptionColumnCanBeQueryCondition)).delete;
@@ -2380,7 +2380,7 @@
         <td>
           controllers.EventController.context
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           EventController.this.context
         </td>
       </tr><tr>
@@ -2401,7 +2401,7 @@
         <td>
           play.api.LoggerLike.debug
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           EventController.this.log.debug(&quot;Rest request to get event&quot;)(api.this.MarkerContext.NoMarker)
         </td>
       </tr><tr>
@@ -2422,7 +2422,7 @@
         <td>
           play.api.LowPriorityMarkerContextImplicits.NoMarker
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           api.this.MarkerContext.NoMarker
         </td>
       </tr><tr>
@@ -2443,7 +2443,7 @@
         <td>
           &lt;nosymbol&gt;
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           &quot;Rest request to get event&quot;
         </td>
       </tr><tr>
@@ -2464,7 +2464,7 @@
         <td>
           slick.lifted.OptionMapper2.getOptionMapper2TT
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType)
         </td>
       </tr><tr>
@@ -2485,7 +2485,7 @@
         <td>
           slick.lifted.OptionMapper2.getOptionMapper2OO
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           lifted.this.OptionMapper2.getOptionMapper2OO[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType)
         </td>
       </tr><tr>
@@ -2506,7 +2506,7 @@
         <td>
           slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.booleanColumnType
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           slick.jdbc.PostgresProfile.api.booleanColumnType
         </td>
       </tr><tr>
@@ -2527,7 +2527,7 @@
         <td>
           whatson.db.EventTable.creatorId
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           x.creatorId
         </td>
       </tr><tr>
@@ -2548,7 +2548,7 @@
         <td>
           slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           slick.jdbc.PostgresProfile.api.intColumnType
         </td>
       </tr><tr>
@@ -2569,7 +2569,7 @@
         <td>
           slick.lifted.CanBeQueryCondition.BooleanOptionColumnCanBeQueryCondition
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           lifted.this.CanBeQueryCondition.BooleanOptionColumnCanBeQueryCondition
         </td>
       </tr><tr>
@@ -2590,7 +2590,7 @@
         <td>
           slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           slick.jdbc.PostgresProfile.api.intColumnType
         </td>
       </tr><tr>
@@ -2611,7 +2611,7 @@
         <td>
           slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           slick.jdbc.PostgresProfile.api.intColumnType
         </td>
       </tr><tr>
@@ -2632,7 +2632,7 @@
         <td>
           slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           slick.jdbc.PostgresProfile.api.intColumnType
         </td>
       </tr><tr>
@@ -2653,7 +2653,7 @@
         <td>
           slick.relational.RelationalProfile.API.valueToConstColumn
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           slick.jdbc.PostgresProfile.api.valueToConstColumn[Option[Int]](organizer.id)(ast.this.TypedType.typedTypeToOptionTypedType[Int](slick.jdbc.PostgresProfile.api.intColumnType))
         </td>
       </tr><tr>
@@ -2674,7 +2674,7 @@
         <td>
           slick.jdbc.JdbcActionComponent.DeleteActionExtensionMethodsImpl.delete
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           slick.jdbc.PostgresProfile.api.queryDeleteActionExtensionMethods[Seq](whatson.db.EventTable.event.filter[slick.lifted.Rep[Option[Boolean]]](((x: whatson.db.EventTable) =&gt; slick.jdbc.PostgresProfile.api.booleanColumnExtensionMethods(slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](x.id)(slick.jdbc.PostgresProfile.api.intColumnType).===[Int, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[Int](id)(slick.jdbc.PostgresProfile.api.intColumnType).bind)(lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType))).&amp;&amp;[Option[Boolean], Option[Boolean]](slick.jdbc.PostgresProfile.api.optionColumnExtensionMethods[Int](x.creatorId)(slick.jdbc.PostgresProfile.api.intColumnType).===[Option[Int], Option[Boolean]](slick.jdbc.PostgresProfile.api.valueToConstColumn[Option[Int]](organizer.id)(ast.this.TypedType.typedTypeToOptionTypedType[Int](slick.jdbc.PostgresProfile.api.intColumnType)))(lifted.this.OptionMapper2.getOptionMapper2OO[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType)))(lifted.this.OptionMapper2.getOptionMapper2TO[Boolean, Boolean, Boolean](slick.jdbc.PostgresProfile.api.booleanColumnType))))(lifted.this.CanBeQueryCondition.BooleanOptionColumnCanBeQueryCondition)).delete
         </td>
       </tr><tr>
@@ -2695,7 +2695,7 @@
         <td>
           slick.lifted.LiteralColumn.bind
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           slick.jdbc.PostgresProfile.api.valueToConstColumn[Int](id)(slick.jdbc.PostgresProfile.api.intColumnType).bind
         </td>
       </tr><tr>
@@ -2716,7 +2716,7 @@
         <td>
           slick.lifted.ColumnExtensionMethods.===
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           slick.jdbc.PostgresProfile.api.optionColumnExtensionMethods[Int](x.creatorId)(slick.jdbc.PostgresProfile.api.intColumnType).===[Option[Int], Option[Boolean]](slick.jdbc.PostgresProfile.api.valueToConstColumn[Option[Int]](organizer.id)(ast.this.TypedType.typedTypeToOptionTypedType[Int](slick.jdbc.PostgresProfile.api.intColumnType)))(lifted.this.OptionMapper2.getOptionMapper2OO[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType))
         </td>
       </tr><tr>
@@ -2737,7 +2737,7 @@
         <td>
           slick.lifted.ColumnExtensionMethods.===
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](x.id)(slick.jdbc.PostgresProfile.api.intColumnType).===[Int, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[Int](id)(slick.jdbc.PostgresProfile.api.intColumnType).bind)(lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType))
         </td>
       </tr><tr>
@@ -2758,7 +2758,7 @@
         <td>
           slick.lifted.BooleanColumnExtensionMethods.&amp;&amp;
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           slick.jdbc.PostgresProfile.api.booleanColumnExtensionMethods(slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](x.id)(slick.jdbc.PostgresProfile.api.intColumnType).===[Int, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[Int](id)(slick.jdbc.PostgresProfile.api.intColumnType).bind)(lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType))).&amp;&amp;[Option[Boolean], Option[Boolean]](slick.jdbc.PostgresProfile.api.optionColumnExtensionMethods[Int](x.creatorId)(slick.jdbc.PostgresProfile.api.intColumnType).===[Option[Int], Option[Boolean]](slick.jdbc.PostgresProfile.api.valueToConstColumn[Option[Int]](organizer.id)(ast.this.TypedType.typedTypeToOptionTypedType[Int](slick.jdbc.PostgresProfile.api.intColumnType)))(lifted.this.OptionMapper2.getOptionMapper2OO[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType)))(lifted.this.OptionMapper2.getOptionMapper2TO[Boolean, Boolean, Boolean](slick.jdbc.PostgresProfile.api.booleanColumnType))
         </td>
       </tr><tr>
@@ -2779,7 +2779,7 @@
         <td>
           whatson.db.EventTable.id
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           x.id
         </td>
       </tr><tr>
@@ -2800,7 +2800,7 @@
         <td>
           whatson.model.Organizer.id
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           organizer.id
         </td>
       </tr><tr>
@@ -2821,7 +2821,7 @@
         <td>
           slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           slick.jdbc.PostgresProfile.api.intColumnType
         </td>
       </tr><tr>
@@ -2842,7 +2842,7 @@
         <td>
           slick.lifted.OptionMapper2.getOptionMapper2TO
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           lifted.this.OptionMapper2.getOptionMapper2TO[Boolean, Boolean, Boolean](slick.jdbc.PostgresProfile.api.booleanColumnType)
         </td>
       </tr><tr>
@@ -2863,7 +2863,7 @@
         <td>
           slick.lifted.Query.filter
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           whatson.db.EventTable.event.filter[slick.lifted.Rep[Option[Boolean]]](((x: whatson.db.EventTable) =&gt; slick.jdbc.PostgresProfile.api.booleanColumnExtensionMethods(slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](x.id)(slick.jdbc.PostgresProfile.api.intColumnType).===[Int, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[Int](id)(slick.jdbc.PostgresProfile.api.intColumnType).bind)(lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType))).&amp;&amp;[Option[Boolean], Option[Boolean]](slick.jdbc.PostgresProfile.api.optionColumnExtensionMethods[Int](x.creatorId)(slick.jdbc.PostgresProfile.api.intColumnType).===[Option[Int], Option[Boolean]](slick.jdbc.PostgresProfile.api.valueToConstColumn[Option[Int]](organizer.id)(ast.this.TypedType.typedTypeToOptionTypedType[Int](slick.jdbc.PostgresProfile.api.intColumnType)))(lifted.this.OptionMapper2.getOptionMapper2OO[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType)))(lifted.this.OptionMapper2.getOptionMapper2TO[Boolean, Boolean, Boolean](slick.jdbc.PostgresProfile.api.booleanColumnType))))(lifted.this.CanBeQueryCondition.BooleanOptionColumnCanBeQueryCondition)
         </td>
       </tr><tr>
@@ -2884,7 +2884,7 @@
         <td>
           slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           slick.jdbc.PostgresProfile.api.intColumnType
         </td>
       </tr><tr>
@@ -2905,7 +2905,7 @@
         <td>
           slick.ast.TypedType.typedTypeToOptionTypedType
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           ast.this.TypedType.typedTypeToOptionTypedType[Int](slick.jdbc.PostgresProfile.api.intColumnType)
         </td>
       </tr><tr>
@@ -2926,7 +2926,7 @@
         <td>
           scala.concurrent.Future.map
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           EventController.this.db.run[Int](q).map[play.api.mvc.Result](((x0$1: Int) =&gt; x0$1 match {
   case 0 =&gt; EventController.this.NotFound
   case (x @ _) =&gt; EventController.this.Ok.apply[play.api.libs.json.JsValue](play.api.libs.json.Json.toJson[Int](x)(json.this.Writes.IntWrites))(http.this.Writeable.writeableOf_JsValue)
@@ -2950,7 +2950,7 @@
         <td>
           controllers.EventController.context
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           EventController.this.context
         </td>
       </tr><tr>
@@ -2971,7 +2971,7 @@
         <td>
           play.api.mvc.Results.NotFound
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           EventController.this.NotFound
         </td>
       </tr><tr>
@@ -2992,7 +2992,7 @@
         <td>
           play.api.libs.json.DefaultWrites.IntWrites
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           json.this.Writes.IntWrites
         </td>
       </tr><tr>
@@ -3013,7 +3013,7 @@
         <td>
           play.api.http.DefaultWriteables.writeableOf_JsValue
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           http.this.Writeable.writeableOf_JsValue
         </td>
       </tr><tr>
@@ -3034,7 +3034,7 @@
         <td>
           play.api.libs.json.Json.toJson
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           play.api.libs.json.Json.toJson[Int](x)(json.this.Writes.IntWrites)
         </td>
       </tr><tr>
@@ -3055,7 +3055,7 @@
         <td>
           play.api.mvc.Results.Status.apply
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           EventController.this.Ok.apply[play.api.libs.json.JsValue](play.api.libs.json.Json.toJson[Int](x)(json.this.Writes.IntWrites))(http.this.Writeable.writeableOf_JsValue)
         </td>
       </tr><tr>
@@ -3076,7 +3076,7 @@
         <td>
           play.api.mvc.PlayBodyParsers.json
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           EventController.this.parse.json[whatson.model.Event](whatson.model.Event.eventReads)
         </td>
       </tr><tr>
@@ -3097,7 +3097,7 @@
         <td>
           whatson.model.Event.eventReads
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           whatson.model.Event.eventReads
         </td>
       </tr><tr>
@@ -3118,7 +3118,7 @@
         <td>
           controllers.Util.organizerRequest
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           EventController.this.organizerRequest[whatson.model.Event](EventController.this.parse.json[whatson.model.Event](whatson.model.Event.eventReads))(((x0$2: com.mohiva.play.silhouette.api.actions.SecuredRequest[whatson.auth.AuthEnv,whatson.model.Event], x1$1: whatson.model.Organizer) =&gt; scala.Tuple2.apply[com.mohiva.play.silhouette.api.actions.SecuredRequest[whatson.auth.AuthEnv,whatson.model.Event], whatson.model.Organizer](x0$2, x1$1) match {
   case (_1: com.mohiva.play.silhouette.api.actions.SecuredRequest[whatson.auth.AuthEnv,whatson.model.Event], _2: whatson.model.Organizer)(com.mohiva.play.silhouette.api.actions.SecuredRequest[whatson.auth.AuthEnv,whatson.model.Event], whatson.model.Organizer)((request @ _), (organizer @ _)) =&gt; {
     EventController.this.log.debug(&quot;Rest request to create event&quot;)(api.this.MarkerContext.NoMarker);
@@ -3155,7 +3155,7 @@
         <td>
           controllers.EventController.context
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           EventController.this.context
         </td>
       </tr><tr>
@@ -3176,7 +3176,7 @@
         <td>
           play.api.LowPriorityMarkerContextImplicits.NoMarker
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           api.this.MarkerContext.NoMarker
         </td>
       </tr><tr>
@@ -3197,7 +3197,7 @@
         <td>
           &lt;nosymbol&gt;
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           &quot;Rest request to create event&quot;
         </td>
       </tr><tr>
@@ -3218,7 +3218,7 @@
         <td>
           play.api.LoggerLike.debug
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           EventController.this.log.debug(&quot;Rest request to create event&quot;)(api.this.MarkerContext.NoMarker)
         </td>
       </tr><tr>
@@ -3239,7 +3239,7 @@
         <td>
           whatson.model.Event.copy$default$4
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           qual$2.copy$default$4
         </td>
       </tr><tr>
@@ -3260,7 +3260,7 @@
         <td>
           whatson.model.Event.copy$default$3
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           qual$2.copy$default$3
         </td>
       </tr><tr>
@@ -3281,7 +3281,7 @@
         <td>
           whatson.model.Event.copy
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           qual$2.copy(x$5, x$6, x$7, x$8, x$4, x$9)
         </td>
       </tr><tr>
@@ -3302,7 +3302,7 @@
         <td>
           whatson.model.Organizer.id
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           organizer.id
         </td>
       </tr><tr>
@@ -3323,7 +3323,7 @@
         <td>
           whatson.model.Event.copy$default$2
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           qual$2.copy$default$2
         </td>
       </tr><tr>
@@ -3344,7 +3344,7 @@
         <td>
           whatson.model.Event.copy$default$6
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           qual$2.copy$default$6
         </td>
       </tr><tr>
@@ -3365,7 +3365,7 @@
         <td>
           play.api.mvc.WrappedRequest.body
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           request.body
         </td>
       </tr><tr>
@@ -3386,7 +3386,7 @@
         <td>
           whatson.model.Event.copy$default$1
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           qual$2.copy$default$1
         </td>
       </tr><tr>
@@ -3407,7 +3407,7 @@
         <td>
           slick.basic.BasicBackend.DatabaseDef.run
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           EventController.this.db.run[whatson.model.Event](whatson.db.Util.insertAndReturn[whatson.model.Event, whatson.db.EventTable](whatson.db.EventTable.event, e))
         </td>
       </tr><tr>
@@ -3428,7 +3428,7 @@
         <td>
           whatson.db.Util.insertAndReturn
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           whatson.db.Util.insertAndReturn[whatson.model.Event, whatson.db.EventTable](whatson.db.EventTable.event, e)
         </td>
       </tr><tr>
@@ -3449,7 +3449,7 @@
         <td>
           whatson.db.EventTable.event
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           whatson.db.EventTable.event
         </td>
       </tr><tr>
@@ -3470,7 +3470,7 @@
         <td>
           play.api.mvc.Results.Status.apply
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           EventController.this.Ok.apply[play.api.libs.json.JsValue](play.api.libs.json.Json.toJson[whatson.model.Event](x)(whatson.model.Event.eventWrites))(http.this.Writeable.writeableOf_JsValue)
         </td>
       </tr><tr>
@@ -3491,7 +3491,7 @@
         <td>
           play.api.http.DefaultWriteables.writeableOf_JsValue
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           http.this.Writeable.writeableOf_JsValue
         </td>
       </tr><tr>
@@ -3512,7 +3512,7 @@
         <td>
           scala.concurrent.Future.map
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           inserted.map[play.api.mvc.Result](((x: whatson.model.Event) =&gt; EventController.this.Ok.apply[play.api.libs.json.JsValue](play.api.libs.json.Json.toJson[whatson.model.Event](x)(whatson.model.Event.eventWrites))(http.this.Writeable.writeableOf_JsValue)))(EventController.this.context)
         </td>
       </tr><tr>
@@ -3533,7 +3533,7 @@
         <td>
           play.api.libs.json.Json.toJson
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           play.api.libs.json.Json.toJson[whatson.model.Event](x)(whatson.model.Event.eventWrites)
         </td>
       </tr><tr>
@@ -3554,7 +3554,7 @@
         <td>
           controllers.EventController.context
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           EventController.this.context
         </td>
       </tr><tr>
@@ -3575,7 +3575,7 @@
         <td>
           whatson.model.Event.eventWrites
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           whatson.model.Event.eventWrites
         </td>
       </tr><tr>
@@ -3596,7 +3596,7 @@
         <td>
           controllers.Util.organizerRequest
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           EventController.this.organizerRequest[whatson.model.Event](EventController.this.parse.json[whatson.model.Event](whatson.model.Event.eventReads))(((request: com.mohiva.play.silhouette.api.actions.SecuredRequest[whatson.auth.AuthEnv,whatson.model.Event], organizer: whatson.model.Organizer) =&gt; {
   EventController.this.log.debug(&quot;Rest request to update event&quot;)(api.this.MarkerContext.NoMarker);
   val q: slick.jdbc.PostgresProfile.ProfileAction[Int,slick.dbio.NoStream,slick.dbio.Effect.Write] = slick.jdbc.PostgresProfile.api.queryUpdateActionExtensionMethods[whatson.db.EventTable#TableElementType, Seq](whatson.db.EventTable.event.filter[slick.lifted.Rep[Option[Boolean]]](((x: whatson.db.EventTable) =&gt; slick.jdbc.PostgresProfile.api.booleanColumnExtensionMethods(slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](x.id)(slick.jdbc.PostgresProfile.api.intColumnType).===[Int, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[Int](id)(slick.jdbc.PostgresProfile.api.intColumnType).bind)(lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType))).&amp;&amp;[Option[Boolean], Option[Boolean]](slick.jdbc.PostgresProfile.api.optionColumnExtensionMethods[Int](x.creatorId)(slick.jdbc.PostgresProfile.api.intColumnType).===[Option[Int], Option[Boolean]](slick.jdbc.PostgresProfile.api.valueToConstColumn[Option[Int]](organizer.id)(ast.this.TypedType.typedTypeToOptionTypedType[Int](slick.jdbc.PostgresProfile.api.intColumnType)))(lifted.this.OptionMapper2.getOptionMapper2OO[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType)))(lifted.this.OptionMapper2.getOptionMapper2TO[Boolean, Boolean, Boolean](slick.jdbc.PostgresProfile.api.booleanColumnType))))(lifted.this.CanBeQueryCondition.BooleanOptionColumnCanBeQueryCondition)).update(request.body);
@@ -3624,7 +3624,7 @@
         <td>
           whatson.model.Event.eventReads
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           whatson.model.Event.eventReads
         </td>
       </tr><tr>
@@ -3645,7 +3645,7 @@
         <td>
           controllers.EventController.context
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           EventController.this.context
         </td>
       </tr><tr>
@@ -3666,7 +3666,7 @@
         <td>
           play.api.mvc.PlayBodyParsers.json
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           EventController.this.parse.json[whatson.model.Event](whatson.model.Event.eventReads)
         </td>
       </tr><tr>
@@ -3687,7 +3687,7 @@
         <td>
           play.api.LoggerLike.debug
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           EventController.this.log.debug(&quot;Rest request to update event&quot;)(api.this.MarkerContext.NoMarker)
         </td>
       </tr><tr>
@@ -3708,7 +3708,7 @@
         <td>
           play.api.LowPriorityMarkerContextImplicits.NoMarker
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           api.this.MarkerContext.NoMarker
         </td>
       </tr><tr>
@@ -3729,7 +3729,7 @@
         <td>
           &lt;nosymbol&gt;
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           &quot;Rest request to update event&quot;
         </td>
       </tr><tr>
@@ -3750,7 +3750,7 @@
         <td>
           whatson.db.EventTable.creatorId
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           x.creatorId
         </td>
       </tr><tr>
@@ -3771,7 +3771,7 @@
         <td>
           slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.booleanColumnType
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           slick.jdbc.PostgresProfile.api.booleanColumnType
         </td>
       </tr><tr>
@@ -3792,7 +3792,7 @@
         <td>
           slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           slick.jdbc.PostgresProfile.api.intColumnType
         </td>
       </tr><tr>
@@ -3813,7 +3813,7 @@
         <td>
           slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           slick.jdbc.PostgresProfile.api.intColumnType
         </td>
       </tr><tr>
@@ -3834,7 +3834,7 @@
         <td>
           slick.lifted.CanBeQueryCondition.BooleanOptionColumnCanBeQueryCondition
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           lifted.this.CanBeQueryCondition.BooleanOptionColumnCanBeQueryCondition
         </td>
       </tr><tr>
@@ -3855,7 +3855,7 @@
         <td>
           slick.jdbc.JdbcActionComponent.UpdateActionExtensionMethodsImpl.update
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           slick.jdbc.PostgresProfile.api.queryUpdateActionExtensionMethods[whatson.db.EventTable#TableElementType, Seq](whatson.db.EventTable.event.filter[slick.lifted.Rep[Option[Boolean]]](((x: whatson.db.EventTable) =&gt; slick.jdbc.PostgresProfile.api.booleanColumnExtensionMethods(slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](x.id)(slick.jdbc.PostgresProfile.api.intColumnType).===[Int, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[Int](id)(slick.jdbc.PostgresProfile.api.intColumnType).bind)(lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType))).&amp;&amp;[Option[Boolean], Option[Boolean]](slick.jdbc.PostgresProfile.api.optionColumnExtensionMethods[Int](x.creatorId)(slick.jdbc.PostgresProfile.api.intColumnType).===[Option[Int], Option[Boolean]](slick.jdbc.PostgresProfile.api.valueToConstColumn[Option[Int]](organizer.id)(ast.this.TypedType.typedTypeToOptionTypedType[Int](slick.jdbc.PostgresProfile.api.intColumnType)))(lifted.this.OptionMapper2.getOptionMapper2OO[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType)))(lifted.this.OptionMapper2.getOptionMapper2TO[Boolean, Boolean, Boolean](slick.jdbc.PostgresProfile.api.booleanColumnType))))(lifted.this.CanBeQueryCondition.BooleanOptionColumnCanBeQueryCondition)).update(request.body)
         </td>
       </tr><tr>
@@ -3876,7 +3876,7 @@
         <td>
           slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           slick.jdbc.PostgresProfile.api.intColumnType
         </td>
       </tr><tr>
@@ -3897,7 +3897,7 @@
         <td>
           slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           slick.jdbc.PostgresProfile.api.intColumnType
         </td>
       </tr><tr>
@@ -3918,7 +3918,7 @@
         <td>
           play.api.mvc.WrappedRequest.body
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           request.body
         </td>
       </tr><tr>
@@ -3939,7 +3939,7 @@
         <td>
           slick.lifted.LiteralColumn.bind
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           slick.jdbc.PostgresProfile.api.valueToConstColumn[Int](id)(slick.jdbc.PostgresProfile.api.intColumnType).bind
         </td>
       </tr><tr>
@@ -3960,7 +3960,7 @@
         <td>
           slick.relational.RelationalProfile.API.valueToConstColumn
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           slick.jdbc.PostgresProfile.api.valueToConstColumn[Option[Int]](organizer.id)(ast.this.TypedType.typedTypeToOptionTypedType[Int](slick.jdbc.PostgresProfile.api.intColumnType))
         </td>
       </tr><tr>
@@ -3981,7 +3981,7 @@
         <td>
           slick.lifted.ColumnExtensionMethods.===
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           slick.jdbc.PostgresProfile.api.optionColumnExtensionMethods[Int](x.creatorId)(slick.jdbc.PostgresProfile.api.intColumnType).===[Option[Int], Option[Boolean]](slick.jdbc.PostgresProfile.api.valueToConstColumn[Option[Int]](organizer.id)(ast.this.TypedType.typedTypeToOptionTypedType[Int](slick.jdbc.PostgresProfile.api.intColumnType)))(lifted.this.OptionMapper2.getOptionMapper2OO[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType))
         </td>
       </tr><tr>
@@ -4002,7 +4002,7 @@
         <td>
           slick.lifted.ColumnExtensionMethods.===
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](x.id)(slick.jdbc.PostgresProfile.api.intColumnType).===[Int, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[Int](id)(slick.jdbc.PostgresProfile.api.intColumnType).bind)(lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType))
         </td>
       </tr><tr>
@@ -4023,7 +4023,7 @@
         <td>
           whatson.db.EventTable.id
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           x.id
         </td>
       </tr><tr>
@@ -4044,7 +4044,7 @@
         <td>
           whatson.model.Organizer.id
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           organizer.id
         </td>
       </tr><tr>
@@ -4065,7 +4065,7 @@
         <td>
           slick.lifted.BooleanColumnExtensionMethods.&amp;&amp;
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           slick.jdbc.PostgresProfile.api.booleanColumnExtensionMethods(slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](x.id)(slick.jdbc.PostgresProfile.api.intColumnType).===[Int, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[Int](id)(slick.jdbc.PostgresProfile.api.intColumnType).bind)(lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType))).&amp;&amp;[Option[Boolean], Option[Boolean]](slick.jdbc.PostgresProfile.api.optionColumnExtensionMethods[Int](x.creatorId)(slick.jdbc.PostgresProfile.api.intColumnType).===[Option[Int], Option[Boolean]](slick.jdbc.PostgresProfile.api.valueToConstColumn[Option[Int]](organizer.id)(ast.this.TypedType.typedTypeToOptionTypedType[Int](slick.jdbc.PostgresProfile.api.intColumnType)))(lifted.this.OptionMapper2.getOptionMapper2OO[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType)))(lifted.this.OptionMapper2.getOptionMapper2TO[Boolean, Boolean, Boolean](slick.jdbc.PostgresProfile.api.booleanColumnType))
         </td>
       </tr><tr>
@@ -4086,7 +4086,7 @@
         <td>
           slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           slick.jdbc.PostgresProfile.api.intColumnType
         </td>
       </tr><tr>
@@ -4107,7 +4107,7 @@
         <td>
           slick.lifted.OptionMapper2.getOptionMapper2TO
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           lifted.this.OptionMapper2.getOptionMapper2TO[Boolean, Boolean, Boolean](slick.jdbc.PostgresProfile.api.booleanColumnType)
         </td>
       </tr><tr>
@@ -4128,7 +4128,7 @@
         <td>
           slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           slick.jdbc.PostgresProfile.api.intColumnType
         </td>
       </tr><tr>
@@ -4149,7 +4149,7 @@
         <td>
           slick.lifted.Query.filter
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           whatson.db.EventTable.event.filter[slick.lifted.Rep[Option[Boolean]]](((x: whatson.db.EventTable) =&gt; slick.jdbc.PostgresProfile.api.booleanColumnExtensionMethods(slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](x.id)(slick.jdbc.PostgresProfile.api.intColumnType).===[Int, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[Int](id)(slick.jdbc.PostgresProfile.api.intColumnType).bind)(lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType))).&amp;&amp;[Option[Boolean], Option[Boolean]](slick.jdbc.PostgresProfile.api.optionColumnExtensionMethods[Int](x.creatorId)(slick.jdbc.PostgresProfile.api.intColumnType).===[Option[Int], Option[Boolean]](slick.jdbc.PostgresProfile.api.valueToConstColumn[Option[Int]](organizer.id)(ast.this.TypedType.typedTypeToOptionTypedType[Int](slick.jdbc.PostgresProfile.api.intColumnType)))(lifted.this.OptionMapper2.getOptionMapper2OO[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType)))(lifted.this.OptionMapper2.getOptionMapper2TO[Boolean, Boolean, Boolean](slick.jdbc.PostgresProfile.api.booleanColumnType))))(lifted.this.CanBeQueryCondition.BooleanOptionColumnCanBeQueryCondition)
         </td>
       </tr><tr>
@@ -4170,7 +4170,7 @@
         <td>
           slick.ast.TypedType.typedTypeToOptionTypedType
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           ast.this.TypedType.typedTypeToOptionTypedType[Int](slick.jdbc.PostgresProfile.api.intColumnType)
         </td>
       </tr><tr>
@@ -4191,7 +4191,7 @@
         <td>
           slick.lifted.OptionMapper2.getOptionMapper2TT
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType)
         </td>
       </tr><tr>
@@ -4212,7 +4212,7 @@
         <td>
           slick.lifted.OptionMapper2.getOptionMapper2OO
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           lifted.this.OptionMapper2.getOptionMapper2OO[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType)
         </td>
       </tr><tr>
@@ -4233,7 +4233,7 @@
         <td>
           controllers.EventController.context
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           EventController.this.context
         </td>
       </tr><tr>
@@ -4254,7 +4254,7 @@
         <td>
           scala.concurrent.Future.map
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           EventController.this.db.run[Int](q).map[play.api.mvc.Result](((x0$3: Int) =&gt; x0$3 match {
   case 0 =&gt; EventController.this.NotFound
   case (x @ _) =&gt; EventController.this.Ok.apply[play.api.libs.json.JsValue](play.api.libs.json.Json.toJson[Int](x)(json.this.Writes.IntWrites))(http.this.Writeable.writeableOf_JsValue)
@@ -4278,7 +4278,7 @@
         <td>
           play.api.mvc.Results.NotFound
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           EventController.this.NotFound
         </td>
       </tr><tr>
@@ -4299,7 +4299,7 @@
         <td>
           play.api.libs.json.Json.toJson
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           play.api.libs.json.Json.toJson[Int](x)(json.this.Writes.IntWrites)
         </td>
       </tr><tr>
@@ -4320,7 +4320,7 @@
         <td>
           play.api.libs.json.DefaultWrites.IntWrites
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           json.this.Writes.IntWrites
         </td>
       </tr><tr>
@@ -4341,7 +4341,7 @@
         <td>
           play.api.mvc.Results.Status.apply
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           EventController.this.Ok.apply[play.api.libs.json.JsValue](play.api.libs.json.Json.toJson[Int](x)(json.this.Writes.IntWrites))(http.this.Writeable.writeableOf_JsValue)
         </td>
       </tr><tr>
@@ -4362,7 +4362,7 @@
         <td>
           play.api.http.DefaultWriteables.writeableOf_JsValue
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           http.this.Writeable.writeableOf_JsValue
         </td>
       </tr>

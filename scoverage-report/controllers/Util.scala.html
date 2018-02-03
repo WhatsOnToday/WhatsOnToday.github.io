@@ -41,12 +41,12 @@
 </span>17 <span style=''>  val Unauthorized: Result
 </span>18 <span style=''>
 </span>19 <span style=''>  def organizerRequest[A](pars: BodyParser[A])(r: (SecuredRequest[AuthEnv,A],Organizer) =&gt; Future[Result])(implicit executionContext: ExecutionContext): Action[A] =
-</span>20 <span style=''>    </span><span style='background: #F0ADAD'>silhouette.SecuredAction.async(pars) { request =&gt;
-</span>21 <span style=''></span><span style='background: #F0ADAD'>      organizerService.getByLogin(request.identity).flatMap {
-</span>22 <span style=''></span><span style='background: #F0ADAD'>        case Some(x) =&gt; r(request,x)
-</span>23 <span style=''></span><span style='background: #F0ADAD'>        case _ =&gt; Future(Unauthorized)
-</span>24 <span style=''></span><span style='background: #F0ADAD'>      }
-</span>25 <span style=''></span><span style='background: #F0ADAD'>    }</span><span style=''>
+</span>20 <span style=''>    </span><span style='background: #AEF1AE'>silhouette.SecuredAction.async(pars) { request =&gt;
+</span>21 <span style=''></span><span style='background: #AEF1AE'>      organizerService.getByLogin(request.identity).flatMap {
+</span>22 <span style=''></span><span style='background: #AEF1AE'>        case Some(x) =&gt; r(request,x)
+</span>23 <span style=''></span><span style='background: #AEF1AE'>        case _ =&gt; Future(Unauthorized)
+</span>24 <span style=''></span><span style='background: #AEF1AE'>      }
+</span>25 <span style=''></span><span style='background: #AEF1AE'>    }</span><span style=''>
 </span>26 <span style=''>
 </span>27 <span style=''>  def userRequest[A](pars: BodyParser[A])(r: (SecuredRequest[AuthEnv,A],User) =&gt; Future[Result])(implicit executionContext: ExecutionContext): Action[A] =
 </span>28 <span style=''>    </span><span style='background: #F0ADAD'>silhouette.SecuredAction.async(pars) { request =&gt;
@@ -85,7 +85,7 @@
         <td>
           play.api.mvc.ActionBuilder.async
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           Util.this.silhouette.SecuredAction.async[A](pars)(((request: com.mohiva.play.silhouette.api.actions.SecuredRequest[whatson.auth.AuthEnv,A]) =&gt; Util.this.organizerService.getByLogin(request.identity).flatMap[play.api.mvc.Result](((x0$1: Option[whatson.model.Organizer]) =&gt; x0$1 match {
   case (value: whatson.model.Organizer)Some[whatson.model.Organizer]((x @ _)) =&gt; r.apply(request, x)
   case _ =&gt; scala.concurrent.Future.apply[play.api.mvc.Result](Util.this.Unauthorized)(executionContext)
@@ -109,7 +109,7 @@
         <td>
           scala.concurrent.Future.flatMap
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           Util.this.organizerService.getByLogin(request.identity).flatMap[play.api.mvc.Result](((x0$1: Option[whatson.model.Organizer]) =&gt; x0$1 match {
   case (value: whatson.model.Organizer)Some[whatson.model.Organizer]((x @ _)) =&gt; r.apply(request, x)
   case _ =&gt; scala.concurrent.Future.apply[play.api.mvc.Result](Util.this.Unauthorized)(executionContext)
