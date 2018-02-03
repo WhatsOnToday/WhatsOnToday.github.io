@@ -47,49 +47,49 @@
 </span>23 <span style=''>  
 </span>24 <span style=''>  val log = </span><span style='background: #AEF1AE'>Logger(&quot;api.location&quot;)</span><span style=''>
 </span>25 <span style=''>  
-</span>26 <span style=''>  def searchLocations(search: Option[String]) = </span><span style='background: #F0ADAD'>Action.async { implicit request: Request[AnyContent] =&gt;
-</span>27 <span style=''></span><span style='background: #F0ADAD'>    log.debug(&quot;Rest request to search locations&quot;)
-</span>28 <span style=''></span><span style='background: #F0ADAD'>    
-</span>29 <span style=''></span><span style='background: #F0ADAD'>    val q = for {
-</span>30 <span style=''></span><span style='background: #F0ADAD'>      l &lt;- location if l.name like (&quot;%&quot;++search.getOrElse(&quot;&quot;)++&quot;%&quot;).bind
-</span>31 <span style=''></span><span style='background: #F0ADAD'>    } yield l
-</span>32 <span style=''></span><span style='background: #F0ADAD'>
-</span>33 <span style=''></span><span style='background: #F0ADAD'>    val s = q.queryPaged.detailed
-</span>34 <span style=''></span><span style='background: #F0ADAD'>    returnPaged(s,q,db)
-</span>35 <span style=''></span><span style='background: #F0ADAD'>  }</span><span style=''>
+</span>26 <span style=''>  def searchLocations(search: Option[String]) = </span><span style='background: #AEF1AE'>Action.async { implicit request: Request[AnyContent] =&gt;
+</span>27 <span style=''></span><span style='background: #AEF1AE'>    log.debug(&quot;Rest request to search locations&quot;)
+</span>28 <span style=''></span><span style='background: #AEF1AE'>    
+</span>29 <span style=''></span><span style='background: #AEF1AE'>    val q = for {
+</span>30 <span style=''></span><span style='background: #AEF1AE'>      l &lt;- location if l.name like (&quot;%&quot;++search.getOrElse(&quot;&quot;)++&quot;%&quot;).bind
+</span>31 <span style=''></span><span style='background: #AEF1AE'>    } yield l
+</span>32 <span style=''></span><span style='background: #AEF1AE'>
+</span>33 <span style=''></span><span style='background: #AEF1AE'>    val s = q.queryPaged.detailed
+</span>34 <span style=''></span><span style='background: #AEF1AE'>    returnPaged(s,q,db)
+</span>35 <span style=''></span><span style='background: #AEF1AE'>  }</span><span style=''>
 </span>36 <span style=''>  
-</span>37 <span style=''>  def getLocation(id: Int) = </span><span style='background: #F0ADAD'>Action.async { implicit request: Request[AnyContent] =&gt;
-</span>38 <span style=''></span><span style='background: #F0ADAD'>    log.debug(&quot;Rest request to get location&quot;)
-</span>39 <span style=''></span><span style='background: #F0ADAD'>    
-</span>40 <span style=''></span><span style='background: #F0ADAD'>    val q = for(l &lt;- location if l.id === id.bind) yield l;
-</span>41 <span style=''></span><span style='background: #F0ADAD'>    
-</span>42 <span style=''></span><span style='background: #F0ADAD'>    db.run(q.detailed).map(x =&gt; x.headOption match {
-</span>43 <span style=''></span><span style='background: #F0ADAD'>      case Some(r) =&gt; Ok(Json.toJson(r))
-</span>44 <span style=''></span><span style='background: #F0ADAD'>      case _ =&gt; NotFound
-</span>45 <span style=''></span><span style='background: #F0ADAD'>    })
-</span>46 <span style=''></span><span style='background: #F0ADAD'>  }</span><span style=''>
+</span>37 <span style=''>  def getLocation(id: Int) = </span><span style='background: #AEF1AE'>Action.async { implicit request: Request[AnyContent] =&gt;
+</span>38 <span style=''></span><span style='background: #AEF1AE'>    log.debug(&quot;Rest request to get location&quot;)
+</span>39 <span style=''></span><span style='background: #AEF1AE'>    
+</span>40 <span style=''></span><span style='background: #AEF1AE'>    val q = for(l &lt;- location if l.id === id.bind) yield l;
+</span>41 <span style=''></span><span style='background: #AEF1AE'>    
+</span>42 <span style=''></span><span style='background: #AEF1AE'>    db.run(q.detailed).map(x =&gt; x.headOption match {
+</span>43 <span style=''></span><span style='background: #AEF1AE'>      case Some(r) =&gt; Ok(Json.toJson(r))
+</span>44 <span style=''></span><span style='background: #AEF1AE'>      case _ =&gt; NotFound
+</span>45 <span style=''></span><span style='background: #AEF1AE'>    })
+</span>46 <span style=''></span><span style='background: #AEF1AE'>  }</span><span style=''>
 </span>47 <span style=''>  
-</span>48 <span style=''>  def getNearby(id: Int) = </span><span style='background: #F0ADAD'>Action.async { implicit request: Request[AnyContent] =&gt;
-</span>49 <span style=''></span><span style='background: #F0ADAD'>    log.debug(&quot;Rest request to get location close to another location&quot;)
-</span>50 <span style=''></span><span style='background: #F0ADAD'>    
-</span>51 <span style=''></span><span style='background: #F0ADAD'>    val q = for(l &lt;- location if l.id === id.bind) yield l;
-</span>52 <span style=''></span><span style='background: #F0ADAD'>    
-</span>53 <span style=''></span><span style='background: #F0ADAD'>    db.run(q.detailed).map(_.headOption).flatMap {
-</span>54 <span style=''></span><span style='background: #F0ADAD'>      case Some(r) =&gt; {
-</span>55 <span style=''></span><span style='background: #F0ADAD'>        val s = location.sortBy(y =&gt; geoDistance(r.latitude, r.longitude, y.latitude, y.longitude))
-</span>56 <span style=''></span><span style='background: #F0ADAD'>        s.returnPaged(db)
-</span>57 <span style=''></span><span style='background: #F0ADAD'>      }
-</span>58 <span style=''></span><span style='background: #F0ADAD'>      case None =&gt; Future(NotFound)
-</span>59 <span style=''></span><span style='background: #F0ADAD'>    }
-</span>60 <span style=''></span><span style='background: #F0ADAD'>  }</span><span style=''>
+</span>48 <span style=''>  def getNearby(id: Int) = </span><span style='background: #AEF1AE'>Action.async { implicit request: Request[AnyContent] =&gt;
+</span>49 <span style=''></span><span style='background: #AEF1AE'>    log.debug(&quot;Rest request to get location close to another location&quot;)
+</span>50 <span style=''></span><span style='background: #AEF1AE'>    
+</span>51 <span style=''></span><span style='background: #AEF1AE'>    val q = for(l &lt;- location if l.id === id.bind) yield l;
+</span>52 <span style=''></span><span style='background: #AEF1AE'>    
+</span>53 <span style=''></span><span style='background: #AEF1AE'>    db.run(q.detailed).map(_.headOption).flatMap {
+</span>54 <span style=''></span><span style='background: #AEF1AE'>      case Some(r) =&gt; {
+</span>55 <span style=''></span><span style='background: #AEF1AE'>        val s = location.sortBy(y =&gt; geoDistance(r.latitude, r.longitude, y.latitude, y.longitude))
+</span>56 <span style=''></span><span style='background: #AEF1AE'>        s.returnPaged(db)
+</span>57 <span style=''></span><span style='background: #AEF1AE'>      }
+</span>58 <span style=''></span><span style='background: #AEF1AE'>      case None =&gt; Future(NotFound)
+</span>59 <span style=''></span><span style='background: #AEF1AE'>    }
+</span>60 <span style=''></span><span style='background: #AEF1AE'>  }</span><span style=''>
 </span>61 <span style=''>  
-</span>62 <span style=''>  def createLocation() = </span><span style='background: #F0ADAD'>Action.async(parse.json(locationReads)) { implicit request: Request[Location] =&gt;
-</span>63 <span style=''></span><span style='background: #F0ADAD'>    log.debug(&quot;Rest request to create location&quot;)
-</span>64 <span style=''></span><span style='background: #F0ADAD'>    
-</span>65 <span style=''></span><span style='background: #F0ADAD'>    val inserted = db.run(insertAndReturn[Location,LocationTable](location,request.body))
-</span>66 <span style=''></span><span style='background: #F0ADAD'>    
-</span>67 <span style=''></span><span style='background: #F0ADAD'>    inserted.map(x =&gt; Ok(Json.toJson(x)))
-</span>68 <span style=''></span><span style='background: #F0ADAD'>  }</span><span style=''>
+</span>62 <span style=''>  def createLocation() = </span><span style='background: #AEF1AE'>Action.async(parse.json(locationReads)) { implicit request: Request[Location] =&gt;
+</span>63 <span style=''></span><span style='background: #AEF1AE'>    log.debug(&quot;Rest request to create location&quot;)
+</span>64 <span style=''></span><span style='background: #AEF1AE'>    
+</span>65 <span style=''></span><span style='background: #AEF1AE'>    val inserted = db.run(insertAndReturn[Location,LocationTable](location,request.body))
+</span>66 <span style=''></span><span style='background: #AEF1AE'>    
+</span>67 <span style=''></span><span style='background: #AEF1AE'>    inserted.map(x =&gt; Ok(Json.toJson(x)))
+</span>68 <span style=''></span><span style='background: #AEF1AE'>  }</span><span style=''>
 </span>69 <span style=''>}
 </span></pre>
           </div>
@@ -141,7 +141,7 @@
         <td>
           play.api.mvc.ActionBuilder.async
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           LocationController.this.Action.async(((implicit request: play.api.mvc.Request[play.api.mvc.AnyContent]) =&gt; {
   LocationController.this.log.debug(&quot;Rest request to search locations&quot;)(api.this.MarkerContext.NoMarker);
   val q: slick.lifted.Query[whatson.db.LocationTable,whatson.model.Location,Seq] = whatson.db.LocationTable.location.withFilter[slick.lifted.Rep[Boolean]](((l: whatson.db.LocationTable) =&gt; {
@@ -172,7 +172,7 @@
         <td>
           &lt;nosymbol&gt;
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           &quot;Rest request to search locations&quot;
         </td>
       </tr><tr>
@@ -193,7 +193,7 @@
         <td>
           play.api.LoggerLike.debug
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           LocationController.this.log.debug(&quot;Rest request to search locations&quot;)(api.this.MarkerContext.NoMarker)
         </td>
       </tr><tr>
@@ -214,7 +214,7 @@
         <td>
           play.api.LowPriorityMarkerContextImplicits.NoMarker
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           api.this.MarkerContext.NoMarker
         </td>
       </tr><tr>
@@ -235,7 +235,7 @@
         <td>
           scala.collection.TraversableLike.++
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           scala.Predef.augmentString(scala.Predef.augmentString(&quot;%&quot;).++[Char, String](scala.Predef.augmentString(search.getOrElse[String](&quot;&quot;)))(scala.Predef.StringCanBuildFrom)).++[Char, String](scala.Predef.augmentString(&quot;%&quot;))(scala.Predef.StringCanBuildFrom)
         </td>
       </tr><tr>
@@ -256,7 +256,7 @@
         <td>
           slick.lifted.AbstractTableShapeImplicits.tableShape
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           lifted.this.Shape.tableShape[slick.lifted.FlatShapeLevel, whatson.model.Location, whatson.db.LocationTable](scala.Predef.$conforms[whatson.db.LocationTable])
         </td>
       </tr><tr>
@@ -277,7 +277,7 @@
         <td>
           whatson.db.LocationTable.name
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           l.name
         </td>
       </tr><tr>
@@ -298,7 +298,7 @@
         <td>
           slick.lifted.StringColumnExtensionMethods.like$default$2
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           qual$1.like$default$2[Nothing, Nothing]
         </td>
       </tr><tr>
@@ -319,7 +319,7 @@
         <td>
           scala.Option.getOrElse
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           search.getOrElse[String](&quot;&quot;)
         </td>
       </tr><tr>
@@ -340,7 +340,7 @@
         <td>
           scala.collection.TraversableLike.++
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           scala.Predef.augmentString(&quot;%&quot;).++[Char, String](scala.Predef.augmentString(search.getOrElse[String](&quot;&quot;)))(scala.Predef.StringCanBuildFrom)
         </td>
       </tr><tr>
@@ -361,7 +361,7 @@
         <td>
           slick.lifted.StringColumnExtensionMethods.like
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           qual$1.like[String, Boolean](x$2, x$3)(lifted.this.OptionMapper2.getOptionMapper2TT[String, String, Boolean](slick.jdbc.PostgresProfile.api.stringColumnType))
         </td>
       </tr><tr>
@@ -382,7 +382,7 @@
         <td>
           scala.Predef.StringCanBuildFrom
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           scala.Predef.StringCanBuildFrom
         </td>
       </tr><tr>
@@ -403,7 +403,7 @@
         <td>
           slick.lifted.OptionMapper2.getOptionMapper2TT
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           lifted.this.OptionMapper2.getOptionMapper2TT[String, String, Boolean](slick.jdbc.PostgresProfile.api.stringColumnType)
         </td>
       </tr><tr>
@@ -424,7 +424,7 @@
         <td>
           scala.Predef.$conforms
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           scala.Predef.$conforms[whatson.db.LocationTable]
         </td>
       </tr><tr>
@@ -445,7 +445,7 @@
         <td>
           scala.Predef.StringCanBuildFrom
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           scala.Predef.StringCanBuildFrom
         </td>
       </tr><tr>
@@ -466,7 +466,7 @@
         <td>
           slick.lifted.LiteralColumn.bind
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           slick.jdbc.PostgresProfile.api.valueToConstColumn[String](scala.Predef.augmentString(scala.Predef.augmentString(&quot;%&quot;).++[Char, String](scala.Predef.augmentString(search.getOrElse[String](&quot;&quot;)))(scala.Predef.StringCanBuildFrom)).++[Char, String](scala.Predef.augmentString(&quot;%&quot;))(scala.Predef.StringCanBuildFrom))(slick.jdbc.PostgresProfile.api.stringColumnType).bind
         </td>
       </tr><tr>
@@ -487,7 +487,7 @@
         <td>
           &lt;nosymbol&gt;
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           &quot;%&quot;
         </td>
       </tr><tr>
@@ -508,7 +508,7 @@
         <td>
           slick.lifted.ExtensionMethodConversions.stringColumnExtensionMethods
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           slick.jdbc.PostgresProfile.api.stringColumnExtensionMethods(l.name)
         </td>
       </tr><tr>
@@ -529,7 +529,7 @@
         <td>
           slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.stringColumnType
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           slick.jdbc.PostgresProfile.api.stringColumnType
         </td>
       </tr><tr>
@@ -550,7 +550,7 @@
         <td>
           slick.lifted.Query.map
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           whatson.db.LocationTable.location.withFilter[slick.lifted.Rep[Boolean]](((l: whatson.db.LocationTable) =&gt; {
   &lt;artifact&gt; val qual$1: slick.lifted.StringColumnExtensionMethods[String] @scala.reflect.internal.annotations.uncheckedBounds = slick.jdbc.PostgresProfile.api.stringColumnExtensionMethods(l.name);
   &lt;artifact&gt; val x$2: slick.lifted.Rep[String] @scala.reflect.internal.annotations.uncheckedBounds = slick.jdbc.PostgresProfile.api.valueToConstColumn[String](scala.Predef.augmentString(scala.Predef.augmentString(&quot;%&quot;).++[Char, String](scala.Predef.augmentString(search.getOrElse[String](&quot;&quot;)))(scala.Predef.StringCanBuildFrom)).++[Char, String](scala.Predef.augmentString(&quot;%&quot;))(scala.Predef.StringCanBuildFrom))(slick.jdbc.PostgresProfile.api.stringColumnType).bind;
@@ -576,7 +576,7 @@
         <td>
           scala.Predef.augmentString
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           scala.Predef.augmentString(search.getOrElse[String](&quot;&quot;))
         </td>
       </tr><tr>
@@ -597,7 +597,7 @@
         <td>
           slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.stringColumnType
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           slick.jdbc.PostgresProfile.api.stringColumnType
         </td>
       </tr><tr>
@@ -618,7 +618,7 @@
         <td>
           scala.Predef.augmentString
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           scala.Predef.augmentString(&quot;%&quot;)
         </td>
       </tr><tr>
@@ -639,7 +639,7 @@
         <td>
           slick.lifted.CanBeQueryCondition.BooleanColumnCanBeQueryCondition
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition
         </td>
       </tr><tr>
@@ -660,7 +660,7 @@
         <td>
           controllers.LocationController.context
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           LocationController.this.context
         </td>
       </tr><tr>
@@ -681,7 +681,7 @@
         <td>
           whatson.db.Util.QueryUtils.queryPaged
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           whatson.db.Util.QueryUtils[whatson.db.LocationTable, whatson.model.Location](q).queryPaged[Any, Nothing, Nothing](request)
         </td>
       </tr><tr>
@@ -702,7 +702,7 @@
         <td>
           whatson.model.detail.LocationDetail.LocationDetailQuery.detailed
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           whatson.model.detail.LocationDetail.LocationDetailQuery(whatson.db.Util.QueryUtils[whatson.db.LocationTable, whatson.model.Location](q).queryPaged[Any, Nothing, Nothing](request)).detailed(LocationController.this.context)
         </td>
       </tr><tr>
@@ -723,7 +723,7 @@
         <td>
           controllers.LocationController.context
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           LocationController.this.context
         </td>
       </tr><tr>
@@ -744,7 +744,7 @@
         <td>
           play.api.db.slick.HasDatabaseConfig.db
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           LocationController.this.db
         </td>
       </tr><tr>
@@ -765,7 +765,7 @@
         <td>
           whatson.db.Util.returnPaged
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           whatson.db.Util.returnPaged[whatson.model.detail.LocationDetail, whatson.db.LocationTable, whatson.model.Location](s, q, LocationController.this.db)(request, LocationController.this.context, whatson.model.detail.LocationDetail.locationDetailWrites)
         </td>
       </tr><tr>
@@ -786,7 +786,7 @@
         <td>
           whatson.model.detail.LocationDetail.locationDetailWrites
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           whatson.model.detail.LocationDetail.locationDetailWrites
         </td>
       </tr><tr>
@@ -807,7 +807,7 @@
         <td>
           play.api.mvc.ActionBuilder.async
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           LocationController.this.Action.async(((implicit request: play.api.mvc.Request[play.api.mvc.AnyContent]) =&gt; {
   LocationController.this.log.debug(&quot;Rest request to get location&quot;)(api.this.MarkerContext.NoMarker);
   val q: slick.lifted.Query[whatson.db.LocationTable,whatson.model.Location,Seq] = whatson.db.LocationTable.location.withFilter[slick.lifted.Rep[Boolean]](((l: whatson.db.LocationTable) =&gt; slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](l.id)(slick.jdbc.PostgresProfile.api.intColumnType).===[Int, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[Int](id)(slick.jdbc.PostgresProfile.api.intColumnType).bind)(lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType))))(lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition).map[whatson.db.LocationTable, whatson.db.LocationTable, whatson.model.Location](((l: whatson.db.LocationTable) =&gt; l))(lifted.this.Shape.tableShape[slick.lifted.FlatShapeLevel, whatson.model.Location, whatson.db.LocationTable](scala.Predef.$conforms[whatson.db.LocationTable]));
@@ -835,7 +835,7 @@
         <td>
           play.api.LoggerLike.debug
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           LocationController.this.log.debug(&quot;Rest request to get location&quot;)(api.this.MarkerContext.NoMarker)
         </td>
       </tr><tr>
@@ -856,7 +856,7 @@
         <td>
           play.api.LowPriorityMarkerContextImplicits.NoMarker
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           api.this.MarkerContext.NoMarker
         </td>
       </tr><tr>
@@ -877,7 +877,7 @@
         <td>
           &lt;nosymbol&gt;
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           &quot;Rest request to get location&quot;
         </td>
       </tr><tr>
@@ -898,7 +898,7 @@
         <td>
           slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           slick.jdbc.PostgresProfile.api.intColumnType
         </td>
       </tr><tr>
@@ -919,7 +919,7 @@
         <td>
           slick.lifted.OptionMapper2.getOptionMapper2TT
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType)
         </td>
       </tr><tr>
@@ -940,7 +940,7 @@
         <td>
           scala.Predef.$conforms
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           scala.Predef.$conforms[whatson.db.LocationTable]
         </td>
       </tr><tr>
@@ -961,7 +961,7 @@
         <td>
           slick.lifted.CanBeQueryCondition.BooleanColumnCanBeQueryCondition
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition
         </td>
       </tr><tr>
@@ -982,7 +982,7 @@
         <td>
           slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           slick.jdbc.PostgresProfile.api.intColumnType
         </td>
       </tr><tr>
@@ -1003,7 +1003,7 @@
         <td>
           slick.lifted.Query.map
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           whatson.db.LocationTable.location.withFilter[slick.lifted.Rep[Boolean]](((l: whatson.db.LocationTable) =&gt; slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](l.id)(slick.jdbc.PostgresProfile.api.intColumnType).===[Int, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[Int](id)(slick.jdbc.PostgresProfile.api.intColumnType).bind)(lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType))))(lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition).map[whatson.db.LocationTable, whatson.db.LocationTable, whatson.model.Location](((l: whatson.db.LocationTable) =&gt; l))(lifted.this.Shape.tableShape[slick.lifted.FlatShapeLevel, whatson.model.Location, whatson.db.LocationTable](scala.Predef.$conforms[whatson.db.LocationTable]))
         </td>
       </tr><tr>
@@ -1024,7 +1024,7 @@
         <td>
           slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           slick.jdbc.PostgresProfile.api.intColumnType
         </td>
       </tr><tr>
@@ -1045,7 +1045,7 @@
         <td>
           slick.lifted.ColumnExtensionMethods.===
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](l.id)(slick.jdbc.PostgresProfile.api.intColumnType).===[Int, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[Int](id)(slick.jdbc.PostgresProfile.api.intColumnType).bind)(lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType))
         </td>
       </tr><tr>
@@ -1066,7 +1066,7 @@
         <td>
           slick.lifted.AbstractTableShapeImplicits.tableShape
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           lifted.this.Shape.tableShape[slick.lifted.FlatShapeLevel, whatson.model.Location, whatson.db.LocationTable](scala.Predef.$conforms[whatson.db.LocationTable])
         </td>
       </tr><tr>
@@ -1087,7 +1087,7 @@
         <td>
           whatson.db.LocationTable.id
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           l.id
         </td>
       </tr><tr>
@@ -1108,7 +1108,7 @@
         <td>
           slick.lifted.LiteralColumn.bind
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           slick.jdbc.PostgresProfile.api.valueToConstColumn[Int](id)(slick.jdbc.PostgresProfile.api.intColumnType).bind
         </td>
       </tr><tr>
@@ -1129,7 +1129,7 @@
         <td>
           scala.concurrent.Future.map
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           LocationController.this.db.run[Seq[whatson.model.detail.LocationDetail]](whatson.model.detail.LocationDetail.LocationDetailQuery(q).detailed(LocationController.this.context)).map[play.api.mvc.Result](((x: Seq[whatson.model.detail.LocationDetail]) =&gt; x.headOption match {
   case (value: whatson.model.detail.LocationDetail)Some[whatson.model.detail.LocationDetail]((r @ _)) =&gt; LocationController.this.Ok.apply[play.api.libs.json.JsValue](play.api.libs.json.Json.toJson[whatson.model.detail.LocationDetail](r)(whatson.model.detail.LocationDetail.locationDetailWrites))(http.this.Writeable.writeableOf_JsValue)
   case _ =&gt; LocationController.this.NotFound
@@ -1153,7 +1153,7 @@
         <td>
           controllers.LocationController.context
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           LocationController.this.context
         </td>
       </tr><tr>
@@ -1174,7 +1174,7 @@
         <td>
           controllers.LocationController.context
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           LocationController.this.context
         </td>
       </tr><tr>
@@ -1195,7 +1195,7 @@
         <td>
           scala.collection.TraversableLike.headOption
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           x.headOption
         </td>
       </tr><tr>
@@ -1216,7 +1216,7 @@
         <td>
           whatson.model.detail.LocationDetail.LocationDetailQuery.detailed
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           whatson.model.detail.LocationDetail.LocationDetailQuery(q).detailed(LocationController.this.context)
         </td>
       </tr><tr>
@@ -1237,7 +1237,7 @@
         <td>
           whatson.model.detail.LocationDetail.locationDetailWrites
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           whatson.model.detail.LocationDetail.locationDetailWrites
         </td>
       </tr><tr>
@@ -1258,7 +1258,7 @@
         <td>
           play.api.mvc.Results.Status.apply
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           LocationController.this.Ok.apply[play.api.libs.json.JsValue](play.api.libs.json.Json.toJson[whatson.model.detail.LocationDetail](r)(whatson.model.detail.LocationDetail.locationDetailWrites))(http.this.Writeable.writeableOf_JsValue)
         </td>
       </tr><tr>
@@ -1279,7 +1279,7 @@
         <td>
           play.api.http.DefaultWriteables.writeableOf_JsValue
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           http.this.Writeable.writeableOf_JsValue
         </td>
       </tr><tr>
@@ -1300,7 +1300,7 @@
         <td>
           play.api.libs.json.Json.toJson
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           play.api.libs.json.Json.toJson[whatson.model.detail.LocationDetail](r)(whatson.model.detail.LocationDetail.locationDetailWrites)
         </td>
       </tr><tr>
@@ -1321,7 +1321,7 @@
         <td>
           play.api.mvc.Results.NotFound
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           LocationController.this.NotFound
         </td>
       </tr><tr>
@@ -1342,7 +1342,7 @@
         <td>
           play.api.mvc.ActionBuilder.async
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           LocationController.this.Action.async(((implicit request: play.api.mvc.Request[play.api.mvc.AnyContent]) =&gt; {
   LocationController.this.log.debug(&quot;Rest request to get location close to another location&quot;)(api.this.MarkerContext.NoMarker);
   val q: slick.lifted.Query[whatson.db.LocationTable,whatson.model.Location,Seq] = whatson.db.LocationTable.location.withFilter[slick.lifted.Rep[Boolean]](((l: whatson.db.LocationTable) =&gt; slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](l.id)(slick.jdbc.PostgresProfile.api.intColumnType).===[Int, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[Int](id)(slick.jdbc.PostgresProfile.api.intColumnType).bind)(lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType))))(lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition).map[whatson.db.LocationTable, whatson.db.LocationTable, whatson.model.Location](((l: whatson.db.LocationTable) =&gt; l))(lifted.this.Shape.tableShape[slick.lifted.FlatShapeLevel, whatson.model.Location, whatson.db.LocationTable](scala.Predef.$conforms[whatson.db.LocationTable]));
@@ -1375,7 +1375,7 @@
         <td>
           play.api.LowPriorityMarkerContextImplicits.NoMarker
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           api.this.MarkerContext.NoMarker
         </td>
       </tr><tr>
@@ -1396,7 +1396,7 @@
         <td>
           &lt;nosymbol&gt;
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           &quot;Rest request to get location close to another location&quot;
         </td>
       </tr><tr>
@@ -1417,7 +1417,7 @@
         <td>
           play.api.LoggerLike.debug
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           LocationController.this.log.debug(&quot;Rest request to get location close to another location&quot;)(api.this.MarkerContext.NoMarker)
         </td>
       </tr><tr>
@@ -1438,7 +1438,7 @@
         <td>
           slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           slick.jdbc.PostgresProfile.api.intColumnType
         </td>
       </tr><tr>
@@ -1459,7 +1459,7 @@
         <td>
           slick.lifted.CanBeQueryCondition.BooleanColumnCanBeQueryCondition
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition
         </td>
       </tr><tr>
@@ -1480,7 +1480,7 @@
         <td>
           slick.lifted.Query.map
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           whatson.db.LocationTable.location.withFilter[slick.lifted.Rep[Boolean]](((l: whatson.db.LocationTable) =&gt; slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](l.id)(slick.jdbc.PostgresProfile.api.intColumnType).===[Int, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[Int](id)(slick.jdbc.PostgresProfile.api.intColumnType).bind)(lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType))))(lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition).map[whatson.db.LocationTable, whatson.db.LocationTable, whatson.model.Location](((l: whatson.db.LocationTable) =&gt; l))(lifted.this.Shape.tableShape[slick.lifted.FlatShapeLevel, whatson.model.Location, whatson.db.LocationTable](scala.Predef.$conforms[whatson.db.LocationTable]))
         </td>
       </tr><tr>
@@ -1501,7 +1501,7 @@
         <td>
           slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           slick.jdbc.PostgresProfile.api.intColumnType
         </td>
       </tr><tr>
@@ -1522,7 +1522,7 @@
         <td>
           whatson.db.LocationTable.id
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           l.id
         </td>
       </tr><tr>
@@ -1543,7 +1543,7 @@
         <td>
           slick.lifted.AbstractTableShapeImplicits.tableShape
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           lifted.this.Shape.tableShape[slick.lifted.FlatShapeLevel, whatson.model.Location, whatson.db.LocationTable](scala.Predef.$conforms[whatson.db.LocationTable])
         </td>
       </tr><tr>
@@ -1564,7 +1564,7 @@
         <td>
           slick.lifted.LiteralColumn.bind
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           slick.jdbc.PostgresProfile.api.valueToConstColumn[Int](id)(slick.jdbc.PostgresProfile.api.intColumnType).bind
         </td>
       </tr><tr>
@@ -1585,7 +1585,7 @@
         <td>
           slick.lifted.ColumnExtensionMethods.===
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](l.id)(slick.jdbc.PostgresProfile.api.intColumnType).===[Int, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[Int](id)(slick.jdbc.PostgresProfile.api.intColumnType).bind)(lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType))
         </td>
       </tr><tr>
@@ -1606,7 +1606,7 @@
         <td>
           slick.lifted.OptionMapper2.getOptionMapper2TT
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType)
         </td>
       </tr><tr>
@@ -1627,7 +1627,7 @@
         <td>
           scala.Predef.$conforms
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           scala.Predef.$conforms[whatson.db.LocationTable]
         </td>
       </tr><tr>
@@ -1648,7 +1648,7 @@
         <td>
           slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           slick.jdbc.PostgresProfile.api.intColumnType
         </td>
       </tr><tr>
@@ -1669,7 +1669,7 @@
         <td>
           scala.collection.TraversableLike.headOption
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           x$1.headOption
         </td>
       </tr><tr>
@@ -1690,7 +1690,7 @@
         <td>
           controllers.LocationController.context
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           LocationController.this.context
         </td>
       </tr><tr>
@@ -1711,7 +1711,7 @@
         <td>
           whatson.model.detail.LocationDetail.LocationDetailQuery.detailed
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           whatson.model.detail.LocationDetail.LocationDetailQuery(q).detailed(LocationController.this.context)
         </td>
       </tr><tr>
@@ -1732,7 +1732,7 @@
         <td>
           controllers.LocationController.context
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           LocationController.this.context
         </td>
       </tr><tr>
@@ -1753,7 +1753,7 @@
         <td>
           scala.concurrent.Future.flatMap
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           LocationController.this.db.run[Seq[whatson.model.detail.LocationDetail]](whatson.model.detail.LocationDetail.LocationDetailQuery(q).detailed(LocationController.this.context)).map[Option[whatson.model.detail.LocationDetail]](((x$1: Seq[whatson.model.detail.LocationDetail]) =&gt; x$1.headOption))(LocationController.this.context).flatMap[play.api.mvc.Result](((x0$1: Option[whatson.model.detail.LocationDetail]) =&gt; x0$1 match {
   case (value: whatson.model.detail.LocationDetail)Some[whatson.model.detail.LocationDetail]((r @ _)) =&gt; {
     val s: slick.lifted.Query[whatson.db.LocationTable,whatson.db.LocationTable#TableElementType,Seq] = whatson.db.LocationTable.location.sortBy[slick.lifted.Rep[Float]](((y: whatson.db.LocationTable) =&gt; whatson.db.Util.geoDistance(slick.jdbc.PostgresProfile.api.valueToConstColumn[Float](r.latitude)(slick.jdbc.PostgresProfile.api.floatColumnType), slick.jdbc.PostgresProfile.api.valueToConstColumn[Float](r.longitude)(slick.jdbc.PostgresProfile.api.floatColumnType), y.latitude, y.longitude)))({
@@ -1782,7 +1782,7 @@
         <td>
           controllers.LocationController.context
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           LocationController.this.context
         </td>
       </tr><tr>
@@ -1803,7 +1803,7 @@
         <td>
           whatson.db.LocationTable.longitude
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           y.longitude
         </td>
       </tr><tr>
@@ -1824,7 +1824,7 @@
         <td>
           slick.relational.RelationalProfile.API.columnToOrdered
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           slick.jdbc.PostgresProfile.api.columnToOrdered[Float](c)(slick.jdbc.PostgresProfile.api.floatColumnType)
         </td>
       </tr><tr>
@@ -1845,7 +1845,7 @@
         <td>
           slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.floatColumnType
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           slick.jdbc.PostgresProfile.api.floatColumnType
         </td>
       </tr><tr>
@@ -1866,7 +1866,7 @@
         <td>
           slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.floatColumnType
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           slick.jdbc.PostgresProfile.api.floatColumnType
         </td>
       </tr><tr>
@@ -1887,7 +1887,7 @@
         <td>
           whatson.model.detail.LocationDetail.longitude
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           r.longitude
         </td>
       </tr><tr>
@@ -1908,7 +1908,7 @@
         <td>
           whatson.db.LocationTable.latitude
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           y.latitude
         </td>
       </tr><tr>
@@ -1929,7 +1929,7 @@
         <td>
           whatson.model.detail.LocationDetail.latitude
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           r.latitude
         </td>
       </tr><tr>
@@ -1950,7 +1950,7 @@
         <td>
           slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.floatColumnType
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           slick.jdbc.PostgresProfile.api.floatColumnType
         </td>
       </tr><tr>
@@ -1971,7 +1971,7 @@
         <td>
           whatson.db.Util.geoDistance
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           whatson.db.Util.geoDistance(slick.jdbc.PostgresProfile.api.valueToConstColumn[Float](r.latitude)(slick.jdbc.PostgresProfile.api.floatColumnType), slick.jdbc.PostgresProfile.api.valueToConstColumn[Float](r.longitude)(slick.jdbc.PostgresProfile.api.floatColumnType), y.latitude, y.longitude)
         </td>
       </tr><tr>
@@ -1992,7 +1992,7 @@
         <td>
           slick.lifted.Query.sortBy
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           whatson.db.LocationTable.location.sortBy[slick.lifted.Rep[Float]](((y: whatson.db.LocationTable) =&gt; whatson.db.Util.geoDistance(slick.jdbc.PostgresProfile.api.valueToConstColumn[Float](r.latitude)(slick.jdbc.PostgresProfile.api.floatColumnType), slick.jdbc.PostgresProfile.api.valueToConstColumn[Float](r.longitude)(slick.jdbc.PostgresProfile.api.floatColumnType), y.latitude, y.longitude)))({
   ((c: slick.jdbc.PostgresProfile.api.Rep[Float]) =&gt; slick.jdbc.PostgresProfile.api.columnToOrdered[Float](c)(slick.jdbc.PostgresProfile.api.floatColumnType))
 })
@@ -2015,7 +2015,7 @@
         <td>
           slick.relational.RelationalProfile.API.valueToConstColumn
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           slick.jdbc.PostgresProfile.api.valueToConstColumn[Float](r.latitude)(slick.jdbc.PostgresProfile.api.floatColumnType)
         </td>
       </tr><tr>
@@ -2036,7 +2036,7 @@
         <td>
           slick.relational.RelationalProfile.API.valueToConstColumn
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           slick.jdbc.PostgresProfile.api.valueToConstColumn[Float](r.longitude)(slick.jdbc.PostgresProfile.api.floatColumnType)
         </td>
       </tr><tr>
@@ -2057,7 +2057,7 @@
         <td>
           play.api.db.slick.HasDatabaseConfig.db
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           LocationController.this.db
         </td>
       </tr><tr>
@@ -2078,7 +2078,7 @@
         <td>
           whatson.db.Util.QueryUtils.returnPaged
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           whatson.db.Util.QueryUtils[whatson.db.LocationTable, whatson.db.LocationTable#TableElementType](s).returnPaged(LocationController.this.db)(request, LocationController.this.context, whatson.model.Location.locationWrites)
         </td>
       </tr><tr>
@@ -2099,7 +2099,7 @@
         <td>
           whatson.model.Location.locationWrites
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           whatson.model.Location.locationWrites
         </td>
       </tr><tr>
@@ -2120,7 +2120,7 @@
         <td>
           controllers.LocationController.context
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           LocationController.this.context
         </td>
       </tr><tr>
@@ -2141,7 +2141,7 @@
         <td>
           play.api.mvc.Results.NotFound
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           LocationController.this.NotFound
         </td>
       </tr><tr>
@@ -2162,7 +2162,7 @@
         <td>
           scala.concurrent.Future.apply
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           scala.concurrent.Future.apply[LocationController.this.Status](LocationController.this.NotFound)(LocationController.this.context)
         </td>
       </tr><tr>
@@ -2183,7 +2183,7 @@
         <td>
           controllers.LocationController.context
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           LocationController.this.context
         </td>
       </tr><tr>
@@ -2204,7 +2204,7 @@
         <td>
           play.api.mvc.ActionBuilder.async
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           LocationController.this.Action.async[whatson.model.Location](LocationController.this.parse.json[whatson.model.Location](whatson.model.Location.locationReads))(((implicit request: play.api.mvc.Request[whatson.model.Location]) =&gt; {
   LocationController.this.log.debug(&quot;Rest request to create location&quot;)(api.this.MarkerContext.NoMarker);
   val inserted: scala.concurrent.Future[whatson.model.Location] = LocationController.this.db.run[whatson.model.Location](whatson.db.Util.insertAndReturn[whatson.model.Location, whatson.db.LocationTable](whatson.db.LocationTable.location, request.body));
@@ -2229,7 +2229,7 @@
         <td>
           play.api.mvc.PlayBodyParsers.json
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           LocationController.this.parse.json[whatson.model.Location](whatson.model.Location.locationReads)
         </td>
       </tr><tr>
@@ -2250,7 +2250,7 @@
         <td>
           whatson.model.Location.locationReads
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           whatson.model.Location.locationReads
         </td>
       </tr><tr>
@@ -2271,7 +2271,7 @@
         <td>
           play.api.LowPriorityMarkerContextImplicits.NoMarker
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           api.this.MarkerContext.NoMarker
         </td>
       </tr><tr>
@@ -2292,7 +2292,7 @@
         <td>
           &lt;nosymbol&gt;
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           &quot;Rest request to create location&quot;
         </td>
       </tr><tr>
@@ -2313,7 +2313,7 @@
         <td>
           play.api.LoggerLike.debug
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           LocationController.this.log.debug(&quot;Rest request to create location&quot;)(api.this.MarkerContext.NoMarker)
         </td>
       </tr><tr>
@@ -2334,7 +2334,7 @@
         <td>
           play.api.mvc.Request.body
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           request.body
         </td>
       </tr><tr>
@@ -2355,7 +2355,7 @@
         <td>
           whatson.db.LocationTable.location
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           whatson.db.LocationTable.location
         </td>
       </tr><tr>
@@ -2376,7 +2376,7 @@
         <td>
           slick.basic.BasicBackend.DatabaseDef.run
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           LocationController.this.db.run[whatson.model.Location](whatson.db.Util.insertAndReturn[whatson.model.Location, whatson.db.LocationTable](whatson.db.LocationTable.location, request.body))
         </td>
       </tr><tr>
@@ -2397,7 +2397,7 @@
         <td>
           whatson.db.Util.insertAndReturn
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           whatson.db.Util.insertAndReturn[whatson.model.Location, whatson.db.LocationTable](whatson.db.LocationTable.location, request.body)
         </td>
       </tr><tr>
@@ -2418,7 +2418,7 @@
         <td>
           play.api.mvc.Results.Status.apply
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           LocationController.this.Ok.apply[play.api.libs.json.JsValue](play.api.libs.json.Json.toJson[whatson.model.Location](x)(whatson.model.Location.locationWrites))(http.this.Writeable.writeableOf_JsValue)
         </td>
       </tr><tr>
@@ -2439,7 +2439,7 @@
         <td>
           scala.concurrent.Future.map
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           inserted.map[play.api.mvc.Result](((x: whatson.model.Location) =&gt; LocationController.this.Ok.apply[play.api.libs.json.JsValue](play.api.libs.json.Json.toJson[whatson.model.Location](x)(whatson.model.Location.locationWrites))(http.this.Writeable.writeableOf_JsValue)))(LocationController.this.context)
         </td>
       </tr><tr>
@@ -2460,7 +2460,7 @@
         <td>
           play.api.http.DefaultWriteables.writeableOf_JsValue
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           http.this.Writeable.writeableOf_JsValue
         </td>
       </tr><tr>
@@ -2481,7 +2481,7 @@
         <td>
           controllers.LocationController.context
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           LocationController.this.context
         </td>
       </tr><tr>
@@ -2502,7 +2502,7 @@
         <td>
           play.api.libs.json.Json.toJson
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           play.api.libs.json.Json.toJson[whatson.model.Location](x)(whatson.model.Location.locationWrites)
         </td>
       </tr><tr>
@@ -2523,7 +2523,7 @@
         <td>
           whatson.model.Location.locationWrites
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           whatson.model.Location.locationWrites
         </td>
       </tr>

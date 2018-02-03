@@ -74,35 +74,35 @@
 </span>50 <span style=''>    *
 </span>51 <span style=''>    * @return The result to display.
 </span>52 <span style=''>    */
-</span>53 <span style=''>  def login = </span><span style='background: #F0ADAD'>Action.async(parse.json) { implicit request =&gt;
-</span>54 <span style=''></span><span style='background: #F0ADAD'>    request.body.validate[SignInForm].map { data =&gt;
-</span>55 <span style=''></span><span style='background: #F0ADAD'>      credentialsProvider.authenticate(Credentials(data.email, data.password)).flatMap { loginInfo =&gt;
-</span>56 <span style=''></span><span style='background: #F0ADAD'>        loginService.retrieve(loginInfo).flatMap {
-</span>57 <span style=''></span><span style='background: #F0ADAD'>          case Some(login) =&gt; silhouette.env.authenticatorService.create(loginInfo).map {
-</span>58 <span style=''></span><span style='background: #F0ADAD'>            case authenticator if data.rememberMe =&gt;
-</span>59 <span style=''></span><span style='background: #F0ADAD'>              val c = configuration.underlying
-</span>60 <span style=''></span><span style='background: #F0ADAD'>              authenticator.copy(
-</span>61 <span style=''></span><span style='background: #F0ADAD'>                expirationDateTime = clock.now + FiniteDuration(c.getLong(&quot;silhouette.authenticator.rememberMe.authenticatorExpiry&quot;),&quot;ms&quot;),
-</span>62 <span style=''></span><span style='background: #F0ADAD'>                idleTimeout = Some(FiniteDuration(c.getLong(&quot;silhouette.authenticator.rememberMe.authenticatorIdleTimeout&quot;),&quot;ms&quot;))
-</span>63 <span style=''></span><span style='background: #F0ADAD'>              )
-</span>64 <span style=''></span><span style='background: #F0ADAD'>            case authenticator =&gt; authenticator
-</span>65 <span style=''></span><span style='background: #F0ADAD'>          }.flatMap { authenticator =&gt;
-</span>66 <span style=''></span><span style='background: #F0ADAD'>            silhouette.env.eventBus.publish(LoginEvent(login, request))
-</span>67 <span style=''></span><span style='background: #F0ADAD'>            silhouette.env.authenticatorService.init(authenticator).map { token =&gt;
-</span>68 <span style=''></span><span style='background: #F0ADAD'>              Ok(Json.obj(&quot;token&quot; -&gt; token))
-</span>69 <span style=''></span><span style='background: #F0ADAD'>            }
-</span>70 <span style=''></span><span style='background: #F0ADAD'>          }
-</span>71 <span style=''></span><span style='background: #F0ADAD'>          case None =&gt; Future.failed(new IdentityNotFoundException(&quot;Couldn't find user&quot;))
-</span>72 <span style=''></span><span style='background: #F0ADAD'>        }
-</span>73 <span style=''></span><span style='background: #F0ADAD'>      }.recover {
-</span>74 <span style=''></span><span style='background: #F0ADAD'>        case e: ProviderException =&gt;
-</span>75 <span style=''></span><span style='background: #F0ADAD'>          Unauthorized(Json.obj(&quot;message&quot; -&gt; &quot;unauthorized&quot;))
-</span>76 <span style=''></span><span style='background: #F0ADAD'>      }
-</span>77 <span style=''></span><span style='background: #F0ADAD'>    }.recoverTotal {
-</span>78 <span style=''></span><span style='background: #F0ADAD'>      case error =&gt;
-</span>79 <span style=''></span><span style='background: #F0ADAD'>        Future.successful(Unauthorized(Json.obj(&quot;message&quot; -&gt; &quot;invalid credentials&quot;)))
-</span>80 <span style=''></span><span style='background: #F0ADAD'>    }
-</span>81 <span style=''></span><span style='background: #F0ADAD'>  }</span><span style=''>
+</span>53 <span style=''>  def login = </span><span style='background: #AEF1AE'>Action.async(parse.json) { implicit request =&gt;
+</span>54 <span style=''></span><span style='background: #AEF1AE'>    request.body.validate[SignInForm].map { data =&gt;
+</span>55 <span style=''></span><span style='background: #AEF1AE'>      credentialsProvider.authenticate(Credentials(data.email, data.password)).flatMap { loginInfo =&gt;
+</span>56 <span style=''></span><span style='background: #AEF1AE'>        loginService.retrieve(loginInfo).flatMap {
+</span>57 <span style=''></span><span style='background: #AEF1AE'>          case Some(login) =&gt; silhouette.env.authenticatorService.create(loginInfo).map {
+</span>58 <span style=''></span><span style='background: #AEF1AE'>            case authenticator if data.rememberMe =&gt;
+</span>59 <span style=''></span><span style='background: #AEF1AE'>              val c = configuration.underlying
+</span>60 <span style=''></span><span style='background: #AEF1AE'>              authenticator.copy(
+</span>61 <span style=''></span><span style='background: #AEF1AE'>                expirationDateTime = clock.now + FiniteDuration(c.getLong(&quot;silhouette.authenticator.rememberMe.authenticatorExpiry&quot;),&quot;ms&quot;),
+</span>62 <span style=''></span><span style='background: #AEF1AE'>                idleTimeout = Some(FiniteDuration(c.getLong(&quot;silhouette.authenticator.rememberMe.authenticatorIdleTimeout&quot;),&quot;ms&quot;))
+</span>63 <span style=''></span><span style='background: #AEF1AE'>              )
+</span>64 <span style=''></span><span style='background: #AEF1AE'>            case authenticator =&gt; authenticator
+</span>65 <span style=''></span><span style='background: #AEF1AE'>          }.flatMap { authenticator =&gt;
+</span>66 <span style=''></span><span style='background: #AEF1AE'>            silhouette.env.eventBus.publish(LoginEvent(login, request))
+</span>67 <span style=''></span><span style='background: #AEF1AE'>            silhouette.env.authenticatorService.init(authenticator).map { token =&gt;
+</span>68 <span style=''></span><span style='background: #AEF1AE'>              Ok(Json.obj(&quot;token&quot; -&gt; token))
+</span>69 <span style=''></span><span style='background: #AEF1AE'>            }
+</span>70 <span style=''></span><span style='background: #AEF1AE'>          }
+</span>71 <span style=''></span><span style='background: #AEF1AE'>          case None =&gt; </span><span style='background: #F0ADAD'>Future.failed(new IdentityNotFoundException(&quot;Couldn't find user&quot;))</span><span style='background: #AEF1AE'>
+</span>72 <span style=''></span><span style='background: #AEF1AE'>        }
+</span>73 <span style=''></span><span style='background: #AEF1AE'>      }.recover {
+</span>74 <span style=''></span><span style='background: #AEF1AE'>        case e: ProviderException =&gt;
+</span>75 <span style=''></span><span style='background: #AEF1AE'>          Unauthorized(Json.obj(&quot;message&quot; -&gt; &quot;unauthorized&quot;))
+</span>76 <span style=''></span><span style='background: #AEF1AE'>      }
+</span>77 <span style=''></span><span style='background: #AEF1AE'>    }.recoverTotal {
+</span>78 <span style=''></span><span style='background: #AEF1AE'>      case error =&gt;
+</span>79 <span style=''></span><span style='background: #AEF1AE'>        </span><span style='background: #F0ADAD'>Future.successful(Unauthorized(Json.obj(&quot;message&quot; -&gt; &quot;invalid credentials&quot;)))</span><span style='background: #AEF1AE'>
+</span>80 <span style=''></span><span style='background: #AEF1AE'>    }
+</span>81 <span style=''></span><span style='background: #AEF1AE'>  }</span><span style=''>
 </span>82 <span style=''>
 </span>83 <span style=''>  /**
 </span>84 <span style=''>   * Handles the submitted JSON data.
@@ -113,10 +113,10 @@
 </span>89 <span style=''>  /**
 </span>90 <span style=''>    * Manages the sign out action.
 </span>91 <span style=''>    */
-</span>92 <span style=''>  def signOut = </span><span style='background: #F0ADAD'>silhouette.SecuredAction.async { implicit request =&gt;
-</span>93 <span style=''></span><span style='background: #F0ADAD'>    silhouette.env.eventBus.publish(LogoutEvent(request.identity, request))
-</span>94 <span style=''></span><span style='background: #F0ADAD'>    silhouette.env.authenticatorService.discard(request.authenticator, Ok)
-</span>95 <span style=''></span><span style='background: #F0ADAD'>  }</span><span style=''>
+</span>92 <span style=''>  def signOut = </span><span style='background: #AEF1AE'>silhouette.SecuredAction.async { implicit request =&gt;
+</span>93 <span style=''></span><span style='background: #AEF1AE'>    silhouette.env.eventBus.publish(LogoutEvent(request.identity, request))
+</span>94 <span style=''></span><span style='background: #AEF1AE'>    silhouette.env.authenticatorService.discard(request.authenticator, Ok)
+</span>95 <span style=''></span><span style='background: #AEF1AE'>  }</span><span style=''>
 </span>96 <span style=''>}
 </span></pre>
           </div>
@@ -168,7 +168,7 @@
         <td>
           play.api.mvc.PlayBodyParsers.json
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           Authentication.this.parse.json
         </td>
       </tr><tr>
@@ -189,7 +189,7 @@
         <td>
           play.api.mvc.ActionBuilder.async
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           Authentication.this.Action.async[play.api.libs.json.JsValue](Authentication.this.parse.json)(((implicit request: play.api.mvc.Request[play.api.libs.json.JsValue]) =&gt; request.body.validate[whatson.model.SignInForm](whatson.model.SignInForm.dataReads).map[scala.concurrent.Future[play.api.mvc.Result]](((data: whatson.model.SignInForm) =&gt; Authentication.this.credentialsProvider.authenticate(com.mohiva.play.silhouette.api.util.Credentials.apply(data.email, data.password)).flatMap[play.api.mvc.Result](((loginInfo: com.mohiva.play.silhouette.api.LoginInfo) =&gt; Authentication.this.loginService.retrieve(loginInfo).flatMap[play.api.mvc.Result](((x0$1: Option[whatson.model.Login]) =&gt; x0$1 match {
   case (value: whatson.model.Login)Some[whatson.model.Login]((login @ _)) =&gt; Authentication.this.silhouette.env.authenticatorService.create(loginInfo)(request).map[com.mohiva.play.silhouette.impl.authenticators.JWTAuthenticator](((x0$2: whatson.auth.AuthEnv#A) =&gt; x0$2 match {
   case (authenticator @ _) if data.rememberMe =&gt; {
@@ -248,7 +248,7 @@
         <td>
           whatson.model.SignInForm.dataReads
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           whatson.model.SignInForm.dataReads
         </td>
       </tr><tr>
@@ -269,7 +269,7 @@
         <td>
           whatson.model.SignInForm.password
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           data.password
         </td>
       </tr><tr>
@@ -290,7 +290,7 @@
         <td>
           whatson.model.SignInForm.email
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           data.email
         </td>
       </tr><tr>
@@ -311,7 +311,7 @@
         <td>
           play.api.libs.concurrent.Execution.Implicits.defaultContext
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           play.api.libs.concurrent.Execution.Implicits.defaultContext
         </td>
       </tr><tr>
@@ -332,7 +332,7 @@
         <td>
           com.mohiva.play.silhouette.api.util.Credentials.apply
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           com.mohiva.play.silhouette.api.util.Credentials.apply(data.email, data.password)
         </td>
       </tr><tr>
@@ -353,7 +353,7 @@
         <td>
           play.api.libs.concurrent.Execution.Implicits.defaultContext
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           play.api.libs.concurrent.Execution.Implicits.defaultContext
         </td>
       </tr><tr>
@@ -374,7 +374,7 @@
         <td>
           scala.concurrent.Future.flatMap
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           Authentication.this.loginService.retrieve(loginInfo).flatMap[play.api.mvc.Result](((x0$1: Option[whatson.model.Login]) =&gt; x0$1 match {
   case (value: whatson.model.Login)Some[whatson.model.Login]((login @ _)) =&gt; Authentication.this.silhouette.env.authenticatorService.create(loginInfo)(request).map[com.mohiva.play.silhouette.impl.authenticators.JWTAuthenticator](((x0$2: whatson.auth.AuthEnv#A) =&gt; x0$2 match {
   case (authenticator @ _) if data.rememberMe =&gt; {
@@ -415,7 +415,7 @@
         <td>
           play.api.libs.concurrent.Execution.Implicits.defaultContext
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           play.api.libs.concurrent.Execution.Implicits.defaultContext
         </td>
       </tr><tr>
@@ -436,7 +436,7 @@
         <td>
           whatson.model.SignInForm.rememberMe
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           data.rememberMe
         </td>
       </tr><tr>
@@ -457,7 +457,7 @@
         <td>
           play.api.Configuration.underlying
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           Authentication.this.configuration.underlying
         </td>
       </tr><tr>
@@ -478,7 +478,7 @@
         <td>
           com.mohiva.play.silhouette.impl.authenticators.JWTAuthenticator.copy$default$3
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           authenticator.copy$default$3
         </td>
       </tr><tr>
@@ -499,7 +499,7 @@
         <td>
           com.mohiva.play.silhouette.impl.authenticators.JWTAuthenticator.copy
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           authenticator.copy(x$3, x$4, x$5, x$1, x$2, x$6)
         </td>
       </tr><tr>
@@ -520,7 +520,7 @@
         <td>
           com.mohiva.play.silhouette.impl.authenticators.JWTAuthenticator.copy$default$2
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           authenticator.copy$default$2
         </td>
       </tr><tr>
@@ -541,7 +541,7 @@
         <td>
           com.mohiva.play.silhouette.impl.authenticators.JWTAuthenticator.copy$default$1
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           authenticator.copy$default$1
         </td>
       </tr><tr>
@@ -562,7 +562,7 @@
         <td>
           com.mohiva.play.silhouette.impl.authenticators.JWTAuthenticator.copy$default$6
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           authenticator.copy$default$6
         </td>
       </tr><tr>
@@ -583,7 +583,7 @@
         <td>
           &lt;nosymbol&gt;
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           &quot;ms&quot;
         </td>
       </tr><tr>
@@ -604,7 +604,7 @@
         <td>
           com.mohiva.play.silhouette.api.Authenticator.Implicits.RichDateTime.+
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           com.mohiva.play.silhouette.api.Authenticator.Implicits.RichDateTime(Authentication.this.clock.now).+(scala.concurrent.duration.FiniteDuration.apply(c.getLong(&quot;silhouette.authenticator.rememberMe.authenticatorExpiry&quot;), &quot;ms&quot;))
         </td>
       </tr><tr>
@@ -625,7 +625,7 @@
         <td>
           com.typesafe.config.Config.getLong
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           c.getLong(&quot;silhouette.authenticator.rememberMe.authenticatorExpiry&quot;)
         </td>
       </tr><tr>
@@ -646,7 +646,7 @@
         <td>
           com.mohiva.play.silhouette.api.util.Clock.now
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           Authentication.this.clock.now
         </td>
       </tr><tr>
@@ -667,7 +667,7 @@
         <td>
           scala.concurrent.duration.FiniteDuration.apply
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           scala.concurrent.duration.FiniteDuration.apply(c.getLong(&quot;silhouette.authenticator.rememberMe.authenticatorExpiry&quot;), &quot;ms&quot;)
         </td>
       </tr><tr>
@@ -688,7 +688,7 @@
         <td>
           scala.Some.apply
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           scala.Some.apply[scala.concurrent.duration.FiniteDuration](scala.concurrent.duration.FiniteDuration.apply(c.getLong(&quot;silhouette.authenticator.rememberMe.authenticatorIdleTimeout&quot;), &quot;ms&quot;))
         </td>
       </tr><tr>
@@ -709,7 +709,7 @@
         <td>
           com.typesafe.config.Config.getLong
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           c.getLong(&quot;silhouette.authenticator.rememberMe.authenticatorIdleTimeout&quot;)
         </td>
       </tr><tr>
@@ -730,7 +730,7 @@
         <td>
           scala.concurrent.duration.FiniteDuration.apply
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           scala.concurrent.duration.FiniteDuration.apply(c.getLong(&quot;silhouette.authenticator.rememberMe.authenticatorIdleTimeout&quot;), &quot;ms&quot;)
         </td>
       </tr><tr>
@@ -751,7 +751,7 @@
         <td>
           &lt;nosymbol&gt;
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           &quot;ms&quot;
         </td>
       </tr><tr>
@@ -772,7 +772,7 @@
         <td>
           play.api.libs.concurrent.Execution.Implicits.defaultContext
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           play.api.libs.concurrent.Execution.Implicits.defaultContext
         </td>
       </tr><tr>
@@ -793,7 +793,7 @@
         <td>
           scala.concurrent.Future.flatMap
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           Authentication.this.silhouette.env.authenticatorService.create(loginInfo)(request).map[com.mohiva.play.silhouette.impl.authenticators.JWTAuthenticator](((x0$2: whatson.auth.AuthEnv#A) =&gt; x0$2 match {
   case (authenticator @ _) if data.rememberMe =&gt; {
     val c: com.typesafe.config.Config = Authentication.this.configuration.underlying;
@@ -831,7 +831,7 @@
         <td>
           akka.event.SubchannelClassification.publish
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           Authentication.this.silhouette.env.eventBus.publish(com.mohiva.play.silhouette.api.LoginEvent.apply[whatson.model.Login](login, request))
         </td>
       </tr><tr>
@@ -852,7 +852,7 @@
         <td>
           com.mohiva.play.silhouette.api.LoginEvent.apply
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           com.mohiva.play.silhouette.api.LoginEvent.apply[whatson.model.Login](login, request)
         </td>
       </tr><tr>
@@ -873,7 +873,7 @@
         <td>
           scala.concurrent.Future.map
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           Authentication.this.silhouette.env.authenticatorService.init(authenticator)(request).map[play.api.mvc.Result](((token: whatson.auth.AuthEnv#A#Value) =&gt; Authentication.this.Ok.apply[play.api.libs.json.JsObject](play.api.libs.json.Json.obj(scala.Predef.ArrowAssoc[String](&quot;token&quot;).-&gt;[play.api.libs.json.Json.JsValueWrapper](json.this.Json.toJsFieldJsValueWrapper[whatson.auth.AuthEnv#A#Value](token)(json.this.Writes.StringWrites))))(http.this.Writeable.writeableOf_JsValue)))(play.api.libs.concurrent.Execution.Implicits.defaultContext)
         </td>
       </tr><tr>
@@ -894,7 +894,7 @@
         <td>
           play.api.libs.concurrent.Execution.Implicits.defaultContext
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           play.api.libs.concurrent.Execution.Implicits.defaultContext
         </td>
       </tr><tr>
@@ -915,7 +915,7 @@
         <td>
           play.api.mvc.Results.Status.apply
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           Authentication.this.Ok.apply[play.api.libs.json.JsObject](play.api.libs.json.Json.obj(scala.Predef.ArrowAssoc[String](&quot;token&quot;).-&gt;[play.api.libs.json.Json.JsValueWrapper](json.this.Json.toJsFieldJsValueWrapper[whatson.auth.AuthEnv#A#Value](token)(json.this.Writes.StringWrites))))(http.this.Writeable.writeableOf_JsValue)
         </td>
       </tr><tr>
@@ -936,7 +936,7 @@
         <td>
           &lt;nosymbol&gt;
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           &quot;token&quot;
         </td>
       </tr><tr>
@@ -957,7 +957,7 @@
         <td>
           scala.Predef.ArrowAssoc.-&gt;
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           scala.Predef.ArrowAssoc[String](&quot;token&quot;).-&gt;[play.api.libs.json.Json.JsValueWrapper](json.this.Json.toJsFieldJsValueWrapper[whatson.auth.AuthEnv#A#Value](token)(json.this.Writes.StringWrites))
         </td>
       </tr><tr>
@@ -978,7 +978,7 @@
         <td>
           play.api.http.DefaultWriteables.writeableOf_JsValue
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           http.this.Writeable.writeableOf_JsValue
         </td>
       </tr><tr>
@@ -999,7 +999,7 @@
         <td>
           play.api.libs.json.Json.toJsFieldJsValueWrapper
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           json.this.Json.toJsFieldJsValueWrapper[whatson.auth.AuthEnv#A#Value](token)(json.this.Writes.StringWrites)
         </td>
       </tr><tr>
@@ -1020,7 +1020,7 @@
         <td>
           play.api.libs.json.DefaultWrites.StringWrites
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           json.this.Writes.StringWrites
         </td>
       </tr><tr>
@@ -1041,7 +1041,7 @@
         <td>
           play.api.libs.json.Json.obj
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           play.api.libs.json.Json.obj(scala.Predef.ArrowAssoc[String](&quot;token&quot;).-&gt;[play.api.libs.json.Json.JsValueWrapper](json.this.Json.toJsFieldJsValueWrapper[whatson.auth.AuthEnv#A#Value](token)(json.this.Writes.StringWrites)))
         </td>
       </tr><tr>
@@ -1146,7 +1146,7 @@
         <td>
           play.api.libs.concurrent.Execution.Implicits.defaultContext
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           play.api.libs.concurrent.Execution.Implicits.defaultContext
         </td>
       </tr><tr>
@@ -1167,7 +1167,7 @@
         <td>
           controllers.Authentication.$anonfun.&lt;init&gt;
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           new $anonfun()
         </td>
       </tr><tr>
@@ -1188,7 +1188,7 @@
         <td>
           scala.concurrent.Future.recover
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           Authentication.this.credentialsProvider.authenticate(com.mohiva.play.silhouette.api.util.Credentials.apply(data.email, data.password)).flatMap[play.api.mvc.Result](((loginInfo: com.mohiva.play.silhouette.api.LoginInfo) =&gt; Authentication.this.loginService.retrieve(loginInfo).flatMap[play.api.mvc.Result](((x0$1: Option[whatson.model.Login]) =&gt; x0$1 match {
   case (value: whatson.model.Login)Some[whatson.model.Login]((login @ _)) =&gt; Authentication.this.silhouette.env.authenticatorService.create(loginInfo)(request).map[com.mohiva.play.silhouette.impl.authenticators.JWTAuthenticator](((x0$2: whatson.auth.AuthEnv#A) =&gt; x0$2 match {
   case (authenticator @ _) if data.rememberMe =&gt; {
@@ -1245,7 +1245,7 @@
         <td>
           play.api.http.DefaultWriteables.writeableOf_JsValue
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           http.this.Writeable.writeableOf_JsValue
         </td>
       </tr><tr>
@@ -1266,7 +1266,7 @@
         <td>
           &lt;nosymbol&gt;
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           &quot;message&quot;
         </td>
       </tr><tr>
@@ -1287,7 +1287,7 @@
         <td>
           play.api.libs.json.Json.toJsFieldJsValueWrapper
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           json.this.Json.toJsFieldJsValueWrapper[String](&quot;unauthorized&quot;)(json.this.Writes.StringWrites)
         </td>
       </tr><tr>
@@ -1308,7 +1308,7 @@
         <td>
           play.api.libs.json.DefaultWrites.StringWrites
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           json.this.Writes.StringWrites
         </td>
       </tr><tr>
@@ -1329,7 +1329,7 @@
         <td>
           play.api.libs.json.Json.obj
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           play.api.libs.json.Json.obj(scala.Predef.ArrowAssoc[String](&quot;message&quot;).-&gt;[play.api.libs.json.Json.JsValueWrapper](json.this.Json.toJsFieldJsValueWrapper[String](&quot;unauthorized&quot;)(json.this.Writes.StringWrites)))
         </td>
       </tr><tr>
@@ -1350,7 +1350,7 @@
         <td>
           &lt;nosymbol&gt;
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           &quot;unauthorized&quot;
         </td>
       </tr><tr>
@@ -1371,7 +1371,7 @@
         <td>
           scala.Predef.ArrowAssoc.-&gt;
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           scala.Predef.ArrowAssoc[String](&quot;message&quot;).-&gt;[play.api.libs.json.Json.JsValueWrapper](json.this.Json.toJsFieldJsValueWrapper[String](&quot;unauthorized&quot;)(json.this.Writes.StringWrites))
         </td>
       </tr><tr>
@@ -1392,7 +1392,7 @@
         <td>
           play.api.mvc.Results.Status.apply
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           Authentication.this.Unauthorized.apply[play.api.libs.json.JsObject](play.api.libs.json.Json.obj(scala.Predef.ArrowAssoc[String](&quot;message&quot;).-&gt;[play.api.libs.json.Json.JsValueWrapper](json.this.Json.toJsFieldJsValueWrapper[String](&quot;unauthorized&quot;)(json.this.Writes.StringWrites))))(http.this.Writeable.writeableOf_JsValue)
         </td>
       </tr><tr>
@@ -1413,7 +1413,7 @@
         <td>
           play.api.libs.json.JsResult.recoverTotal
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           request.body.validate[whatson.model.SignInForm](whatson.model.SignInForm.dataReads).map[scala.concurrent.Future[play.api.mvc.Result]](((data: whatson.model.SignInForm) =&gt; Authentication.this.credentialsProvider.authenticate(com.mohiva.play.silhouette.api.util.Credentials.apply(data.email, data.password)).flatMap[play.api.mvc.Result](((loginInfo: com.mohiva.play.silhouette.api.LoginInfo) =&gt; Authentication.this.loginService.retrieve(loginInfo).flatMap[play.api.mvc.Result](((x0$1: Option[whatson.model.Login]) =&gt; x0$1 match {
   case (value: whatson.model.Login)Some[whatson.model.Login]((login @ _)) =&gt; Authentication.this.silhouette.env.authenticatorService.create(loginInfo)(request).map[com.mohiva.play.silhouette.impl.authenticators.JWTAuthenticator](((x0$2: whatson.auth.AuthEnv#A) =&gt; x0$2 match {
   case (authenticator @ _) if data.rememberMe =&gt; {
@@ -1661,7 +1661,7 @@
         <td>
           play.api.mvc.ActionBuilder.async
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           Authentication.this.silhouette.SecuredAction.async(((implicit request: com.mohiva.play.silhouette.api.actions.SecuredRequest[whatson.auth.AuthEnv,play.api.mvc.AnyContent]) =&gt; {
   Authentication.this.silhouette.env.eventBus.publish(com.mohiva.play.silhouette.api.LogoutEvent.apply[whatson.auth.AuthEnv#I](request.identity, request));
   Authentication.this.silhouette.env.authenticatorService.discard(request.authenticator, Authentication.this.Ok)(request)
@@ -1685,7 +1685,7 @@
         <td>
           akka.event.SubchannelClassification.publish
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           Authentication.this.silhouette.env.eventBus.publish(com.mohiva.play.silhouette.api.LogoutEvent.apply[whatson.auth.AuthEnv#I](request.identity, request))
         </td>
       </tr><tr>
@@ -1706,7 +1706,7 @@
         <td>
           com.mohiva.play.silhouette.api.LogoutEvent.apply
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           com.mohiva.play.silhouette.api.LogoutEvent.apply[whatson.auth.AuthEnv#I](request.identity, request)
         </td>
       </tr><tr>
@@ -1727,7 +1727,7 @@
         <td>
           com.mohiva.play.silhouette.api.actions.SecuredRequest.identity
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           request.identity
         </td>
       </tr><tr>
@@ -1748,7 +1748,7 @@
         <td>
           com.mohiva.play.silhouette.api.services.AuthenticatorService.discard
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           Authentication.this.silhouette.env.authenticatorService.discard(request.authenticator, Authentication.this.Ok)(request)
         </td>
       </tr>

@@ -38,22 +38,22 @@
 </span>14 <span style=''>  implicit val locationDetailReads = Json.reads[LocationDetail]
 </span>15 <span style=''>  implicit val locationDetailWrites = Json.writes[LocationDetail]
 </span>16 <span style=''>
-</span>17 <span style=''>  val tupled = (</span><span style='background: #F0ADAD'>this.apply _).tupled</span><span style=''>
+</span>17 <span style=''>  val tupled = (</span><span style='background: #F0ADAD'>this.apply</span><span style='background: #AEF1AE'> _).tupled</span><span style=''>
 </span>18 <span style=''>
 </span>19 <span style=''>  implicit class LocationDetailQuery(q: Query[LocationTable, Location, Seq]) {
 </span>20 <span style=''>    def detailed(implicit ec: ExecutionContext) = {
-</span>21 <span style=''>      val t = </span><span style='background: #F0ADAD'>q.result.flatMap(y =&gt; {
-</span>22 <span style=''></span><span style='background: #F0ADAD'>        DBIO.sequence(y.map {
-</span>23 <span style=''></span><span style='background: #F0ADAD'>          case location =&gt; {
-</span>24 <span style=''></span><span style='background: #F0ADAD'>            val s = LocationTable.location.filter(_.id === location.id).map(_.avgRating)
-</span>25 <span style=''></span><span style='background: #F0ADAD'>            val imgs = LocationTable.location.filter(_.id === location.id).flatMap(_.images).map(_.id)
-</span>26 <span style=''></span><span style='background: #F0ADAD'>
-</span>27 <span style=''></span><span style='background: #F0ADAD'>            s.result.zip(imgs.result).map(o =&gt; {
-</span>28 <span style=''></span><span style='background: #F0ADAD'>              LocationDetail(location.id, location.name, location.latitude, location.longitude, o._1.headOption.flatten, o._2.toList)
-</span>29 <span style=''></span><span style='background: #F0ADAD'>            })
-</span>30 <span style=''></span><span style='background: #F0ADAD'>          }
-</span>31 <span style=''></span><span style='background: #F0ADAD'>        })
-</span>32 <span style=''></span><span style='background: #F0ADAD'>      })</span><span style=''>
+</span>21 <span style=''>      val t = </span><span style='background: #AEF1AE'>q.result.flatMap(y =&gt; {
+</span>22 <span style=''></span><span style='background: #AEF1AE'>        DBIO.sequence(y.map {
+</span>23 <span style=''></span><span style='background: #AEF1AE'>          case location =&gt; {
+</span>24 <span style=''></span><span style='background: #AEF1AE'>            val s = LocationTable.location.filter(_.id === location.id).map(_.avgRating)
+</span>25 <span style=''></span><span style='background: #AEF1AE'>            val imgs = LocationTable.location.filter(_.id === location.id).flatMap(_.images).map(_.id)
+</span>26 <span style=''></span><span style='background: #AEF1AE'>
+</span>27 <span style=''></span><span style='background: #AEF1AE'>            s.result.zip(imgs.result).map(o =&gt; {
+</span>28 <span style=''></span><span style='background: #AEF1AE'>              LocationDetail(location.id, location.name, location.latitude, location.longitude, o._1.headOption.flatten, o._2.toList)
+</span>29 <span style=''></span><span style='background: #AEF1AE'>            })
+</span>30 <span style=''></span><span style='background: #AEF1AE'>          }
+</span>31 <span style=''></span><span style='background: #AEF1AE'>        })
+</span>32 <span style=''></span><span style='background: #AEF1AE'>      })</span><span style=''>
 </span>33 <span style=''>      t
 </span>34 <span style=''>    }
 </span>35 <span style=''>  }
@@ -87,7 +87,7 @@
         <td>
           scala.Function6.tupled
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           {
   ((id: Option[Int], name: String, latitude: Float, longitude: Float, avgRating: Option[Float], images: List[Int]) =&gt; this.apply(id, name, latitude, longitude, avgRating, images))
 }.tupled
@@ -131,7 +131,7 @@
         <td>
           slick.dbio.DBIOAction.flatMap
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           slick.jdbc.PostgresProfile.api.streamableQueryActionExtensionMethods[whatson.model.Location, Seq](LocationDetailQuery.this.q).result.flatMap[Seq[whatson.model.detail.LocationDetail], slick.dbio.NoStream, slick.dbio.Effect.Read with slick.dbio.Effect.Read](((y: Seq[whatson.model.Location]) =&gt; slick.jdbc.PostgresProfile.api.DBIO.sequence[whatson.model.detail.LocationDetail, Seq, slick.dbio.Effect.Read with slick.dbio.Effect.Read](y.map[slick.dbio.DBIOAction[whatson.model.detail.LocationDetail,slick.dbio.NoStream,slick.dbio.Effect.Read with slick.dbio.Effect.Read], Seq[slick.dbio.DBIOAction[whatson.model.detail.LocationDetail,slick.dbio.NoStream,slick.dbio.Effect.Read with slick.dbio.Effect.Read]]](((x0$2: whatson.model.Location) =&gt; x0$2 match {
   case (location @ _) =&gt; {
     val s: slick.lifted.Query[slick.lifted.Rep[Option[Float]],Option[Float],Seq] = whatson.db.LocationTable.location.filter[slick.lifted.Rep[Option[Boolean]]](((x$1: whatson.db.LocationTable) =&gt; slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](x$1.id)(slick.jdbc.PostgresProfile.api.intColumnType).===[Option[Int], Option[Boolean]](slick.jdbc.PostgresProfile.api.valueToConstColumn[Option[Int]](location.id)(ast.this.TypedType.typedTypeToOptionTypedType[Int](slick.jdbc.PostgresProfile.api.intColumnType)))(lifted.this.OptionMapper2.getOptionMapper2TO[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType))))(lifted.this.CanBeQueryCondition.BooleanOptionColumnCanBeQueryCondition).map[slick.lifted.Rep[Option[Float]], slick.lifted.Rep[Option[Float]], Option[Float]](((x$2: whatson.db.LocationTable) =&gt; x$2.avgRating))(lifted.this.Shape.optionShape[Float, Float, Float, Nothing](lifted.this.Shape.repColumnShape[Float, Nothing](slick.jdbc.PostgresProfile.api.floatColumnType)));
