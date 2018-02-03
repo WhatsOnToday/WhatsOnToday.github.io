@@ -40,22 +40,22 @@
 </span>16 <span style=''>  implicit val organizerPublicReads = Json.reads[OrganizerPublic]
 </span>17 <span style=''>  implicit val organizerPublicWrites = Json.writes[OrganizerPublic]
 </span>18 <span style=''>
-</span>19 <span style=''>  val tupled = (</span><span style='background: #F0ADAD'>this.apply _).tupled</span><span style=''>
+</span>19 <span style=''>  val tupled = (</span><span style='background: #F0ADAD'>this.apply</span><span style='background: #AEF1AE'> _).tupled</span><span style=''>
 </span>20 <span style=''>
 </span>21 <span style=''>  implicit class OrganizerPublicQuery(q: Query[OrganizerTable, Organizer, Seq]) {
 </span>22 <span style=''>    def public(implicit ec: ExecutionContext) = {
-</span>23 <span style=''>      val t = </span><span style='background: #F0ADAD'>q.result.flatMap(y =&gt; {
-</span>24 <span style=''></span><span style='background: #F0ADAD'>        DBIO.sequence(y.map {
-</span>25 <span style=''></span><span style='background: #F0ADAD'>          case organizer =&gt; {
-</span>26 <span style=''></span><span style='background: #F0ADAD'>            val s = OrganizerTable.organizer.filter(_.id === organizer.id).map(_.avgRating)
-</span>27 <span style=''></span><span style='background: #F0ADAD'>            val imgs = OrganizerTable.organizer.filter(_.id === organizer.id).flatMap(_.images).map(_.id)
-</span>28 <span style=''></span><span style='background: #F0ADAD'>
-</span>29 <span style=''></span><span style='background: #F0ADAD'>            s.result.zip(imgs.result).map(o =&gt; {
-</span>30 <span style=''></span><span style='background: #F0ADAD'>              OrganizerPublic(organizer.id, organizer.name, o._1.headOption.flatten, o._2.toList, organizer.avatar)
-</span>31 <span style=''></span><span style='background: #F0ADAD'>            })
-</span>32 <span style=''></span><span style='background: #F0ADAD'>          }
-</span>33 <span style=''></span><span style='background: #F0ADAD'>        })
-</span>34 <span style=''></span><span style='background: #F0ADAD'>      })</span><span style=''>
+</span>23 <span style=''>      val t = </span><span style='background: #AEF1AE'>q.result.flatMap(y =&gt; {
+</span>24 <span style=''></span><span style='background: #AEF1AE'>        DBIO.sequence(y.map {
+</span>25 <span style=''></span><span style='background: #AEF1AE'>          case organizer =&gt; {
+</span>26 <span style=''></span><span style='background: #AEF1AE'>            val s = OrganizerTable.organizer.filter(_.id === organizer.id).map(_.avgRating)
+</span>27 <span style=''></span><span style='background: #AEF1AE'>            val imgs = OrganizerTable.organizer.filter(_.id === organizer.id).flatMap(_.images).map(_.id)
+</span>28 <span style=''></span><span style='background: #AEF1AE'>
+</span>29 <span style=''></span><span style='background: #AEF1AE'>            s.result.zip(imgs.result).map(o =&gt; {
+</span>30 <span style=''></span><span style='background: #AEF1AE'>              OrganizerPublic(organizer.id, organizer.name, o._1.headOption.flatten, o._2.toList, organizer.avatar)
+</span>31 <span style=''></span><span style='background: #AEF1AE'>            })
+</span>32 <span style=''></span><span style='background: #AEF1AE'>          }
+</span>33 <span style=''></span><span style='background: #AEF1AE'>        })
+</span>34 <span style=''></span><span style='background: #AEF1AE'>      })</span><span style=''>
 </span>35 <span style=''>      t
 </span>36 <span style=''>    }
 </span>37 <span style=''>  }
@@ -89,7 +89,7 @@
         <td>
           scala.Function5.tupled
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           {
   ((id: Option[Int], name: String, avgRating: Option[Float], images: List[Int], avatar: Option[String]) =&gt; this.apply(id, name, avgRating, images, avatar))
 }.tupled
@@ -133,7 +133,7 @@
         <td>
           slick.dbio.DBIOAction.flatMap
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           slick.jdbc.PostgresProfile.api.streamableQueryActionExtensionMethods[whatson.model.Organizer, Seq](OrganizerPublicQuery.this.q).result.flatMap[Seq[whatson.model.detail.OrganizerPublic], slick.dbio.NoStream, slick.dbio.Effect.Read with slick.dbio.Effect.Read](((y: Seq[whatson.model.Organizer]) =&gt; slick.jdbc.PostgresProfile.api.DBIO.sequence[whatson.model.detail.OrganizerPublic, Seq, slick.dbio.Effect.Read with slick.dbio.Effect.Read](y.map[slick.dbio.DBIOAction[whatson.model.detail.OrganizerPublic,slick.dbio.NoStream,slick.dbio.Effect.Read with slick.dbio.Effect.Read], Seq[slick.dbio.DBIOAction[whatson.model.detail.OrganizerPublic,slick.dbio.NoStream,slick.dbio.Effect.Read with slick.dbio.Effect.Read]]](((x0$2: whatson.model.Organizer) =&gt; x0$2 match {
   case (organizer @ _) =&gt; {
     val s: slick.lifted.Query[slick.lifted.Rep[Option[Float]],Option[Float],Seq] = whatson.db.OrganizerTable.organizer.filter[slick.lifted.Rep[Option[Boolean]]](((x$1: whatson.db.OrganizerTable) =&gt; slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](x$1.id)(slick.jdbc.PostgresProfile.api.intColumnType).===[Option[Int], Option[Boolean]](slick.jdbc.PostgresProfile.api.valueToConstColumn[Option[Int]](organizer.id)(ast.this.TypedType.typedTypeToOptionTypedType[Int](slick.jdbc.PostgresProfile.api.intColumnType)))(lifted.this.OptionMapper2.getOptionMapper2TO[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType))))(lifted.this.CanBeQueryCondition.BooleanOptionColumnCanBeQueryCondition).map[slick.lifted.Rep[Option[Float]], slick.lifted.Rep[Option[Float]], Option[Float]](((x$2: whatson.db.OrganizerTable) =&gt; x$2.avgRating))(lifted.this.Shape.optionShape[Float, Float, Float, Nothing](lifted.this.Shape.repColumnShape[Float, Nothing](slick.jdbc.PostgresProfile.api.floatColumnType)));
