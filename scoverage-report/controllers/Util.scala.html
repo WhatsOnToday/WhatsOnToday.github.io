@@ -55,7 +55,18 @@
 </span>31 <span style=''></span><span style='background: #AEF1AE'>        case _ =&gt; Future(Unauthorized)
 </span>32 <span style=''></span><span style='background: #AEF1AE'>      }
 </span>33 <span style=''></span><span style='background: #AEF1AE'>    }</span><span style=''>
-</span>34 <span style=''>}
+</span>34 <span style=''>
+</span>35 <span style=''>  def userOrganizerRequest[A](pars: BodyParser[A])(r: (SecuredRequest[AuthEnv,A],Either[User,Organizer]) =&gt; Future[Result])(implicit executionContext: ExecutionContext): Action[A] =
+</span>36 <span style=''>    </span><span style='background: #F0ADAD'>silhouette.SecuredAction.async(pars) { request =&gt;
+</span>37 <span style=''></span><span style='background: #F0ADAD'>      userService.getByLogin(request.identity).flatMap {
+</span>38 <span style=''></span><span style='background: #F0ADAD'>        case Some(x) =&gt; r(request,Left(x))
+</span>39 <span style=''></span><span style='background: #F0ADAD'>        case _ =&gt; organizerService.getByLogin(request.identity).flatMap {
+</span>40 <span style=''></span><span style='background: #F0ADAD'>          case Some(x) =&gt; r(request,Right(x))
+</span>41 <span style=''></span><span style='background: #F0ADAD'>          case _ =&gt; Future(Unauthorized)
+</span>42 <span style=''></span><span style='background: #F0ADAD'>        }
+</span>43 <span style=''></span><span style='background: #F0ADAD'>      }
+</span>44 <span style=''></span><span style='background: #F0ADAD'>    }</span><span style=''>
+</span>45 <span style=''>}
 </span></pre>
           </div>
           <div class="tab-pane" id="statementlist">
@@ -72,7 +83,7 @@
           20
         </td>
         <td>
-          813
+          860
         </td>
         <td>
           550
@@ -96,7 +107,7 @@
           21
         </td>
         <td>
-          812
+          859
         </td>
         <td>
           606
@@ -120,7 +131,7 @@
           28
         </td>
         <td>
-          815
+          862
         </td>
         <td>
           912
@@ -144,7 +155,7 @@
           29
         </td>
         <td>
-          814
+          861
         </td>
         <td>
           968
@@ -161,6 +172,60 @@
           Util.this.userService.getByLogin(request.identity).flatMap[play.api.mvc.Result](((x0$2: Option[whatson.model.User]) =&gt; x0$2 match {
   case (value: whatson.model.User)Some[whatson.model.User]((x @ _)) =&gt; r.apply(request, x)
   case _ =&gt; scala.concurrent.Future.apply[play.api.mvc.Result](Util.this.Unauthorized)(executionContext)
+}))(executionContext)
+        </td>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          864
+        </td>
+        <td>
+          1296
+          -
+          1630
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          play.api.mvc.ActionBuilder.async
+        </td>
+        <td style="background: #F0ADAD">
+          Util.this.silhouette.SecuredAction.async[A](pars)(((request: com.mohiva.play.silhouette.api.actions.SecuredRequest[whatson.auth.AuthEnv,A]) =&gt; Util.this.userService.getByLogin(request.identity).flatMap[play.api.mvc.Result](((x0$3: Option[whatson.model.User]) =&gt; x0$3 match {
+  case (value: whatson.model.User)Some[whatson.model.User]((x @ _)) =&gt; r.apply(request, scala.`package`.Left.apply[whatson.model.User, Nothing](x))
+  case _ =&gt; Util.this.organizerService.getByLogin(request.identity).flatMap[play.api.mvc.Result](((x0$4: Option[whatson.model.Organizer]) =&gt; x0$4 match {
+    case (value: whatson.model.Organizer)Some[whatson.model.Organizer]((x @ _)) =&gt; r.apply(request, scala.`package`.Right.apply[Nothing, whatson.model.Organizer](x))
+    case _ =&gt; scala.concurrent.Future.apply[play.api.mvc.Result](Util.this.Unauthorized)(executionContext)
+  }))(executionContext)
+}))(executionContext)))
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          863
+        </td>
+        <td>
+          1352
+          -
+          1624
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.concurrent.Future.flatMap
+        </td>
+        <td style="background: #F0ADAD">
+          Util.this.userService.getByLogin(request.identity).flatMap[play.api.mvc.Result](((x0$3: Option[whatson.model.User]) =&gt; x0$3 match {
+  case (value: whatson.model.User)Some[whatson.model.User]((x @ _)) =&gt; r.apply(request, scala.`package`.Left.apply[whatson.model.User, Nothing](x))
+  case _ =&gt; Util.this.organizerService.getByLogin(request.identity).flatMap[play.api.mvc.Result](((x0$4: Option[whatson.model.Organizer]) =&gt; x0$4 match {
+    case (value: whatson.model.Organizer)Some[whatson.model.Organizer]((x @ _)) =&gt; r.apply(request, scala.`package`.Right.apply[Nothing, whatson.model.Organizer](x))
+    case _ =&gt; scala.concurrent.Future.apply[play.api.mvc.Result](Util.this.Unauthorized)(executionContext)
+  }))(executionContext)
 }))(executionContext)
         </td>
       </tr>

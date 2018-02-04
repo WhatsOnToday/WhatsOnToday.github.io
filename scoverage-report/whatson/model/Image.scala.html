@@ -25,18 +25,23 @@
             <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package whatson.model
 </span>2 <span style=''>
 </span>3 <span style=''>import play.api.libs.json._
-</span>4 <span style=''>
-</span>5 <span style=''>case class Image(id: Option[Int], name: String, data: Array[Byte]) extends HasCopy[Image] {
-</span>6 <span style=''>  def cpy(i: Option[Int]) = </span><span style='background: #F0ADAD'>this.copy(id = i)</span><span style=''>
-</span>7 <span style=''>}
-</span>8 <span style=''>
-</span>9 <span style=''>object Image {
-</span>10 <span style=''>  implicit val imageReads = Json.reads[Image]
-</span>11 <span style=''>
-</span>12 <span style=''>  implicit val imageWrites = Json.writes[Image]
-</span>13 <span style=''>
-</span>14 <span style=''>  val tupled = (</span><span style='background: #F0ADAD'>this.apply</span><span style='background: #AEF1AE'> _).tupled</span><span style=''>
-</span>15 <span style=''>}
+</span>4 <span style=''>import play.api.libs.functional.syntax._
+</span>5 <span style=''>
+</span>6 <span style=''>case class Image(id: Option[Int], name: String, data: Array[Byte]) extends HasCopy[Image] {
+</span>7 <span style=''>  def cpy(i: Option[Int]) = </span><span style='background: #F0ADAD'>this.copy(id = i)</span><span style=''>
+</span>8 <span style=''>}
+</span>9 <span style=''>
+</span>10 <span style=''>object Image {
+</span>11 <span style=''>  implicit val imageReads = Json.reads[Image]
+</span>12 <span style=''>
+</span>13 <span style=''>  implicit val imageWrites = </span><span style='background: #AEF1AE'>new</span><span style=''> Writes[Image] {
+</span>14 <span style=''>    def writes(img: Image): JsValue = {
+</span>15 <span style=''>      </span><span style='background: #F0ADAD'>Json.obj(&quot;id&quot; -&gt; img.id,&quot;name&quot; -&gt; img.name)</span><span style=''>
+</span>16 <span style=''>    }
+</span>17 <span style=''>  }
+</span>18 <span style=''>
+</span>19 <span style=''>  val tupled = (</span><span style='background: #F0ADAD'>this.apply</span><span style='background: #AEF1AE'> _).tupled</span><span style=''>
+</span>20 <span style=''>}
 </span></pre>
           </div>
           <div class="tab-pane" id="statementlist">
@@ -50,57 +55,15 @@
         <th>Code</th>
       </tr><tr>
         <td>
-          6
+          7
         </td>
         <td>
-          1528
+          1578
         </td>
         <td>
-          177
+          218
           -
-          177
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          whatson.model.Image.copy$default$2
-        </td>
-        <td style="background: #F0ADAD">
-          this.copy$default$2
-        </td>
-      </tr><tr>
-        <td>
-          6
-        </td>
-        <td>
-          1530
-        </td>
-        <td>
-          172
-          -
-          189
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          whatson.model.Image.copy
-        </td>
-        <td style="background: #F0ADAD">
-          this.copy(i, this.copy$default$2, this.copy$default$3)
-        </td>
-      </tr><tr>
-        <td>
-          6
-        </td>
-        <td>
-          1529
-        </td>
-        <td>
-          177
-          -
-          177
+          218
         </td>
         <td>
           Select
@@ -113,15 +76,351 @@
         </td>
       </tr><tr>
         <td>
-          14
+          7
         </td>
         <td>
-          1532
+          1577
         </td>
         <td>
-          320
+          218
           -
-          340
+          218
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.model.Image.copy$default$2
+        </td>
+        <td style="background: #F0ADAD">
+          this.copy$default$2
+        </td>
+      </tr><tr>
+        <td>
+          7
+        </td>
+        <td>
+          1579
+        </td>
+        <td>
+          213
+          -
+          230
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          whatson.model.Image.copy
+        </td>
+        <td style="background: #F0ADAD">
+          this.copy(i, this.copy$default$2, this.copy$default$3)
+        </td>
+      </tr><tr>
+        <td>
+          13
+        </td>
+        <td>
+          1592
+        </td>
+        <td>
+          325
+          -
+          328
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          whatson.model.Image.$anon.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new $anon()
+        </td>
+      </tr><tr>
+        <td>
+          15
+        </td>
+        <td>
+          1587
+        </td>
+        <td>
+          425
+          -
+          433
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.model.Image.name
+        </td>
+        <td style="background: #F0ADAD">
+          img.name
+        </td>
+      </tr><tr>
+        <td>
+          15
+        </td>
+        <td>
+          1581
+        </td>
+        <td>
+          408
+          -
+          414
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.model.Image.id
+        </td>
+        <td style="background: #F0ADAD">
+          img.id
+        </td>
+      </tr><tr>
+        <td>
+          15
+        </td>
+        <td>
+          1590
+        </td>
+        <td>
+          415
+          -
+          433
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Predef.ArrowAssoc.-&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          scala.Predef.ArrowAssoc[String](&quot;name&quot;).-&gt;[play.api.libs.json.Json.JsValueWrapper](json.this.Json.toJsFieldJsValueWrapper[String](img.name)(json.this.Writes.StringWrites))
+        </td>
+      </tr><tr>
+        <td>
+          15
+        </td>
+        <td>
+          1584
+        </td>
+        <td>
+          408
+          -
+          414
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          play.api.libs.json.Json.toJsFieldJsValueWrapper
+        </td>
+        <td style="background: #F0ADAD">
+          json.this.Json.toJsFieldJsValueWrapper[Option[Int]](img.id)(json.this.Writes.OptionWrites[Int](json.this.Writes.IntWrites))
+        </td>
+      </tr><tr>
+        <td>
+          15
+        </td>
+        <td>
+          1583
+        </td>
+        <td>
+          412
+          -
+          412
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          play.api.libs.json.DefaultWrites.OptionWrites
+        </td>
+        <td style="background: #F0ADAD">
+          json.this.Writes.OptionWrites[Int](json.this.Writes.IntWrites)
+        </td>
+      </tr><tr>
+        <td>
+          15
+        </td>
+        <td>
+          1586
+        </td>
+        <td>
+          415
+          -
+          421
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;name&quot;
+        </td>
+      </tr><tr>
+        <td>
+          15
+        </td>
+        <td>
+          1580
+        </td>
+        <td>
+          400
+          -
+          404
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;id&quot;
+        </td>
+      </tr><tr>
+        <td>
+          15
+        </td>
+        <td>
+          1589
+        </td>
+        <td>
+          425
+          -
+          433
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          play.api.libs.json.Json.toJsFieldJsValueWrapper
+        </td>
+        <td style="background: #F0ADAD">
+          json.this.Json.toJsFieldJsValueWrapper[String](img.name)(json.this.Writes.StringWrites)
+        </td>
+      </tr><tr>
+        <td>
+          15
+        </td>
+        <td>
+          1582
+        </td>
+        <td>
+          412
+          -
+          412
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.libs.json.DefaultWrites.IntWrites
+        </td>
+        <td style="background: #F0ADAD">
+          json.this.Writes.IntWrites
+        </td>
+      </tr><tr>
+        <td>
+          15
+        </td>
+        <td>
+          1591
+        </td>
+        <td>
+          391
+          -
+          434
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          play.api.libs.json.Json.obj
+        </td>
+        <td style="background: #F0ADAD">
+          play.api.libs.json.Json.obj(scala.Predef.ArrowAssoc[String](&quot;id&quot;).-&gt;[play.api.libs.json.Json.JsValueWrapper](json.this.Json.toJsFieldJsValueWrapper[Option[Int]](img.id)(json.this.Writes.OptionWrites[Int](json.this.Writes.IntWrites))), scala.Predef.ArrowAssoc[String](&quot;name&quot;).-&gt;[play.api.libs.json.Json.JsValueWrapper](json.this.Json.toJsFieldJsValueWrapper[String](img.name)(json.this.Writes.StringWrites)))
+        </td>
+      </tr><tr>
+        <td>
+          15
+        </td>
+        <td>
+          1585
+        </td>
+        <td>
+          400
+          -
+          414
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Predef.ArrowAssoc.-&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          scala.Predef.ArrowAssoc[String](&quot;id&quot;).-&gt;[play.api.libs.json.Json.JsValueWrapper](json.this.Json.toJsFieldJsValueWrapper[Option[Int]](img.id)(json.this.Writes.OptionWrites[Int](json.this.Writes.IntWrites)))
+        </td>
+      </tr><tr>
+        <td>
+          15
+        </td>
+        <td>
+          1588
+        </td>
+        <td>
+          429
+          -
+          429
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.libs.json.DefaultWrites.StringWrites
+        </td>
+        <td style="background: #F0ADAD">
+          json.this.Writes.StringWrites
+        </td>
+      </tr><tr>
+        <td>
+          19
+        </td>
+        <td>
+          1593
+        </td>
+        <td>
+          462
+          -
+          472
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          whatson.model.Image.apply
+        </td>
+        <td style="background: #F0ADAD">
+          this.apply(id, name, data)
+        </td>
+      </tr><tr>
+        <td>
+          19
+        </td>
+        <td>
+          1594
+        </td>
+        <td>
+          462
+          -
+          482
         </td>
         <td>
           Select
@@ -133,27 +432,6 @@
           {
   ((id: Option[Int], name: String, data: Array[Byte]) =&gt; this.apply(id, name, data))
 }.tupled
-        </td>
-      </tr><tr>
-        <td>
-          14
-        </td>
-        <td>
-          1531
-        </td>
-        <td>
-          320
-          -
-          330
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          whatson.model.Image.apply
-        </td>
-        <td style="background: #F0ADAD">
-          this.apply(id, name, data)
         </td>
       </tr>
     </table>
