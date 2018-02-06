@@ -44,63 +44,64 @@
 </span>20 <span style=''>import slick.jdbc.JdbcProfile
 </span>21 <span style=''>import whatson.auth._
 </span>22 <span style=''>import whatson.model._
-</span>23 <span style=''>import whatson.service._
-</span>24 <span style=''>import whatson.util.FormErrorJson._
-</span>25 <span style=''>
-</span>26 <span style=''>class UserController@Inject() (
-</span>27 <span style=''>  silhouette: Silhouette[AuthEnv],
-</span>28 <span style=''>  loginService: LoginService,
-</span>29 <span style=''>  authInfoRepository: AuthInfoRepository,
-</span>30 <span style=''>  credentialsProvider: CredentialsProvider,
-</span>31 <span style=''>  socialProviderRegistry: SocialProviderRegistry,
-</span>32 <span style=''>  configuration: Configuration,
-</span>33 <span style=''>  clock: Clock,
-</span>34 <span style=''>  cc: ControllerComponents,
-</span>35 <span style=''>  cache: AsyncCacheApi,
-</span>36 <span style=''>  passwordHasher: PasswordHasher,
-</span>37 <span style=''>  protected val dbConfigProvider: DatabaseConfigProvider,
-</span>38 <span style=''>  userService: UserService,
-</span>39 <span style=''>  mailService: MailService,
-</span>40 <span style=''>  avatarService: AvatarService)
-</span>41 <span style=''>    extends AbstractController(cc) with HasDatabaseConfigProvider[JdbcProfile] {
-</span>42 <span style=''>
-</span>43 <span style=''>  val log = </span><span style='background: #AEF1AE'>Logger(&quot;api.user&quot;)</span><span style=''>
-</span>44 <span style=''>
-</span>45 <span style=''>  /**
-</span>46 <span style=''>   * Handles the submitted JSON data.
-</span>47 <span style=''>   *
-</span>48 <span style=''>   * @return The result to display.
-</span>49 <span style=''>   */
-</span>50 <span style=''>  def signUp = </span><span style='background: #AEF1AE'>Action.async(parse.json) { implicit request =&gt;
-</span>51 <span style=''></span><span style='background: #AEF1AE'>    UserSignUpForm.form.bindFromRequest.fold(
-</span>52 <span style=''></span><span style='background: #AEF1AE'>      form =&gt; {
-</span>53 <span style=''></span><span style='background: #AEF1AE'>        Future.successful(BadRequest(Json.toJson(form.errors)))
-</span>54 <span style=''></span><span style='background: #AEF1AE'>      },
-</span>55 <span style=''></span><span style='background: #AEF1AE'>      data =&gt; {
-</span>56 <span style=''></span><span style='background: #AEF1AE'>        val loginInfo = LoginInfo(CredentialsProvider.ID, data.email)
-</span>57 <span style=''></span><span style='background: #AEF1AE'>        loginService.retrieveAll(loginInfo).flatMap {
-</span>58 <span style=''></span><span style='background: #AEF1AE'>          case Some(login) =&gt;
-</span>59 <span style=''></span><span style='background: #AEF1AE'>            Future.successful(BadRequest(Json.obj(&quot;message&quot; -&gt; &quot;user.exists&quot;)))
-</span>60 <span style=''></span><span style='background: #AEF1AE'>          case None =&gt;
-</span>61 <span style=''></span><span style='background: #AEF1AE'>            val authInfo = passwordHasher.hash(data.password)
-</span>62 <span style=''></span><span style='background: #AEF1AE'>            val login = Login(None, data.email, None, None, None, loginInfo.providerID, loginInfo.providerKey, false)
-</span>63 <span style=''></span><span style='background: #AEF1AE'>            for {
-</span>64 <span style=''></span><span style='background: #AEF1AE'>              login &lt;- loginService.save(login)
-</span>65 <span style=''></span><span style='background: #AEF1AE'>              authInfo &lt;- authInfoRepository.add(loginInfo, authInfo)
-</span>66 <span style=''></span><span style='background: #AEF1AE'>              authenticator &lt;- silhouette.env.authenticatorService.create(loginInfo)
-</span>67 <span style=''></span><span style='background: #AEF1AE'>              token &lt;- silhouette.env.authenticatorService.init(authenticator)
-</span>68 <span style=''></span><span style='background: #AEF1AE'>              avatar &lt;- avatarService.retrieveURL(data.email)
-</span>69 <span style=''></span><span style='background: #AEF1AE'>            } yield {
-</span>70 <span style=''></span><span style='background: #AEF1AE'>              silhouette.env.eventBus.publish(SignUpEvent(login, request))
-</span>71 <span style=''></span><span style='background: #AEF1AE'>              silhouette.env.eventBus.publish(LoginEvent(login, request))
-</span>72 <span style=''></span><span style='background: #AEF1AE'>              userService.save(login,avatar)
-</span>73 <span style=''></span><span style='background: #AEF1AE'>              mailService.sendUserConfirmation(data.email,token)
-</span>74 <span style=''></span><span style='background: #AEF1AE'>              Ok(Json.obj(&quot;message&quot; -&gt; &quot;mail.sent&quot;))
-</span>75 <span style=''></span><span style='background: #AEF1AE'>            }
-</span>76 <span style=''></span><span style='background: #AEF1AE'>        }
-</span>77 <span style=''></span><span style='background: #AEF1AE'>      })
-</span>78 <span style=''></span><span style='background: #AEF1AE'>  }</span><span style=''>
-</span>79 <span style=''>}
+</span>23 <span style=''>import whatson.model.forms._
+</span>24 <span style=''>import whatson.service._
+</span>25 <span style=''>import whatson.util.FormErrorJson._
+</span>26 <span style=''>
+</span>27 <span style=''>class UserController@Inject() (
+</span>28 <span style=''>  silhouette: Silhouette[AuthEnv],
+</span>29 <span style=''>  loginService: LoginService,
+</span>30 <span style=''>  authInfoRepository: AuthInfoRepository,
+</span>31 <span style=''>  credentialsProvider: CredentialsProvider,
+</span>32 <span style=''>  socialProviderRegistry: SocialProviderRegistry,
+</span>33 <span style=''>  configuration: Configuration,
+</span>34 <span style=''>  clock: Clock,
+</span>35 <span style=''>  cc: ControllerComponents,
+</span>36 <span style=''>  cache: AsyncCacheApi,
+</span>37 <span style=''>  passwordHasher: PasswordHasher,
+</span>38 <span style=''>  protected val dbConfigProvider: DatabaseConfigProvider,
+</span>39 <span style=''>  userService: UserService,
+</span>40 <span style=''>  mailService: MailService,
+</span>41 <span style=''>  avatarService: AvatarService)
+</span>42 <span style=''>    extends AbstractController(cc) with HasDatabaseConfigProvider[JdbcProfile] {
+</span>43 <span style=''>
+</span>44 <span style=''>  val log = </span><span style='background: #AEF1AE'>Logger(&quot;api.user&quot;)</span><span style=''>
+</span>45 <span style=''>
+</span>46 <span style=''>  /**
+</span>47 <span style=''>   * Handles the submitted JSON data.
+</span>48 <span style=''>   *
+</span>49 <span style=''>   * @return The result to display.
+</span>50 <span style=''>   */
+</span>51 <span style=''>  def signUp = </span><span style='background: #AEF1AE'>Action.async(parse.json) { implicit request =&gt;
+</span>52 <span style=''></span><span style='background: #AEF1AE'>    UserSignUpForm.form.bindFromRequest.fold(
+</span>53 <span style=''></span><span style='background: #AEF1AE'>      form =&gt; {
+</span>54 <span style=''></span><span style='background: #AEF1AE'>        Future.successful(BadRequest(Json.toJson(form.errors)))
+</span>55 <span style=''></span><span style='background: #AEF1AE'>      },
+</span>56 <span style=''></span><span style='background: #AEF1AE'>      data =&gt; {
+</span>57 <span style=''></span><span style='background: #AEF1AE'>        val loginInfo = LoginInfo(CredentialsProvider.ID, data.email)
+</span>58 <span style=''></span><span style='background: #AEF1AE'>        loginService.retrieveAll(loginInfo).flatMap {
+</span>59 <span style=''></span><span style='background: #AEF1AE'>          case Some(login) =&gt;
+</span>60 <span style=''></span><span style='background: #AEF1AE'>            Future.successful(BadRequest(Json.obj(&quot;message&quot; -&gt; &quot;user.exists&quot;)))
+</span>61 <span style=''></span><span style='background: #AEF1AE'>          case None =&gt;
+</span>62 <span style=''></span><span style='background: #AEF1AE'>            val authInfo = passwordHasher.hash(data.password)
+</span>63 <span style=''></span><span style='background: #AEF1AE'>            val login = Login(None, data.email, None, None, None, loginInfo.providerID, loginInfo.providerKey, false)
+</span>64 <span style=''></span><span style='background: #AEF1AE'>            for {
+</span>65 <span style=''></span><span style='background: #AEF1AE'>              login &lt;- loginService.save(login)
+</span>66 <span style=''></span><span style='background: #AEF1AE'>              authInfo &lt;- authInfoRepository.add(loginInfo, authInfo)
+</span>67 <span style=''></span><span style='background: #AEF1AE'>              authenticator &lt;- silhouette.env.authenticatorService.create(loginInfo)
+</span>68 <span style=''></span><span style='background: #AEF1AE'>              token &lt;- silhouette.env.authenticatorService.init(authenticator)
+</span>69 <span style=''></span><span style='background: #AEF1AE'>              avatar &lt;- avatarService.retrieveURL(data.email)
+</span>70 <span style=''></span><span style='background: #AEF1AE'>            } yield {
+</span>71 <span style=''></span><span style='background: #AEF1AE'>              silhouette.env.eventBus.publish(SignUpEvent(login, request))
+</span>72 <span style=''></span><span style='background: #AEF1AE'>              silhouette.env.eventBus.publish(LoginEvent(login, request))
+</span>73 <span style=''></span><span style='background: #AEF1AE'>              userService.save(login,avatar)
+</span>74 <span style=''></span><span style='background: #AEF1AE'>              mailService.sendUserConfirmation(data.email,token)
+</span>75 <span style=''></span><span style='background: #AEF1AE'>              Ok(Json.obj(&quot;message&quot; -&gt; &quot;mail.sent&quot;))
+</span>76 <span style=''></span><span style='background: #AEF1AE'>            }
+</span>77 <span style=''></span><span style='background: #AEF1AE'>        }
+</span>78 <span style=''></span><span style='background: #AEF1AE'>      })
+</span>79 <span style=''></span><span style='background: #AEF1AE'>  }</span><span style=''>
+</span>80 <span style=''>}
 </span></pre>
           </div>
           <div class="tab-pane" id="statementlist">
@@ -114,15 +115,15 @@
         <th>Code</th>
       </tr><tr>
         <td>
-          43
+          44
         </td>
         <td>
           815
         </td>
         <td>
-          1512
+          1541
           -
-          1530
+          1559
         </td>
         <td>
           Apply
@@ -135,15 +136,15 @@
         </td>
       </tr><tr>
         <td>
-          50
+          51
         </td>
         <td>
           875
         </td>
         <td>
-          1638
+          1667
           -
-          3005
+          3034
         </td>
         <td>
           Apply
@@ -152,7 +153,7 @@
           play.api.mvc.ActionBuilder.async
         </td>
         <td style="background: #AEF1AE">
-          UserController.this.Action.async[play.api.libs.json.JsValue](UserController.this.parse.json)(((implicit request: play.api.mvc.Request[play.api.libs.json.JsValue]) =&gt; whatson.model.UserSignUpForm.form.bindFromRequest()(request).fold[scala.concurrent.Future[play.api.mvc.Result]](((form: play.api.data.Form[whatson.model.UserSignUpForm.Data]) =&gt; scala.concurrent.Future.successful[play.api.mvc.Result](UserController.this.BadRequest.apply[play.api.libs.json.JsValue](play.api.libs.json.Json.toJson[Seq[play.api.data.FormError]](form.errors)(whatson.util.FormErrorJson.formErrorFormat))(http.this.Writeable.writeableOf_JsValue))), ((data: whatson.model.UserSignUpForm.Data) =&gt; {
+          UserController.this.Action.async[play.api.libs.json.JsValue](UserController.this.parse.json)(((implicit request: play.api.mvc.Request[play.api.libs.json.JsValue]) =&gt; whatson.model.forms.UserSignUpForm.form.bindFromRequest()(request).fold[scala.concurrent.Future[play.api.mvc.Result]](((form: play.api.data.Form[whatson.model.forms.UserSignUpForm.Data]) =&gt; scala.concurrent.Future.successful[play.api.mvc.Result](UserController.this.BadRequest.apply[play.api.libs.json.JsValue](play.api.libs.json.Json.toJson[Seq[play.api.data.FormError]](form.errors)(whatson.util.FormErrorJson.formErrorFormat))(http.this.Writeable.writeableOf_JsValue))), ((data: whatson.model.forms.UserSignUpForm.Data) =&gt; {
   val loginInfo: com.mohiva.play.silhouette.api.LoginInfo = com.mohiva.play.silhouette.api.LoginInfo.apply(com.mohiva.play.silhouette.impl.providers.CredentialsProvider.ID, data.email);
   UserController.this.loginService.retrieveAll(loginInfo).flatMap[play.api.mvc.Result](((x0$1: Option[whatson.model.Login]) =&gt; x0$1 match {
     case (value: whatson.model.Login)Some[whatson.model.Login]((login @ _)) =&gt; scala.concurrent.Future.successful[play.api.mvc.Result](UserController.this.BadRequest.apply[play.api.libs.json.JsObject](play.api.libs.json.Json.obj(scala.Predef.ArrowAssoc[String](&quot;message&quot;).-&gt;[play.api.libs.json.Json.JsValueWrapper](json.this.Json.toJsFieldJsValueWrapper[String](&quot;user.exists&quot;)(json.this.Writes.StringWrites))))(http.this.Writeable.writeableOf_JsValue))
@@ -172,15 +173,15 @@
         </td>
       </tr><tr>
         <td>
-          50
+          51
         </td>
         <td>
           816
         </td>
         <td>
-          1651
+          1680
           -
-          1661
+          1690
         </td>
         <td>
           Select
@@ -193,15 +194,15 @@
         </td>
       </tr><tr>
         <td>
-          51
+          52
         </td>
         <td>
           874
         </td>
         <td>
-          1689
+          1718
           -
-          3001
+          3030
         </td>
         <td>
           Apply
@@ -210,7 +211,7 @@
           play.api.data.Form.fold
         </td>
         <td style="background: #AEF1AE">
-          whatson.model.UserSignUpForm.form.bindFromRequest()(request).fold[scala.concurrent.Future[play.api.mvc.Result]](((form: play.api.data.Form[whatson.model.UserSignUpForm.Data]) =&gt; scala.concurrent.Future.successful[play.api.mvc.Result](UserController.this.BadRequest.apply[play.api.libs.json.JsValue](play.api.libs.json.Json.toJson[Seq[play.api.data.FormError]](form.errors)(whatson.util.FormErrorJson.formErrorFormat))(http.this.Writeable.writeableOf_JsValue))), ((data: whatson.model.UserSignUpForm.Data) =&gt; {
+          whatson.model.forms.UserSignUpForm.form.bindFromRequest()(request).fold[scala.concurrent.Future[play.api.mvc.Result]](((form: play.api.data.Form[whatson.model.forms.UserSignUpForm.Data]) =&gt; scala.concurrent.Future.successful[play.api.mvc.Result](UserController.this.BadRequest.apply[play.api.libs.json.JsValue](play.api.libs.json.Json.toJson[Seq[play.api.data.FormError]](form.errors)(whatson.util.FormErrorJson.formErrorFormat))(http.this.Writeable.writeableOf_JsValue))), ((data: whatson.model.forms.UserSignUpForm.Data) =&gt; {
   val loginInfo: com.mohiva.play.silhouette.api.LoginInfo = com.mohiva.play.silhouette.api.LoginInfo.apply(com.mohiva.play.silhouette.impl.providers.CredentialsProvider.ID, data.email);
   UserController.this.loginService.retrieveAll(loginInfo).flatMap[play.api.mvc.Result](((x0$1: Option[whatson.model.Login]) =&gt; x0$1 match {
     case (value: whatson.model.Login)Some[whatson.model.Login]((login @ _)) =&gt; scala.concurrent.Future.successful[play.api.mvc.Result](UserController.this.BadRequest.apply[play.api.libs.json.JsObject](play.api.libs.json.Json.obj(scala.Predef.ArrowAssoc[String](&quot;message&quot;).-&gt;[play.api.libs.json.Json.JsValueWrapper](json.this.Json.toJsFieldJsValueWrapper[String](&quot;user.exists&quot;)(json.this.Writes.StringWrites))))(http.this.Writeable.writeableOf_JsValue))
@@ -230,15 +231,15 @@
         </td>
       </tr><tr>
         <td>
-          53
+          54
         </td>
         <td>
           819
         </td>
         <td>
-          1784
+          1813
           -
-          1808
+          1837
         </td>
         <td>
           ApplyToImplicitArgs
@@ -251,15 +252,15 @@
         </td>
       </tr><tr>
         <td>
-          53
+          54
         </td>
         <td>
           822
         </td>
         <td>
-          1755
+          1784
           -
-          1810
+          1839
         </td>
         <td>
           Apply
@@ -272,15 +273,15 @@
         </td>
       </tr><tr>
         <td>
-          53
+          54
         </td>
         <td>
           821
         </td>
         <td>
-          1773
+          1802
           -
-          1809
+          1838
         </td>
         <td>
           ApplyToImplicitArgs
@@ -293,15 +294,15 @@
         </td>
       </tr><tr>
         <td>
-          53
+          54
         </td>
         <td>
           818
         </td>
         <td>
-          1795
+          1824
           -
-          1795
+          1824
         </td>
         <td>
           Select
@@ -314,15 +315,15 @@
         </td>
       </tr><tr>
         <td>
-          53
+          54
         </td>
         <td>
           817
         </td>
         <td>
-          1796
+          1825
           -
-          1807
+          1836
         </td>
         <td>
           Select
@@ -335,15 +336,15 @@
         </td>
       </tr><tr>
         <td>
-          53
+          54
         </td>
         <td>
           820
         </td>
         <td>
-          1783
+          1812
           -
-          1783
+          1812
         </td>
         <td>
           Select
@@ -356,36 +357,36 @@
         </td>
       </tr><tr>
         <td>
-          56
+          57
         </td>
         <td>
           824
         </td>
         <td>
-          1894
+          1923
           -
-          1904
+          1933
         </td>
         <td>
           Select
         </td>
         <td>
-          whatson.model.UserSignUpForm.Data.email
+          whatson.model.forms.UserSignUpForm.Data.email
         </td>
         <td style="background: #AEF1AE">
           data.email
         </td>
       </tr><tr>
         <td>
-          56
+          57
         </td>
         <td>
           823
         </td>
         <td>
-          1870
+          1899
           -
-          1892
+          1921
         </td>
         <td>
           Select
@@ -398,15 +399,15 @@
         </td>
       </tr><tr>
         <td>
-          56
+          57
         </td>
         <td>
           825
         </td>
         <td>
-          1860
+          1889
           -
-          1905
+          1934
         </td>
         <td>
           Apply
@@ -419,15 +420,15 @@
         </td>
       </tr><tr>
         <td>
-          57
+          58
         </td>
         <td>
           873
         </td>
         <td>
-          1914
+          1943
           -
-          2992
+          3021
         </td>
         <td>
           ApplyToImplicitArgs
@@ -453,15 +454,15 @@
         </td>
       </tr><tr>
         <td>
-          57
+          58
         </td>
         <td>
           872
         </td>
         <td>
-          1958
+          1987
           -
-          1958
+          1987
         </td>
         <td>
           Select
@@ -474,15 +475,15 @@
         </td>
       </tr><tr>
         <td>
-          59
+          60
         </td>
         <td>
           828
         </td>
         <td>
-          2053
+          2082
           -
-          2053
+          2082
         </td>
         <td>
           Select
@@ -495,15 +496,15 @@
         </td>
       </tr><tr>
         <td>
-          59
+          60
         </td>
         <td>
           831
         </td>
         <td>
-          2031
+          2060
           -
-          2067
+          2096
         </td>
         <td>
           Apply
@@ -516,15 +517,15 @@
         </td>
       </tr><tr>
         <td>
-          59
+          60
         </td>
         <td>
           830
         </td>
         <td>
-          2040
+          2069
           -
-          2066
+          2095
         </td>
         <td>
           Apply
@@ -537,15 +538,15 @@
         </td>
       </tr><tr>
         <td>
-          59
+          60
         </td>
         <td>
           833
         </td>
         <td>
-          2020
+          2049
           -
-          2068
+          2097
         </td>
         <td>
           ApplyToImplicitArgs
@@ -558,15 +559,15 @@
         </td>
       </tr><tr>
         <td>
-          59
+          60
         </td>
         <td>
           827
         </td>
         <td>
-          2053
+          2082
           -
-          2066
+          2095
         </td>
         <td>
           Literal
@@ -579,15 +580,15 @@
         </td>
       </tr><tr>
         <td>
-          59
+          60
         </td>
         <td>
           826
         </td>
         <td>
-          2040
+          2069
           -
-          2049
+          2078
         </td>
         <td>
           Literal
@@ -600,15 +601,15 @@
         </td>
       </tr><tr>
         <td>
-          59
+          60
         </td>
         <td>
           829
         </td>
         <td>
-          2053
+          2082
           -
-          2066
+          2095
         </td>
         <td>
           ApplyToImplicitArgs
@@ -621,15 +622,15 @@
         </td>
       </tr><tr>
         <td>
-          59
+          60
         </td>
         <td>
           832
         </td>
         <td>
-          2030
+          2059
           -
-          2030
+          2059
         </td>
         <td>
           Select
@@ -642,15 +643,15 @@
         </td>
       </tr><tr>
         <td>
-          59
+          60
         </td>
         <td>
           834
         </td>
         <td>
-          2002
+          2031
           -
-          2069
+          2098
         </td>
         <td>
           Apply
@@ -663,15 +664,15 @@
         </td>
       </tr><tr>
         <td>
-          61
+          62
         </td>
         <td>
           836
         </td>
         <td>
-          2120
+          2149
           -
-          2154
+          2183
         </td>
         <td>
           Apply
@@ -684,36 +685,36 @@
         </td>
       </tr><tr>
         <td>
-          61
+          62
         </td>
         <td>
           835
         </td>
         <td>
-          2140
+          2169
           -
-          2153
+          2182
         </td>
         <td>
           Select
         </td>
         <td>
-          whatson.model.UserSignUpForm.Data.password
+          whatson.model.forms.UserSignUpForm.Data.password
         </td>
         <td style="background: #AEF1AE">
           data.password
         </td>
       </tr><tr>
         <td>
-          62
+          63
         </td>
         <td>
           837
         </td>
         <td>
-          2185
+          2214
           -
-          2189
+          2218
         </td>
         <td>
           Select
@@ -726,15 +727,15 @@
         </td>
       </tr><tr>
         <td>
-          62
+          63
         </td>
         <td>
           839
         </td>
         <td>
-          2203
+          2232
           -
-          2207
+          2236
         </td>
         <td>
           Select
@@ -747,15 +748,15 @@
         </td>
       </tr><tr>
         <td>
-          62
+          63
         </td>
         <td>
           842
         </td>
         <td>
-          2221
+          2250
           -
-          2241
+          2270
         </td>
         <td>
           Select
@@ -768,15 +769,15 @@
         </td>
       </tr><tr>
         <td>
-          62
+          63
         </td>
         <td>
           845
         </td>
         <td>
-          2179
+          2208
           -
-          2272
+          2301
         </td>
         <td>
           Apply
@@ -789,15 +790,15 @@
         </td>
       </tr><tr>
         <td>
-          62
+          63
         </td>
         <td>
           844
         </td>
         <td>
-          2266
+          2295
           -
-          2271
+          2300
         </td>
         <td>
           Literal
@@ -810,36 +811,36 @@
         </td>
       </tr><tr>
         <td>
-          62
+          63
         </td>
         <td>
           838
         </td>
         <td>
-          2191
+          2220
           -
-          2201
+          2230
         </td>
         <td>
           Select
         </td>
         <td>
-          whatson.model.UserSignUpForm.Data.email
+          whatson.model.forms.UserSignUpForm.Data.email
         </td>
         <td style="background: #AEF1AE">
           data.email
         </td>
       </tr><tr>
         <td>
-          62
+          63
         </td>
         <td>
           841
         </td>
         <td>
-          2215
+          2244
           -
-          2219
+          2248
         </td>
         <td>
           Select
@@ -852,15 +853,15 @@
         </td>
       </tr><tr>
         <td>
-          62
+          63
         </td>
         <td>
           840
         </td>
         <td>
-          2209
+          2238
           -
-          2213
+          2242
         </td>
         <td>
           Select
@@ -873,15 +874,15 @@
         </td>
       </tr><tr>
         <td>
-          62
+          63
         </td>
         <td>
           843
         </td>
         <td>
-          2243
+          2272
           -
-          2264
+          2293
         </td>
         <td>
           Select
@@ -894,15 +895,15 @@
         </td>
       </tr><tr>
         <td>
-          64
+          65
         </td>
         <td>
           871
         </td>
         <td>
-          2285
+          2314
           -
-          2982
+          3011
         </td>
         <td>
           ApplyToImplicitArgs
@@ -921,15 +922,15 @@
         </td>
       </tr><tr>
         <td>
-          64
+          65
         </td>
         <td>
           870
         </td>
         <td>
-          2311
+          2340
           -
-          2311
+          2340
         </td>
         <td>
           Select
@@ -942,15 +943,15 @@
         </td>
       </tr><tr>
         <td>
-          65
+          66
         </td>
         <td>
           869
         </td>
         <td>
-          2353
+          2382
           -
-          2982
+          3011
         </td>
         <td>
           ApplyToImplicitArgs
@@ -969,15 +970,15 @@
         </td>
       </tr><tr>
         <td>
-          65
+          66
         </td>
         <td>
           868
         </td>
         <td>
-          2362
+          2391
           -
-          2362
+          2391
         </td>
         <td>
           Select
@@ -990,15 +991,15 @@
         </td>
       </tr><tr>
         <td>
-          66
+          67
         </td>
         <td>
           866
         </td>
         <td>
-          2437
+          2466
           -
-          2437
+          2466
         </td>
         <td>
           Select
@@ -1011,15 +1012,15 @@
         </td>
       </tr><tr>
         <td>
-          66
+          67
         </td>
         <td>
           867
         </td>
         <td>
-          2423
+          2452
           -
-          2982
+          3011
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1038,15 +1039,15 @@
         </td>
       </tr><tr>
         <td>
-          67
+          68
         </td>
         <td>
           864
         </td>
         <td>
-          2514
+          2543
           -
-          2514
+          2543
         </td>
         <td>
           Select
@@ -1059,15 +1060,15 @@
         </td>
       </tr><tr>
         <td>
-          67
+          68
         </td>
         <td>
           865
         </td>
         <td>
-          2508
+          2537
           -
-          2982
+          3011
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1086,36 +1087,36 @@
         </td>
       </tr><tr>
         <td>
-          68
+          69
         </td>
         <td>
           846
         </td>
         <td>
-          2623
+          2652
           -
-          2633
+          2662
         </td>
         <td>
           Select
         </td>
         <td>
-          whatson.model.UserSignUpForm.Data.email
+          whatson.model.forms.UserSignUpForm.Data.email
         </td>
         <td style="background: #AEF1AE">
           data.email
         </td>
       </tr><tr>
         <td>
-          68
+          69
         </td>
         <td>
           863
         </td>
         <td>
-          2587
+          2616
           -
-          2982
+          3011
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1134,15 +1135,15 @@
         </td>
       </tr><tr>
         <td>
-          68
+          69
         </td>
         <td>
           862
         </td>
         <td>
-          2594
+          2623
           -
-          2594
+          2623
         </td>
         <td>
           Select
@@ -1155,15 +1156,15 @@
         </td>
       </tr><tr>
         <td>
-          70
+          71
         </td>
         <td>
           848
         </td>
         <td>
-          2671
+          2700
           -
-          2731
+          2760
         </td>
         <td>
           Apply
@@ -1176,15 +1177,15 @@
         </td>
       </tr><tr>
         <td>
-          70
+          71
         </td>
         <td>
           847
         </td>
         <td>
-          2703
+          2732
           -
-          2730
+          2759
         </td>
         <td>
           Apply
@@ -1197,15 +1198,15 @@
         </td>
       </tr><tr>
         <td>
-          71
+          72
         </td>
         <td>
           850
         </td>
         <td>
-          2746
+          2775
           -
-          2805
+          2834
         </td>
         <td>
           Apply
@@ -1218,15 +1219,15 @@
         </td>
       </tr><tr>
         <td>
-          71
+          72
         </td>
         <td>
           849
         </td>
         <td>
-          2778
+          2807
           -
-          2804
+          2833
         </td>
         <td>
           Apply
@@ -1239,15 +1240,15 @@
         </td>
       </tr><tr>
         <td>
-          72
+          73
         </td>
         <td>
           851
         </td>
         <td>
-          2820
+          2849
           -
-          2850
+          2879
         </td>
         <td>
           Apply
@@ -1260,15 +1261,15 @@
         </td>
       </tr><tr>
         <td>
-          73
+          74
         </td>
         <td>
           853
         </td>
         <td>
-          2865
+          2894
           -
-          2915
+          2944
         </td>
         <td>
           Apply
@@ -1281,36 +1282,36 @@
         </td>
       </tr><tr>
         <td>
-          73
+          74
         </td>
         <td>
           852
         </td>
         <td>
-          2898
+          2927
           -
-          2908
+          2937
         </td>
         <td>
           Select
         </td>
         <td>
-          whatson.model.UserSignUpForm.Data.email
+          whatson.model.forms.UserSignUpForm.Data.email
         </td>
         <td style="background: #AEF1AE">
           data.email
         </td>
       </tr><tr>
         <td>
-          74
+          75
         </td>
         <td>
           855
         </td>
         <td>
-          2955
+          2984
           -
-          2966
+          2995
         </td>
         <td>
           Literal
@@ -1323,15 +1324,15 @@
         </td>
       </tr><tr>
         <td>
-          74
+          75
         </td>
         <td>
           857
         </td>
         <td>
-          2955
+          2984
           -
-          2966
+          2995
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1344,15 +1345,15 @@
         </td>
       </tr><tr>
         <td>
-          74
+          75
         </td>
         <td>
           860
         </td>
         <td>
-          2932
+          2961
           -
-          2932
+          2961
         </td>
         <td>
           Select
@@ -1365,15 +1366,15 @@
         </td>
       </tr><tr>
         <td>
-          74
+          75
         </td>
         <td>
           854
         </td>
         <td>
-          2942
+          2971
           -
-          2951
+          2980
         </td>
         <td>
           Literal
@@ -1386,15 +1387,15 @@
         </td>
       </tr><tr>
         <td>
-          74
+          75
         </td>
         <td>
           856
         </td>
         <td>
-          2955
+          2984
           -
-          2955
+          2984
         </td>
         <td>
           Select
@@ -1407,15 +1408,15 @@
         </td>
       </tr><tr>
         <td>
-          74
+          75
         </td>
         <td>
           859
         </td>
         <td>
-          2933
+          2962
           -
-          2967
+          2996
         </td>
         <td>
           Apply
@@ -1428,15 +1429,15 @@
         </td>
       </tr><tr>
         <td>
-          74
+          75
         </td>
         <td>
           858
         </td>
         <td>
-          2942
+          2971
           -
-          2966
+          2995
         </td>
         <td>
           Apply
@@ -1449,15 +1450,15 @@
         </td>
       </tr><tr>
         <td>
-          74
+          75
         </td>
         <td>
           861
         </td>
         <td>
-          2930
+          2959
           -
-          2968
+          2997
         </td>
         <td>
           ApplyToImplicitArgs
