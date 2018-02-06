@@ -34,25 +34,42 @@
 </span>10 <span style=''>import slick.jdbc.JdbcProfile
 </span>11 <span style=''>import whatson.db._
 </span>12 <span style=''>import whatson.model.detail.CategoryDetail._
-</span>13 <span style=''>
-</span>14 <span style=''>/**
-</span>15 <span style=''> * This Controller handles API Requests concerning categories
-</span>16 <span style=''> */
-</span>17 <span style=''>class CategoryController @Inject()(cc: ControllerComponents, protected val dbConfigProvider: DatabaseConfigProvider)
-</span>18 <span style=''>    (implicit context: ExecutionContext)
-</span>19 <span style=''>    extends AbstractController(cc)
-</span>20 <span style=''>    with HasDatabaseConfigProvider[JdbcProfile]{
-</span>21 <span style=''>
-</span>22 <span style=''>  val log = </span><span style='background: #AEF1AE'>Logger(&quot;api.categories&quot;)</span><span style=''>
-</span>23 <span style=''>
-</span>24 <span style=''>  def categories() = </span><span style='background: #AEF1AE'>Action.async { implicit request: Request[AnyContent] =&gt;
-</span>25 <span style=''></span><span style='background: #AEF1AE'>    log.debug(&quot;Rest request for categories&quot;)
-</span>26 <span style=''></span><span style='background: #AEF1AE'>
-</span>27 <span style=''></span><span style='background: #AEF1AE'>    val q = for(e &lt;- CategoryTable.category) yield e;
-</span>28 <span style=''></span><span style='background: #AEF1AE'>
-</span>29 <span style=''></span><span style='background: #AEF1AE'>    db.run(q.detailed).map(x =&gt; Ok(Json.toJson(x)))
-</span>30 <span style=''></span><span style='background: #AEF1AE'>  }</span><span style=''>
-</span>31 <span style=''>}
+</span>13 <span style=''>import whatson.service._
+</span>14 <span style=''>import whatson.model._
+</span>15 <span style=''>import com.mohiva.play.silhouette.api._
+</span>16 <span style=''>import whatson.auth._
+</span>17 <span style=''>import whatson.db.Util._
+</span>18 <span style=''>
+</span>19 <span style=''>/**
+</span>20 <span style=''> * This Controller handles API Requests concerning categories
+</span>21 <span style=''> */
+</span>22 <span style=''>class CategoryController @Inject()(cc: ControllerComponents,
+</span>23 <span style=''>                                   protected val dbConfigProvider: DatabaseConfigProvider,
+</span>24 <span style=''>                                   val silhouette: Silhouette[AuthEnv],
+</span>25 <span style=''>                                   val organizerService: OrganizerService,
+</span>26 <span style=''>                                   val userService: UserService)
+</span>27 <span style=''>    (implicit context: ExecutionContext)
+</span>28 <span style=''>    extends AbstractController(cc)
+</span>29 <span style=''>    with HasDatabaseConfigProvider[JdbcProfile] with Util {
+</span>30 <span style=''>
+</span>31 <span style=''>  val log = </span><span style='background: #AEF1AE'>Logger(&quot;api.categories&quot;)</span><span style=''>
+</span>32 <span style=''>
+</span>33 <span style=''>  def categories() = </span><span style='background: #AEF1AE'>Action.async { implicit request: Request[AnyContent] =&gt;
+</span>34 <span style=''></span><span style='background: #AEF1AE'>    log.debug(&quot;Rest request for categories&quot;)
+</span>35 <span style=''></span><span style='background: #AEF1AE'>
+</span>36 <span style=''></span><span style='background: #AEF1AE'>    val q = for(e &lt;- CategoryTable.category) yield e;
+</span>37 <span style=''></span><span style='background: #AEF1AE'>
+</span>38 <span style=''></span><span style='background: #AEF1AE'>    db.run(q.detailed).map(x =&gt; Ok(Json.toJson(x)))
+</span>39 <span style=''></span><span style='background: #AEF1AE'>  }</span><span style=''>
+</span>40 <span style=''>
+</span>41 <span style=''>  def createCategory() = </span><span style='background: #AEF1AE'>organizerRequest(parse.json(Category.categoryReads)) { case (request,organizer) =&gt;
+</span>42 <span style=''></span><span style='background: #AEF1AE'>    log.debug(&quot;Rest request to create category&quot;)
+</span>43 <span style=''></span><span style='background: #AEF1AE'>
+</span>44 <span style=''></span><span style='background: #AEF1AE'>    val inserted = db.run(insertAndReturn[Category,CategoryTable](CategoryTable.category,request.body))
+</span>45 <span style=''></span><span style='background: #AEF1AE'>
+</span>46 <span style=''></span><span style='background: #AEF1AE'>    inserted.map(x =&gt; Ok(Json.toJson(x)))
+</span>47 <span style=''></span><span style='background: #AEF1AE'>  }</span><span style=''>
+</span>48 <span style=''>}
 </span></pre>
           </div>
           <div class="tab-pane" id="statementlist">
@@ -66,15 +83,15 @@
         <th>Code</th>
       </tr><tr>
         <td>
-          22
+          31
         </td>
         <td>
           71
         </td>
         <td>
-          651
+          1044
           -
-          675
+          1068
         </td>
         <td>
           Apply
@@ -87,15 +104,15 @@
         </td>
       </tr><tr>
         <td>
-          24
+          33
         </td>
         <td>
           87
         </td>
         <td>
-          698
+          1091
           -
-          910
+          1303
         </td>
         <td>
           Apply
@@ -112,15 +129,15 @@
         </td>
       </tr><tr>
         <td>
-          25
+          34
         </td>
         <td>
           74
         </td>
         <td>
-          758
+          1151
           -
-          798
+          1191
         </td>
         <td>
           ApplyToImplicitArgs
@@ -133,15 +150,15 @@
         </td>
       </tr><tr>
         <td>
-          25
+          34
         </td>
         <td>
           73
         </td>
         <td>
-          767
+          1160
           -
-          767
+          1160
         </td>
         <td>
           Select
@@ -154,15 +171,15 @@
         </td>
       </tr><tr>
         <td>
-          25
+          34
         </td>
         <td>
           72
         </td>
         <td>
-          768
+          1161
           -
-          797
+          1190
         </td>
         <td>
           Literal
@@ -175,15 +192,15 @@
         </td>
       </tr><tr>
         <td>
-          27
+          36
         </td>
         <td>
           77
         </td>
         <td>
-          812
+          1205
           -
-          852
+          1245
         </td>
         <td>
           ApplyToImplicitArgs
@@ -196,15 +213,15 @@
         </td>
       </tr><tr>
         <td>
-          27
+          36
         </td>
         <td>
           76
         </td>
         <td>
-          818
+          1211
           -
-          818
+          1211
         </td>
         <td>
           ApplyToImplicitArgs
@@ -217,15 +234,15 @@
         </td>
       </tr><tr>
         <td>
-          27
+          36
         </td>
         <td>
           75
         </td>
         <td>
-          818
+          1211
           -
-          818
+          1211
         </td>
         <td>
           TypeApply
@@ -238,15 +255,15 @@
         </td>
       </tr><tr>
         <td>
-          29
+          38
         </td>
         <td>
           83
         </td>
         <td>
-          889
+          1282
           -
-          889
+          1282
         </td>
         <td>
           Select
@@ -259,15 +276,15 @@
         </td>
       </tr><tr>
         <td>
-          29
+          38
         </td>
         <td>
           86
         </td>
         <td>
-          859
+          1252
           -
-          906
+          1299
         </td>
         <td>
           ApplyToImplicitArgs
@@ -280,15 +297,15 @@
         </td>
       </tr><tr>
         <td>
-          29
+          38
         </td>
         <td>
           80
         </td>
         <td>
-          901
+          1294
           -
-          901
+          1294
         </td>
         <td>
           Select
@@ -301,15 +318,15 @@
         </td>
       </tr><tr>
         <td>
-          29
+          38
         </td>
         <td>
           82
         </td>
         <td>
-          890
+          1283
           -
-          904
+          1297
         </td>
         <td>
           ApplyToImplicitArgs
@@ -322,15 +339,15 @@
         </td>
       </tr><tr>
         <td>
-          29
+          38
         </td>
         <td>
           85
         </td>
         <td>
-          881
+          1274
           -
-          881
+          1274
         </td>
         <td>
           Select
@@ -343,15 +360,15 @@
         </td>
       </tr><tr>
         <td>
-          29
+          38
         </td>
         <td>
           79
         </td>
         <td>
-          866
+          1259
           -
-          876
+          1269
         </td>
         <td>
           ApplyToImplicitArgs
@@ -364,15 +381,15 @@
         </td>
       </tr><tr>
         <td>
-          29
+          38
         </td>
         <td>
           78
         </td>
         <td>
-          868
+          1261
           -
-          868
+          1261
         </td>
         <td>
           Select
@@ -385,15 +402,15 @@
         </td>
       </tr><tr>
         <td>
-          29
+          38
         </td>
         <td>
           81
         </td>
         <td>
-          901
+          1294
           -
-          901
+          1294
         </td>
         <td>
           ApplyToImplicitArgs
@@ -406,15 +423,15 @@
         </td>
       </tr><tr>
         <td>
-          29
+          38
         </td>
         <td>
           84
         </td>
         <td>
-          887
+          1280
           -
-          905
+          1298
         </td>
         <td>
           ApplyToImplicitArgs
@@ -424,6 +441,369 @@
         </td>
         <td style="background: #AEF1AE">
           CategoryController.this.Ok.apply[play.api.libs.json.JsValue](play.api.libs.json.Json.toJson[Seq[whatson.model.detail.CategoryDetail]](x)(json.this.Writes.traversableWrites[whatson.model.detail.CategoryDetail](whatson.model.detail.CategoryDetail.categoryDetailWrites)))(http.this.Writeable.writeableOf_JsValue)
+        </td>
+      </tr><tr>
+        <td>
+          41
+        </td>
+        <td>
+          104
+        </td>
+        <td>
+          1330
+          -
+          1613
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          controllers.Util.organizerRequest
+        </td>
+        <td style="background: #AEF1AE">
+          CategoryController.this.organizerRequest[whatson.model.Category](CategoryController.this.parse.json[whatson.model.Category](whatson.model.Category.categoryReads))(((x0$1: com.mohiva.play.silhouette.api.actions.SecuredRequest[whatson.auth.AuthEnv,whatson.model.Category], x1$1: whatson.model.Organizer) =&gt; scala.Tuple2.apply[com.mohiva.play.silhouette.api.actions.SecuredRequest[whatson.auth.AuthEnv,whatson.model.Category], whatson.model.Organizer](x0$1, x1$1) match {
+  case (_1: com.mohiva.play.silhouette.api.actions.SecuredRequest[whatson.auth.AuthEnv,whatson.model.Category], _2: whatson.model.Organizer)(com.mohiva.play.silhouette.api.actions.SecuredRequest[whatson.auth.AuthEnv,whatson.model.Category], whatson.model.Organizer)((request @ _), (organizer @ _)) =&gt; {
+    CategoryController.this.log.debug(&quot;Rest request to create category&quot;)(api.this.MarkerContext.NoMarker);
+    val inserted: scala.concurrent.Future[whatson.model.Category] = CategoryController.this.db.run[whatson.model.Category](whatson.db.Util.insertAndReturn[whatson.model.Category, whatson.db.CategoryTable](whatson.db.CategoryTable.category, request.body));
+    inserted.map[play.api.mvc.Result](((x: whatson.model.Category) =&gt; CategoryController.this.Ok.apply[play.api.libs.json.JsValue](play.api.libs.json.Json.toJson[whatson.model.Category](x)(model.this.Category.categoryWrites))(http.this.Writeable.writeableOf_JsValue)))(CategoryController.this.context)
+  }
+}))(CategoryController.this.context)
+        </td>
+      </tr><tr>
+        <td>
+          41
+        </td>
+        <td>
+          89
+        </td>
+        <td>
+          1347
+          -
+          1381
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          play.api.mvc.PlayBodyParsers.json
+        </td>
+        <td style="background: #AEF1AE">
+          CategoryController.this.parse.json[whatson.model.Category](whatson.model.Category.categoryReads)
+        </td>
+      </tr><tr>
+        <td>
+          41
+        </td>
+        <td>
+          103
+        </td>
+        <td>
+          1383
+          -
+          1383
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          controllers.CategoryController.context
+        </td>
+        <td style="background: #AEF1AE">
+          CategoryController.this.context
+        </td>
+      </tr><tr>
+        <td>
+          41
+        </td>
+        <td>
+          88
+        </td>
+        <td>
+          1358
+          -
+          1380
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.model.Category.categoryReads
+        </td>
+        <td style="background: #AEF1AE">
+          whatson.model.Category.categoryReads
+        </td>
+      </tr><tr>
+        <td>
+          42
+        </td>
+        <td>
+          92
+        </td>
+        <td>
+          1417
+          -
+          1461
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          play.api.LoggerLike.debug
+        </td>
+        <td style="background: #AEF1AE">
+          CategoryController.this.log.debug(&quot;Rest request to create category&quot;)(api.this.MarkerContext.NoMarker)
+        </td>
+      </tr><tr>
+        <td>
+          42
+        </td>
+        <td>
+          91
+        </td>
+        <td>
+          1426
+          -
+          1426
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.LowPriorityMarkerContextImplicits.NoMarker
+        </td>
+        <td style="background: #AEF1AE">
+          api.this.MarkerContext.NoMarker
+        </td>
+      </tr><tr>
+        <td>
+          42
+        </td>
+        <td>
+          90
+        </td>
+        <td>
+          1427
+          -
+          1460
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;Rest request to create category&quot;
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          95
+        </td>
+        <td>
+          1489
+          -
+          1565
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          whatson.db.Util.insertAndReturn
+        </td>
+        <td style="background: #AEF1AE">
+          whatson.db.Util.insertAndReturn[whatson.model.Category, whatson.db.CategoryTable](whatson.db.CategoryTable.category, request.body)
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          94
+        </td>
+        <td>
+          1552
+          -
+          1564
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.mvc.WrappedRequest.body
+        </td>
+        <td style="background: #AEF1AE">
+          request.body
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          96
+        </td>
+        <td>
+          1482
+          -
+          1566
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          slick.basic.BasicBackend.DatabaseDef.run
+        </td>
+        <td style="background: #AEF1AE">
+          CategoryController.this.db.run[whatson.model.Category](whatson.db.Util.insertAndReturn[whatson.model.Category, whatson.db.CategoryTable](whatson.db.CategoryTable.category, request.body))
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          93
+        </td>
+        <td>
+          1529
+          -
+          1551
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.db.CategoryTable.category
+        </td>
+        <td style="background: #AEF1AE">
+          whatson.db.CategoryTable.category
+        </td>
+      </tr><tr>
+        <td>
+          46
+        </td>
+        <td>
+          101
+        </td>
+        <td>
+          1584
+          -
+          1584
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          controllers.CategoryController.context
+        </td>
+        <td style="background: #AEF1AE">
+          CategoryController.this.context
+        </td>
+      </tr><tr>
+        <td>
+          46
+        </td>
+        <td>
+          98
+        </td>
+        <td>
+          1593
+          -
+          1607
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          play.api.libs.json.Json.toJson
+        </td>
+        <td style="background: #AEF1AE">
+          play.api.libs.json.Json.toJson[whatson.model.Category](x)(model.this.Category.categoryWrites)
+        </td>
+      </tr><tr>
+        <td>
+          46
+        </td>
+        <td>
+          100
+        </td>
+        <td>
+          1590
+          -
+          1608
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          play.api.mvc.Results.Status.apply
+        </td>
+        <td style="background: #AEF1AE">
+          CategoryController.this.Ok.apply[play.api.libs.json.JsValue](play.api.libs.json.Json.toJson[whatson.model.Category](x)(model.this.Category.categoryWrites))(http.this.Writeable.writeableOf_JsValue)
+        </td>
+      </tr><tr>
+        <td>
+          46
+        </td>
+        <td>
+          97
+        </td>
+        <td>
+          1604
+          -
+          1604
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.model.Category.categoryWrites
+        </td>
+        <td style="background: #AEF1AE">
+          model.this.Category.categoryWrites
+        </td>
+      </tr><tr>
+        <td>
+          46
+        </td>
+        <td>
+          99
+        </td>
+        <td>
+          1592
+          -
+          1592
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.http.DefaultWriteables.writeableOf_JsValue
+        </td>
+        <td style="background: #AEF1AE">
+          http.this.Writeable.writeableOf_JsValue
+        </td>
+      </tr><tr>
+        <td>
+          46
+        </td>
+        <td>
+          102
+        </td>
+        <td>
+          1572
+          -
+          1609
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.concurrent.Future.map
+        </td>
+        <td style="background: #AEF1AE">
+          inserted.map[play.api.mvc.Result](((x: whatson.model.Category) =&gt; CategoryController.this.Ok.apply[play.api.libs.json.JsValue](play.api.libs.json.Json.toJson[whatson.model.Category](x)(model.this.Category.categoryWrites))(http.this.Writeable.writeableOf_JsValue)))(CategoryController.this.context)
         </td>
       </tr>
     </table>
