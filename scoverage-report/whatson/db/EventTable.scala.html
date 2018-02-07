@@ -40,50 +40,52 @@
 </span>16 <span style=''>  def from = </span><span style='background: #AEF1AE'>column[Timestamp](&quot;fromtime&quot;)</span><span style=''>
 </span>17 <span style=''>  def to = </span><span style='background: #AEF1AE'>column[Timestamp](&quot;totime&quot;)</span><span style=''>
 </span>18 <span style=''>
-</span>19 <span style=''>  def creatorId = </span><span style='background: #AEF1AE'>column[Option[Int]](&quot;creator_fk&quot;)</span><span style=''>
+</span>19 <span style=''>  def description = </span><span style='background: #AEF1AE'>column[String](&quot;description&quot;,O.Unique)</span><span style=''>
 </span>20 <span style=''>
-</span>21 <span style=''>  def locationId = </span><span style='background: #AEF1AE'>column[Int](&quot;location_fk&quot;)</span><span style=''>
+</span>21 <span style=''>  def creatorId = </span><span style='background: #AEF1AE'>column[Option[Int]](&quot;creator_fk&quot;)</span><span style=''>
 </span>22 <span style=''>
-</span>23 <span style=''>  def * = </span><span style='background: #AEF1AE'>(id.?,name,from,to,creatorId,locationId) &lt;&gt; (Event.tupled, Event.unapply)</span><span style=''>
+</span>23 <span style=''>  def locationId = </span><span style='background: #AEF1AE'>column[Int](&quot;location_fk&quot;)</span><span style=''>
 </span>24 <span style=''>
-</span>25 <span style=''>  def creator = </span><span style='background: #F0ADAD'>foreignKey(&quot;creator&quot;,creatorId,OrganizerTable.organizer)(_.id.?)</span><span style=''>
-</span>26 <span style=''>  def location = </span><span style='background: #F0ADAD'>foreignKey(&quot;location&quot;,locationId,LocationTable.location)(_.id)</span><span style=''>
-</span>27 <span style=''>  def participants = </span><span style='background: #F0ADAD'>participant.filter(_.eventID === id).flatMap(_.participant)</span><span style=''>
-</span>28 <span style=''>  def categories = </span><span style='background: #AEF1AE'>eventCategory.filter(_.eventID === id).flatMap(_.categoryFK)</span><span style=''>
-</span>29 <span style=''>
-</span>30 <span style=''>
-</span>31 <span style=''>  val entityType = </span><span style='background: #AEF1AE'>EntityType.Event</span><span style=''>
-</span>32 <span style=''>}
-</span>33 <span style=''>
-</span>34 <span style=''>object EventTable {
-</span>35 <span style=''>  val event = TableQuery[EventTable]
-</span>36 <span style=''>
-</span>37 <span style=''>  implicit class QuerySort[C[D]](q: Query[EventTable,Event,C]) extends Sortable[Query[EventTable,Event,C],Option[Location]] {
-</span>38 <span style=''>    def sortColumn[U,C[D]](name: String, dir: Boolean) = name match {
-</span>39 <span style=''>      case &quot;name&quot; =&gt; </span><span style='background: #F0ADAD'>q.sortBy(_.name.dir(dir))</span><span style=''>
-</span>40 <span style=''>      case &quot;from&quot; =&gt; </span><span style='background: #F0ADAD'>q.sortBy(_.from.dir(dir))</span><span style=''>
-</span>41 <span style=''>      case &quot;to&quot; =&gt; </span><span style='background: #F0ADAD'>q.sortBy(_.to.dir(dir))</span><span style=''>
-</span>42 <span style=''>      case &quot;rating&quot; =&gt; </span><span style='background: #F0ADAD'>q.sortBy(_.avgRating.getOrElse(0.0f).dir(dir))</span><span style=''>
-</span>43 <span style=''>      case _ =&gt; </span><span style='background: #AEF1AE'>q.sortBy(_.id.dir(dir))</span><span style=''>
-</span>44 <span style=''>    }
-</span>45 <span style=''>
-</span>46 <span style=''>    override def sortColumn[U,C[D]](name: String, dir: Boolean, param: Option[Location]) = name match {
-</span>47 <span style=''>      case &quot;location&quot; =&gt; {
-</span>48 <span style=''>        val lat = </span><span style='background: #F0ADAD'>param.map(_.latitude).getOrElse(0.0f)</span><span style=''>
-</span>49 <span style=''>        val long = </span><span style='background: #F0ADAD'>param.map(_.longitude).getOrElse(0.0f)</span><span style=''>
-</span>50 <span style=''>
-</span>51 <span style=''>        val s = </span><span style='background: #F0ADAD'>q.join(LocationTable.location).on(_.locationId === _.id)
-</span>52 <span style=''></span><span style='background: #F0ADAD'>          .sortBy(x =&gt; geoDistance(x._2.latitude,x._2.longitude,lat,long).dir(dir)).map(_._1)</span><span style=''>
-</span>53 <span style=''>        s
-</span>54 <span style=''>      }
-</span>55 <span style=''>      case n =&gt; </span><span style='background: #F0ADAD'>q.sortColumn(n,dir)</span><span style=''>
-</span>56 <span style=''>    }
-</span>57 <span style=''>
-</span>58 <span style=''>
+</span>25 <span style=''>  def * = </span><span style='background: #AEF1AE'>(id.?,name,from,to,description,creatorId,locationId) &lt;&gt; (Event.tupled, Event.unapply)</span><span style=''>
+</span>26 <span style=''>
+</span>27 <span style=''>  def creator = </span><span style='background: #F0ADAD'>foreignKey(&quot;creator&quot;,creatorId,OrganizerTable.organizer)(_.id.?)</span><span style=''>
+</span>28 <span style=''>  def location = </span><span style='background: #F0ADAD'>foreignKey(&quot;location&quot;,locationId,LocationTable.location)(_.id)</span><span style=''>
+</span>29 <span style=''>  def participants = </span><span style='background: #F0ADAD'>participant.filter(_.eventID === id).flatMap(_.participant)</span><span style=''>
+</span>30 <span style=''>  def categories = </span><span style='background: #AEF1AE'>eventCategory.filter(_.eventID === id).flatMap(_.categoryFK)</span><span style=''>
+</span>31 <span style=''>
+</span>32 <span style=''>
+</span>33 <span style=''>  val entityType = </span><span style='background: #AEF1AE'>EntityType.Event</span><span style=''>
+</span>34 <span style=''>}
+</span>35 <span style=''>
+</span>36 <span style=''>object EventTable {
+</span>37 <span style=''>  val event = TableQuery[EventTable]
+</span>38 <span style=''>
+</span>39 <span style=''>  implicit class QuerySort[C[D]](q: Query[EventTable,Event,C]) extends Sortable[Query[EventTable,Event,C],Option[Location]] {
+</span>40 <span style=''>    def sortColumn[U,C[D]](name: String, dir: Boolean) = name match {
+</span>41 <span style=''>      case &quot;name&quot; =&gt; </span><span style='background: #F0ADAD'>q.sortBy(_.name.dir(dir))</span><span style=''>
+</span>42 <span style=''>      case &quot;from&quot; =&gt; </span><span style='background: #F0ADAD'>q.sortBy(_.from.dir(dir))</span><span style=''>
+</span>43 <span style=''>      case &quot;to&quot; =&gt; </span><span style='background: #F0ADAD'>q.sortBy(_.to.dir(dir))</span><span style=''>
+</span>44 <span style=''>      case &quot;rating&quot; =&gt; </span><span style='background: #F0ADAD'>q.sortBy(_.avgRating.getOrElse(0.0f).dir(dir))</span><span style=''>
+</span>45 <span style=''>      case _ =&gt; </span><span style='background: #AEF1AE'>q.sortBy(_.id.dir(dir))</span><span style=''>
+</span>46 <span style=''>    }
+</span>47 <span style=''>
+</span>48 <span style=''>    override def sortColumn[U,C[D]](name: String, dir: Boolean, param: Option[Location]) = name match {
+</span>49 <span style=''>      case &quot;location&quot; =&gt; {
+</span>50 <span style=''>        val lat = </span><span style='background: #F0ADAD'>param.map(_.latitude).getOrElse(0.0f)</span><span style=''>
+</span>51 <span style=''>        val long = </span><span style='background: #F0ADAD'>param.map(_.longitude).getOrElse(0.0f)</span><span style=''>
+</span>52 <span style=''>
+</span>53 <span style=''>        val s = </span><span style='background: #F0ADAD'>q.join(LocationTable.location).on(_.locationId === _.id)
+</span>54 <span style=''></span><span style='background: #F0ADAD'>          .sortBy(x =&gt; geoDistance(x._2.latitude,x._2.longitude,lat,long).dir(dir)).map(_._1)</span><span style=''>
+</span>55 <span style=''>        s
+</span>56 <span style=''>      }
+</span>57 <span style=''>      case n =&gt; </span><span style='background: #F0ADAD'>q.sortColumn(n,dir)</span><span style=''>
+</span>58 <span style=''>    }
 </span>59 <span style=''>
-</span>60 <span style=''>    val defaultSort = </span><span style='background: #AEF1AE'>&quot;id&quot;</span><span style=''>
-</span>61 <span style=''>  }
-</span>62 <span style=''>}
+</span>60 <span style=''>
+</span>61 <span style=''>
+</span>62 <span style=''>    val defaultSort = </span><span style='background: #AEF1AE'>&quot;id&quot;</span><span style=''>
+</span>63 <span style=''>  }
+</span>64 <span style=''>}
 </span></pre>
           </div>
           <div class="tab-pane" id="statementlist">
@@ -101,48 +103,6 @@
         </td>
         <td>
           977
-        </td>
-        <td>
-          394
-          -
-          406
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          slick.relational.RelationalTableComponent.ColumnOptions.PrimaryKey
-        </td>
-        <td style="background: #AEF1AE">
-          EventTable.this.O.PrimaryKey
-        </td>
-      </tr><tr>
-        <td>
-          13
-        </td>
-        <td>
-          980
-        </td>
-        <td>
-          377
-          -
-          417
-        </td>
-        <td>
-          ApplyToImplicitArgs
-        </td>
-        <td>
-          slick.relational.RelationalTableComponent.Table.column
-        </td>
-        <td style="background: #AEF1AE">
-          EventTable.this.column[Int](&quot;id&quot;, EventTable.this.O.PrimaryKey, EventTable.this.O.AutoInc)(slick.jdbc.PostgresProfile.api.intColumnType)
-        </td>
-      </tr><tr>
-        <td>
-          13
-        </td>
-        <td>
-          976
         </td>
         <td>
           389
@@ -163,7 +123,7 @@
           13
         </td>
         <td>
-          979
+          980
         </td>
         <td>
           388
@@ -184,7 +144,7 @@
           13
         </td>
         <td>
-          978
+          979
         </td>
         <td>
           407
@@ -202,31 +162,52 @@
         </td>
       </tr><tr>
         <td>
-          14
+          13
         </td>
         <td>
-          983
+          978
         </td>
         <td>
-          445
+          394
           -
-          445
+          406
         </td>
         <td>
           Select
         </td>
         <td>
-          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.stringColumnType
+          slick.relational.RelationalTableComponent.ColumnOptions.PrimaryKey
         </td>
         <td style="background: #AEF1AE">
-          slick.jdbc.PostgresProfile.api.stringColumnType
+          EventTable.this.O.PrimaryKey
+        </td>
+      </tr><tr>
+        <td>
+          13
+        </td>
+        <td>
+          981
+        </td>
+        <td>
+          377
+          -
+          417
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.relational.RelationalTableComponent.Table.column
+        </td>
+        <td style="background: #AEF1AE">
+          EventTable.this.column[Int](&quot;id&quot;, EventTable.this.O.PrimaryKey, EventTable.this.O.AutoInc)(slick.jdbc.PostgresProfile.api.intColumnType)
         </td>
       </tr><tr>
         <td>
           14
         </td>
         <td>
-          982
+          983
         </td>
         <td>
           453
@@ -247,7 +228,7 @@
           14
         </td>
         <td>
-          981
+          982
         </td>
         <td>
           446
@@ -268,7 +249,7 @@
           14
         </td>
         <td>
-          984
+          985
         </td>
         <td>
           431
@@ -286,31 +267,31 @@
         </td>
       </tr><tr>
         <td>
-          16
+          14
         </td>
         <td>
-          986
+          984
         </td>
         <td>
-          494
+          445
           -
-          494
+          445
         </td>
         <td>
           Select
         </td>
         <td>
-          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.timestampColumnType
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.stringColumnType
         </td>
         <td style="background: #AEF1AE">
-          slick.jdbc.PostgresProfile.api.timestampColumnType
+          slick.jdbc.PostgresProfile.api.stringColumnType
         </td>
       </tr><tr>
         <td>
           16
         </td>
         <td>
-          985
+          986
         </td>
         <td>
           495
@@ -331,7 +312,7 @@
           16
         </td>
         <td>
-          987
+          988
         </td>
         <td>
           477
@@ -349,15 +330,15 @@
         </td>
       </tr><tr>
         <td>
-          17
+          16
         </td>
         <td>
-          989
+          987
         </td>
         <td>
-          535
+          494
           -
-          535
+          494
         </td>
         <td>
           Select
@@ -373,7 +354,7 @@
           17
         </td>
         <td>
-          988
+          989
         </td>
         <td>
           536
@@ -394,7 +375,7 @@
           17
         </td>
         <td>
-          990
+          991
         </td>
         <td>
           518
@@ -412,36 +393,36 @@
         </td>
       </tr><tr>
         <td>
-          19
+          17
         </td>
         <td>
-          992
+          990
         </td>
         <td>
-          584
+          535
           -
-          584
+          535
         </td>
         <td>
           Select
         </td>
         <td>
-          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.timestampColumnType
         </td>
         <td style="background: #AEF1AE">
-          slick.jdbc.PostgresProfile.api.intColumnType
+          slick.jdbc.PostgresProfile.api.timestampColumnType
         </td>
       </tr><tr>
         <td>
           19
         </td>
         <td>
-          991
+          992
         </td>
         <td>
-          585
+          582
           -
-          597
+          595
         </td>
         <td>
           Literal
@@ -450,7 +431,28 @@
           &lt;nosymbol&gt;
         </td>
         <td style="background: #AEF1AE">
-          &quot;creator_fk&quot;
+          &quot;description&quot;
+        </td>
+      </tr><tr>
+        <td>
+          19
+        </td>
+        <td>
+          995
+        </td>
+        <td>
+          567
+          -
+          605
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.relational.RelationalTableComponent.Table.column
+        </td>
+        <td style="background: #AEF1AE">
+          EventTable.this.column[String](&quot;description&quot;, EventTable.this.O.Unique)(slick.jdbc.PostgresProfile.api.stringColumnType)
         </td>
       </tr><tr>
         <td>
@@ -460,18 +462,18 @@
           994
         </td>
         <td>
-          565
+          581
           -
-          598
+          581
         </td>
         <td>
-          ApplyToImplicitArgs
+          Select
         </td>
         <td>
-          slick.relational.RelationalTableComponent.Table.column
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.stringColumnType
         </td>
         <td style="background: #AEF1AE">
-          EventTable.this.column[Option[Int]](&quot;creator_fk&quot;)(ast.this.TypedType.typedTypeToOptionTypedType[Int](slick.jdbc.PostgresProfile.api.intColumnType))
+          slick.jdbc.PostgresProfile.api.stringColumnType
         </td>
       </tr><tr>
         <td>
@@ -481,9 +483,30 @@
           993
         </td>
         <td>
-          584
+          596
           -
-          584
+          604
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.relational.RelationalTableComponent.ColumnOptions.Unique
+        </td>
+        <td style="background: #AEF1AE">
+          EventTable.this.O.Unique
+        </td>
+      </tr><tr>
+        <td>
+          21
+        </td>
+        <td>
+          998
+        </td>
+        <td>
+          644
+          -
+          644
         </td>
         <td>
           ApplyToImplicitArgs
@@ -499,12 +522,96 @@
           21
         </td>
         <td>
-          995
+          997
         </td>
         <td>
-          631
+          644
           -
           644
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
+        </td>
+        <td style="background: #AEF1AE">
+          slick.jdbc.PostgresProfile.api.intColumnType
+        </td>
+      </tr><tr>
+        <td>
+          21
+        </td>
+        <td>
+          996
+        </td>
+        <td>
+          645
+          -
+          657
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;creator_fk&quot;
+        </td>
+      </tr><tr>
+        <td>
+          21
+        </td>
+        <td>
+          999
+        </td>
+        <td>
+          625
+          -
+          658
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.relational.RelationalTableComponent.Table.column
+        </td>
+        <td style="background: #AEF1AE">
+          EventTable.this.column[Option[Int]](&quot;creator_fk&quot;)(ast.this.TypedType.typedTypeToOptionTypedType[Int](slick.jdbc.PostgresProfile.api.intColumnType))
+        </td>
+      </tr><tr>
+        <td>
+          23
+        </td>
+        <td>
+          1001
+        </td>
+        <td>
+          690
+          -
+          690
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
+        </td>
+        <td style="background: #AEF1AE">
+          slick.jdbc.PostgresProfile.api.intColumnType
+        </td>
+      </tr><tr>
+        <td>
+          23
+        </td>
+        <td>
+          1000
+        </td>
+        <td>
+          691
+          -
+          704
         </td>
         <td>
           Literal
@@ -517,15 +624,15 @@
         </td>
       </tr><tr>
         <td>
-          21
+          23
         </td>
         <td>
-          997
+          1002
         </td>
         <td>
-          619
+          679
           -
-          645
+          705
         </td>
         <td>
           ApplyToImplicitArgs
@@ -538,120 +645,57 @@
         </td>
       </tr><tr>
         <td>
-          21
-        </td>
-        <td>
-          996
-        </td>
-        <td>
-          630
-          -
-          630
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
-        </td>
-        <td style="background: #AEF1AE">
-          slick.jdbc.PostgresProfile.api.intColumnType
-        </td>
-      </tr><tr>
-        <td>
-          23
+          25
         </td>
         <td>
           1019
         </td>
         <td>
-          657
+          717
           -
-          657
+          717
         </td>
         <td>
-          Select
+          ApplyToImplicitArgs
         </td>
         <td>
-          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
+          slick.lifted.RepShapeImplicits.repColumnShape
         </td>
         <td style="background: #AEF1AE">
-          slick.jdbc.PostgresProfile.api.intColumnType
+          lifted.this.Shape.repColumnShape[java.sql.Timestamp, Nothing](slick.jdbc.PostgresProfile.api.timestampColumnType)
         </td>
       </tr><tr>
         <td>
-          23
+          25
         </td>
         <td>
-          1001
+          1028
         </td>
         <td>
-          663
+          717
           -
-          667
+          717
         </td>
         <td>
-          Select
+          ApplyToImplicitArgs
         </td>
         <td>
-          whatson.db.EventTable.name
+          slick.lifted.RepShapeImplicits.repColumnShape
         </td>
         <td style="background: #AEF1AE">
-          EventTable.this.name
+          lifted.this.Shape.repColumnShape[Int, Nothing](slick.jdbc.PostgresProfile.api.intColumnType)
         </td>
       </tr><tr>
         <td>
-          23
+          25
         </td>
         <td>
           1010
         </td>
         <td>
-          657
+          748
           -
-          657
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.stringColumnType
-        </td>
-        <td style="background: #AEF1AE">
-          slick.jdbc.PostgresProfile.api.stringColumnType
-        </td>
-      </tr><tr>
-        <td>
-          23
-        </td>
-        <td>
-          1022
-        </td>
-        <td>
-          702
-          -
-          714
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          whatson.model.Event.tupled
-        </td>
-        <td style="background: #AEF1AE">
-          whatson.model.Event.tupled
-        </td>
-      </tr><tr>
-        <td>
-          23
-        </td>
-        <td>
-          1004
-        </td>
-        <td>
-          676
-          -
-          685
+          757
         </td>
         <td>
           Select
@@ -664,332 +708,36 @@
         </td>
       </tr><tr>
         <td>
-          23
+          25
         </td>
         <td>
-          1013
+          1022
         </td>
         <td>
-          657
+          717
           -
-          657
-        </td>
-        <td>
-          ApplyToImplicitArgs
-        </td>
-        <td>
-          slick.lifted.RepShapeImplicits.repColumnShape
-        </td>
-        <td style="background: #AEF1AE">
-          lifted.this.Shape.repColumnShape[java.sql.Timestamp, Nothing](slick.jdbc.PostgresProfile.api.timestampColumnType)
-        </td>
-      </tr><tr>
-        <td>
-          23
-        </td>
-        <td>
-          1016
-        </td>
-        <td>
-          657
-          -
-          657
+          717
         </td>
         <td>
           Select
         </td>
         <td>
-          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.stringColumnType
         </td>
         <td style="background: #AEF1AE">
-          slick.jdbc.PostgresProfile.api.intColumnType
+          slick.jdbc.PostgresProfile.api.stringColumnType
         </td>
       </tr><tr>
         <td>
-          23
+          25
         </td>
         <td>
-          1025
+          1031
         </td>
         <td>
-          698
+          788
           -
-          698
-        </td>
-        <td>
-          TypeApply
-        </td>
-        <td>
-          slick.lifted.MappedProjection.mappedProjectionShape
-        </td>
-        <td style="background: #AEF1AE">
-          lifted.this.MappedProjection.mappedProjectionShape[slick.lifted.FlatShapeLevel, whatson.model.Event, (Option[Int], String, java.sql.Timestamp, java.sql.Timestamp, Option[Int], Int)]
-        </td>
-      </tr><tr>
-        <td>
-          23
-        </td>
-        <td>
-          998
-        </td>
-        <td>
-          658
-          -
-          660
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          whatson.db.EventTable.id
-        </td>
-        <td style="background: #AEF1AE">
-          EventTable.this.id
-        </td>
-      </tr><tr>
-        <td>
-          23
-        </td>
-        <td>
-          1007
-        </td>
-        <td>
-          657
-          -
-          657
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
-        </td>
-        <td style="background: #AEF1AE">
-          slick.jdbc.PostgresProfile.api.intColumnType
-        </td>
-      </tr><tr>
-        <td>
-          23
-        </td>
-        <td>
-          1015
-        </td>
-        <td>
-          657
-          -
-          657
-        </td>
-        <td>
-          ApplyToImplicitArgs
-        </td>
-        <td>
-          slick.lifted.RepShapeImplicits.repColumnShape
-        </td>
-        <td style="background: #AEF1AE">
-          lifted.this.Shape.repColumnShape[java.sql.Timestamp, Nothing](slick.jdbc.PostgresProfile.api.timestampColumnType)
-        </td>
-      </tr><tr>
-        <td>
-          23
-        </td>
-        <td>
-          1024
-        </td>
-        <td>
-          657
-          -
-          730
-        </td>
-        <td>
-          ApplyToImplicitArgs
-        </td>
-        <td>
-          slick.lifted.ShapedValue.&lt;&gt;
-        </td>
-        <td style="background: #AEF1AE">
-          slick.jdbc.PostgresProfile.api.anyToShapedValue[(slick.lifted.Rep[Option[Int]], slick.lifted.Rep[String], slick.lifted.Rep[java.sql.Timestamp], slick.lifted.Rep[java.sql.Timestamp], slick.lifted.Rep[Option[Int]], slick.lifted.Rep[Int]), (Option[Int], String, java.sql.Timestamp, java.sql.Timestamp, Option[Int], Int)](scala.Tuple6.apply[slick.lifted.Rep[Option[Int]], slick.lifted.Rep[String], slick.lifted.Rep[java.sql.Timestamp], slick.lifted.Rep[java.sql.Timestamp], slick.lifted.Rep[Option[Int]], slick.lifted.Rep[Int]](slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](EventTable.this.id)(slick.jdbc.PostgresProfile.api.intColumnType).?, EventTable.this.name, EventTable.this.from, EventTable.this.to, EventTable.this.creatorId, EventTable.this.locationId))(lifted.this.Shape.tuple6Shape[slick.jdbc.PostgresProfile.api.FlatShapeLevel, slick.lifted.Rep[Option[Int]], slick.lifted.Rep[String], slick.lifted.Rep[java.sql.Timestamp], slick.lifted.Rep[java.sql.Timestamp], slick.lifted.Rep[Option[Int]], slick.lifted.Rep[Int], Option[Int], String, java.sql.Timestamp, java.sql.Timestamp, Option[Int], Int, slick.lifted.Rep[Option[Int]], slick.lifted.Rep[String], slick.lifted.Rep[java.sql.Timestamp], slick.lifted.Rep[java.sql.Timestamp], slick.lifted.Rep[Option[Int]], slick.lifted.Rep[Int]](lifted.this.Shape.optionShape[Int, Int, Int, Nothing](lifted.this.Shape.repColumnShape[Int, Nothing](slick.jdbc.PostgresProfile.api.intColumnType)), lifted.this.Shape.repColumnShape[String, Nothing](slick.jdbc.PostgresProfile.api.stringColumnType), lifted.this.Shape.repColumnShape[java.sql.Timestamp, Nothing](slick.jdbc.PostgresProfile.api.timestampColumnType), lifted.this.Shape.repColumnShape[java.sql.Timestamp, Nothing](slick.jdbc.PostgresProfile.api.timestampColumnType), lifted.this.Shape.optionShape[Int, Int, Int, Nothing](lifted.this.Shape.repColumnShape[Int, Nothing](slick.jdbc.PostgresProfile.api.intColumnType)), lifted.this.Shape.repColumnShape[Int, Nothing](slick.jdbc.PostgresProfile.api.intColumnType))).&lt;&gt;[whatson.model.Event](whatson.model.Event.tupled, {
-  ((x$0: whatson.model.Event) =&gt; whatson.model.Event.unapply(x$0))
-})((ClassTag.apply[whatson.model.Event](classOf[whatson.model.Event]): scala.reflect.ClassTag[whatson.model.Event]))
-        </td>
-      </tr><tr>
-        <td>
-          23
-        </td>
-        <td>
-          1006
-        </td>
-        <td>
-          657
-          -
-          697
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          scala.Tuple6.apply
-        </td>
-        <td style="background: #AEF1AE">
-          scala.Tuple6.apply[slick.lifted.Rep[Option[Int]], slick.lifted.Rep[String], slick.lifted.Rep[java.sql.Timestamp], slick.lifted.Rep[java.sql.Timestamp], slick.lifted.Rep[Option[Int]], slick.lifted.Rep[Int]](slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](EventTable.this.id)(slick.jdbc.PostgresProfile.api.intColumnType).?, EventTable.this.name, EventTable.this.from, EventTable.this.to, EventTable.this.creatorId, EventTable.this.locationId)
-        </td>
-      </tr><tr>
-        <td>
-          23
-        </td>
-        <td>
-          1018
-        </td>
-        <td>
-          657
-          -
-          657
-        </td>
-        <td>
-          ApplyToImplicitArgs
-        </td>
-        <td>
-          slick.lifted.RepShapeImplicits.optionShape
-        </td>
-        <td style="background: #AEF1AE">
-          lifted.this.Shape.optionShape[Int, Int, Int, Nothing](lifted.this.Shape.repColumnShape[Int, Nothing](slick.jdbc.PostgresProfile.api.intColumnType))
-        </td>
-      </tr><tr>
-        <td>
-          23
-        </td>
-        <td>
-          1009
-        </td>
-        <td>
-          657
-          -
-          657
-        </td>
-        <td>
-          ApplyToImplicitArgs
-        </td>
-        <td>
-          slick.lifted.RepShapeImplicits.optionShape
-        </td>
-        <td style="background: #AEF1AE">
-          lifted.this.Shape.optionShape[Int, Int, Int, Nothing](lifted.this.Shape.repColumnShape[Int, Nothing](slick.jdbc.PostgresProfile.api.intColumnType))
-        </td>
-      </tr><tr>
-        <td>
-          23
-        </td>
-        <td>
-          1000
-        </td>
-        <td>
-          658
-          -
-          662
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          slick.lifted.BaseColumnExtensionMethods.?
-        </td>
-        <td style="background: #AEF1AE">
-          slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](EventTable.this.id)(slick.jdbc.PostgresProfile.api.intColumnType).?
-        </td>
-      </tr><tr>
-        <td>
-          23
-        </td>
-        <td>
-          1003
-        </td>
-        <td>
-          673
-          -
-          675
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          whatson.db.EventTable.to
-        </td>
-        <td style="background: #AEF1AE">
-          EventTable.this.to
-        </td>
-      </tr><tr>
-        <td>
-          23
-        </td>
-        <td>
-          1012
-        </td>
-        <td>
-          657
-          -
-          657
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.timestampColumnType
-        </td>
-        <td style="background: #AEF1AE">
-          slick.jdbc.PostgresProfile.api.timestampColumnType
-        </td>
-      </tr><tr>
-        <td>
-          23
-        </td>
-        <td>
-          1021
-        </td>
-        <td>
-          657
-          -
-          657
-        </td>
-        <td>
-          ApplyToImplicitArgs
-        </td>
-        <td>
-          slick.lifted.TupleShapeImplicits.tuple6Shape
-        </td>
-        <td style="background: #AEF1AE">
-          lifted.this.Shape.tuple6Shape[slick.jdbc.PostgresProfile.api.FlatShapeLevel, slick.lifted.Rep[Option[Int]], slick.lifted.Rep[String], slick.lifted.Rep[java.sql.Timestamp], slick.lifted.Rep[java.sql.Timestamp], slick.lifted.Rep[Option[Int]], slick.lifted.Rep[Int], Option[Int], String, java.sql.Timestamp, java.sql.Timestamp, Option[Int], Int, slick.lifted.Rep[Option[Int]], slick.lifted.Rep[String], slick.lifted.Rep[java.sql.Timestamp], slick.lifted.Rep[java.sql.Timestamp], slick.lifted.Rep[Option[Int]], slick.lifted.Rep[Int]](lifted.this.Shape.optionShape[Int, Int, Int, Nothing](lifted.this.Shape.repColumnShape[Int, Nothing](slick.jdbc.PostgresProfile.api.intColumnType)), lifted.this.Shape.repColumnShape[String, Nothing](slick.jdbc.PostgresProfile.api.stringColumnType), lifted.this.Shape.repColumnShape[java.sql.Timestamp, Nothing](slick.jdbc.PostgresProfile.api.timestampColumnType), lifted.this.Shape.repColumnShape[java.sql.Timestamp, Nothing](slick.jdbc.PostgresProfile.api.timestampColumnType), lifted.this.Shape.optionShape[Int, Int, Int, Nothing](lifted.this.Shape.repColumnShape[Int, Nothing](slick.jdbc.PostgresProfile.api.intColumnType)), lifted.this.Shape.repColumnShape[Int, Nothing](slick.jdbc.PostgresProfile.api.intColumnType))
-        </td>
-      </tr><tr>
-        <td>
-          23
-        </td>
-        <td>
-          1020
-        </td>
-        <td>
-          657
-          -
-          657
-        </td>
-        <td>
-          ApplyToImplicitArgs
-        </td>
-        <td>
-          slick.lifted.RepShapeImplicits.repColumnShape
-        </td>
-        <td style="background: #AEF1AE">
-          lifted.this.Shape.repColumnShape[Int, Nothing](slick.jdbc.PostgresProfile.api.intColumnType)
-        </td>
-      </tr><tr>
-        <td>
-          23
-        </td>
-        <td>
-          1023
-        </td>
-        <td>
-          716
-          -
-          729
+          801
         </td>
         <td>
           Apply
@@ -1002,80 +750,15 @@
         </td>
       </tr><tr>
         <td>
-          23
+          25
         </td>
         <td>
-          1014
+          1004
         </td>
         <td>
-          657
+          718
           -
-          657
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.timestampColumnType
-        </td>
-        <td style="background: #AEF1AE">
-          slick.jdbc.PostgresProfile.api.timestampColumnType
-        </td>
-      </tr><tr>
-        <td>
-          23
-        </td>
-        <td>
-          1005
-        </td>
-        <td>
-          686
-          -
-          696
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          whatson.db.EventTable.locationId
-        </td>
-        <td style="background: #AEF1AE">
-          EventTable.this.locationId
-        </td>
-      </tr><tr>
-        <td>
-          23
-        </td>
-        <td>
-          1026
-        </td>
-        <td>
-          657
-          -
-          730
-        </td>
-        <td>
-          ApplyToImplicitArgs
-        </td>
-        <td>
-          slick.lifted.ProvenShape.proveShapeOf
-        </td>
-        <td style="background: #AEF1AE">
-          slick.lifted.ProvenShape.proveShapeOf[slick.lifted.MappedProjection[whatson.model.Event,(Option[Int], String, java.sql.Timestamp, java.sql.Timestamp, Option[Int], Int)], whatson.model.Event](slick.jdbc.PostgresProfile.api.anyToShapedValue[(slick.lifted.Rep[Option[Int]], slick.lifted.Rep[String], slick.lifted.Rep[java.sql.Timestamp], slick.lifted.Rep[java.sql.Timestamp], slick.lifted.Rep[Option[Int]], slick.lifted.Rep[Int]), (Option[Int], String, java.sql.Timestamp, java.sql.Timestamp, Option[Int], Int)](scala.Tuple6.apply[slick.lifted.Rep[Option[Int]], slick.lifted.Rep[String], slick.lifted.Rep[java.sql.Timestamp], slick.lifted.Rep[java.sql.Timestamp], slick.lifted.Rep[Option[Int]], slick.lifted.Rep[Int]](slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](EventTable.this.id)(slick.jdbc.PostgresProfile.api.intColumnType).?, EventTable.this.name, EventTable.this.from, EventTable.this.to, EventTable.this.creatorId, EventTable.this.locationId))(lifted.this.Shape.tuple6Shape[slick.jdbc.PostgresProfile.api.FlatShapeLevel, slick.lifted.Rep[Option[Int]], slick.lifted.Rep[String], slick.lifted.Rep[java.sql.Timestamp], slick.lifted.Rep[java.sql.Timestamp], slick.lifted.Rep[Option[Int]], slick.lifted.Rep[Int], Option[Int], String, java.sql.Timestamp, java.sql.Timestamp, Option[Int], Int, slick.lifted.Rep[Option[Int]], slick.lifted.Rep[String], slick.lifted.Rep[java.sql.Timestamp], slick.lifted.Rep[java.sql.Timestamp], slick.lifted.Rep[Option[Int]], slick.lifted.Rep[Int]](lifted.this.Shape.optionShape[Int, Int, Int, Nothing](lifted.this.Shape.repColumnShape[Int, Nothing](slick.jdbc.PostgresProfile.api.intColumnType)), lifted.this.Shape.repColumnShape[String, Nothing](slick.jdbc.PostgresProfile.api.stringColumnType), lifted.this.Shape.repColumnShape[java.sql.Timestamp, Nothing](slick.jdbc.PostgresProfile.api.timestampColumnType), lifted.this.Shape.repColumnShape[java.sql.Timestamp, Nothing](slick.jdbc.PostgresProfile.api.timestampColumnType), lifted.this.Shape.optionShape[Int, Int, Int, Nothing](lifted.this.Shape.repColumnShape[Int, Nothing](slick.jdbc.PostgresProfile.api.intColumnType)), lifted.this.Shape.repColumnShape[Int, Nothing](slick.jdbc.PostgresProfile.api.intColumnType))).&lt;&gt;[whatson.model.Event](whatson.model.Event.tupled, {
-  ((x$0: whatson.model.Event) =&gt; whatson.model.Event.unapply(x$0))
-})((ClassTag.apply[whatson.model.Event](classOf[whatson.model.Event]): scala.reflect.ClassTag[whatson.model.Event])))(lifted.this.MappedProjection.mappedProjectionShape[slick.lifted.FlatShapeLevel, whatson.model.Event, (Option[Int], String, java.sql.Timestamp, java.sql.Timestamp, Option[Int], Int)])
-        </td>
-      </tr><tr>
-        <td>
-          23
-        </td>
-        <td>
-          999
-        </td>
-        <td>
-          658
-          -
-          658
+          718
         </td>
         <td>
           Select
@@ -1088,15 +771,57 @@
         </td>
       </tr><tr>
         <td>
-          23
+          25
         </td>
         <td>
-          1008
+          1013
         </td>
         <td>
-          657
+          717
           -
-          657
+          717
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
+        </td>
+        <td style="background: #AEF1AE">
+          slick.jdbc.PostgresProfile.api.intColumnType
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          1016
+        </td>
+        <td>
+          717
+          -
+          717
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.stringColumnType
+        </td>
+        <td style="background: #AEF1AE">
+          slick.jdbc.PostgresProfile.api.stringColumnType
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          1025
+        </td>
+        <td>
+          717
+          -
+          717
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1109,57 +834,15 @@
         </td>
       </tr><tr>
         <td>
-          23
+          25
         </td>
         <td>
-          1017
+          1007
         </td>
         <td>
-          657
+          728
           -
-          657
-        </td>
-        <td>
-          ApplyToImplicitArgs
-        </td>
-        <td>
-          slick.lifted.RepShapeImplicits.repColumnShape
-        </td>
-        <td style="background: #AEF1AE">
-          lifted.this.Shape.repColumnShape[Int, Nothing](slick.jdbc.PostgresProfile.api.intColumnType)
-        </td>
-      </tr><tr>
-        <td>
-          23
-        </td>
-        <td>
-          1011
-        </td>
-        <td>
-          657
-          -
-          657
-        </td>
-        <td>
-          ApplyToImplicitArgs
-        </td>
-        <td>
-          slick.lifted.RepShapeImplicits.repColumnShape
-        </td>
-        <td style="background: #AEF1AE">
-          lifted.this.Shape.repColumnShape[String, Nothing](slick.jdbc.PostgresProfile.api.stringColumnType)
-        </td>
-      </tr><tr>
-        <td>
-          23
-        </td>
-        <td>
-          1002
-        </td>
-        <td>
-          668
-          -
-          672
+          732
         </td>
         <td>
           Select
@@ -1175,105 +858,65 @@
           25
         </td>
         <td>
-          1037
-        </td>
-        <td>
-          804
-          -
-          804
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
-        </td>
-        <td style="background: #F0ADAD">
-          slick.jdbc.PostgresProfile.api.intColumnType
-        </td>
-      </tr><tr>
-        <td>
-          25
-        </td>
-        <td>
-          1028
-        </td>
-        <td>
-          769
-          -
-          778
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          whatson.db.EventTable.creatorId
-        </td>
-        <td style="background: #F0ADAD">
-          EventTable.this.creatorId
-        </td>
-      </tr><tr>
-        <td>
-          25
-        </td>
-        <td>
-          1031
-        </td>
-        <td>
-          807
-          -
-          807
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
-        </td>
-        <td style="background: #F0ADAD">
-          slick.jdbc.PostgresProfile.api.intColumnType
-        </td>
-      </tr><tr>
-        <td>
-          25
-        </td>
-        <td>
-          1040
-        </td>
-        <td>
-          748
-          -
-          812
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          slick.lifted.AbstractTable.foreignKey
-        </td>
-        <td style="background: #F0ADAD">
-          EventTable.this.foreignKey[slick.lifted.Rep[Option[Int]], Option[Int], whatson.db.OrganizerTable, whatson.model.Organizer](x$17, x$18, x$19)(x$20, x$21, x$22)(lifted.this.Shape.tableShape[slick.lifted.FlatShapeLevel, whatson.model.Organizer, whatson.db.OrganizerTable](scala.Predef.$conforms[whatson.db.OrganizerTable]), lifted.this.Shape.optionShape[Int, Int, Int, Nothing](lifted.this.Shape.repColumnShape[Int, Nothing](slick.jdbc.PostgresProfile.api.intColumnType)))
-        </td>
-      </tr><tr>
-        <td>
-          25
-        </td>
-        <td>
           1034
         </td>
         <td>
-          758
+          717
           -
-          758
+          802
         </td>
         <td>
-          Apply
+          ApplyToImplicitArgs
         </td>
         <td>
-          slick.lifted.AbstractTable.foreignKey$default$6
+          slick.lifted.ProvenShape.proveShapeOf
         </td>
-        <td style="background: #F0ADAD">
-          EventTable.this.foreignKey$default$6[slick.lifted.Rep[Option[Int]], Option[Int], whatson.db.OrganizerTable, whatson.model.Organizer](x$17, x$18, x$19)
+        <td style="background: #AEF1AE">
+          slick.lifted.ProvenShape.proveShapeOf[slick.lifted.MappedProjection[whatson.model.Event,(Option[Int], String, java.sql.Timestamp, java.sql.Timestamp, String, Option[Int], Int)], whatson.model.Event](slick.jdbc.PostgresProfile.api.anyToShapedValue[(slick.lifted.Rep[Option[Int]], slick.lifted.Rep[String], slick.lifted.Rep[java.sql.Timestamp], slick.lifted.Rep[java.sql.Timestamp], slick.lifted.Rep[String], slick.lifted.Rep[Option[Int]], slick.lifted.Rep[Int]), (Option[Int], String, java.sql.Timestamp, java.sql.Timestamp, String, Option[Int], Int)](scala.Tuple7.apply[slick.lifted.Rep[Option[Int]], slick.lifted.Rep[String], slick.lifted.Rep[java.sql.Timestamp], slick.lifted.Rep[java.sql.Timestamp], slick.lifted.Rep[String], slick.lifted.Rep[Option[Int]], slick.lifted.Rep[Int]](slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](EventTable.this.id)(slick.jdbc.PostgresProfile.api.intColumnType).?, EventTable.this.name, EventTable.this.from, EventTable.this.to, EventTable.this.description, EventTable.this.creatorId, EventTable.this.locationId))(lifted.this.Shape.tuple7Shape[slick.jdbc.PostgresProfile.api.FlatShapeLevel, slick.lifted.Rep[Option[Int]], slick.lifted.Rep[String], slick.lifted.Rep[java.sql.Timestamp], slick.lifted.Rep[java.sql.Timestamp], slick.lifted.Rep[String], slick.lifted.Rep[Option[Int]], slick.lifted.Rep[Int], Option[Int], String, java.sql.Timestamp, java.sql.Timestamp, String, Option[Int], Int, slick.lifted.Rep[Option[Int]], slick.lifted.Rep[String], slick.lifted.Rep[java.sql.Timestamp], slick.lifted.Rep[java.sql.Timestamp], slick.lifted.Rep[String], slick.lifted.Rep[Option[Int]], slick.lifted.Rep[Int]](lifted.this.Shape.optionShape[Int, Int, Int, Nothing](lifted.this.Shape.repColumnShape[Int, Nothing](slick.jdbc.PostgresProfile.api.intColumnType)), lifted.this.Shape.repColumnShape[String, Nothing](slick.jdbc.PostgresProfile.api.stringColumnType), lifted.this.Shape.repColumnShape[java.sql.Timestamp, Nothing](slick.jdbc.PostgresProfile.api.timestampColumnType), lifted.this.Shape.repColumnShape[java.sql.Timestamp, Nothing](slick.jdbc.PostgresProfile.api.timestampColumnType), lifted.this.Shape.repColumnShape[String, Nothing](slick.jdbc.PostgresProfile.api.stringColumnType), lifted.this.Shape.optionShape[Int, Int, Int, Nothing](lifted.this.Shape.repColumnShape[Int, Nothing](slick.jdbc.PostgresProfile.api.intColumnType)), lifted.this.Shape.repColumnShape[Int, Nothing](slick.jdbc.PostgresProfile.api.intColumnType))).&lt;&gt;[whatson.model.Event](whatson.model.Event.tupled, {
+  ((x$0: whatson.model.Event) =&gt; whatson.model.Event.unapply(x$0))
+})((ClassTag.apply[whatson.model.Event](classOf[whatson.model.Event]): scala.reflect.ClassTag[whatson.model.Event])))(lifted.this.MappedProjection.mappedProjectionShape[slick.lifted.FlatShapeLevel, whatson.model.Event, (Option[Int], String, java.sql.Timestamp, java.sql.Timestamp, String, Option[Int], Int)])
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          1015
+        </td>
+        <td>
+          717
+          -
+          717
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.RepShapeImplicits.optionShape
+        </td>
+        <td style="background: #AEF1AE">
+          lifted.this.Shape.optionShape[Int, Int, Int, Nothing](lifted.this.Shape.repColumnShape[Int, Nothing](slick.jdbc.PostgresProfile.api.intColumnType))
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          1024
+        </td>
+        <td>
+          717
+          -
+          717
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
+        </td>
+        <td style="background: #AEF1AE">
+          slick.jdbc.PostgresProfile.api.intColumnType
         </td>
       </tr><tr>
         <td>
@@ -1283,18 +926,39 @@
           1033
         </td>
         <td>
-          758
+          770
           -
-          758
+          770
         </td>
         <td>
-          Apply
+          TypeApply
         </td>
         <td>
-          slick.lifted.AbstractTable.foreignKey$default$5
+          slick.lifted.MappedProjection.mappedProjectionShape
         </td>
-        <td style="background: #F0ADAD">
-          EventTable.this.foreignKey$default$5[slick.lifted.Rep[Option[Int]], Option[Int], whatson.db.OrganizerTable, whatson.model.Organizer](x$17, x$18, x$19)
+        <td style="background: #AEF1AE">
+          lifted.this.MappedProjection.mappedProjectionShape[slick.lifted.FlatShapeLevel, whatson.model.Event, (Option[Int], String, java.sql.Timestamp, java.sql.Timestamp, String, Option[Int], Int)]
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          1006
+        </td>
+        <td>
+          723
+          -
+          727
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.db.EventTable.name
+        </td>
+        <td style="background: #AEF1AE">
+          EventTable.this.name
         </td>
       </tr><tr>
         <td>
@@ -1304,39 +968,60 @@
           1027
         </td>
         <td>
-          759
+          717
           -
-          768
+          717
         </td>
         <td>
-          Literal
+          Select
         </td>
         <td>
-          &lt;nosymbol&gt;
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
         </td>
-        <td style="background: #F0ADAD">
-          &quot;creator&quot;
+        <td style="background: #AEF1AE">
+          slick.jdbc.PostgresProfile.api.intColumnType
         </td>
       </tr><tr>
         <td>
           25
         </td>
         <td>
-          1036
+          1018
         </td>
         <td>
-          804
+          717
           -
-          804
+          717
         </td>
         <td>
-          ApplyToImplicitArgs
+          Select
         </td>
         <td>
-          slick.lifted.AbstractTableShapeImplicits.tableShape
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.timestampColumnType
         </td>
-        <td style="background: #F0ADAD">
-          lifted.this.Shape.tableShape[slick.lifted.FlatShapeLevel, whatson.model.Organizer, whatson.db.OrganizerTable](scala.Predef.$conforms[whatson.db.OrganizerTable])
+        <td style="background: #AEF1AE">
+          slick.jdbc.PostgresProfile.api.timestampColumnType
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          1009
+        </td>
+        <td>
+          736
+          -
+          747
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.db.EventTable.description
+        </td>
+        <td style="background: #AEF1AE">
+          EventTable.this.description
         </td>
       </tr><tr>
         <td>
@@ -1346,39 +1031,102 @@
           1030
         </td>
         <td>
-          805
+          774
           -
-          809
+          786
         </td>
         <td>
           Select
         </td>
         <td>
-          whatson.db.OrganizerTable.id
+          whatson.model.Event.tupled
         </td>
-        <td style="background: #F0ADAD">
-          x$1.id
+        <td style="background: #AEF1AE">
+          whatson.model.Event.tupled
         </td>
       </tr><tr>
         <td>
           25
         </td>
         <td>
-          1039
+          1003
         </td>
         <td>
-          804
+          718
           -
-          804
+          720
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.db.EventTable.id
+        </td>
+        <td style="background: #AEF1AE">
+          EventTable.this.id
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          1012
+        </td>
+        <td>
+          717
+          -
+          769
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Tuple7.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Tuple7.apply[slick.lifted.Rep[Option[Int]], slick.lifted.Rep[String], slick.lifted.Rep[java.sql.Timestamp], slick.lifted.Rep[java.sql.Timestamp], slick.lifted.Rep[String], slick.lifted.Rep[Option[Int]], slick.lifted.Rep[Int]](slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](EventTable.this.id)(slick.jdbc.PostgresProfile.api.intColumnType).?, EventTable.this.name, EventTable.this.from, EventTable.this.to, EventTable.this.description, EventTable.this.creatorId, EventTable.this.locationId)
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          1021
+        </td>
+        <td>
+          717
+          -
+          717
         </td>
         <td>
           ApplyToImplicitArgs
         </td>
         <td>
-          slick.lifted.RepShapeImplicits.optionShape
+          slick.lifted.RepShapeImplicits.repColumnShape
         </td>
-        <td style="background: #F0ADAD">
-          lifted.this.Shape.optionShape[Int, Int, Int, Nothing](lifted.this.Shape.repColumnShape[Int, Nothing](slick.jdbc.PostgresProfile.api.intColumnType))
+        <td style="background: #AEF1AE">
+          lifted.this.Shape.repColumnShape[java.sql.Timestamp, Nothing](slick.jdbc.PostgresProfile.api.timestampColumnType)
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          1020
+        </td>
+        <td>
+          717
+          -
+          717
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.timestampColumnType
+        </td>
+        <td style="background: #AEF1AE">
+          slick.jdbc.PostgresProfile.api.timestampColumnType
         </td>
       </tr><tr>
         <td>
@@ -1388,39 +1136,18 @@
           1029
         </td>
         <td>
-          779
+          717
           -
-          803
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          whatson.db.OrganizerTable.organizer
-        </td>
-        <td style="background: #F0ADAD">
-          OrganizerTable.organizer
-        </td>
-      </tr><tr>
-        <td>
-          25
-        </td>
-        <td>
-          1038
-        </td>
-        <td>
-          804
-          -
-          804
+          717
         </td>
         <td>
           ApplyToImplicitArgs
         </td>
         <td>
-          slick.lifted.RepShapeImplicits.repColumnShape
+          slick.lifted.TupleShapeImplicits.tuple7Shape
         </td>
-        <td style="background: #F0ADAD">
-          lifted.this.Shape.repColumnShape[Int, Nothing](slick.jdbc.PostgresProfile.api.intColumnType)
+        <td style="background: #AEF1AE">
+          lifted.this.Shape.tuple7Shape[slick.jdbc.PostgresProfile.api.FlatShapeLevel, slick.lifted.Rep[Option[Int]], slick.lifted.Rep[String], slick.lifted.Rep[java.sql.Timestamp], slick.lifted.Rep[java.sql.Timestamp], slick.lifted.Rep[String], slick.lifted.Rep[Option[Int]], slick.lifted.Rep[Int], Option[Int], String, java.sql.Timestamp, java.sql.Timestamp, String, Option[Int], Int, slick.lifted.Rep[Option[Int]], slick.lifted.Rep[String], slick.lifted.Rep[java.sql.Timestamp], slick.lifted.Rep[java.sql.Timestamp], slick.lifted.Rep[String], slick.lifted.Rep[Option[Int]], slick.lifted.Rep[Int]](lifted.this.Shape.optionShape[Int, Int, Int, Nothing](lifted.this.Shape.repColumnShape[Int, Nothing](slick.jdbc.PostgresProfile.api.intColumnType)), lifted.this.Shape.repColumnShape[String, Nothing](slick.jdbc.PostgresProfile.api.stringColumnType), lifted.this.Shape.repColumnShape[java.sql.Timestamp, Nothing](slick.jdbc.PostgresProfile.api.timestampColumnType), lifted.this.Shape.repColumnShape[java.sql.Timestamp, Nothing](slick.jdbc.PostgresProfile.api.timestampColumnType), lifted.this.Shape.repColumnShape[String, Nothing](slick.jdbc.PostgresProfile.api.stringColumnType), lifted.this.Shape.optionShape[Int, Int, Int, Nothing](lifted.this.Shape.repColumnShape[Int, Nothing](slick.jdbc.PostgresProfile.api.intColumnType)), lifted.this.Shape.repColumnShape[Int, Nothing](slick.jdbc.PostgresProfile.api.intColumnType))
         </td>
       </tr><tr>
         <td>
@@ -1430,9 +1157,74 @@
           1032
         </td>
         <td>
-          805
+          717
           -
-          811
+          802
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.ShapedValue.&lt;&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          slick.jdbc.PostgresProfile.api.anyToShapedValue[(slick.lifted.Rep[Option[Int]], slick.lifted.Rep[String], slick.lifted.Rep[java.sql.Timestamp], slick.lifted.Rep[java.sql.Timestamp], slick.lifted.Rep[String], slick.lifted.Rep[Option[Int]], slick.lifted.Rep[Int]), (Option[Int], String, java.sql.Timestamp, java.sql.Timestamp, String, Option[Int], Int)](scala.Tuple7.apply[slick.lifted.Rep[Option[Int]], slick.lifted.Rep[String], slick.lifted.Rep[java.sql.Timestamp], slick.lifted.Rep[java.sql.Timestamp], slick.lifted.Rep[String], slick.lifted.Rep[Option[Int]], slick.lifted.Rep[Int]](slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](EventTable.this.id)(slick.jdbc.PostgresProfile.api.intColumnType).?, EventTable.this.name, EventTable.this.from, EventTable.this.to, EventTable.this.description, EventTable.this.creatorId, EventTable.this.locationId))(lifted.this.Shape.tuple7Shape[slick.jdbc.PostgresProfile.api.FlatShapeLevel, slick.lifted.Rep[Option[Int]], slick.lifted.Rep[String], slick.lifted.Rep[java.sql.Timestamp], slick.lifted.Rep[java.sql.Timestamp], slick.lifted.Rep[String], slick.lifted.Rep[Option[Int]], slick.lifted.Rep[Int], Option[Int], String, java.sql.Timestamp, java.sql.Timestamp, String, Option[Int], Int, slick.lifted.Rep[Option[Int]], slick.lifted.Rep[String], slick.lifted.Rep[java.sql.Timestamp], slick.lifted.Rep[java.sql.Timestamp], slick.lifted.Rep[String], slick.lifted.Rep[Option[Int]], slick.lifted.Rep[Int]](lifted.this.Shape.optionShape[Int, Int, Int, Nothing](lifted.this.Shape.repColumnShape[Int, Nothing](slick.jdbc.PostgresProfile.api.intColumnType)), lifted.this.Shape.repColumnShape[String, Nothing](slick.jdbc.PostgresProfile.api.stringColumnType), lifted.this.Shape.repColumnShape[java.sql.Timestamp, Nothing](slick.jdbc.PostgresProfile.api.timestampColumnType), lifted.this.Shape.repColumnShape[java.sql.Timestamp, Nothing](slick.jdbc.PostgresProfile.api.timestampColumnType), lifted.this.Shape.repColumnShape[String, Nothing](slick.jdbc.PostgresProfile.api.stringColumnType), lifted.this.Shape.optionShape[Int, Int, Int, Nothing](lifted.this.Shape.repColumnShape[Int, Nothing](slick.jdbc.PostgresProfile.api.intColumnType)), lifted.this.Shape.repColumnShape[Int, Nothing](slick.jdbc.PostgresProfile.api.intColumnType))).&lt;&gt;[whatson.model.Event](whatson.model.Event.tupled, {
+  ((x$0: whatson.model.Event) =&gt; whatson.model.Event.unapply(x$0))
+})((ClassTag.apply[whatson.model.Event](classOf[whatson.model.Event]): scala.reflect.ClassTag[whatson.model.Event]))
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          1023
+        </td>
+        <td>
+          717
+          -
+          717
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.RepShapeImplicits.repColumnShape
+        </td>
+        <td style="background: #AEF1AE">
+          lifted.this.Shape.repColumnShape[String, Nothing](slick.jdbc.PostgresProfile.api.stringColumnType)
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          1014
+        </td>
+        <td>
+          717
+          -
+          717
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.RepShapeImplicits.repColumnShape
+        </td>
+        <td style="background: #AEF1AE">
+          lifted.this.Shape.repColumnShape[Int, Nothing](slick.jdbc.PostgresProfile.api.intColumnType)
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          1005
+        </td>
+        <td>
+          718
+          -
+          722
         </td>
         <td>
           Select
@@ -1440,20 +1232,104 @@
         <td>
           slick.lifted.BaseColumnExtensionMethods.?
         </td>
-        <td style="background: #F0ADAD">
-          slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](x$1.id)(slick.jdbc.PostgresProfile.api.intColumnType).?
+        <td style="background: #AEF1AE">
+          slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](EventTable.this.id)(slick.jdbc.PostgresProfile.api.intColumnType).?
         </td>
       </tr><tr>
         <td>
           25
         </td>
         <td>
-          1035
+          1026
         </td>
         <td>
-          804
+          717
           -
-          804
+          717
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.RepShapeImplicits.optionShape
+        </td>
+        <td style="background: #AEF1AE">
+          lifted.this.Shape.optionShape[Int, Int, Int, Nothing](lifted.this.Shape.repColumnShape[Int, Nothing](slick.jdbc.PostgresProfile.api.intColumnType))
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          1008
+        </td>
+        <td>
+          733
+          -
+          735
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.db.EventTable.to
+        </td>
+        <td style="background: #AEF1AE">
+          EventTable.this.to
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          1017
+        </td>
+        <td>
+          717
+          -
+          717
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.RepShapeImplicits.repColumnShape
+        </td>
+        <td style="background: #AEF1AE">
+          lifted.this.Shape.repColumnShape[String, Nothing](slick.jdbc.PostgresProfile.api.stringColumnType)
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          1011
+        </td>
+        <td>
+          758
+          -
+          768
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.db.EventTable.locationId
+        </td>
+        <td style="background: #AEF1AE">
+          EventTable.this.locationId
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          1043
+        </td>
+        <td>
+          876
+          -
+          876
         </td>
         <td>
           TypeApply
@@ -1466,183 +1342,36 @@
         </td>
       </tr><tr>
         <td>
-          26
+          27
         </td>
         <td>
-          1043
+          1037
         </td>
         <td>
-          863
+          851
           -
-          885
+          875
         </td>
         <td>
           Select
         </td>
         <td>
-          whatson.db.LocationTable.location
+          whatson.db.OrganizerTable.organizer
         </td>
         <td style="background: #F0ADAD">
-          LocationTable.location
+          OrganizerTable.organizer
         </td>
       </tr><tr>
         <td>
-          26
+          27
         </td>
         <td>
           1046
         </td>
         <td>
-          840
+          876
           -
-          840
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          slick.lifted.AbstractTable.foreignKey$default$6
-        </td>
-        <td style="background: #F0ADAD">
-          EventTable.this.foreignKey$default$6[slick.lifted.Rep[Int], Int, whatson.db.LocationTable, whatson.model.Location](x$23, x$24, x$25)
-        </td>
-      </tr><tr>
-        <td>
-          26
-        </td>
-        <td>
-          1049
-        </td>
-        <td>
-          886
-          -
-          886
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
-        </td>
-        <td style="background: #F0ADAD">
-          slick.jdbc.PostgresProfile.api.intColumnType
-        </td>
-      </tr><tr>
-        <td>
-          26
-        </td>
-        <td>
-          1042
-        </td>
-        <td>
-          852
-          -
-          862
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          whatson.db.EventTable.locationId
-        </td>
-        <td style="background: #F0ADAD">
-          EventTable.this.locationId
-        </td>
-      </tr><tr>
-        <td>
-          26
-        </td>
-        <td>
-          1051
-        </td>
-        <td>
-          830
-          -
-          892
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          slick.lifted.AbstractTable.foreignKey
-        </td>
-        <td style="background: #F0ADAD">
-          EventTable.this.foreignKey[slick.lifted.Rep[Int], Int, whatson.db.LocationTable, whatson.model.Location](x$23, x$24, x$25)(x$26, x$27, x$28)(lifted.this.Shape.tableShape[slick.lifted.FlatShapeLevel, whatson.model.Location, whatson.db.LocationTable](scala.Predef.$conforms[whatson.db.LocationTable]), lifted.this.Shape.repColumnShape[Int, Nothing](slick.jdbc.PostgresProfile.api.intColumnType))
-        </td>
-      </tr><tr>
-        <td>
-          26
-        </td>
-        <td>
-          1045
-        </td>
-        <td>
-          840
-          -
-          840
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          slick.lifted.AbstractTable.foreignKey$default$5
-        </td>
-        <td style="background: #F0ADAD">
-          EventTable.this.foreignKey$default$5[slick.lifted.Rep[Int], Int, whatson.db.LocationTable, whatson.model.Location](x$23, x$24, x$25)
-        </td>
-      </tr><tr>
-        <td>
-          26
-        </td>
-        <td>
-          1048
-        </td>
-        <td>
-          886
-          -
-          886
-        </td>
-        <td>
-          ApplyToImplicitArgs
-        </td>
-        <td>
-          slick.lifted.AbstractTableShapeImplicits.tableShape
-        </td>
-        <td style="background: #F0ADAD">
-          lifted.this.Shape.tableShape[slick.lifted.FlatShapeLevel, whatson.model.Location, whatson.db.LocationTable](scala.Predef.$conforms[whatson.db.LocationTable])
-        </td>
-      </tr><tr>
-        <td>
-          26
-        </td>
-        <td>
-          1047
-        </td>
-        <td>
-          886
-          -
-          886
-        </td>
-        <td>
-          TypeApply
-        </td>
-        <td>
-          scala.Predef.$conforms
-        </td>
-        <td style="background: #F0ADAD">
-          scala.Predef.$conforms[whatson.db.LocationTable]
-        </td>
-      </tr><tr>
-        <td>
-          26
-        </td>
-        <td>
-          1050
-        </td>
-        <td>
-          886
-          -
-          886
+          876
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1655,15 +1384,225 @@
         </td>
       </tr><tr>
         <td>
-          26
+          27
+        </td>
+        <td>
+          1040
+        </td>
+        <td>
+          877
+          -
+          883
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.lifted.BaseColumnExtensionMethods.?
+        </td>
+        <td style="background: #F0ADAD">
+          slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](x$1.id)(slick.jdbc.PostgresProfile.api.intColumnType).?
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          1042
+        </td>
+        <td>
+          830
+          -
+          830
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          slick.lifted.AbstractTable.foreignKey$default$6
+        </td>
+        <td style="background: #F0ADAD">
+          EventTable.this.foreignKey$default$6[slick.lifted.Rep[Option[Int]], Option[Int], whatson.db.OrganizerTable, whatson.model.Organizer](x$17, x$18, x$19)
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          1036
+        </td>
+        <td>
+          841
+          -
+          850
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.db.EventTable.creatorId
+        </td>
+        <td style="background: #F0ADAD">
+          EventTable.this.creatorId
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          1045
+        </td>
+        <td>
+          876
+          -
+          876
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
+        </td>
+        <td style="background: #F0ADAD">
+          slick.jdbc.PostgresProfile.api.intColumnType
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          1048
+        </td>
+        <td>
+          820
+          -
+          884
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          slick.lifted.AbstractTable.foreignKey
+        </td>
+        <td style="background: #F0ADAD">
+          EventTable.this.foreignKey[slick.lifted.Rep[Option[Int]], Option[Int], whatson.db.OrganizerTable, whatson.model.Organizer](x$17, x$18, x$19)(x$20, x$21, x$22)(lifted.this.Shape.tableShape[slick.lifted.FlatShapeLevel, whatson.model.Organizer, whatson.db.OrganizerTable](scala.Predef.$conforms[whatson.db.OrganizerTable]), lifted.this.Shape.optionShape[Int, Int, Int, Nothing](lifted.this.Shape.repColumnShape[Int, Nothing](slick.jdbc.PostgresProfile.api.intColumnType)))
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          1039
+        </td>
+        <td>
+          879
+          -
+          879
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
+        </td>
+        <td style="background: #F0ADAD">
+          slick.jdbc.PostgresProfile.api.intColumnType
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          1038
+        </td>
+        <td>
+          877
+          -
+          881
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.db.OrganizerTable.id
+        </td>
+        <td style="background: #F0ADAD">
+          x$1.id
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          1047
+        </td>
+        <td>
+          876
+          -
+          876
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.RepShapeImplicits.optionShape
+        </td>
+        <td style="background: #F0ADAD">
+          lifted.this.Shape.optionShape[Int, Int, Int, Nothing](lifted.this.Shape.repColumnShape[Int, Nothing](slick.jdbc.PostgresProfile.api.intColumnType))
+        </td>
+      </tr><tr>
+        <td>
+          27
         </td>
         <td>
           1041
         </td>
         <td>
-          841
+          830
           -
-          851
+          830
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          slick.lifted.AbstractTable.foreignKey$default$5
+        </td>
+        <td style="background: #F0ADAD">
+          EventTable.this.foreignKey$default$5[slick.lifted.Rep[Option[Int]], Option[Int], whatson.db.OrganizerTable, whatson.model.Organizer](x$17, x$18, x$19)
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          1044
+        </td>
+        <td>
+          876
+          -
+          876
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.AbstractTableShapeImplicits.tableShape
+        </td>
+        <td style="background: #F0ADAD">
+          lifted.this.Shape.tableShape[slick.lifted.FlatShapeLevel, whatson.model.Organizer, whatson.db.OrganizerTable](scala.Predef.$conforms[whatson.db.OrganizerTable])
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          1035
+        </td>
+        <td>
+          831
+          -
+          840
         </td>
         <td>
           Literal
@@ -1672,19 +1611,19 @@
           &lt;nosymbol&gt;
         </td>
         <td style="background: #F0ADAD">
-          &quot;location&quot;
+          &quot;creator&quot;
         </td>
       </tr><tr>
         <td>
-          26
+          28
         </td>
         <td>
-          1044
+          1052
         </td>
         <td>
-          887
+          959
           -
-          891
+          963
         </td>
         <td>
           Select
@@ -1697,750 +1636,36 @@
         </td>
       </tr><tr>
         <td>
-          27
-        </td>
-        <td>
-          1052
-        </td>
-        <td>
-          933
-          -
-          942
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          whatson.db.ParticipantTable.eventID
-        </td>
-        <td style="background: #F0ADAD">
-          x$3.eventID
-        </td>
-      </tr><tr>
-        <td>
-          27
+          28
         </td>
         <td>
           1055
         </td>
         <td>
-          943
+          958
           -
-          943
+          958
         </td>
         <td>
-          Select
+          TypeApply
         </td>
         <td>
-          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
+          scala.Predef.$conforms
         </td>
         <td style="background: #F0ADAD">
-          slick.jdbc.PostgresProfile.api.intColumnType
+          scala.Predef.$conforms[whatson.db.LocationTable]
         </td>
       </tr><tr>
         <td>
-          27
+          28
         </td>
         <td>
           1058
         </td>
         <td>
-          932
+          958
           -
-          932
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          slick.lifted.CanBeQueryCondition.BooleanColumnCanBeQueryCondition
-        </td>
-        <td style="background: #F0ADAD">
-          lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition
-        </td>
-      </tr><tr>
-        <td>
-          27
-        </td>
-        <td>
-          1057
-        </td>
-        <td>
-          933
-          -
-          949
-        </td>
-        <td>
-          ApplyToImplicitArgs
-        </td>
-        <td>
-          slick.lifted.ColumnExtensionMethods.===
-        </td>
-        <td style="background: #F0ADAD">
-          slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](x$3.eventID)(slick.jdbc.PostgresProfile.api.intColumnType).===[Int, Boolean](EventTable.this.id)(lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType))
-        </td>
-      </tr><tr>
-        <td>
-          27
-        </td>
-        <td>
-          1060
-        </td>
-        <td>
-          914
-          -
-          973
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          slick.lifted.Query.flatMap
-        </td>
-        <td style="background: #F0ADAD">
-          whatson.db.ParticipantTable.participant.filter[slick.lifted.Rep[Boolean]](((x$3: whatson.db.ParticipantTable) =&gt; slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](x$3.eventID)(slick.jdbc.PostgresProfile.api.intColumnType).===[Int, Boolean](EventTable.this.id)(lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType))))(lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition).flatMap[whatson.db.LoginTable, whatson.model.Login, Seq](((x$4: whatson.db.ParticipantTable) =&gt; x$4.participant))
-        </td>
-      </tr><tr>
-        <td>
-          27
-        </td>
-        <td>
-          1054
-        </td>
-        <td>
-          947
-          -
-          949
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          whatson.db.EventTable.id
-        </td>
-        <td style="background: #F0ADAD">
-          EventTable.this.id
-        </td>
-      </tr><tr>
-        <td>
-          27
-        </td>
-        <td>
-          1056
-        </td>
-        <td>
-          943
-          -
-          943
-        </td>
-        <td>
-          ApplyToImplicitArgs
-        </td>
-        <td>
-          slick.lifted.OptionMapper2.getOptionMapper2TT
-        </td>
-        <td style="background: #F0ADAD">
-          lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType)
-        </td>
-      </tr><tr>
-        <td>
-          27
-        </td>
-        <td>
-          1059
-        </td>
-        <td>
-          959
-          -
-          972
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          whatson.db.ParticipantTable.participant
-        </td>
-        <td style="background: #F0ADAD">
-          x$4.participant
-        </td>
-      </tr><tr>
-        <td>
-          27
-        </td>
-        <td>
-          1053
-        </td>
-        <td>
-          935
-          -
-          935
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
-        </td>
-        <td style="background: #F0ADAD">
-          slick.jdbc.PostgresProfile.api.intColumnType
-        </td>
-      </tr><tr>
-        <td>
-          28
-        </td>
-        <td>
-          1061
-        </td>
-        <td>
-          1014
-          -
-          1023
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          whatson.db.EventCategoryTable.eventID
-        </td>
-        <td style="background: #AEF1AE">
-          x$5.eventID
-        </td>
-      </tr><tr>
-        <td>
-          28
-        </td>
-        <td>
-          1064
-        </td>
-        <td>
-          1024
-          -
-          1024
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
-        </td>
-        <td style="background: #AEF1AE">
-          slick.jdbc.PostgresProfile.api.intColumnType
-        </td>
-      </tr><tr>
-        <td>
-          28
-        </td>
-        <td>
-          1067
-        </td>
-        <td>
-          1013
-          -
-          1013
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          slick.lifted.CanBeQueryCondition.BooleanColumnCanBeQueryCondition
-        </td>
-        <td style="background: #AEF1AE">
-          lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition
-        </td>
-      </tr><tr>
-        <td>
-          28
-        </td>
-        <td>
-          1066
-        </td>
-        <td>
-          1014
-          -
-          1030
-        </td>
-        <td>
-          ApplyToImplicitArgs
-        </td>
-        <td>
-          slick.lifted.ColumnExtensionMethods.===
-        </td>
-        <td style="background: #AEF1AE">
-          slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](x$5.eventID)(slick.jdbc.PostgresProfile.api.intColumnType).===[Int, Boolean](EventTable.this.id)(lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType))
-        </td>
-      </tr><tr>
-        <td>
-          28
-        </td>
-        <td>
-          1069
-        </td>
-        <td>
-          993
-          -
-          1053
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          slick.lifted.Query.flatMap
-        </td>
-        <td style="background: #AEF1AE">
-          whatson.db.EventCategoryTable.eventCategory.filter[slick.lifted.Rep[Boolean]](((x$5: whatson.db.EventCategoryTable) =&gt; slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](x$5.eventID)(slick.jdbc.PostgresProfile.api.intColumnType).===[Int, Boolean](EventTable.this.id)(lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType))))(lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition).flatMap[whatson.db.CategoryTable, whatson.model.Category, Seq](((x$6: whatson.db.EventCategoryTable) =&gt; x$6.categoryFK))
-        </td>
-      </tr><tr>
-        <td>
-          28
-        </td>
-        <td>
-          1063
-        </td>
-        <td>
-          1028
-          -
-          1030
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          whatson.db.EventTable.id
-        </td>
-        <td style="background: #AEF1AE">
-          EventTable.this.id
-        </td>
-      </tr><tr>
-        <td>
-          28
-        </td>
-        <td>
-          1065
-        </td>
-        <td>
-          1024
-          -
-          1024
-        </td>
-        <td>
-          ApplyToImplicitArgs
-        </td>
-        <td>
-          slick.lifted.OptionMapper2.getOptionMapper2TT
-        </td>
-        <td style="background: #AEF1AE">
-          lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType)
-        </td>
-      </tr><tr>
-        <td>
-          28
-        </td>
-        <td>
-          1068
-        </td>
-        <td>
-          1040
-          -
-          1052
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          whatson.db.EventCategoryTable.categoryFK
-        </td>
-        <td style="background: #AEF1AE">
-          x$6.categoryFK
-        </td>
-      </tr><tr>
-        <td>
-          28
-        </td>
-        <td>
-          1062
-        </td>
-        <td>
-          1016
-          -
-          1016
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
-        </td>
-        <td style="background: #AEF1AE">
-          slick.jdbc.PostgresProfile.api.intColumnType
-        </td>
-      </tr><tr>
-        <td>
-          31
-        </td>
-        <td>
-          1070
-        </td>
-        <td>
-          1075
-          -
-          1091
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          whatson.model.EntityType.Event
-        </td>
-        <td style="background: #AEF1AE">
-          whatson.model.EntityType.Event
-        </td>
-      </tr><tr>
-        <td>
-          39
-        </td>
-        <td>
-          1073
-        </td>
-        <td>
-          1379
-          -
-          1394
-        </td>
-        <td>
-          ApplyToImplicitArgs
-        </td>
-        <td>
-          whatson.db.Util.RepUtils.dir
-        </td>
-        <td style="background: #F0ADAD">
-          whatson.db.Util.RepUtils[String](x$7.name).dir(dir)(slick.jdbc.PostgresProfile.api.stringColumnType)
-        </td>
-      </tr><tr>
-        <td>
-          39
-        </td>
-        <td>
-          1075
-        </td>
-        <td>
-          1370
-          -
-          1395
-        </td>
-        <td>
-          ApplyToImplicitArgs
-        </td>
-        <td>
-          slick.lifted.Query.sortBy
-        </td>
-        <td style="background: #F0ADAD">
-          QuerySort.this.q.sortBy[slick.lifted.ColumnOrdered[String]](((x$7: whatson.db.EventTable) =&gt; whatson.db.Util.RepUtils[String](x$7.name).dir(dir)(slick.jdbc.PostgresProfile.api.stringColumnType)))(scala.Predef.$conforms[slick.lifted.ColumnOrdered[String]])
-        </td>
-      </tr><tr>
-        <td>
-          39
-        </td>
-        <td>
-          1072
-        </td>
-        <td>
-          1389
-          -
-          1389
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.stringColumnType
-        </td>
-        <td style="background: #F0ADAD">
-          slick.jdbc.PostgresProfile.api.stringColumnType
-        </td>
-      </tr><tr>
-        <td>
-          39
-        </td>
-        <td>
-          1074
-        </td>
-        <td>
-          1378
-          -
-          1378
-        </td>
-        <td>
-          TypeApply
-        </td>
-        <td>
-          scala.Predef.$conforms
-        </td>
-        <td style="background: #F0ADAD">
-          scala.Predef.$conforms[slick.lifted.ColumnOrdered[String]]
-        </td>
-      </tr><tr>
-        <td>
-          39
-        </td>
-        <td>
-          1071
-        </td>
-        <td>
-          1379
-          -
-          1385
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          whatson.db.EventTable.name
-        </td>
-        <td style="background: #F0ADAD">
-          x$7.name
-        </td>
-      </tr><tr>
-        <td>
-          40
-        </td>
-        <td>
-          1079
-        </td>
-        <td>
-          1425
-          -
-          1425
-        </td>
-        <td>
-          TypeApply
-        </td>
-        <td>
-          scala.Predef.$conforms
-        </td>
-        <td style="background: #F0ADAD">
-          scala.Predef.$conforms[slick.lifted.ColumnOrdered[java.sql.Timestamp]]
-        </td>
-      </tr><tr>
-        <td>
-          40
-        </td>
-        <td>
-          1076
-        </td>
-        <td>
-          1426
-          -
-          1432
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          whatson.db.EventTable.from
-        </td>
-        <td style="background: #F0ADAD">
-          x$8.from
-        </td>
-      </tr><tr>
-        <td>
-          40
-        </td>
-        <td>
-          1078
-        </td>
-        <td>
-          1426
-          -
-          1441
-        </td>
-        <td>
-          ApplyToImplicitArgs
-        </td>
-        <td>
-          whatson.db.Util.RepUtils.dir
-        </td>
-        <td style="background: #F0ADAD">
-          whatson.db.Util.RepUtils[java.sql.Timestamp](x$8.from).dir(dir)(slick.jdbc.PostgresProfile.api.timestampColumnType)
-        </td>
-      </tr><tr>
-        <td>
-          40
-        </td>
-        <td>
-          1080
-        </td>
-        <td>
-          1417
-          -
-          1442
-        </td>
-        <td>
-          ApplyToImplicitArgs
-        </td>
-        <td>
-          slick.lifted.Query.sortBy
-        </td>
-        <td style="background: #F0ADAD">
-          QuerySort.this.q.sortBy[slick.lifted.ColumnOrdered[java.sql.Timestamp]](((x$8: whatson.db.EventTable) =&gt; whatson.db.Util.RepUtils[java.sql.Timestamp](x$8.from).dir(dir)(slick.jdbc.PostgresProfile.api.timestampColumnType)))(scala.Predef.$conforms[slick.lifted.ColumnOrdered[java.sql.Timestamp]])
-        </td>
-      </tr><tr>
-        <td>
-          40
-        </td>
-        <td>
-          1077
-        </td>
-        <td>
-          1436
-          -
-          1436
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.timestampColumnType
-        </td>
-        <td style="background: #F0ADAD">
-          slick.jdbc.PostgresProfile.api.timestampColumnType
-        </td>
-      </tr><tr>
-        <td>
-          41
-        </td>
-        <td>
-          1082
-        </td>
-        <td>
-          1479
-          -
-          1479
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.timestampColumnType
-        </td>
-        <td style="background: #F0ADAD">
-          slick.jdbc.PostgresProfile.api.timestampColumnType
-        </td>
-      </tr><tr>
-        <td>
-          41
-        </td>
-        <td>
-          1085
-        </td>
-        <td>
-          1462
-          -
-          1485
-        </td>
-        <td>
-          ApplyToImplicitArgs
-        </td>
-        <td>
-          slick.lifted.Query.sortBy
-        </td>
-        <td style="background: #F0ADAD">
-          QuerySort.this.q.sortBy[slick.lifted.ColumnOrdered[java.sql.Timestamp]](((x$9: whatson.db.EventTable) =&gt; whatson.db.Util.RepUtils[java.sql.Timestamp](x$9.to).dir(dir)(slick.jdbc.PostgresProfile.api.timestampColumnType)))(scala.Predef.$conforms[slick.lifted.ColumnOrdered[java.sql.Timestamp]])
-        </td>
-      </tr><tr>
-        <td>
-          41
-        </td>
-        <td>
-          1084
-        </td>
-        <td>
-          1470
-          -
-          1470
-        </td>
-        <td>
-          TypeApply
-        </td>
-        <td>
-          scala.Predef.$conforms
-        </td>
-        <td style="background: #F0ADAD">
-          scala.Predef.$conforms[slick.lifted.ColumnOrdered[java.sql.Timestamp]]
-        </td>
-      </tr><tr>
-        <td>
-          41
-        </td>
-        <td>
-          1081
-        </td>
-        <td>
-          1471
-          -
-          1475
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          whatson.db.EventTable.to
-        </td>
-        <td style="background: #F0ADAD">
-          x$9.to
-        </td>
-      </tr><tr>
-        <td>
-          41
-        </td>
-        <td>
-          1083
-        </td>
-        <td>
-          1471
-          -
-          1484
-        </td>
-        <td>
-          ApplyToImplicitArgs
-        </td>
-        <td>
-          whatson.db.Util.RepUtils.dir
-        </td>
-        <td style="background: #F0ADAD">
-          whatson.db.Util.RepUtils[java.sql.Timestamp](x$9.to).dir(dir)(slick.jdbc.PostgresProfile.api.timestampColumnType)
-        </td>
-      </tr><tr>
-        <td>
-          42
-        </td>
-        <td>
-          1097
-        </td>
-        <td>
-          1549
-          -
-          1549
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.floatColumnType
-        </td>
-        <td style="background: #F0ADAD">
-          slick.jdbc.PostgresProfile.api.floatColumnType
-        </td>
-      </tr><tr>
-        <td>
-          42
-        </td>
-        <td>
-          1088
-        </td>
-        <td>
-          1520
-          -
-          1520
+          958
         </td>
         <td>
           ApplyToImplicitArgs
@@ -2449,166 +1674,19 @@
           slick.lifted.RepShapeImplicits.repColumnShape
         </td>
         <td style="background: #F0ADAD">
-          lifted.this.Shape.repColumnShape[Float, Nothing](slick.jdbc.PostgresProfile.api.floatColumnType)
+          lifted.this.Shape.repColumnShape[Int, Nothing](slick.jdbc.PostgresProfile.api.intColumnType)
         </td>
       </tr><tr>
         <td>
-          42
+          28
         </td>
         <td>
-          1100
+          1049
         </td>
         <td>
-          1509
+          913
           -
-          1555
-        </td>
-        <td>
-          ApplyToImplicitArgs
-        </td>
-        <td>
-          slick.lifted.Query.sortBy
-        </td>
-        <td style="background: #F0ADAD">
-          QuerySort.this.q.sortBy[slick.lifted.ColumnOrdered[Float]](((x$10: whatson.db.EventTable) =&gt; whatson.db.Util.RepUtils[Float](slick.jdbc.PostgresProfile.api.anyOptionExtensionMethods[Float, slick.lifted.Rep[Float]](x$10.avgRating)(lifted.this.OptionLift.repOptionLift[slick.lifted.Rep[Float], Float](lifted.this.Shape.repColumnShape[Float, Nothing](slick.jdbc.PostgresProfile.api.floatColumnType))).getOrElse[Float, slick.lifted.ConstColumn[Float]](0.0)(lifted.this.Shape.primitiveShape[Float, slick.lifted.FlatShapeLevel](slick.jdbc.PostgresProfile.api.floatColumnType), lifted.this.OptionLift.repOptionLift[slick.lifted.ConstColumn[Float], Float](lifted.this.Shape.repColumnShape[Float, Nothing](slick.jdbc.PostgresProfile.api.floatColumnType)))).dir(dir)(slick.jdbc.PostgresProfile.api.floatColumnType)))(scala.Predef.$conforms[slick.lifted.ColumnOrdered[Float]])
-        </td>
-      </tr><tr>
-        <td>
-          42
-        </td>
-        <td>
-          1091
-        </td>
-        <td>
-          1539
-          -
-          1539
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.floatColumnType
-        </td>
-        <td style="background: #F0ADAD">
-          slick.jdbc.PostgresProfile.api.floatColumnType
-        </td>
-      </tr><tr>
-        <td>
-          42
-        </td>
-        <td>
-          1094
-        </td>
-        <td>
-          1539
-          -
-          1539
-        </td>
-        <td>
-          ApplyToImplicitArgs
-        </td>
-        <td>
-          slick.lifted.RepShapeImplicits.repColumnShape
-        </td>
-        <td style="background: #F0ADAD">
-          lifted.this.Shape.repColumnShape[Float, Nothing](slick.jdbc.PostgresProfile.api.floatColumnType)
-        </td>
-      </tr><tr>
-        <td>
-          42
-        </td>
-        <td>
-          1093
-        </td>
-        <td>
-          1539
-          -
-          1539
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.floatColumnType
-        </td>
-        <td style="background: #F0ADAD">
-          slick.jdbc.PostgresProfile.api.floatColumnType
-        </td>
-      </tr><tr>
-        <td>
-          42
-        </td>
-        <td>
-          1087
-        </td>
-        <td>
-          1520
-          -
-          1520
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.floatColumnType
-        </td>
-        <td style="background: #F0ADAD">
-          slick.jdbc.PostgresProfile.api.floatColumnType
-        </td>
-      </tr><tr>
-        <td>
-          42
-        </td>
-        <td>
-          1096
-        </td>
-        <td>
-          1518
-          -
-          1545
-        </td>
-        <td>
-          ApplyToImplicitArgs
-        </td>
-        <td>
-          slick.lifted.AnyOptionExtensionMethods.getOrElse
-        </td>
-        <td style="background: #F0ADAD">
-          slick.jdbc.PostgresProfile.api.anyOptionExtensionMethods[Float, slick.lifted.Rep[Float]](x$10.avgRating)(lifted.this.OptionLift.repOptionLift[slick.lifted.Rep[Float], Float](lifted.this.Shape.repColumnShape[Float, Nothing](slick.jdbc.PostgresProfile.api.floatColumnType))).getOrElse[Float, slick.lifted.ConstColumn[Float]](0.0)(lifted.this.Shape.primitiveShape[Float, slick.lifted.FlatShapeLevel](slick.jdbc.PostgresProfile.api.floatColumnType), lifted.this.OptionLift.repOptionLift[slick.lifted.ConstColumn[Float], Float](lifted.this.Shape.repColumnShape[Float, Nothing](slick.jdbc.PostgresProfile.api.floatColumnType)))
-        </td>
-      </tr><tr>
-        <td>
-          42
-        </td>
-        <td>
-          1099
-        </td>
-        <td>
-          1517
-          -
-          1517
-        </td>
-        <td>
-          TypeApply
-        </td>
-        <td>
-          scala.Predef.$conforms
-        </td>
-        <td style="background: #F0ADAD">
-          scala.Predef.$conforms[slick.lifted.ColumnOrdered[Float]]
-        </td>
-      </tr><tr>
-        <td>
-          42
-        </td>
-        <td>
-          1090
-        </td>
-        <td>
-          1540
-          -
-          1544
+          923
         </td>
         <td>
           Literal
@@ -2617,124 +1695,19 @@
           &lt;nosymbol&gt;
         </td>
         <td style="background: #F0ADAD">
-          0.0
+          &quot;location&quot;
         </td>
       </tr><tr>
         <td>
-          42
+          28
         </td>
         <td>
-          1098
+          1057
         </td>
         <td>
-          1518
+          958
           -
-          1554
-        </td>
-        <td>
-          ApplyToImplicitArgs
-        </td>
-        <td>
-          whatson.db.Util.RepUtils.dir
-        </td>
-        <td style="background: #F0ADAD">
-          whatson.db.Util.RepUtils[Float](slick.jdbc.PostgresProfile.api.anyOptionExtensionMethods[Float, slick.lifted.Rep[Float]](x$10.avgRating)(lifted.this.OptionLift.repOptionLift[slick.lifted.Rep[Float], Float](lifted.this.Shape.repColumnShape[Float, Nothing](slick.jdbc.PostgresProfile.api.floatColumnType))).getOrElse[Float, slick.lifted.ConstColumn[Float]](0.0)(lifted.this.Shape.primitiveShape[Float, slick.lifted.FlatShapeLevel](slick.jdbc.PostgresProfile.api.floatColumnType), lifted.this.OptionLift.repOptionLift[slick.lifted.ConstColumn[Float], Float](lifted.this.Shape.repColumnShape[Float, Nothing](slick.jdbc.PostgresProfile.api.floatColumnType)))).dir(dir)(slick.jdbc.PostgresProfile.api.floatColumnType)
-        </td>
-      </tr><tr>
-        <td>
-          42
-        </td>
-        <td>
-          1089
-        </td>
-        <td>
-          1520
-          -
-          1520
-        </td>
-        <td>
-          ApplyToImplicitArgs
-        </td>
-        <td>
-          slick.lifted.OptionLift.repOptionLift
-        </td>
-        <td style="background: #F0ADAD">
-          lifted.this.OptionLift.repOptionLift[slick.lifted.Rep[Float], Float](lifted.this.Shape.repColumnShape[Float, Nothing](slick.jdbc.PostgresProfile.api.floatColumnType))
-        </td>
-      </tr><tr>
-        <td>
-          42
-        </td>
-        <td>
-          1092
-        </td>
-        <td>
-          1539
-          -
-          1539
-        </td>
-        <td>
-          ApplyToImplicitArgs
-        </td>
-        <td>
-          slick.lifted.Shape.primitiveShape
-        </td>
-        <td style="background: #F0ADAD">
-          lifted.this.Shape.primitiveShape[Float, slick.lifted.FlatShapeLevel](slick.jdbc.PostgresProfile.api.floatColumnType)
-        </td>
-      </tr><tr>
-        <td>
-          42
-        </td>
-        <td>
-          1086
-        </td>
-        <td>
-          1518
-          -
-          1529
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          whatson.db.HasRatings.avgRating
-        </td>
-        <td style="background: #F0ADAD">
-          x$10.avgRating
-        </td>
-      </tr><tr>
-        <td>
-          42
-        </td>
-        <td>
-          1095
-        </td>
-        <td>
-          1539
-          -
-          1539
-        </td>
-        <td>
-          ApplyToImplicitArgs
-        </td>
-        <td>
-          slick.lifted.OptionLift.repOptionLift
-        </td>
-        <td style="background: #F0ADAD">
-          lifted.this.OptionLift.repOptionLift[slick.lifted.ConstColumn[Float], Float](lifted.this.Shape.repColumnShape[Float, Nothing](slick.jdbc.PostgresProfile.api.floatColumnType))
-        </td>
-      </tr><tr>
-        <td>
-          43
-        </td>
-        <td>
-          1102
-        </td>
-        <td>
-          1589
-          -
-          1589
+          958
         </td>
         <td>
           Select
@@ -2742,230 +1715,20 @@
         <td>
           slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
         </td>
-        <td style="background: #AEF1AE">
+        <td style="background: #F0ADAD">
           slick.jdbc.PostgresProfile.api.intColumnType
         </td>
       </tr><tr>
         <td>
-          43
+          28
         </td>
         <td>
-          1105
+          1051
         </td>
         <td>
-          1572
+          935
           -
-          1595
-        </td>
-        <td>
-          ApplyToImplicitArgs
-        </td>
-        <td>
-          slick.lifted.Query.sortBy
-        </td>
-        <td style="background: #AEF1AE">
-          QuerySort.this.q.sortBy[slick.lifted.ColumnOrdered[Int]](((x$11: whatson.db.EventTable) =&gt; whatson.db.Util.RepUtils[Int](x$11.id).dir(dir)(slick.jdbc.PostgresProfile.api.intColumnType)))(scala.Predef.$conforms[slick.lifted.ColumnOrdered[Int]])
-        </td>
-      </tr><tr>
-        <td>
-          43
-        </td>
-        <td>
-          1101
-        </td>
-        <td>
-          1581
-          -
-          1585
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          whatson.db.EventTable.id
-        </td>
-        <td style="background: #AEF1AE">
-          x$11.id
-        </td>
-      </tr><tr>
-        <td>
-          43
-        </td>
-        <td>
-          1104
-        </td>
-        <td>
-          1580
-          -
-          1580
-        </td>
-        <td>
-          TypeApply
-        </td>
-        <td>
-          scala.Predef.$conforms
-        </td>
-        <td style="background: #AEF1AE">
-          scala.Predef.$conforms[slick.lifted.ColumnOrdered[Int]]
-        </td>
-      </tr><tr>
-        <td>
-          43
-        </td>
-        <td>
-          1103
-        </td>
-        <td>
-          1581
-          -
-          1594
-        </td>
-        <td>
-          ApplyToImplicitArgs
-        </td>
-        <td>
-          whatson.db.Util.RepUtils.dir
-        </td>
-        <td style="background: #AEF1AE">
-          whatson.db.Util.RepUtils[Int](x$11.id).dir(dir)(slick.jdbc.PostgresProfile.api.intColumnType)
-        </td>
-      </tr><tr>
-        <td>
-          48
-        </td>
-        <td>
-          1106
-        </td>
-        <td>
-          1752
-          -
-          1789
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          scala.Option.getOrElse
-        </td>
-        <td style="background: #F0ADAD">
-          param.map[Float](((x$12: whatson.model.Location) =&gt; x$12.latitude)).getOrElse[Float](0.0)
-        </td>
-      </tr><tr>
-        <td>
-          49
-        </td>
-        <td>
-          1107
-        </td>
-        <td>
-          1809
-          -
-          1847
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          scala.Option.getOrElse
-        </td>
-        <td style="background: #F0ADAD">
-          param.map[Float](((x$13: whatson.model.Location) =&gt; x$13.longitude)).getOrElse[Float](0.0)
-        </td>
-      </tr><tr>
-        <td>
-          51
-        </td>
-        <td>
-          1115
-        </td>
-        <td>
-          1898
-          -
-          1898
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          slick.lifted.CanBeQueryCondition.BooleanColumnCanBeQueryCondition
-        </td>
-        <td style="background: #F0ADAD">
-          lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition
-        </td>
-      </tr><tr>
-        <td>
-          51
-        </td>
-        <td>
-          1109
-        </td>
-        <td>
-          1899
-          -
-          1911
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          whatson.db.EventTable.locationId
-        </td>
-        <td style="background: #F0ADAD">
-          x$14.locationId
-        </td>
-      </tr><tr>
-        <td>
-          51
-        </td>
-        <td>
-          1111
-        </td>
-        <td>
-          1916
-          -
-          1920
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          whatson.db.LocationTable.id
-        </td>
-        <td style="background: #F0ADAD">
-          x$15.id
-        </td>
-      </tr><tr>
-        <td>
-          51
-        </td>
-        <td>
-          1114
-        </td>
-        <td>
-          1899
-          -
-          1920
-        </td>
-        <td>
-          ApplyToImplicitArgs
-        </td>
-        <td>
-          slick.lifted.ColumnExtensionMethods.===
-        </td>
-        <td style="background: #F0ADAD">
-          slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](x$14.locationId)(slick.jdbc.PostgresProfile.api.intColumnType).===[Int, Boolean](x$15.id)(lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType))
-        </td>
-      </tr><tr>
-        <td>
-          51
-        </td>
-        <td>
-          1108
-        </td>
-        <td>
-          1872
-          -
-          1894
+          957
         </td>
         <td>
           Select
@@ -2978,15 +1741,120 @@
         </td>
       </tr><tr>
         <td>
-          51
+          28
         </td>
         <td>
-          1110
+          1054
         </td>
         <td>
-          1901
+          912
           -
-          1901
+          912
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          slick.lifted.AbstractTable.foreignKey$default$6
+        </td>
+        <td style="background: #F0ADAD">
+          EventTable.this.foreignKey$default$6[slick.lifted.Rep[Int], Int, whatson.db.LocationTable, whatson.model.Location](x$23, x$24, x$25)
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          1056
+        </td>
+        <td>
+          958
+          -
+          958
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.AbstractTableShapeImplicits.tableShape
+        </td>
+        <td style="background: #F0ADAD">
+          lifted.this.Shape.tableShape[slick.lifted.FlatShapeLevel, whatson.model.Location, whatson.db.LocationTable](scala.Predef.$conforms[whatson.db.LocationTable])
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          1059
+        </td>
+        <td>
+          902
+          -
+          964
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          slick.lifted.AbstractTable.foreignKey
+        </td>
+        <td style="background: #F0ADAD">
+          EventTable.this.foreignKey[slick.lifted.Rep[Int], Int, whatson.db.LocationTable, whatson.model.Location](x$23, x$24, x$25)(x$26, x$27, x$28)(lifted.this.Shape.tableShape[slick.lifted.FlatShapeLevel, whatson.model.Location, whatson.db.LocationTable](scala.Predef.$conforms[whatson.db.LocationTable]), lifted.this.Shape.repColumnShape[Int, Nothing](slick.jdbc.PostgresProfile.api.intColumnType))
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          1050
+        </td>
+        <td>
+          924
+          -
+          934
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.db.EventTable.locationId
+        </td>
+        <td style="background: #F0ADAD">
+          EventTable.this.locationId
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          1053
+        </td>
+        <td>
+          912
+          -
+          912
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          slick.lifted.AbstractTable.foreignKey$default$5
+        </td>
+        <td style="background: #F0ADAD">
+          EventTable.this.foreignKey$default$5[slick.lifted.Rep[Int], Int, whatson.db.LocationTable, whatson.model.Location](x$23, x$24, x$25)
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          1061
+        </td>
+        <td>
+          1007
+          -
+          1007
         </td>
         <td>
           Select
@@ -2999,15 +1867,15 @@
         </td>
       </tr><tr>
         <td>
-          51
+          29
         </td>
         <td>
-          1113
+          1064
         </td>
         <td>
-          1912
+          1015
           -
-          1912
+          1015
         </td>
         <td>
           ApplyToImplicitArgs
@@ -3020,15 +1888,78 @@
         </td>
       </tr><tr>
         <td>
-          51
+          29
         </td>
         <td>
-          1112
+          1067
         </td>
         <td>
-          1912
+          1031
           -
-          1912
+          1044
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.db.ParticipantTable.participant
+        </td>
+        <td style="background: #F0ADAD">
+          x$4.participant
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          1066
+        </td>
+        <td>
+          1004
+          -
+          1004
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.lifted.CanBeQueryCondition.BooleanColumnCanBeQueryCondition
+        </td>
+        <td style="background: #F0ADAD">
+          lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          1060
+        </td>
+        <td>
+          1005
+          -
+          1014
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.db.ParticipantTable.eventID
+        </td>
+        <td style="background: #F0ADAD">
+          x$3.eventID
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          1063
+        </td>
+        <td>
+          1015
+          -
+          1015
         </td>
         <td>
           Select
@@ -3041,57 +1972,309 @@
         </td>
       </tr><tr>
         <td>
-          52
+          29
         </td>
         <td>
-          1124
+          1065
         </td>
         <td>
-          1945
+          1005
           -
-          2004
+          1021
         </td>
         <td>
           ApplyToImplicitArgs
         </td>
         <td>
-          whatson.db.Util.RepUtils.dir
+          slick.lifted.ColumnExtensionMethods.===
         </td>
         <td style="background: #F0ADAD">
-          whatson.db.Util.RepUtils[Float](whatson.db.Util.geoDistance(x._2.latitude, x._2.longitude, slick.jdbc.PostgresProfile.api.valueToConstColumn[Float](lat)(slick.jdbc.PostgresProfile.api.floatColumnType), slick.jdbc.PostgresProfile.api.valueToConstColumn[Float](long)(slick.jdbc.PostgresProfile.api.floatColumnType))).dir(dir)(slick.jdbc.PostgresProfile.api.floatColumnType)
+          slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](x$3.eventID)(slick.jdbc.PostgresProfile.api.intColumnType).===[Int, Boolean](EventTable.this.id)(lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType))
         </td>
       </tr><tr>
         <td>
-          52
+          29
         </td>
         <td>
-          1118
+          1068
         </td>
         <td>
-          1986
+          986
           -
-          1986
+          1045
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          slick.lifted.Query.flatMap
+        </td>
+        <td style="background: #F0ADAD">
+          whatson.db.ParticipantTable.participant.filter[slick.lifted.Rep[Boolean]](((x$3: whatson.db.ParticipantTable) =&gt; slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](x$3.eventID)(slick.jdbc.PostgresProfile.api.intColumnType).===[Int, Boolean](EventTable.this.id)(lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType))))(lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition).flatMap[whatson.db.LoginTable, whatson.model.Login, Seq](((x$4: whatson.db.ParticipantTable) =&gt; x$4.participant))
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          1062
+        </td>
+        <td>
+          1019
+          -
+          1021
         </td>
         <td>
           Select
         </td>
         <td>
-          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.floatColumnType
+          whatson.db.EventTable.id
         </td>
         <td style="background: #F0ADAD">
-          slick.jdbc.PostgresProfile.api.floatColumnType
+          EventTable.this.id
         </td>
       </tr><tr>
         <td>
-          52
+          30
         </td>
         <td>
-          1127
+          1070
         </td>
         <td>
-          2009
+          1088
           -
-          2009
+          1088
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
+        </td>
+        <td style="background: #AEF1AE">
+          slick.jdbc.PostgresProfile.api.intColumnType
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          1073
+        </td>
+        <td>
+          1096
+          -
+          1096
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.OptionMapper2.getOptionMapper2TT
+        </td>
+        <td style="background: #AEF1AE">
+          lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType)
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          1076
+        </td>
+        <td>
+          1112
+          -
+          1124
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.db.EventCategoryTable.categoryFK
+        </td>
+        <td style="background: #AEF1AE">
+          x$6.categoryFK
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          1075
+        </td>
+        <td>
+          1085
+          -
+          1085
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.lifted.CanBeQueryCondition.BooleanColumnCanBeQueryCondition
+        </td>
+        <td style="background: #AEF1AE">
+          lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          1069
+        </td>
+        <td>
+          1086
+          -
+          1095
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.db.EventCategoryTable.eventID
+        </td>
+        <td style="background: #AEF1AE">
+          x$5.eventID
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          1072
+        </td>
+        <td>
+          1096
+          -
+          1096
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
+        </td>
+        <td style="background: #AEF1AE">
+          slick.jdbc.PostgresProfile.api.intColumnType
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          1074
+        </td>
+        <td>
+          1086
+          -
+          1102
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.ColumnExtensionMethods.===
+        </td>
+        <td style="background: #AEF1AE">
+          slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](x$5.eventID)(slick.jdbc.PostgresProfile.api.intColumnType).===[Int, Boolean](EventTable.this.id)(lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType))
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          1077
+        </td>
+        <td>
+          1065
+          -
+          1125
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          slick.lifted.Query.flatMap
+        </td>
+        <td style="background: #AEF1AE">
+          whatson.db.EventCategoryTable.eventCategory.filter[slick.lifted.Rep[Boolean]](((x$5: whatson.db.EventCategoryTable) =&gt; slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](x$5.eventID)(slick.jdbc.PostgresProfile.api.intColumnType).===[Int, Boolean](EventTable.this.id)(lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType))))(lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition).flatMap[whatson.db.CategoryTable, whatson.model.Category, Seq](((x$6: whatson.db.EventCategoryTable) =&gt; x$6.categoryFK))
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          1071
+        </td>
+        <td>
+          1100
+          -
+          1102
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.db.EventTable.id
+        </td>
+        <td style="background: #AEF1AE">
+          EventTable.this.id
+        </td>
+      </tr><tr>
+        <td>
+          33
+        </td>
+        <td>
+          1078
+        </td>
+        <td>
+          1147
+          -
+          1163
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.model.EntityType.Event
+        </td>
+        <td style="background: #AEF1AE">
+          whatson.model.EntityType.Event
+        </td>
+      </tr><tr>
+        <td>
+          41
+        </td>
+        <td>
+          1079
+        </td>
+        <td>
+          1451
+          -
+          1457
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.db.EventTable.name
+        </td>
+        <td style="background: #F0ADAD">
+          x$7.name
+        </td>
+      </tr><tr>
+        <td>
+          41
+        </td>
+        <td>
+          1082
+        </td>
+        <td>
+          1450
+          -
+          1450
         </td>
         <td>
           TypeApply
@@ -3100,103 +2283,397 @@
           scala.Predef.$conforms
         </td>
         <td style="background: #F0ADAD">
-          scala.Predef.$conforms[whatson.db.EventTable]
+          scala.Predef.$conforms[slick.lifted.ColumnOrdered[String]]
         </td>
       </tr><tr>
         <td>
-          52
+          41
         </td>
         <td>
-          1117
+          1081
         </td>
         <td>
-          1971
+          1451
           -
-          1985
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          whatson.db.LocationTable.longitude
-        </td>
-        <td style="background: #F0ADAD">
-          x._2.longitude
-        </td>
-      </tr><tr>
-        <td>
-          52
-        </td>
-        <td>
-          1126
-        </td>
-        <td>
-          2010
-          -
-          2014
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          scala.Tuple2._1
-        </td>
-        <td style="background: #F0ADAD">
-          x$16._1
-        </td>
-      </tr><tr>
-        <td>
-          52
-        </td>
-        <td>
-          1120
-        </td>
-        <td>
-          1990
-          -
-          1990
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.floatColumnType
-        </td>
-        <td style="background: #F0ADAD">
-          slick.jdbc.PostgresProfile.api.floatColumnType
-        </td>
-      </tr><tr>
-        <td>
-          52
-        </td>
-        <td>
-          1129
-        </td>
-        <td>
-          1865
-          -
-          2015
+          1466
         </td>
         <td>
           ApplyToImplicitArgs
         </td>
         <td>
-          slick.lifted.Query.map
+          whatson.db.Util.RepUtils.dir
         </td>
         <td style="background: #F0ADAD">
-          QuerySort.this.q.join[whatson.db.LocationTable, whatson.db.LocationTable#TableElementType, Seq](LocationTable.location).on[slick.lifted.Rep[Boolean]](((x$14: whatson.db.EventTable, x$15: whatson.db.LocationTable) =&gt; slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](x$14.locationId)(slick.jdbc.PostgresProfile.api.intColumnType).===[Int, Boolean](x$15.id)(lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType))))(lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition).sortBy[slick.lifted.ColumnOrdered[Float]](((x: (whatson.db.EventTable, whatson.db.LocationTable)) =&gt; whatson.db.Util.RepUtils[Float](whatson.db.Util.geoDistance(x._2.latitude, x._2.longitude, slick.jdbc.PostgresProfile.api.valueToConstColumn[Float](lat)(slick.jdbc.PostgresProfile.api.floatColumnType), slick.jdbc.PostgresProfile.api.valueToConstColumn[Float](long)(slick.jdbc.PostgresProfile.api.floatColumnType))).dir(dir)(slick.jdbc.PostgresProfile.api.floatColumnType)))(scala.Predef.$conforms[slick.lifted.ColumnOrdered[Float]]).map[whatson.db.EventTable, whatson.db.EventTable, whatson.model.Event](((x$16: (whatson.db.EventTable, whatson.db.LocationTable)) =&gt; x$16._1))(lifted.this.Shape.tableShape[slick.lifted.FlatShapeLevel, whatson.model.Event, whatson.db.EventTable](scala.Predef.$conforms[whatson.db.EventTable]))
+          whatson.db.Util.RepUtils[String](x$7.name).dir(dir)(slick.jdbc.PostgresProfile.api.stringColumnType)
         </td>
       </tr><tr>
         <td>
-          52
+          41
         </td>
         <td>
-          1123
+          1080
         </td>
         <td>
-          1999
+          1461
           -
-          1999
+          1461
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.stringColumnType
+        </td>
+        <td style="background: #F0ADAD">
+          slick.jdbc.PostgresProfile.api.stringColumnType
+        </td>
+      </tr><tr>
+        <td>
+          41
+        </td>
+        <td>
+          1083
+        </td>
+        <td>
+          1442
+          -
+          1467
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.Query.sortBy
+        </td>
+        <td style="background: #F0ADAD">
+          QuerySort.this.q.sortBy[slick.lifted.ColumnOrdered[String]](((x$7: whatson.db.EventTable) =&gt; whatson.db.Util.RepUtils[String](x$7.name).dir(dir)(slick.jdbc.PostgresProfile.api.stringColumnType)))(scala.Predef.$conforms[slick.lifted.ColumnOrdered[String]])
+        </td>
+      </tr><tr>
+        <td>
+          42
+        </td>
+        <td>
+          1088
+        </td>
+        <td>
+          1489
+          -
+          1514
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.Query.sortBy
+        </td>
+        <td style="background: #F0ADAD">
+          QuerySort.this.q.sortBy[slick.lifted.ColumnOrdered[java.sql.Timestamp]](((x$8: whatson.db.EventTable) =&gt; whatson.db.Util.RepUtils[java.sql.Timestamp](x$8.from).dir(dir)(slick.jdbc.PostgresProfile.api.timestampColumnType)))(scala.Predef.$conforms[slick.lifted.ColumnOrdered[java.sql.Timestamp]])
+        </td>
+      </tr><tr>
+        <td>
+          42
+        </td>
+        <td>
+          1085
+        </td>
+        <td>
+          1508
+          -
+          1508
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.timestampColumnType
+        </td>
+        <td style="background: #F0ADAD">
+          slick.jdbc.PostgresProfile.api.timestampColumnType
+        </td>
+      </tr><tr>
+        <td>
+          42
+        </td>
+        <td>
+          1084
+        </td>
+        <td>
+          1498
+          -
+          1504
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.db.EventTable.from
+        </td>
+        <td style="background: #F0ADAD">
+          x$8.from
+        </td>
+      </tr><tr>
+        <td>
+          42
+        </td>
+        <td>
+          1087
+        </td>
+        <td>
+          1497
+          -
+          1497
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Predef.$conforms
+        </td>
+        <td style="background: #F0ADAD">
+          scala.Predef.$conforms[slick.lifted.ColumnOrdered[java.sql.Timestamp]]
+        </td>
+      </tr><tr>
+        <td>
+          42
+        </td>
+        <td>
+          1086
+        </td>
+        <td>
+          1498
+          -
+          1513
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          whatson.db.Util.RepUtils.dir
+        </td>
+        <td style="background: #F0ADAD">
+          whatson.db.Util.RepUtils[java.sql.Timestamp](x$8.from).dir(dir)(slick.jdbc.PostgresProfile.api.timestampColumnType)
+        </td>
+      </tr><tr>
+        <td>
+          43
+        </td>
+        <td>
+          1091
+        </td>
+        <td>
+          1543
+          -
+          1556
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          whatson.db.Util.RepUtils.dir
+        </td>
+        <td style="background: #F0ADAD">
+          whatson.db.Util.RepUtils[java.sql.Timestamp](x$9.to).dir(dir)(slick.jdbc.PostgresProfile.api.timestampColumnType)
+        </td>
+      </tr><tr>
+        <td>
+          43
+        </td>
+        <td>
+          1093
+        </td>
+        <td>
+          1534
+          -
+          1557
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.Query.sortBy
+        </td>
+        <td style="background: #F0ADAD">
+          QuerySort.this.q.sortBy[slick.lifted.ColumnOrdered[java.sql.Timestamp]](((x$9: whatson.db.EventTable) =&gt; whatson.db.Util.RepUtils[java.sql.Timestamp](x$9.to).dir(dir)(slick.jdbc.PostgresProfile.api.timestampColumnType)))(scala.Predef.$conforms[slick.lifted.ColumnOrdered[java.sql.Timestamp]])
+        </td>
+      </tr><tr>
+        <td>
+          43
+        </td>
+        <td>
+          1090
+        </td>
+        <td>
+          1551
+          -
+          1551
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.timestampColumnType
+        </td>
+        <td style="background: #F0ADAD">
+          slick.jdbc.PostgresProfile.api.timestampColumnType
+        </td>
+      </tr><tr>
+        <td>
+          43
+        </td>
+        <td>
+          1089
+        </td>
+        <td>
+          1543
+          -
+          1547
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.db.EventTable.to
+        </td>
+        <td style="background: #F0ADAD">
+          x$9.to
+        </td>
+      </tr><tr>
+        <td>
+          43
+        </td>
+        <td>
+          1092
+        </td>
+        <td>
+          1542
+          -
+          1542
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Predef.$conforms
+        </td>
+        <td style="background: #F0ADAD">
+          scala.Predef.$conforms[slick.lifted.ColumnOrdered[java.sql.Timestamp]]
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          1097
+        </td>
+        <td>
+          1592
+          -
+          1592
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.OptionLift.repOptionLift
+        </td>
+        <td style="background: #F0ADAD">
+          lifted.this.OptionLift.repOptionLift[slick.lifted.Rep[Float], Float](lifted.this.Shape.repColumnShape[Float, Nothing](slick.jdbc.PostgresProfile.api.floatColumnType))
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          1106
+        </td>
+        <td>
+          1590
+          -
+          1626
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          whatson.db.Util.RepUtils.dir
+        </td>
+        <td style="background: #F0ADAD">
+          whatson.db.Util.RepUtils[Float](slick.jdbc.PostgresProfile.api.anyOptionExtensionMethods[Float, slick.lifted.Rep[Float]](x$10.avgRating)(lifted.this.OptionLift.repOptionLift[slick.lifted.Rep[Float], Float](lifted.this.Shape.repColumnShape[Float, Nothing](slick.jdbc.PostgresProfile.api.floatColumnType))).getOrElse[Float, slick.lifted.ConstColumn[Float]](0.0)(lifted.this.Shape.primitiveShape[Float, slick.lifted.FlatShapeLevel](slick.jdbc.PostgresProfile.api.floatColumnType), lifted.this.OptionLift.repOptionLift[slick.lifted.ConstColumn[Float], Float](lifted.this.Shape.repColumnShape[Float, Nothing](slick.jdbc.PostgresProfile.api.floatColumnType)))).dir(dir)(slick.jdbc.PostgresProfile.api.floatColumnType)
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          1100
+        </td>
+        <td>
+          1611
+          -
+          1611
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.Shape.primitiveShape
+        </td>
+        <td style="background: #F0ADAD">
+          lifted.this.Shape.primitiveShape[Float, slick.lifted.FlatShapeLevel](slick.jdbc.PostgresProfile.api.floatColumnType)
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          1094
+        </td>
+        <td>
+          1590
+          -
+          1601
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.db.HasRatings.avgRating
+        </td>
+        <td style="background: #F0ADAD">
+          x$10.avgRating
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          1102
+        </td>
+        <td>
+          1611
+          -
+          1611
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.RepShapeImplicits.repColumnShape
+        </td>
+        <td style="background: #F0ADAD">
+          lifted.this.Shape.repColumnShape[Float, Nothing](slick.jdbc.PostgresProfile.api.floatColumnType)
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          1105
+        </td>
+        <td>
+          1621
+          -
+          1621
         </td>
         <td>
           Select
@@ -3209,36 +2686,99 @@
         </td>
       </tr><tr>
         <td>
-          52
+          44
         </td>
         <td>
-          1116
+          1096
         </td>
         <td>
-          1957
+          1592
           -
-          1970
+          1592
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.RepShapeImplicits.repColumnShape
+        </td>
+        <td style="background: #F0ADAD">
+          lifted.this.Shape.repColumnShape[Float, Nothing](slick.jdbc.PostgresProfile.api.floatColumnType)
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          1108
+        </td>
+        <td>
+          1581
+          -
+          1627
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.Query.sortBy
+        </td>
+        <td style="background: #F0ADAD">
+          QuerySort.this.q.sortBy[slick.lifted.ColumnOrdered[Float]](((x$10: whatson.db.EventTable) =&gt; whatson.db.Util.RepUtils[Float](slick.jdbc.PostgresProfile.api.anyOptionExtensionMethods[Float, slick.lifted.Rep[Float]](x$10.avgRating)(lifted.this.OptionLift.repOptionLift[slick.lifted.Rep[Float], Float](lifted.this.Shape.repColumnShape[Float, Nothing](slick.jdbc.PostgresProfile.api.floatColumnType))).getOrElse[Float, slick.lifted.ConstColumn[Float]](0.0)(lifted.this.Shape.primitiveShape[Float, slick.lifted.FlatShapeLevel](slick.jdbc.PostgresProfile.api.floatColumnType), lifted.this.OptionLift.repOptionLift[slick.lifted.ConstColumn[Float], Float](lifted.this.Shape.repColumnShape[Float, Nothing](slick.jdbc.PostgresProfile.api.floatColumnType)))).dir(dir)(slick.jdbc.PostgresProfile.api.floatColumnType)))(scala.Predef.$conforms[slick.lifted.ColumnOrdered[Float]])
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          1099
+        </td>
+        <td>
+          1611
+          -
+          1611
         </td>
         <td>
           Select
         </td>
         <td>
-          whatson.db.LocationTable.latitude
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.floatColumnType
         </td>
         <td style="background: #F0ADAD">
-          x._2.latitude
+          slick.jdbc.PostgresProfile.api.floatColumnType
         </td>
       </tr><tr>
         <td>
-          52
+          44
         </td>
         <td>
-          1125
+          1098
         </td>
         <td>
-          1939
+          1612
           -
-          1939
+          1616
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          0.0
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          1107
+        </td>
+        <td>
+          1589
+          -
+          1589
         </td>
         <td>
           TypeApply
@@ -3251,36 +2791,456 @@
         </td>
       </tr><tr>
         <td>
-          52
+          44
         </td>
         <td>
-          1128
+          1101
         </td>
         <td>
-          2009
+          1611
           -
-          2009
+          1611
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.floatColumnType
+        </td>
+        <td style="background: #F0ADAD">
+          slick.jdbc.PostgresProfile.api.floatColumnType
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          1095
+        </td>
+        <td>
+          1592
+          -
+          1592
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.floatColumnType
+        </td>
+        <td style="background: #F0ADAD">
+          slick.jdbc.PostgresProfile.api.floatColumnType
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          1104
+        </td>
+        <td>
+          1590
+          -
+          1617
         </td>
         <td>
           ApplyToImplicitArgs
         </td>
         <td>
-          slick.lifted.AbstractTableShapeImplicits.tableShape
+          slick.lifted.AnyOptionExtensionMethods.getOrElse
         </td>
         <td style="background: #F0ADAD">
-          lifted.this.Shape.tableShape[slick.lifted.FlatShapeLevel, whatson.model.Event, whatson.db.EventTable](scala.Predef.$conforms[whatson.db.EventTable])
+          slick.jdbc.PostgresProfile.api.anyOptionExtensionMethods[Float, slick.lifted.Rep[Float]](x$10.avgRating)(lifted.this.OptionLift.repOptionLift[slick.lifted.Rep[Float], Float](lifted.this.Shape.repColumnShape[Float, Nothing](slick.jdbc.PostgresProfile.api.floatColumnType))).getOrElse[Float, slick.lifted.ConstColumn[Float]](0.0)(lifted.this.Shape.primitiveShape[Float, slick.lifted.FlatShapeLevel](slick.jdbc.PostgresProfile.api.floatColumnType), lifted.this.OptionLift.repOptionLift[slick.lifted.ConstColumn[Float], Float](lifted.this.Shape.repColumnShape[Float, Nothing](slick.jdbc.PostgresProfile.api.floatColumnType)))
         </td>
       </tr><tr>
         <td>
-          52
+          44
+        </td>
+        <td>
+          1103
+        </td>
+        <td>
+          1611
+          -
+          1611
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.OptionLift.repOptionLift
+        </td>
+        <td style="background: #F0ADAD">
+          lifted.this.OptionLift.repOptionLift[slick.lifted.ConstColumn[Float], Float](lifted.this.Shape.repColumnShape[Float, Nothing](slick.jdbc.PostgresProfile.api.floatColumnType))
+        </td>
+      </tr><tr>
+        <td>
+          45
+        </td>
+        <td>
+          1109
+        </td>
+        <td>
+          1653
+          -
+          1657
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.db.EventTable.id
+        </td>
+        <td style="background: #AEF1AE">
+          x$11.id
+        </td>
+      </tr><tr>
+        <td>
+          45
+        </td>
+        <td>
+          1111
+        </td>
+        <td>
+          1653
+          -
+          1666
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          whatson.db.Util.RepUtils.dir
+        </td>
+        <td style="background: #AEF1AE">
+          whatson.db.Util.RepUtils[Int](x$11.id).dir(dir)(slick.jdbc.PostgresProfile.api.intColumnType)
+        </td>
+      </tr><tr>
+        <td>
+          45
+        </td>
+        <td>
+          1110
+        </td>
+        <td>
+          1661
+          -
+          1661
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
+        </td>
+        <td style="background: #AEF1AE">
+          slick.jdbc.PostgresProfile.api.intColumnType
+        </td>
+      </tr><tr>
+        <td>
+          45
+        </td>
+        <td>
+          1113
+        </td>
+        <td>
+          1644
+          -
+          1667
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.Query.sortBy
+        </td>
+        <td style="background: #AEF1AE">
+          QuerySort.this.q.sortBy[slick.lifted.ColumnOrdered[Int]](((x$11: whatson.db.EventTable) =&gt; whatson.db.Util.RepUtils[Int](x$11.id).dir(dir)(slick.jdbc.PostgresProfile.api.intColumnType)))(scala.Predef.$conforms[slick.lifted.ColumnOrdered[Int]])
+        </td>
+      </tr><tr>
+        <td>
+          45
+        </td>
+        <td>
+          1112
+        </td>
+        <td>
+          1652
+          -
+          1652
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Predef.$conforms
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Predef.$conforms[slick.lifted.ColumnOrdered[Int]]
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          1114
+        </td>
+        <td>
+          1824
+          -
+          1861
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Option.getOrElse
+        </td>
+        <td style="background: #F0ADAD">
+          param.map[Float](((x$12: whatson.model.Location) =&gt; x$12.latitude)).getOrElse[Float](0.0)
+        </td>
+      </tr><tr>
+        <td>
+          51
+        </td>
+        <td>
+          1115
+        </td>
+        <td>
+          1881
+          -
+          1919
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Option.getOrElse
+        </td>
+        <td style="background: #F0ADAD">
+          param.map[Float](((x$13: whatson.model.Location) =&gt; x$13.longitude)).getOrElse[Float](0.0)
+        </td>
+      </tr><tr>
+        <td>
+          53
+        </td>
+        <td>
+          1118
+        </td>
+        <td>
+          1973
+          -
+          1973
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
+        </td>
+        <td style="background: #F0ADAD">
+          slick.jdbc.PostgresProfile.api.intColumnType
+        </td>
+      </tr><tr>
+        <td>
+          53
+        </td>
+        <td>
+          1117
+        </td>
+        <td>
+          1971
+          -
+          1983
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.db.EventTable.locationId
+        </td>
+        <td style="background: #F0ADAD">
+          x$14.locationId
+        </td>
+      </tr><tr>
+        <td>
+          53
+        </td>
+        <td>
+          1120
+        </td>
+        <td>
+          1984
+          -
+          1984
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
+        </td>
+        <td style="background: #F0ADAD">
+          slick.jdbc.PostgresProfile.api.intColumnType
+        </td>
+      </tr><tr>
+        <td>
+          53
+        </td>
+        <td>
+          1123
+        </td>
+        <td>
+          1970
+          -
+          1970
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.lifted.CanBeQueryCondition.BooleanColumnCanBeQueryCondition
+        </td>
+        <td style="background: #F0ADAD">
+          lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition
+        </td>
+      </tr><tr>
+        <td>
+          53
+        </td>
+        <td>
+          1116
+        </td>
+        <td>
+          1944
+          -
+          1966
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.db.LocationTable.location
+        </td>
+        <td style="background: #F0ADAD">
+          LocationTable.location
+        </td>
+      </tr><tr>
+        <td>
+          53
         </td>
         <td>
           1119
         </td>
         <td>
-          1986
+          1988
           -
-          1989
+          1992
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.db.LocationTable.id
+        </td>
+        <td style="background: #F0ADAD">
+          x$15.id
+        </td>
+      </tr><tr>
+        <td>
+          53
+        </td>
+        <td>
+          1122
+        </td>
+        <td>
+          1971
+          -
+          1992
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.ColumnExtensionMethods.===
+        </td>
+        <td style="background: #F0ADAD">
+          slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](x$14.locationId)(slick.jdbc.PostgresProfile.api.intColumnType).===[Int, Boolean](x$15.id)(lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType))
+        </td>
+      </tr><tr>
+        <td>
+          53
+        </td>
+        <td>
+          1121
+        </td>
+        <td>
+          1984
+          -
+          1984
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.OptionMapper2.getOptionMapper2TT
+        </td>
+        <td style="background: #F0ADAD">
+          lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType)
+        </td>
+      </tr><tr>
+        <td>
+          54
+        </td>
+        <td>
+          1124
+        </td>
+        <td>
+          2029
+          -
+          2042
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.db.LocationTable.latitude
+        </td>
+        <td style="background: #F0ADAD">
+          x._2.latitude
+        </td>
+      </tr><tr>
+        <td>
+          54
+        </td>
+        <td>
+          1133
+        </td>
+        <td>
+          2011
+          -
+          2011
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Predef.$conforms
+        </td>
+        <td style="background: #F0ADAD">
+          scala.Predef.$conforms[slick.lifted.ColumnOrdered[Float]]
+        </td>
+      </tr><tr>
+        <td>
+          54
+        </td>
+        <td>
+          1127
+        </td>
+        <td>
+          2058
+          -
+          2061
         </td>
         <td>
           ApplyToImplicitArgs
@@ -3293,36 +3253,78 @@
         </td>
       </tr><tr>
         <td>
-          52
+          54
         </td>
         <td>
-          1122
+          1136
         </td>
         <td>
-          1945
+          2081
           -
-          1995
+          2081
         </td>
         <td>
-          Apply
+          ApplyToImplicitArgs
         </td>
         <td>
-          whatson.db.Util.geoDistance
+          slick.lifted.AbstractTableShapeImplicits.tableShape
         </td>
         <td style="background: #F0ADAD">
-          whatson.db.Util.geoDistance(x._2.latitude, x._2.longitude, slick.jdbc.PostgresProfile.api.valueToConstColumn[Float](lat)(slick.jdbc.PostgresProfile.api.floatColumnType), slick.jdbc.PostgresProfile.api.valueToConstColumn[Float](long)(slick.jdbc.PostgresProfile.api.floatColumnType))
+          lifted.this.Shape.tableShape[slick.lifted.FlatShapeLevel, whatson.model.Event, whatson.db.EventTable](scala.Predef.$conforms[whatson.db.EventTable])
         </td>
       </tr><tr>
         <td>
-          52
+          54
         </td>
         <td>
-          1121
+          1126
         </td>
         <td>
-          1990
+          2058
           -
-          1994
+          2058
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.floatColumnType
+        </td>
+        <td style="background: #F0ADAD">
+          slick.jdbc.PostgresProfile.api.floatColumnType
+        </td>
+      </tr><tr>
+        <td>
+          54
+        </td>
+        <td>
+          1135
+        </td>
+        <td>
+          2081
+          -
+          2081
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Predef.$conforms
+        </td>
+        <td style="background: #F0ADAD">
+          scala.Predef.$conforms[whatson.db.EventTable]
+        </td>
+      </tr><tr>
+        <td>
+          54
+        </td>
+        <td>
+          1129
+        </td>
+        <td>
+          2062
+          -
+          2066
         </td>
         <td>
           ApplyToImplicitArgs
@@ -3335,15 +3337,162 @@
         </td>
       </tr><tr>
         <td>
-          55
+          54
+        </td>
+        <td>
+          1132
+        </td>
+        <td>
+          2017
+          -
+          2076
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          whatson.db.Util.RepUtils.dir
+        </td>
+        <td style="background: #F0ADAD">
+          whatson.db.Util.RepUtils[Float](whatson.db.Util.geoDistance(x._2.latitude, x._2.longitude, slick.jdbc.PostgresProfile.api.valueToConstColumn[Float](lat)(slick.jdbc.PostgresProfile.api.floatColumnType), slick.jdbc.PostgresProfile.api.valueToConstColumn[Float](long)(slick.jdbc.PostgresProfile.api.floatColumnType))).dir(dir)(slick.jdbc.PostgresProfile.api.floatColumnType)
+        </td>
+      </tr><tr>
+        <td>
+          54
+        </td>
+        <td>
+          1125
+        </td>
+        <td>
+          2043
+          -
+          2057
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.db.LocationTable.longitude
+        </td>
+        <td style="background: #F0ADAD">
+          x._2.longitude
+        </td>
+      </tr><tr>
+        <td>
+          54
+        </td>
+        <td>
+          1134
+        </td>
+        <td>
+          2082
+          -
+          2086
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Tuple2._1
+        </td>
+        <td style="background: #F0ADAD">
+          x$16._1
+        </td>
+      </tr><tr>
+        <td>
+          54
+        </td>
+        <td>
+          1137
+        </td>
+        <td>
+          1937
+          -
+          2087
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.Query.map
+        </td>
+        <td style="background: #F0ADAD">
+          QuerySort.this.q.join[whatson.db.LocationTable, whatson.db.LocationTable#TableElementType, Seq](LocationTable.location).on[slick.lifted.Rep[Boolean]](((x$14: whatson.db.EventTable, x$15: whatson.db.LocationTable) =&gt; slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](x$14.locationId)(slick.jdbc.PostgresProfile.api.intColumnType).===[Int, Boolean](x$15.id)(lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType))))(lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition).sortBy[slick.lifted.ColumnOrdered[Float]](((x: (whatson.db.EventTable, whatson.db.LocationTable)) =&gt; whatson.db.Util.RepUtils[Float](whatson.db.Util.geoDistance(x._2.latitude, x._2.longitude, slick.jdbc.PostgresProfile.api.valueToConstColumn[Float](lat)(slick.jdbc.PostgresProfile.api.floatColumnType), slick.jdbc.PostgresProfile.api.valueToConstColumn[Float](long)(slick.jdbc.PostgresProfile.api.floatColumnType))).dir(dir)(slick.jdbc.PostgresProfile.api.floatColumnType)))(scala.Predef.$conforms[slick.lifted.ColumnOrdered[Float]]).map[whatson.db.EventTable, whatson.db.EventTable, whatson.model.Event](((x$16: (whatson.db.EventTable, whatson.db.LocationTable)) =&gt; x$16._1))(lifted.this.Shape.tableShape[slick.lifted.FlatShapeLevel, whatson.model.Event, whatson.db.EventTable](scala.Predef.$conforms[whatson.db.EventTable]))
+        </td>
+      </tr><tr>
+        <td>
+          54
+        </td>
+        <td>
+          1128
+        </td>
+        <td>
+          2062
+          -
+          2062
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.floatColumnType
+        </td>
+        <td style="background: #F0ADAD">
+          slick.jdbc.PostgresProfile.api.floatColumnType
+        </td>
+      </tr><tr>
+        <td>
+          54
+        </td>
+        <td>
+          1131
+        </td>
+        <td>
+          2071
+          -
+          2071
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.floatColumnType
+        </td>
+        <td style="background: #F0ADAD">
+          slick.jdbc.PostgresProfile.api.floatColumnType
+        </td>
+      </tr><tr>
+        <td>
+          54
         </td>
         <td>
           1130
         </td>
         <td>
-          2050
+          2017
           -
-          2069
+          2067
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          whatson.db.Util.geoDistance
+        </td>
+        <td style="background: #F0ADAD">
+          whatson.db.Util.geoDistance(x._2.latitude, x._2.longitude, slick.jdbc.PostgresProfile.api.valueToConstColumn[Float](lat)(slick.jdbc.PostgresProfile.api.floatColumnType), slick.jdbc.PostgresProfile.api.valueToConstColumn[Float](long)(slick.jdbc.PostgresProfile.api.floatColumnType))
+        </td>
+      </tr><tr>
+        <td>
+          57
+        </td>
+        <td>
+          1138
+        </td>
+        <td>
+          2122
+          -
+          2141
         </td>
         <td>
           Apply
@@ -3356,15 +3505,15 @@
         </td>
       </tr><tr>
         <td>
-          60
+          62
         </td>
         <td>
-          1131
+          1139
         </td>
         <td>
-          2101
+          2173
           -
-          2105
+          2177
         </td>
         <td>
           Literal
