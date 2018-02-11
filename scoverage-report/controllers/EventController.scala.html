@@ -24,96 +24,123 @@
           <div class="tab-pane active" id="codegrid">
             <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package controllers
 </span>2 <span style=''>
-</span>3 <span style=''>import scala.concurrent.ExecutionContext
-</span>4 <span style=''>
-</span>5 <span style=''>import javax.inject._
-</span>6 <span style=''>import play.api._
-</span>7 <span style=''>import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
-</span>8 <span style=''>import play.api.libs.json._
-</span>9 <span style=''>import play.api.mvc._
-</span>10 <span style=''>import slick.jdbc.JdbcProfile
-</span>11 <span style=''>import slick.jdbc.PostgresProfile.api._
-</span>12 <span style=''>import whatson.db._
-</span>13 <span style=''>import whatson.db.EventTable._
-</span>14 <span style=''>import whatson.db.Util._
-</span>15 <span style=''>import whatson.model.Event
-</span>16 <span style=''>import whatson.model.Event._
-</span>17 <span style=''>import whatson.model.detail.EventDetail._
-</span>18 <span style=''>import com.mohiva.play.silhouette.api._
-</span>19 <span style=''>import whatson.auth._
-</span>20 <span style=''>import whatson.service._
-</span>21 <span style=''>
-</span>22 <span style=''>/**
-</span>23 <span style=''> * This Controller handles API Requests concerning events
-</span>24 <span style=''> */
-</span>25 <span style=''>class EventController @Inject()(cc: ControllerComponents,
-</span>26 <span style=''>                                protected val dbConfigProvider: DatabaseConfigProvider,
-</span>27 <span style=''>                                val silhouette: Silhouette[AuthEnv],
-</span>28 <span style=''>                                val organizerService: OrganizerService,
-</span>29 <span style=''>                                val userService: UserService)
-</span>30 <span style=''>    (implicit context: ExecutionContext)
-</span>31 <span style=''>    extends AbstractController(cc)
-</span>32 <span style=''>    with HasDatabaseConfigProvider[JdbcProfile]
-</span>33 <span style=''>    with Util {
-</span>34 <span style=''>
-</span>35 <span style=''>  val log = </span><span style='background: #AEF1AE'>Logger(&quot;api.events&quot;)</span><span style=''>
-</span>36 <span style=''>
-</span>37 <span style=''>  def getEvent(id: Int) = </span><span style='background: #AEF1AE'>Action.async { implicit request: Request[AnyContent] =&gt;
-</span>38 <span style=''></span><span style='background: #AEF1AE'>    log.debug(&quot;Rest request to get event&quot;)
-</span>39 <span style=''></span><span style='background: #AEF1AE'>
-</span>40 <span style=''></span><span style='background: #AEF1AE'>    val q = for(e &lt;- EventTable.event if e.id === id.bind) yield e;
-</span>41 <span style=''></span><span style='background: #AEF1AE'>
-</span>42 <span style=''></span><span style='background: #AEF1AE'>    db.run(q.detailed).map(x =&gt; x.headOption match {
-</span>43 <span style=''></span><span style='background: #AEF1AE'>      case Some(r) =&gt; Ok(Json.toJson(r))
-</span>44 <span style=''></span><span style='background: #AEF1AE'>      case _ =&gt; NotFound
-</span>45 <span style=''></span><span style='background: #AEF1AE'>    })
-</span>46 <span style=''></span><span style='background: #AEF1AE'>  }</span><span style=''>
-</span>47 <span style=''>
-</span>48 <span style=''>  def searchEvents(search: Option[String], location: Option[Int], category: Option[Int], sort: Option[String], sortDir: Boolean) = </span><span style='background: #AEF1AE'>Action.async { implicit request: Request[AnyContent] =&gt;
-</span>49 <span style=''></span><span style='background: #AEF1AE'>    log.debug(&quot;Rest request to search events&quot;)
-</span>50 <span style=''></span><span style='background: #AEF1AE'>
-</span>51 <span style=''></span><span style='background: #AEF1AE'>    val q = for {
-</span>52 <span style=''></span><span style='background: #AEF1AE'>      e &lt;- event if similar(e.name,search.getOrElse(&quot;&quot;).bind) || search.getOrElse(&quot;&quot;).bind === &quot;&quot;
-</span>53 <span style=''></span><span style='background: #AEF1AE'>                 if e.categories.filter(_.id === category.getOrElse(-1)).exists || category.getOrElse(-1).bind === -1
-</span>54 <span style=''></span><span style='background: #AEF1AE'>                 if e.locationId - location.getOrElse(-1).bind === 0 || location.getOrElse(-1).bind === -1
-</span>55 <span style=''></span><span style='background: #AEF1AE'>    } yield e
-</span>56 <span style=''></span><span style='background: #AEF1AE'>
-</span>57 <span style=''></span><span style='background: #AEF1AE'>    val s = q.sortColumn(sort,sortDir).queryPaged.detailed
-</span>58 <span style=''></span><span style='background: #AEF1AE'>    returnPaged(s,q,db)
-</span>59 <span style=''></span><span style='background: #AEF1AE'>  }</span><span style=''>
-</span>60 <span style=''>
-</span>61 <span style=''>  def deleteEvent(id: Int) = </span><span style='background: #AEF1AE'>organizerRequest(parse.default) { (request,organizer) =&gt;
-</span>62 <span style=''></span><span style='background: #AEF1AE'>    log.debug(&quot;Rest request to get event&quot;)
-</span>63 <span style=''></span><span style='background: #AEF1AE'>
-</span>64 <span style=''></span><span style='background: #AEF1AE'>    val q = event.filter(x =&gt; x.id === id.bind &amp;&amp; x.creatorId === organizer.id).delete
-</span>65 <span style=''></span><span style='background: #AEF1AE'>
-</span>66 <span style=''></span><span style='background: #AEF1AE'>    db.run(q).map {
-</span>67 <span style=''></span><span style='background: #AEF1AE'>      case 0 =&gt; NotFound
-</span>68 <span style=''></span><span style='background: #AEF1AE'>      case x =&gt; Ok(Json.toJson(x))
-</span>69 <span style=''></span><span style='background: #AEF1AE'>    }
-</span>70 <span style=''></span><span style='background: #AEF1AE'>  }</span><span style=''>
-</span>71 <span style=''>
-</span>72 <span style=''>  def createEvent() = </span><span style='background: #AEF1AE'>organizerRequest(parse.json(eventReads)) { case (request,organizer) =&gt;
-</span>73 <span style=''></span><span style='background: #AEF1AE'>    log.debug(&quot;Rest request to create event&quot;)
-</span>74 <span style=''></span><span style='background: #AEF1AE'>
-</span>75 <span style=''></span><span style='background: #AEF1AE'>    val e = request.body.copy(creatorId = organizer.id)
-</span>76 <span style=''></span><span style='background: #AEF1AE'>
-</span>77 <span style=''></span><span style='background: #AEF1AE'>    val inserted = db.run(insertAndReturn[Event,EventTable](event,e))
-</span>78 <span style=''></span><span style='background: #AEF1AE'>
-</span>79 <span style=''></span><span style='background: #AEF1AE'>    inserted.map(x =&gt; Ok(Json.toJson(x)))
-</span>80 <span style=''></span><span style='background: #AEF1AE'>  }</span><span style=''>
-</span>81 <span style=''>
-</span>82 <span style=''>  def updateEvent(id: Int) = </span><span style='background: #AEF1AE'>organizerRequest(parse.json(eventReads)) { (request,organizer) =&gt;
-</span>83 <span style=''></span><span style='background: #AEF1AE'>    log.debug(&quot;Rest request to update event&quot;)
-</span>84 <span style=''></span><span style='background: #AEF1AE'>
-</span>85 <span style=''></span><span style='background: #AEF1AE'>    val q = event.filter(x =&gt; x.id === id.bind &amp;&amp; x.creatorId === organizer.id).update(request.body)
-</span>86 <span style=''></span><span style='background: #AEF1AE'>
-</span>87 <span style=''></span><span style='background: #AEF1AE'>    db.run(q).map {
-</span>88 <span style=''></span><span style='background: #AEF1AE'>      case 0 =&gt; NotFound
-</span>89 <span style=''></span><span style='background: #AEF1AE'>      case x =&gt; Ok(Json.toJson(x))
-</span>90 <span style=''></span><span style='background: #AEF1AE'>    }
-</span>91 <span style=''></span><span style='background: #AEF1AE'>  }</span><span style=''>
-</span>92 <span style=''>}
+</span>3 <span style=''>import scala.concurrent._
+</span>4 <span style=''>import javax.inject._
+</span>5 <span style=''>import play.api._
+</span>6 <span style=''>import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
+</span>7 <span style=''>import play.api.libs.json._
+</span>8 <span style=''>import play.api.mvc._
+</span>9 <span style=''>import slick.jdbc.JdbcProfile
+</span>10 <span style=''>import slick.jdbc.PostgresProfile.api._
+</span>11 <span style=''>import whatson.db._
+</span>12 <span style=''>import whatson.db.EventTable._
+</span>13 <span style=''>import whatson.db.Util._
+</span>14 <span style=''>import whatson.model.Event
+</span>15 <span style=''>import whatson.model.Event._
+</span>16 <span style=''>import whatson.model.detail.EventDetail._
+</span>17 <span style=''>import com.mohiva.play.silhouette.api._
+</span>18 <span style=''>import whatson.auth._
+</span>19 <span style=''>import whatson.service._
+</span>20 <span style=''>
+</span>21 <span style=''>/**
+</span>22 <span style=''> * This Controller handles API Requests concerning events
+</span>23 <span style=''> */
+</span>24 <span style=''>class EventController @Inject()(cc: ControllerComponents,
+</span>25 <span style=''>                                protected val dbConfigProvider: DatabaseConfigProvider,
+</span>26 <span style=''>                                val silhouette: Silhouette[AuthEnv],
+</span>27 <span style=''>                                val organizerService: OrganizerService,
+</span>28 <span style=''>                                val userService: UserService)
+</span>29 <span style=''>    (implicit context: ExecutionContext)
+</span>30 <span style=''>    extends AbstractController(cc)
+</span>31 <span style=''>    with HasDatabaseConfigProvider[JdbcProfile]
+</span>32 <span style=''>    with Util {
+</span>33 <span style=''>
+</span>34 <span style=''>  val log = </span><span style='background: #AEF1AE'>Logger(&quot;api.events&quot;)</span><span style=''>
+</span>35 <span style=''>
+</span>36 <span style=''>  def getEvent(id: Int) = </span><span style='background: #AEF1AE'>Action.async { implicit request: Request[AnyContent] =&gt;
+</span>37 <span style=''></span><span style='background: #AEF1AE'>    log.debug(&quot;Rest request to get event&quot;)
+</span>38 <span style=''></span><span style='background: #AEF1AE'>
+</span>39 <span style=''></span><span style='background: #AEF1AE'>    val q = for(e &lt;- EventTable.event if e.id === id.bind) yield e;
+</span>40 <span style=''></span><span style='background: #AEF1AE'>
+</span>41 <span style=''></span><span style='background: #AEF1AE'>    db.run(q.detailed).map(x =&gt; x.headOption match {
+</span>42 <span style=''></span><span style='background: #AEF1AE'>      case Some(r) =&gt; Ok(Json.toJson(r))
+</span>43 <span style=''></span><span style='background: #AEF1AE'>      case _ =&gt; NotFound
+</span>44 <span style=''></span><span style='background: #AEF1AE'>    })
+</span>45 <span style=''></span><span style='background: #AEF1AE'>  }</span><span style=''>
+</span>46 <span style=''>
+</span>47 <span style=''>  def searchEvents(search: Option[String], location: Option[Int], category: Option[Int], sort: Option[String], sortDir: Boolean) = </span><span style='background: #AEF1AE'>Action.async { implicit request: Request[AnyContent] =&gt;
+</span>48 <span style=''></span><span style='background: #AEF1AE'>    log.debug(&quot;Rest request to search events&quot;)
+</span>49 <span style=''></span><span style='background: #AEF1AE'>
+</span>50 <span style=''></span><span style='background: #AEF1AE'>    val q = for {
+</span>51 <span style=''></span><span style='background: #AEF1AE'>      e &lt;- event if similar(e.name,search.getOrElse(&quot;&quot;).bind) || search.getOrElse(&quot;&quot;).bind === &quot;&quot;
+</span>52 <span style=''></span><span style='background: #AEF1AE'>                 if e.categories.filter(_.id === category.getOrElse(-1)).exists || category.getOrElse(-1).bind === -1
+</span>53 <span style=''></span><span style='background: #AEF1AE'>                 if e.locationId - location.getOrElse(-1).bind === 0 || location.getOrElse(-1).bind === -1
+</span>54 <span style=''></span><span style='background: #AEF1AE'>    } yield e
+</span>55 <span style=''></span><span style='background: #AEF1AE'>
+</span>56 <span style=''></span><span style='background: #AEF1AE'>    val s = q.sortColumn(sort,sortDir).queryPaged.detailed
+</span>57 <span style=''></span><span style='background: #AEF1AE'>    returnPaged(s,q,db)
+</span>58 <span style=''></span><span style='background: #AEF1AE'>  }</span><span style=''>
+</span>59 <span style=''>
+</span>60 <span style=''>  def deleteEvent(id: Int) = </span><span style='background: #AEF1AE'>organizerRequest(parse.default) { (request,organizer) =&gt;
+</span>61 <span style=''></span><span style='background: #AEF1AE'>    log.debug(&quot;Rest request to get event&quot;)
+</span>62 <span style=''></span><span style='background: #AEF1AE'>
+</span>63 <span style=''></span><span style='background: #AEF1AE'>    val q = event.filter(x =&gt; x.id === id.bind &amp;&amp; x.creatorId === organizer.id).delete
+</span>64 <span style=''></span><span style='background: #AEF1AE'>
+</span>65 <span style=''></span><span style='background: #AEF1AE'>    db.run(q).map {
+</span>66 <span style=''></span><span style='background: #AEF1AE'>      case 0 =&gt; NotFound
+</span>67 <span style=''></span><span style='background: #AEF1AE'>      case x =&gt; Ok(Json.toJson(x))
+</span>68 <span style=''></span><span style='background: #AEF1AE'>    }
+</span>69 <span style=''></span><span style='background: #AEF1AE'>  }</span><span style=''>
+</span>70 <span style=''>
+</span>71 <span style=''>  def createEvent() = </span><span style='background: #AEF1AE'>organizerRequest(parse.json(eventReads)) { case (request,organizer) =&gt;
+</span>72 <span style=''></span><span style='background: #AEF1AE'>    log.debug(&quot;Rest request to create event&quot;)
+</span>73 <span style=''></span><span style='background: #AEF1AE'>
+</span>74 <span style=''></span><span style='background: #AEF1AE'>    val e = request.body.copy(creatorId = organizer.id)
+</span>75 <span style=''></span><span style='background: #AEF1AE'>
+</span>76 <span style=''></span><span style='background: #AEF1AE'>    val inserted = db.run(insertAndReturn[Event,EventTable](event,e))
+</span>77 <span style=''></span><span style='background: #AEF1AE'>
+</span>78 <span style=''></span><span style='background: #AEF1AE'>    inserted.map(x =&gt; Ok(Json.toJson(x)))
+</span>79 <span style=''></span><span style='background: #AEF1AE'>  }</span><span style=''>
+</span>80 <span style=''>
+</span>81 <span style=''>  def updateEvent(id: Int) = </span><span style='background: #AEF1AE'>organizerRequest(parse.json(eventReads)) { (request,organizer) =&gt;
+</span>82 <span style=''></span><span style='background: #AEF1AE'>    log.debug(&quot;Rest request to update event&quot;)
+</span>83 <span style=''></span><span style='background: #AEF1AE'>
+</span>84 <span style=''></span><span style='background: #AEF1AE'>    val q = event.filter(x =&gt; x.id === id.bind &amp;&amp; x.creatorId === organizer.id).update(request.body)
+</span>85 <span style=''></span><span style='background: #AEF1AE'>
+</span>86 <span style=''></span><span style='background: #AEF1AE'>    db.run(q).map {
+</span>87 <span style=''></span><span style='background: #AEF1AE'>      case 0 =&gt; NotFound
+</span>88 <span style=''></span><span style='background: #AEF1AE'>      case x =&gt; Ok(Json.toJson(x))
+</span>89 <span style=''></span><span style='background: #AEF1AE'>    }
+</span>90 <span style=''></span><span style='background: #AEF1AE'>  }</span><span style=''>
+</span>91 <span style=''>
+</span>92 <span style=''>  def participate(id: Int) = </span><span style='background: #AEF1AE'>userRequest(parse.default) { case (request,user) =&gt;
+</span>93 <span style=''></span><span style='background: #AEF1AE'>    log.debug(&quot;Rest request to participate in event&quot;)
+</span>94 <span style=''></span><span style='background: #AEF1AE'>
+</span>95 <span style=''></span><span style='background: #AEF1AE'>    val q = (event.filter(x =&gt; x.id === id.bind).result)
+</span>96 <span style=''></span><span style='background: #AEF1AE'>      .zip(ParticipantTable.participant.filter(x =&gt; x.eventID === id.bind &amp;&amp; x.userID === user.id.getOrElse(-1).bind).result)
+</span>97 <span style=''></span><span style='background: #AEF1AE'>
+</span>98 <span style=''></span><span style='background: #AEF1AE'>    db.run(q).map(x =&gt; (x._1.headOption,x._2.headOption)).flatMap {
+</span>99 <span style=''></span><span style='background: #AEF1AE'>      case (Some(e),None) =&gt; {
+</span>100 <span style=''></span><span style='background: #AEF1AE'>        db.run(ParticipantTable.participant += ((user.id.getOrElse(-1),id)))
+</span>101 <span style=''></span><span style='background: #AEF1AE'>        Future.successful(Ok)
+</span>102 <span style=''></span><span style='background: #AEF1AE'>      }
+</span>103 <span style=''></span><span style='background: #AEF1AE'>      case (Some(e),Some(p)) =&gt; Future.successful(Conflict)
+</span>104 <span style=''></span><span style='background: #AEF1AE'>      case (None,_) =&gt; Future.successful(BadRequest)
+</span>105 <span style=''></span><span style='background: #AEF1AE'>    }
+</span>106 <span style=''></span><span style='background: #AEF1AE'>  }</span><span style=''>
+</span>107 <span style=''>
+</span>108 <span style=''>  def unparticipate(id: Int) = </span><span style='background: #AEF1AE'>userRequest(parse.default) { case (request,user) =&gt;
+</span>109 <span style=''></span><span style='background: #AEF1AE'>    log.debug(&quot;Rest request to unparticipate in event&quot;)
+</span>110 <span style=''></span><span style='background: #AEF1AE'>
+</span>111 <span style=''></span><span style='background: #AEF1AE'>    db.run(ParticipantTable.participant.filter(x =&gt; x.eventID === id.bind &amp;&amp; x.userID === user.id.getOrElse(-1).bind).delete)
+</span>112 <span style=''></span><span style='background: #AEF1AE'>      .flatMap {
+</span>113 <span style=''></span><span style='background: #AEF1AE'>      case 1 =&gt; {
+</span>114 <span style=''></span><span style='background: #AEF1AE'>        Future.successful(Ok)
+</span>115 <span style=''></span><span style='background: #AEF1AE'>      }
+</span>116 <span style=''></span><span style='background: #AEF1AE'>      case _ =&gt; Future.successful(BadRequest)
+</span>117 <span style=''></span><span style='background: #AEF1AE'>    }
+</span>118 <span style=''></span><span style='background: #AEF1AE'>  }</span><span style=''>
+</span>119 <span style=''>}
 </span></pre>
           </div>
           <div class="tab-pane" id="statementlist">
@@ -127,15 +154,15 @@
         <th>Code</th>
       </tr><tr>
         <td>
-          35
+          34
         </td>
         <td>
           105
         </td>
         <td>
-          1130
+          1114
           -
-          1150
+          1134
         </td>
         <td>
           Apply
@@ -148,15 +175,15 @@
         </td>
       </tr><tr>
         <td>
-          37
+          36
         </td>
         <td>
           130
         </td>
         <td>
-          1178
+          1162
           -
-          1476
+          1460
         </td>
         <td>
           Apply
@@ -176,15 +203,15 @@
         </td>
       </tr><tr>
         <td>
-          38
+          37
         </td>
         <td>
           107
         </td>
         <td>
-          1247
+          1231
           -
-          1247
+          1231
         </td>
         <td>
           Select
@@ -197,15 +224,15 @@
         </td>
       </tr><tr>
         <td>
-          38
+          37
         </td>
         <td>
           106
         </td>
         <td>
-          1248
+          1232
           -
-          1275
+          1259
         </td>
         <td>
           Literal
@@ -218,15 +245,15 @@
         </td>
       </tr><tr>
         <td>
-          38
+          37
         </td>
         <td>
           108
         </td>
         <td>
-          1238
+          1222
           -
-          1276
+          1260
         </td>
         <td>
           ApplyToImplicitArgs
@@ -239,15 +266,15 @@
         </td>
       </tr><tr>
         <td>
-          40
+          39
         </td>
         <td>
           110
         </td>
         <td>
-          1321
+          1305
           -
-          1321
+          1305
         </td>
         <td>
           Select
@@ -260,15 +287,15 @@
         </td>
       </tr><tr>
         <td>
-          40
+          39
         </td>
         <td>
           119
         </td>
         <td>
-          1290
+          1274
           -
-          1344
+          1328
         </td>
         <td>
           ApplyToImplicitArgs
@@ -281,15 +308,15 @@
         </td>
       </tr><tr>
         <td>
-          40
+          39
         </td>
         <td>
           113
         </td>
         <td>
-          1324
+          1308
           -
-          1324
+          1308
         </td>
         <td>
           Select
@@ -302,15 +329,15 @@
         </td>
       </tr><tr>
         <td>
-          40
+          39
         </td>
         <td>
           116
         </td>
         <td>
-          1310
+          1294
           -
-          1310
+          1294
         </td>
         <td>
           Select
@@ -323,15 +350,15 @@
         </td>
       </tr><tr>
         <td>
-          40
+          39
         </td>
         <td>
           115
         </td>
         <td>
-          1319
+          1303
           -
-          1335
+          1319
         </td>
         <td>
           ApplyToImplicitArgs
@@ -344,15 +371,15 @@
         </td>
       </tr><tr>
         <td>
-          40
+          39
         </td>
         <td>
           118
         </td>
         <td>
-          1296
+          1280
           -
-          1296
+          1280
         </td>
         <td>
           ApplyToImplicitArgs
@@ -365,15 +392,15 @@
         </td>
       </tr><tr>
         <td>
-          40
+          39
         </td>
         <td>
           109
         </td>
         <td>
-          1319
+          1303
           -
-          1323
+          1307
         </td>
         <td>
           Select
@@ -386,15 +413,15 @@
         </td>
       </tr><tr>
         <td>
-          40
+          39
         </td>
         <td>
           112
         </td>
         <td>
-          1328
+          1312
           -
-          1335
+          1319
         </td>
         <td>
           Select
@@ -407,15 +434,15 @@
         </td>
       </tr><tr>
         <td>
-          40
+          39
         </td>
         <td>
           114
         </td>
         <td>
-          1324
+          1308
           -
-          1324
+          1308
         </td>
         <td>
           ApplyToImplicitArgs
@@ -428,15 +455,15 @@
         </td>
       </tr><tr>
         <td>
-          40
+          39
         </td>
         <td>
           117
         </td>
         <td>
-          1296
+          1280
           -
-          1296
+          1280
         </td>
         <td>
           TypeApply
@@ -449,15 +476,15 @@
         </td>
       </tr><tr>
         <td>
-          40
+          39
         </td>
         <td>
           111
         </td>
         <td>
-          1328
+          1312
           -
-          1328
+          1312
         </td>
         <td>
           Select
@@ -470,15 +497,15 @@
         </td>
       </tr><tr>
         <td>
-          42
+          41
         </td>
         <td>
           128
         </td>
         <td>
-          1373
+          1357
           -
-          1373
+          1357
         </td>
         <td>
           Select
@@ -491,15 +518,15 @@
         </td>
       </tr><tr>
         <td>
-          42
+          41
         </td>
         <td>
           122
         </td>
         <td>
-          1379
+          1363
           -
-          1391
+          1375
         </td>
         <td>
           Select
@@ -512,15 +539,15 @@
         </td>
       </tr><tr>
         <td>
-          42
+          41
         </td>
         <td>
           121
         </td>
         <td>
-          1358
+          1342
           -
-          1368
+          1352
         </td>
         <td>
           ApplyToImplicitArgs
@@ -533,15 +560,15 @@
         </td>
       </tr><tr>
         <td>
-          42
+          41
         </td>
         <td>
           129
         </td>
         <td>
-          1351
+          1335
           -
-          1472
+          1456
         </td>
         <td>
           ApplyToImplicitArgs
@@ -557,15 +584,15 @@
         </td>
       </tr><tr>
         <td>
-          42
+          41
         </td>
         <td>
           120
         </td>
         <td>
-          1360
+          1344
           -
-          1360
+          1344
         </td>
         <td>
           Select
@@ -578,15 +605,15 @@
         </td>
       </tr><tr>
         <td>
-          43
+          42
         </td>
         <td>
           125
         </td>
         <td>
-          1424
+          1408
           -
-          1424
+          1408
         </td>
         <td>
           Select
@@ -599,15 +626,15 @@
         </td>
       </tr><tr>
         <td>
-          43
+          42
         </td>
         <td>
           124
         </td>
         <td>
-          1425
+          1409
           -
-          1439
+          1423
         </td>
         <td>
           ApplyToImplicitArgs
@@ -620,15 +647,15 @@
         </td>
       </tr><tr>
         <td>
-          43
+          42
         </td>
         <td>
           123
         </td>
         <td>
-          1436
+          1420
           -
-          1436
+          1420
         </td>
         <td>
           Select
@@ -641,15 +668,15 @@
         </td>
       </tr><tr>
         <td>
-          43
+          42
         </td>
         <td>
           126
         </td>
         <td>
-          1422
+          1406
           -
-          1440
+          1424
         </td>
         <td>
           ApplyToImplicitArgs
@@ -662,15 +689,15 @@
         </td>
       </tr><tr>
         <td>
-          44
+          43
         </td>
         <td>
           127
         </td>
         <td>
-          1457
+          1441
           -
-          1465
+          1449
         </td>
         <td>
           Select
@@ -683,15 +710,15 @@
         </td>
       </tr><tr>
         <td>
-          48
+          47
         </td>
         <td>
           216
         </td>
         <td>
-          1609
+          1593
           -
-          2155
+          2139
         </td>
         <td>
           Apply
@@ -709,15 +736,15 @@
         </td>
       </tr><tr>
         <td>
-          49
+          48
         </td>
         <td>
           131
         </td>
         <td>
-          1679
+          1663
           -
-          1710
+          1694
         </td>
         <td>
           Literal
@@ -730,15 +757,15 @@
         </td>
       </tr><tr>
         <td>
-          49
+          48
         </td>
         <td>
           133
         </td>
         <td>
-          1669
+          1653
           -
-          1711
+          1695
         </td>
         <td>
           ApplyToImplicitArgs
@@ -751,15 +778,15 @@
         </td>
       </tr><tr>
         <td>
-          49
+          48
         </td>
         <td>
           132
         </td>
         <td>
-          1678
+          1662
           -
-          1678
+          1662
         </td>
         <td>
           Select
@@ -772,15 +799,15 @@
         </td>
       </tr><tr>
         <td>
-          52
+          51
         </td>
         <td>
           137
         </td>
         <td>
-          1766
+          1750
           -
-          1791
+          1775
         </td>
         <td>
           Select
@@ -793,15 +820,15 @@
         </td>
       </tr><tr>
         <td>
-          52
+          51
         </td>
         <td>
           146
         </td>
         <td>
-          1822
+          1806
           -
-          1822
+          1806
         </td>
         <td>
           Select
@@ -814,15 +841,15 @@
         </td>
       </tr><tr>
         <td>
-          52
+          51
         </td>
         <td>
           176
         </td>
         <td>
-          1742
+          1726
           -
-          1742
+          1726
         </td>
         <td>
           Select
@@ -835,15 +862,15 @@
         </td>
       </tr><tr>
         <td>
-          52
+          51
         </td>
         <td>
           140
         </td>
         <td>
-          1812
+          1796
           -
-          1812
+          1796
         </td>
         <td>
           Select
@@ -856,15 +883,15 @@
         </td>
       </tr><tr>
         <td>
-          52
+          51
         </td>
         <td>
           149
         </td>
         <td>
-          1793
+          1777
           -
-          1793
+          1777
         </td>
         <td>
           Select
@@ -877,15 +904,15 @@
         </td>
       </tr><tr>
         <td>
-          52
+          51
         </td>
         <td>
           134
         </td>
         <td>
-          1759
+          1743
           -
-          1765
+          1749
         </td>
         <td>
           Select
@@ -898,15 +925,15 @@
         </td>
       </tr><tr>
         <td>
-          52
+          51
         </td>
         <td>
           142
         </td>
         <td>
-          1817
+          1801
           -
-          1817
+          1801
         </td>
         <td>
           Select
@@ -919,15 +946,15 @@
         </td>
       </tr><tr>
         <td>
-          52
+          51
         </td>
         <td>
           151
         </td>
         <td>
-          1751
+          1735
           -
-          1828
+          1812
         </td>
         <td>
           ApplyToImplicitArgs
@@ -940,15 +967,15 @@
         </td>
       </tr><tr>
         <td>
-          52
+          51
         </td>
         <td>
           205
         </td>
         <td>
-          1742
+          1726
           -
-          1742
+          1726
         </td>
         <td>
           Select
@@ -961,15 +988,15 @@
         </td>
       </tr><tr>
         <td>
-          52
+          51
         </td>
         <td>
           136
         </td>
         <td>
-          1782
+          1766
           -
-          1782
+          1766
         </td>
         <td>
           Select
@@ -982,15 +1009,15 @@
         </td>
       </tr><tr>
         <td>
-          52
+          51
         </td>
         <td>
           208
         </td>
         <td>
-          1725
+          1709
           -
-          2067
+          2051
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1003,15 +1030,15 @@
         </td>
       </tr><tr>
         <td>
-          52
+          51
         </td>
         <td>
           145
         </td>
         <td>
-          1826
+          1810
           -
-          1828
+          1812
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1024,15 +1051,15 @@
         </td>
       </tr><tr>
         <td>
-          52
+          51
         </td>
         <td>
           139
         </td>
         <td>
-          1796
+          1780
           -
-          1816
+          1800
         </td>
         <td>
           Apply
@@ -1045,15 +1072,15 @@
         </td>
       </tr><tr>
         <td>
-          52
+          51
         </td>
         <td>
           148
         </td>
         <td>
-          1796
+          1780
           -
-          1828
+          1812
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1066,15 +1093,15 @@
         </td>
       </tr><tr>
         <td>
-          52
+          51
         </td>
         <td>
           207
         </td>
         <td>
-          1739
+          1723
           -
-          1739
+          1723
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1087,15 +1114,15 @@
         </td>
       </tr><tr>
         <td>
-          52
+          51
         </td>
         <td>
           147
         </td>
         <td>
-          1822
+          1806
           -
-          1822
+          1806
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1108,15 +1135,15 @@
         </td>
       </tr><tr>
         <td>
-          52
+          51
         </td>
         <td>
           138
         </td>
         <td>
-          1751
+          1735
           -
-          1792
+          1776
         </td>
         <td>
           Apply
@@ -1129,15 +1156,15 @@
         </td>
       </tr><tr>
         <td>
-          52
+          51
         </td>
         <td>
           150
         </td>
         <td>
-          1793
+          1777
           -
-          1793
+          1777
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1150,15 +1177,15 @@
         </td>
       </tr><tr>
         <td>
-          52
+          51
         </td>
         <td>
           141
         </td>
         <td>
-          1796
+          1780
           -
-          1821
+          1805
         </td>
         <td>
           Select
@@ -1171,15 +1198,15 @@
         </td>
       </tr><tr>
         <td>
-          52
+          51
         </td>
         <td>
           144
         </td>
         <td>
-          1826
+          1810
           -
-          1826
+          1810
         </td>
         <td>
           Select
@@ -1192,15 +1219,15 @@
         </td>
       </tr><tr>
         <td>
-          52
+          51
         </td>
         <td>
           135
         </td>
         <td>
-          1766
+          1750
           -
-          1786
+          1770
         </td>
         <td>
           Apply
@@ -1213,15 +1240,15 @@
         </td>
       </tr><tr>
         <td>
-          52
+          51
         </td>
         <td>
           152
         </td>
         <td>
-          1742
+          1726
           -
-          1742
+          1726
         </td>
         <td>
           Select
@@ -1234,15 +1261,15 @@
         </td>
       </tr><tr>
         <td>
-          52
+          51
         </td>
         <td>
           143
         </td>
         <td>
-          1826
+          1810
           -
-          1828
+          1812
         </td>
         <td>
           Literal
@@ -1255,15 +1282,15 @@
         </td>
       </tr><tr>
         <td>
-          52
+          51
         </td>
         <td>
           206
         </td>
         <td>
-          1739
+          1723
           -
-          1739
+          1723
         </td>
         <td>
           TypeApply
@@ -1276,15 +1303,15 @@
         </td>
       </tr><tr>
         <td>
-          53
+          52
         </td>
         <td>
           173
         </td>
         <td>
-          1909
+          1893
           -
-          1909
+          1893
         </td>
         <td>
           Select
@@ -1297,15 +1324,15 @@
         </td>
       </tr><tr>
         <td>
-          53
+          52
         </td>
         <td>
           155
         </td>
         <td>
-          1878
+          1862
           -
-          1900
+          1884
         </td>
         <td>
           Apply
@@ -1318,15 +1345,15 @@
         </td>
       </tr><tr>
         <td>
-          53
+          52
         </td>
         <td>
           164
         </td>
         <td>
-          1930
+          1914
           -
-          1930
+          1914
         </td>
         <td>
           Select
@@ -1339,15 +1366,15 @@
         </td>
       </tr><tr>
         <td>
-          53
+          52
         </td>
         <td>
           158
         </td>
         <td>
-          1874
+          1858
           -
-          1874
+          1858
         </td>
         <td>
           Select
@@ -1360,15 +1387,15 @@
         </td>
       </tr><tr>
         <td>
-          53
+          52
         </td>
         <td>
           167
         </td>
         <td>
-          1945
+          1929
           -
-          1946
+          1930
         </td>
         <td>
           Literal
@@ -1381,15 +1408,15 @@
         </td>
       </tr><tr>
         <td>
-          53
+          52
         </td>
         <td>
           175
         </td>
         <td>
-          1849
+          1833
           -
-          1946
+          1930
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1402,15 +1429,15 @@
         </td>
       </tr><tr>
         <td>
-          53
+          52
         </td>
         <td>
           166
         </td>
         <td>
-          1935
+          1919
           -
-          1935
+          1919
         </td>
         <td>
           Select
@@ -1423,15 +1450,15 @@
         </td>
       </tr><tr>
         <td>
-          53
+          52
         </td>
         <td>
           160
         </td>
         <td>
-          1869
+          1853
           -
-          1900
+          1884
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1444,15 +1471,15 @@
         </td>
       </tr><tr>
         <td>
-          53
+          52
         </td>
         <td>
           169
         </td>
         <td>
-          1945
+          1929
           -
-          1946
+          1930
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1465,15 +1492,15 @@
         </td>
       </tr><tr>
         <td>
-          53
+          52
         </td>
         <td>
           163
         </td>
         <td>
-          1912
+          1896
           -
-          1934
+          1918
         </td>
         <td>
           Apply
@@ -1486,15 +1513,15 @@
         </td>
       </tr><tr>
         <td>
-          53
+          52
         </td>
         <td>
           172
         </td>
         <td>
-          1912
+          1896
           -
-          1946
+          1930
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1507,15 +1534,15 @@
         </td>
       </tr><tr>
         <td>
-          53
+          52
         </td>
         <td>
           154
         </td>
         <td>
-          1871
+          1855
           -
-          1871
+          1855
         </td>
         <td>
           Select
@@ -1528,15 +1555,15 @@
         </td>
       </tr><tr>
         <td>
-          53
+          52
         </td>
         <td>
           157
         </td>
         <td>
-          1878
+          1862
           -
-          1900
+          1884
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1549,15 +1576,15 @@
         </td>
       </tr><tr>
         <td>
-          53
+          52
         </td>
         <td>
           174
         </td>
         <td>
-          1909
+          1893
           -
-          1909
+          1893
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1570,15 +1597,15 @@
         </td>
       </tr><tr>
         <td>
-          53
+          52
         </td>
         <td>
           156
         </td>
         <td>
-          1896
+          1880
           -
-          1896
+          1880
         </td>
         <td>
           Select
@@ -1591,15 +1618,15 @@
         </td>
       </tr><tr>
         <td>
-          53
+          52
         </td>
         <td>
           165
         </td>
         <td>
-          1912
+          1896
           -
-          1939
+          1923
         </td>
         <td>
           Select
@@ -1612,15 +1639,15 @@
         </td>
       </tr><tr>
         <td>
-          53
+          52
         </td>
         <td>
           168
         </td>
         <td>
-          1945
+          1929
           -
-          1945
+          1929
         </td>
         <td>
           Select
@@ -1633,15 +1660,15 @@
         </td>
       </tr><tr>
         <td>
-          53
+          52
         </td>
         <td>
           159
         </td>
         <td>
-          1874
+          1858
           -
-          1874
+          1858
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1654,15 +1681,15 @@
         </td>
       </tr><tr>
         <td>
-          53
+          52
         </td>
         <td>
           171
         </td>
         <td>
-          1940
+          1924
           -
-          1940
+          1924
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1675,15 +1702,15 @@
         </td>
       </tr><tr>
         <td>
-          53
+          52
         </td>
         <td>
           153
         </td>
         <td>
-          1869
+          1853
           -
-          1873
+          1857
         </td>
         <td>
           Select
@@ -1696,15 +1723,15 @@
         </td>
       </tr><tr>
         <td>
-          53
+          52
         </td>
         <td>
           162
         </td>
         <td>
-          1849
+          1833
           -
-          1908
+          1892
         </td>
         <td>
           Select
@@ -1717,15 +1744,15 @@
         </td>
       </tr><tr>
         <td>
-          53
+          52
         </td>
         <td>
           170
         </td>
         <td>
-          1940
+          1924
           -
-          1940
+          1924
         </td>
         <td>
           Select
@@ -1738,15 +1765,15 @@
         </td>
       </tr><tr>
         <td>
-          53
+          52
         </td>
         <td>
           161
         </td>
         <td>
-          1868
+          1852
           -
-          1868
+          1852
         </td>
         <td>
           Select
@@ -1759,15 +1786,15 @@
         </td>
       </tr><tr>
         <td>
-          54
+          53
         </td>
         <td>
           200
         </td>
         <td>
-          2047
+          2031
           -
-          2047
+          2031
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1780,15 +1807,15 @@
         </td>
       </tr><tr>
         <td>
-          54
+          53
         </td>
         <td>
           182
         </td>
         <td>
-          1980
+          1964
           -
-          1980
+          1964
         </td>
         <td>
           Select
@@ -1801,15 +1828,15 @@
         </td>
       </tr><tr>
         <td>
-          54
+          53
         </td>
         <td>
           191
         </td>
         <td>
-          1967
+          1951
           -
-          2015
+          1999
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1822,15 +1849,15 @@
         </td>
       </tr><tr>
         <td>
-          54
+          53
         </td>
         <td>
           194
         </td>
         <td>
-          2019
+          2003
           -
-          2046
+          2030
         </td>
         <td>
           Select
@@ -1843,15 +1870,15 @@
         </td>
       </tr><tr>
         <td>
-          54
+          53
         </td>
         <td>
           185
         </td>
         <td>
-          1980
+          1964
           -
-          1980
+          1964
         </td>
         <td>
           Select
@@ -1864,15 +1891,15 @@
         </td>
       </tr><tr>
         <td>
-          54
+          53
         </td>
         <td>
           184
         </td>
         <td>
-          1967
+          1951
           -
-          2009
+          1993
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1885,15 +1912,15 @@
         </td>
       </tr><tr>
         <td>
-          54
+          53
         </td>
         <td>
           193
         </td>
         <td>
-          2037
+          2021
           -
-          2037
+          2021
         </td>
         <td>
           Select
@@ -1906,15 +1933,15 @@
         </td>
       </tr><tr>
         <td>
-          54
+          53
         </td>
         <td>
           202
         </td>
         <td>
-          2016
+          2000
           -
-          2016
+          2000
         </td>
         <td>
           Select
@@ -1927,15 +1954,15 @@
         </td>
       </tr><tr>
         <td>
-          54
+          53
         </td>
         <td>
           178
         </td>
         <td>
-          1969
+          1953
           -
-          1969
+          1953
         </td>
         <td>
           Select
@@ -1948,15 +1975,15 @@
         </td>
       </tr><tr>
         <td>
-          54
+          53
         </td>
         <td>
           187
         </td>
         <td>
-          2014
+          1998
           -
-          2014
+          1998
         </td>
         <td>
           Select
@@ -1969,15 +1996,15 @@
         </td>
       </tr><tr>
         <td>
-          54
+          53
         </td>
         <td>
           196
         </td>
         <td>
-          2052
+          2036
           -
-          2053
+          2037
         </td>
         <td>
           Literal
@@ -1990,15 +2017,15 @@
         </td>
       </tr><tr>
         <td>
-          54
+          53
         </td>
         <td>
           181
         </td>
         <td>
-          1982
+          1966
           -
-          2009
+          1993
         </td>
         <td>
           Select
@@ -2011,15 +2038,15 @@
         </td>
       </tr><tr>
         <td>
-          54
+          53
         </td>
         <td>
           199
         </td>
         <td>
-          2047
+          2031
           -
-          2047
+          2031
         </td>
         <td>
           Select
@@ -2032,15 +2059,15 @@
         </td>
       </tr><tr>
         <td>
-          54
+          53
         </td>
         <td>
           190
         </td>
         <td>
-          2010
+          1994
           -
-          2010
+          1994
         </td>
         <td>
           ApplyToImplicitArgs
@@ -2053,15 +2080,15 @@
         </td>
       </tr><tr>
         <td>
-          54
+          53
         </td>
         <td>
           189
         </td>
         <td>
-          2010
+          1994
           -
-          2010
+          1994
         </td>
         <td>
           Select
@@ -2074,15 +2101,15 @@
         </td>
       </tr><tr>
         <td>
-          54
+          53
         </td>
         <td>
           180
         </td>
         <td>
-          2000
+          1984
           -
-          2000
+          1984
         </td>
         <td>
           Select
@@ -2095,15 +2122,15 @@
         </td>
       </tr><tr>
         <td>
-          54
+          53
         </td>
         <td>
           198
         </td>
         <td>
-          2052
+          2036
           -
-          2053
+          2037
         </td>
         <td>
           ApplyToImplicitArgs
@@ -2116,15 +2143,15 @@
         </td>
       </tr><tr>
         <td>
-          54
+          53
         </td>
         <td>
           183
         </td>
         <td>
-          1980
+          1964
           -
-          1980
+          1964
         </td>
         <td>
           ApplyToImplicitArgs
@@ -2137,15 +2164,15 @@
         </td>
       </tr><tr>
         <td>
-          54
+          53
         </td>
         <td>
           192
         </td>
         <td>
-          2019
+          2003
           -
-          2041
+          2025
         </td>
         <td>
           Apply
@@ -2158,15 +2185,15 @@
         </td>
       </tr><tr>
         <td>
-          54
+          53
         </td>
         <td>
           201
         </td>
         <td>
-          2019
+          2003
           -
-          2053
+          2037
         </td>
         <td>
           ApplyToImplicitArgs
@@ -2179,15 +2206,15 @@
         </td>
       </tr><tr>
         <td>
-          54
+          53
         </td>
         <td>
           186
         </td>
         <td>
-          2014
+          1998
           -
-          2015
+          1999
         </td>
         <td>
           Literal
@@ -2200,15 +2227,15 @@
         </td>
       </tr><tr>
         <td>
-          54
+          53
         </td>
         <td>
           177
         </td>
         <td>
-          1967
+          1951
           -
-          1979
+          1963
         </td>
         <td>
           Select
@@ -2221,15 +2248,15 @@
         </td>
       </tr><tr>
         <td>
-          54
+          53
         </td>
         <td>
           195
         </td>
         <td>
-          2042
+          2026
           -
-          2042
+          2026
         </td>
         <td>
           Select
@@ -2242,15 +2269,15 @@
         </td>
       </tr><tr>
         <td>
-          54
+          53
         </td>
         <td>
           204
         </td>
         <td>
-          1967
+          1951
           -
-          2053
+          2037
         </td>
         <td>
           ApplyToImplicitArgs
@@ -2263,15 +2290,15 @@
         </td>
       </tr><tr>
         <td>
-          54
+          53
         </td>
         <td>
           203
         </td>
         <td>
-          2016
+          2000
           -
-          2016
+          2000
         </td>
         <td>
           ApplyToImplicitArgs
@@ -2284,15 +2311,15 @@
         </td>
       </tr><tr>
         <td>
-          54
+          53
         </td>
         <td>
           179
         </td>
         <td>
-          1982
+          1966
           -
-          2004
+          1988
         </td>
         <td>
           Apply
@@ -2305,15 +2332,15 @@
         </td>
       </tr><tr>
         <td>
-          54
+          53
         </td>
         <td>
           188
         </td>
         <td>
-          2014
+          1998
           -
-          2015
+          1999
         </td>
         <td>
           ApplyToImplicitArgs
@@ -2326,15 +2353,15 @@
         </td>
       </tr><tr>
         <td>
-          54
+          53
         </td>
         <td>
           197
         </td>
         <td>
-          2052
+          2036
           -
-          2052
+          2036
         </td>
         <td>
           Select
@@ -2347,15 +2374,15 @@
         </td>
       </tr><tr>
         <td>
-          57
+          56
         </td>
         <td>
           209
         </td>
         <td>
-          2081
+          2065
           -
-          2118
+          2102
         </td>
         <td>
           ApplyToImplicitArgs
@@ -2368,15 +2395,15 @@
         </td>
       </tr><tr>
         <td>
-          57
+          56
         </td>
         <td>
           211
         </td>
         <td>
-          2081
+          2065
           -
-          2127
+          2111
         </td>
         <td>
           ApplyToImplicitArgs
@@ -2389,15 +2416,15 @@
         </td>
       </tr><tr>
         <td>
-          57
+          56
         </td>
         <td>
           210
         </td>
         <td>
-          2119
+          2103
           -
-          2119
+          2103
         </td>
         <td>
           Select
@@ -2410,15 +2437,15 @@
         </td>
       </tr><tr>
         <td>
-          58
+          57
         </td>
         <td>
           214
         </td>
         <td>
-          2143
+          2127
           -
-          2143
+          2127
         </td>
         <td>
           Select
@@ -2431,15 +2458,15 @@
         </td>
       </tr><tr>
         <td>
-          58
+          57
         </td>
         <td>
           213
         </td>
         <td>
-          2143
+          2127
           -
-          2143
+          2127
         </td>
         <td>
           Select
@@ -2452,15 +2479,15 @@
         </td>
       </tr><tr>
         <td>
-          58
+          57
         </td>
         <td>
           212
         </td>
         <td>
-          2148
+          2132
           -
-          2150
+          2134
         </td>
         <td>
           Select
@@ -2473,15 +2500,15 @@
         </td>
       </tr><tr>
         <td>
-          58
+          57
         </td>
         <td>
           215
         </td>
         <td>
-          2132
+          2116
           -
-          2151
+          2135
         </td>
         <td>
           ApplyToImplicitArgs
@@ -2494,15 +2521,15 @@
         </td>
       </tr><tr>
         <td>
-          61
+          60
         </td>
         <td>
           250
         </td>
         <td>
-          2218
+          2202
           -
-          2218
+          2202
         </td>
         <td>
           Select
@@ -2515,15 +2542,15 @@
         </td>
       </tr><tr>
         <td>
-          61
+          60
         </td>
         <td>
           217
         </td>
         <td>
-          2203
+          2187
           -
-          2216
+          2200
         </td>
         <td>
           Select
@@ -2536,15 +2563,15 @@
         </td>
       </tr><tr>
         <td>
-          61
+          60
         </td>
         <td>
           251
         </td>
         <td>
-          2186
+          2170
           -
-          2464
+          2448
         </td>
         <td>
           ApplyToImplicitArgs
@@ -2564,15 +2591,15 @@
         </td>
       </tr><tr>
         <td>
-          62
+          61
         </td>
         <td>
           218
         </td>
         <td>
-          2257
+          2241
           -
-          2284
+          2268
         </td>
         <td>
           Literal
@@ -2585,15 +2612,15 @@
         </td>
       </tr><tr>
         <td>
-          62
+          61
         </td>
         <td>
           220
         </td>
         <td>
-          2247
+          2231
           -
-          2285
+          2269
         </td>
         <td>
           ApplyToImplicitArgs
@@ -2606,15 +2633,15 @@
         </td>
       </tr><tr>
         <td>
-          62
+          61
         </td>
         <td>
           219
         </td>
         <td>
-          2256
+          2240
           -
-          2256
+          2240
         </td>
         <td>
           Select
@@ -2627,15 +2654,15 @@
         </td>
       </tr><tr>
         <td>
-          64
+          63
         </td>
         <td>
           227
         </td>
         <td>
-          2317
+          2301
           -
-          2333
+          2317
         </td>
         <td>
           ApplyToImplicitArgs
@@ -2648,15 +2675,15 @@
         </td>
       </tr><tr>
         <td>
-          64
+          63
         </td>
         <td>
           236
         </td>
         <td>
-          2337
+          2321
           -
-          2365
+          2349
         </td>
         <td>
           ApplyToImplicitArgs
@@ -2669,15 +2696,15 @@
         </td>
       </tr><tr>
         <td>
-          64
+          63
         </td>
         <td>
           226
         </td>
         <td>
-          2322
+          2306
           -
-          2322
+          2306
         </td>
         <td>
           ApplyToImplicitArgs
@@ -2690,15 +2717,15 @@
         </td>
       </tr><tr>
         <td>
-          64
+          63
         </td>
         <td>
           235
         </td>
         <td>
-          2349
+          2333
           -
-          2349
+          2333
         </td>
         <td>
           ApplyToImplicitArgs
@@ -2711,15 +2738,15 @@
         </td>
       </tr><tr>
         <td>
-          64
+          63
         </td>
         <td>
           229
         </td>
         <td>
-          2339
+          2323
           -
-          2339
+          2323
         </td>
         <td>
           Select
@@ -2732,15 +2759,15 @@
         </td>
       </tr><tr>
         <td>
-          64
+          63
         </td>
         <td>
           238
         </td>
         <td>
-          2334
+          2318
           -
-          2334
+          2318
         </td>
         <td>
           ApplyToImplicitArgs
@@ -2753,15 +2780,15 @@
         </td>
       </tr><tr>
         <td>
-          64
+          63
         </td>
         <td>
           223
         </td>
         <td>
-          2326
+          2310
           -
-          2326
+          2310
         </td>
         <td>
           Select
@@ -2774,15 +2801,15 @@
         </td>
       </tr><tr>
         <td>
-          64
+          63
         </td>
         <td>
           232
         </td>
         <td>
-          2363
+          2347
           -
-          2363
+          2347
         </td>
         <td>
           ApplyToImplicitArgs
@@ -2795,15 +2822,15 @@
         </td>
       </tr><tr>
         <td>
-          64
+          63
         </td>
         <td>
           241
         </td>
         <td>
-          2299
+          2283
           -
-          2366
+          2350
         </td>
         <td>
           ApplyToImplicitArgs
@@ -2816,15 +2843,15 @@
         </td>
       </tr><tr>
         <td>
-          64
+          63
         </td>
         <td>
           240
         </td>
         <td>
-          2311
+          2295
           -
-          2311
+          2295
         </td>
         <td>
           Select
@@ -2837,15 +2864,15 @@
         </td>
       </tr><tr>
         <td>
-          64
+          63
         </td>
         <td>
           225
         </td>
         <td>
-          2322
+          2306
           -
-          2322
+          2306
         </td>
         <td>
           Select
@@ -2858,15 +2885,15 @@
         </td>
       </tr><tr>
         <td>
-          64
+          63
         </td>
         <td>
           234
         </td>
         <td>
-          2349
+          2333
           -
-          2349
+          2333
         </td>
         <td>
           Select
@@ -2879,15 +2906,15 @@
         </td>
       </tr><tr>
         <td>
-          64
+          63
         </td>
         <td>
           228
         </td>
         <td>
-          2337
+          2321
           -
-          2348
+          2332
         </td>
         <td>
           Select
@@ -2900,15 +2927,15 @@
         </td>
       </tr><tr>
         <td>
-          64
+          63
         </td>
         <td>
           237
         </td>
         <td>
-          2334
+          2318
           -
-          2334
+          2318
         </td>
         <td>
           Select
@@ -2921,15 +2948,15 @@
         </td>
       </tr><tr>
         <td>
-          64
+          63
         </td>
         <td>
           222
         </td>
         <td>
-          2319
+          2303
           -
-          2319
+          2303
         </td>
         <td>
           Select
@@ -2942,15 +2969,15 @@
         </td>
       </tr><tr>
         <td>
-          64
+          63
         </td>
         <td>
           231
         </td>
         <td>
-          2363
+          2347
           -
-          2363
+          2347
         </td>
         <td>
           Select
@@ -2963,15 +2990,15 @@
         </td>
       </tr><tr>
         <td>
-          64
+          63
         </td>
         <td>
           230
         </td>
         <td>
-          2353
+          2337
           -
-          2365
+          2349
         </td>
         <td>
           Select
@@ -2984,15 +3011,15 @@
         </td>
       </tr><tr>
         <td>
-          64
+          63
         </td>
         <td>
           221
         </td>
         <td>
-          2317
+          2301
           -
-          2321
+          2305
         </td>
         <td>
           Select
@@ -3005,15 +3032,15 @@
         </td>
       </tr><tr>
         <td>
-          64
+          63
         </td>
         <td>
           239
         </td>
         <td>
-          2317
+          2301
           -
-          2365
+          2349
         </td>
         <td>
           ApplyToImplicitArgs
@@ -3026,15 +3053,15 @@
         </td>
       </tr><tr>
         <td>
-          64
+          63
         </td>
         <td>
           242
         </td>
         <td>
-          2299
+          2283
           -
-          2373
+          2357
         </td>
         <td>
           Select
@@ -3047,15 +3074,15 @@
         </td>
       </tr><tr>
         <td>
-          64
+          63
         </td>
         <td>
           224
         </td>
         <td>
-          2326
+          2310
           -
-          2333
+          2317
         </td>
         <td>
           Select
@@ -3068,15 +3095,15 @@
         </td>
       </tr><tr>
         <td>
-          64
+          63
         </td>
         <td>
           233
         </td>
         <td>
-          2353
+          2337
           -
-          2365
+          2349
         </td>
         <td>
           ApplyToImplicitArgs
@@ -3089,15 +3116,15 @@
         </td>
       </tr><tr>
         <td>
-          66
+          65
         </td>
         <td>
           249
         </td>
         <td>
-          2379
+          2363
           -
-          2460
+          2444
         </td>
         <td>
           ApplyToImplicitArgs
@@ -3113,15 +3140,15 @@
         </td>
       </tr><tr>
         <td>
-          66
+          65
         </td>
         <td>
           248
         </td>
         <td>
-          2393
+          2377
           -
-          2393
+          2377
         </td>
         <td>
           Select
@@ -3134,15 +3161,15 @@
         </td>
       </tr><tr>
         <td>
-          67
+          66
         </td>
         <td>
           243
         </td>
         <td>
-          2411
+          2395
           -
-          2419
+          2403
         </td>
         <td>
           Select
@@ -3155,15 +3182,15 @@
         </td>
       </tr><tr>
         <td>
-          68
+          67
         </td>
         <td>
           245
         </td>
         <td>
-          2439
+          2423
           -
-          2453
+          2437
         </td>
         <td>
           ApplyToImplicitArgs
@@ -3176,15 +3203,15 @@
         </td>
       </tr><tr>
         <td>
-          68
+          67
         </td>
         <td>
           244
         </td>
         <td>
-          2450
+          2434
           -
-          2450
+          2434
         </td>
         <td>
           Select
@@ -3197,15 +3224,15 @@
         </td>
       </tr><tr>
         <td>
-          68
+          67
         </td>
         <td>
           247
         </td>
         <td>
-          2436
+          2420
           -
-          2454
+          2438
         </td>
         <td>
           ApplyToImplicitArgs
@@ -3218,15 +3245,15 @@
         </td>
       </tr><tr>
         <td>
-          68
+          67
         </td>
         <td>
           246
         </td>
         <td>
-          2438
+          2422
           -
-          2438
+          2422
         </td>
         <td>
           Select
@@ -3239,15 +3266,15 @@
         </td>
       </tr><tr>
         <td>
-          72
+          71
         </td>
         <td>
           253
         </td>
         <td>
-          2505
+          2489
           -
-          2527
+          2511
         </td>
         <td>
           Apply
@@ -3260,15 +3287,15 @@
         </td>
       </tr><tr>
         <td>
-          72
+          71
         </td>
         <td>
           276
         </td>
         <td>
-          2488
+          2472
           -
-          2779
+          2763
         </td>
         <td>
           ApplyToImplicitArgs
@@ -3298,15 +3325,15 @@
         </td>
       </tr><tr>
         <td>
-          72
+          71
         </td>
         <td>
           252
         </td>
         <td>
-          2516
+          2500
           -
-          2526
+          2510
         </td>
         <td>
           Select
@@ -3319,15 +3346,15 @@
         </td>
       </tr><tr>
         <td>
-          72
+          71
         </td>
         <td>
           275
         </td>
         <td>
-          2529
+          2513
           -
-          2529
+          2513
         </td>
         <td>
           Select
@@ -3340,15 +3367,15 @@
         </td>
       </tr><tr>
         <td>
-          73
+          72
         </td>
         <td>
           254
         </td>
         <td>
-          2573
+          2557
           -
-          2603
+          2587
         </td>
         <td>
           Literal
@@ -3361,15 +3388,15 @@
         </td>
       </tr><tr>
         <td>
-          73
+          72
         </td>
         <td>
           256
         </td>
         <td>
-          2563
+          2547
           -
-          2604
+          2588
         </td>
         <td>
           ApplyToImplicitArgs
@@ -3382,15 +3409,15 @@
         </td>
       </tr><tr>
         <td>
-          73
+          72
         </td>
         <td>
           255
         </td>
         <td>
-          2572
+          2556
           -
-          2572
+          2556
         </td>
         <td>
           Select
@@ -3403,15 +3430,15 @@
         </td>
       </tr><tr>
         <td>
-          75
+          74
         </td>
         <td>
           262
         </td>
         <td>
-          2631
+          2615
           -
-          2631
+          2615
         </td>
         <td>
           Select
@@ -3424,15 +3451,15 @@
         </td>
       </tr><tr>
         <td>
-          75
+          74
         </td>
         <td>
           265
         </td>
         <td>
-          2618
+          2602
           -
-          2661
+          2645
         </td>
         <td>
           Apply
@@ -3445,15 +3472,15 @@
         </td>
       </tr><tr>
         <td>
-          75
+          74
         </td>
         <td>
           259
         </td>
         <td>
-          2631
+          2615
           -
-          2631
+          2615
         </td>
         <td>
           Select
@@ -3466,15 +3493,15 @@
         </td>
       </tr><tr>
         <td>
-          75
+          74
         </td>
         <td>
           258
         </td>
         <td>
-          2648
+          2632
           -
-          2660
+          2644
         </td>
         <td>
           Select
@@ -3487,15 +3514,15 @@
         </td>
       </tr><tr>
         <td>
-          75
+          74
         </td>
         <td>
           261
         </td>
         <td>
-          2631
+          2615
           -
-          2631
+          2615
         </td>
         <td>
           Select
@@ -3508,15 +3535,15 @@
         </td>
       </tr><tr>
         <td>
-          75
+          74
         </td>
         <td>
           264
         </td>
         <td>
-          2631
+          2615
           -
-          2631
+          2615
         </td>
         <td>
           Select
@@ -3529,15 +3556,15 @@
         </td>
       </tr><tr>
         <td>
-          75
+          74
         </td>
         <td>
           263
         </td>
         <td>
-          2631
+          2615
           -
-          2631
+          2615
         </td>
         <td>
           Select
@@ -3550,15 +3577,15 @@
         </td>
       </tr><tr>
         <td>
-          75
+          74
         </td>
         <td>
           257
         </td>
         <td>
-          2618
+          2602
           -
-          2630
+          2614
         </td>
         <td>
           Select
@@ -3571,15 +3598,15 @@
         </td>
       </tr><tr>
         <td>
-          75
+          74
         </td>
         <td>
           260
         </td>
         <td>
-          2631
+          2615
           -
-          2631
+          2615
         </td>
         <td>
           Select
@@ -3592,15 +3619,15 @@
         </td>
       </tr><tr>
         <td>
-          77
+          76
         </td>
         <td>
           268
         </td>
         <td>
-          2682
+          2666
           -
-          2732
+          2716
         </td>
         <td>
           Apply
@@ -3613,15 +3640,15 @@
         </td>
       </tr><tr>
         <td>
-          77
+          76
         </td>
         <td>
           267
         </td>
         <td>
-          2689
+          2673
           -
-          2731
+          2715
         </td>
         <td>
           Apply
@@ -3634,15 +3661,15 @@
         </td>
       </tr><tr>
         <td>
-          77
+          76
         </td>
         <td>
           266
         </td>
         <td>
-          2723
+          2707
           -
-          2728
+          2712
         </td>
         <td>
           Select
@@ -3655,15 +3682,15 @@
         </td>
       </tr><tr>
         <td>
-          79
+          78
         </td>
         <td>
           271
         </td>
         <td>
-          2758
+          2742
           -
-          2758
+          2742
         </td>
         <td>
           Select
@@ -3676,15 +3703,15 @@
         </td>
       </tr><tr>
         <td>
-          79
+          78
         </td>
         <td>
           274
         </td>
         <td>
-          2738
+          2722
           -
-          2775
+          2759
         </td>
         <td>
           ApplyToImplicitArgs
@@ -3697,15 +3724,15 @@
         </td>
       </tr><tr>
         <td>
-          79
+          78
         </td>
         <td>
           270
         </td>
         <td>
-          2759
+          2743
           -
-          2773
+          2757
         </td>
         <td>
           ApplyToImplicitArgs
@@ -3718,15 +3745,15 @@
         </td>
       </tr><tr>
         <td>
-          79
+          78
         </td>
         <td>
           273
         </td>
         <td>
-          2750
+          2734
           -
-          2750
+          2734
         </td>
         <td>
           Select
@@ -3739,15 +3766,15 @@
         </td>
       </tr><tr>
         <td>
-          79
+          78
         </td>
         <td>
           272
         </td>
         <td>
-          2756
+          2740
           -
-          2774
+          2758
         </td>
         <td>
           ApplyToImplicitArgs
@@ -3760,15 +3787,15 @@
         </td>
       </tr><tr>
         <td>
-          79
+          78
         </td>
         <td>
           269
         </td>
         <td>
-          2770
+          2754
           -
-          2770
+          2754
         </td>
         <td>
           Select
@@ -3781,15 +3808,15 @@
         </td>
       </tr><tr>
         <td>
-          82
+          81
         </td>
         <td>
           313
         </td>
         <td>
-          2810
+          2794
           -
-          3114
+          3098
         </td>
         <td>
           ApplyToImplicitArgs
@@ -3809,15 +3836,15 @@
         </td>
       </tr><tr>
         <td>
-          82
+          81
         </td>
         <td>
           277
         </td>
         <td>
-          2838
+          2822
           -
-          2848
+          2832
         </td>
         <td>
           Select
@@ -3830,15 +3857,15 @@
         </td>
       </tr><tr>
         <td>
-          82
+          81
         </td>
         <td>
           312
         </td>
         <td>
-          2851
+          2835
           -
-          2851
+          2835
         </td>
         <td>
           Select
@@ -3851,15 +3878,15 @@
         </td>
       </tr><tr>
         <td>
-          82
+          81
         </td>
         <td>
           278
         </td>
         <td>
-          2827
+          2811
           -
-          2849
+          2833
         </td>
         <td>
           Apply
@@ -3872,15 +3899,15 @@
         </td>
       </tr><tr>
         <td>
-          83
+          82
         </td>
         <td>
           280
         </td>
         <td>
-          2889
+          2873
           -
-          2889
+          2873
         </td>
         <td>
           Select
@@ -3893,15 +3920,15 @@
         </td>
       </tr><tr>
         <td>
-          83
+          82
         </td>
         <td>
           279
         </td>
         <td>
-          2890
+          2874
           -
-          2920
+          2904
         </td>
         <td>
           Literal
@@ -3914,15 +3941,15 @@
         </td>
       </tr><tr>
         <td>
-          83
+          82
         </td>
         <td>
           281
         </td>
         <td>
-          2880
+          2864
           -
-          2921
+          2905
         </td>
         <td>
           ApplyToImplicitArgs
@@ -3935,15 +3962,15 @@
         </td>
       </tr><tr>
         <td>
-          85
+          84
         </td>
         <td>
           304
         </td>
         <td>
-          2935
+          2919
           -
-          3023
+          3007
         </td>
         <td>
           Apply
@@ -3956,15 +3983,15 @@
         </td>
       </tr><tr>
         <td>
-          85
+          84
         </td>
         <td>
           286
         </td>
         <td>
-          2958
+          2942
           -
-          2958
+          2942
         </td>
         <td>
           Select
@@ -3977,15 +4004,15 @@
         </td>
       </tr><tr>
         <td>
-          85
+          84
         </td>
         <td>
           295
         </td>
         <td>
-          2985
+          2969
           -
-          2985
+          2969
         </td>
         <td>
           Select
@@ -3998,15 +4025,15 @@
         </td>
       </tr><tr>
         <td>
-          85
+          84
         </td>
         <td>
           298
         </td>
         <td>
-          2970
+          2954
           -
-          2970
+          2954
         </td>
         <td>
           Select
@@ -4019,15 +4046,15 @@
         </td>
       </tr><tr>
         <td>
-          85
+          84
         </td>
         <td>
           289
         </td>
         <td>
-          2973
+          2957
           -
-          2984
+          2968
         </td>
         <td>
           Select
@@ -4040,15 +4067,15 @@
         </td>
       </tr><tr>
         <td>
-          85
+          84
         </td>
         <td>
           301
         </td>
         <td>
-          2947
+          2931
           -
-          2947
+          2931
         </td>
         <td>
           Select
@@ -4061,15 +4088,15 @@
         </td>
       </tr><tr>
         <td>
-          85
+          84
         </td>
         <td>
           283
         </td>
         <td>
-          2955
+          2939
           -
-          2955
+          2939
         </td>
         <td>
           Select
@@ -4082,15 +4109,15 @@
         </td>
       </tr><tr>
         <td>
-          85
+          84
         </td>
         <td>
           292
         </td>
         <td>
-          2999
+          2983
           -
-          2999
+          2983
         </td>
         <td>
           Select
@@ -4103,15 +4130,15 @@
         </td>
       </tr><tr>
         <td>
-          85
+          84
         </td>
         <td>
           300
         </td>
         <td>
-          2953
+          2937
           -
-          3001
+          2985
         </td>
         <td>
           ApplyToImplicitArgs
@@ -4124,15 +4151,15 @@
         </td>
       </tr><tr>
         <td>
-          85
+          84
         </td>
         <td>
           294
         </td>
         <td>
-          2989
+          2973
           -
-          3001
+          2985
         </td>
         <td>
           ApplyToImplicitArgs
@@ -4145,15 +4172,15 @@
         </td>
       </tr><tr>
         <td>
-          85
+          84
         </td>
         <td>
           303
         </td>
         <td>
-          3010
+          2994
           -
-          3022
+          3006
         </td>
         <td>
           Select
@@ -4166,15 +4193,15 @@
         </td>
       </tr><tr>
         <td>
-          85
+          84
         </td>
         <td>
           285
         </td>
         <td>
-          2962
+          2946
           -
-          2969
+          2953
         </td>
         <td>
           Select
@@ -4187,15 +4214,15 @@
         </td>
       </tr><tr>
         <td>
-          85
+          84
         </td>
         <td>
           288
         </td>
         <td>
-          2953
+          2937
           -
-          2969
+          2953
         </td>
         <td>
           ApplyToImplicitArgs
@@ -4208,15 +4235,15 @@
         </td>
       </tr><tr>
         <td>
-          85
+          84
         </td>
         <td>
           297
         </td>
         <td>
-          2973
+          2957
           -
-          3001
+          2985
         </td>
         <td>
           ApplyToImplicitArgs
@@ -4229,15 +4256,15 @@
         </td>
       </tr><tr>
         <td>
-          85
+          84
         </td>
         <td>
           282
         </td>
         <td>
-          2953
+          2937
           -
-          2957
+          2941
         </td>
         <td>
           Select
@@ -4250,15 +4277,15 @@
         </td>
       </tr><tr>
         <td>
-          85
+          84
         </td>
         <td>
           291
         </td>
         <td>
-          2989
+          2973
           -
-          3001
+          2985
         </td>
         <td>
           Select
@@ -4271,15 +4298,15 @@
         </td>
       </tr><tr>
         <td>
-          85
+          84
         </td>
         <td>
           299
         </td>
         <td>
-          2970
+          2954
           -
-          2970
+          2954
         </td>
         <td>
           ApplyToImplicitArgs
@@ -4292,15 +4319,15 @@
         </td>
       </tr><tr>
         <td>
-          85
+          84
         </td>
         <td>
           290
         </td>
         <td>
-          2975
+          2959
           -
-          2975
+          2959
         </td>
         <td>
           Select
@@ -4313,15 +4340,15 @@
         </td>
       </tr><tr>
         <td>
-          85
+          84
         </td>
         <td>
           302
         </td>
         <td>
-          2935
+          2919
           -
-          3002
+          2986
         </td>
         <td>
           ApplyToImplicitArgs
@@ -4334,15 +4361,15 @@
         </td>
       </tr><tr>
         <td>
-          85
+          84
         </td>
         <td>
           284
         </td>
         <td>
-          2962
+          2946
           -
-          2962
+          2946
         </td>
         <td>
           Select
@@ -4355,15 +4382,15 @@
         </td>
       </tr><tr>
         <td>
-          85
+          84
         </td>
         <td>
           293
         </td>
         <td>
-          2999
+          2983
           -
-          2999
+          2983
         </td>
         <td>
           ApplyToImplicitArgs
@@ -4376,15 +4403,15 @@
         </td>
       </tr><tr>
         <td>
-          85
+          84
         </td>
         <td>
           287
         </td>
         <td>
-          2958
+          2942
           -
-          2958
+          2942
         </td>
         <td>
           ApplyToImplicitArgs
@@ -4397,15 +4424,15 @@
         </td>
       </tr><tr>
         <td>
-          85
+          84
         </td>
         <td>
           296
         </td>
         <td>
-          2985
+          2969
           -
-          2985
+          2969
         </td>
         <td>
           ApplyToImplicitArgs
@@ -4418,15 +4445,15 @@
         </td>
       </tr><tr>
         <td>
-          87
+          86
         </td>
         <td>
           310
         </td>
         <td>
-          3043
+          3027
           -
-          3043
+          3027
         </td>
         <td>
           Select
@@ -4439,15 +4466,15 @@
         </td>
       </tr><tr>
         <td>
-          87
+          86
         </td>
         <td>
           311
         </td>
         <td>
-          3029
+          3013
           -
-          3110
+          3094
         </td>
         <td>
           ApplyToImplicitArgs
@@ -4463,15 +4490,15 @@
         </td>
       </tr><tr>
         <td>
-          88
+          87
         </td>
         <td>
           305
         </td>
         <td>
-          3061
+          3045
           -
-          3069
+          3053
         </td>
         <td>
           Select
@@ -4484,15 +4511,15 @@
         </td>
       </tr><tr>
         <td>
-          89
+          88
         </td>
         <td>
           307
         </td>
         <td>
-          3089
+          3073
           -
-          3103
+          3087
         </td>
         <td>
           ApplyToImplicitArgs
@@ -4505,15 +4532,15 @@
         </td>
       </tr><tr>
         <td>
-          89
+          88
         </td>
         <td>
           309
         </td>
         <td>
-          3086
+          3070
           -
-          3104
+          3088
         </td>
         <td>
           ApplyToImplicitArgs
@@ -4526,15 +4553,15 @@
         </td>
       </tr><tr>
         <td>
-          89
+          88
         </td>
         <td>
           306
         </td>
         <td>
-          3100
+          3084
           -
-          3100
+          3084
         </td>
         <td>
           Select
@@ -4547,15 +4574,15 @@
         </td>
       </tr><tr>
         <td>
-          89
+          88
         </td>
         <td>
           308
         </td>
         <td>
-          3088
+          3072
           -
-          3088
+          3072
         </td>
         <td>
           Select
@@ -4565,6 +4592,1864 @@
         </td>
         <td style="background: #AEF1AE">
           http.this.Writeable.writeableOf_JsValue
+        </td>
+      </tr><tr>
+        <td>
+          92
+        </td>
+        <td>
+          367
+        </td>
+        <td>
+          3129
+          -
+          3756
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          controllers.Util.userRequest
+        </td>
+        <td style="background: #AEF1AE">
+          EventController.this.userRequest[play.api.mvc.AnyContent](EventController.this.parse.default)(((x0$4: com.mohiva.play.silhouette.api.actions.SecuredRequest[whatson.auth.AuthEnv,play.api.mvc.AnyContent], x1$2: whatson.model.User) =&gt; scala.Tuple2.apply[com.mohiva.play.silhouette.api.actions.SecuredRequest[whatson.auth.AuthEnv,play.api.mvc.AnyContent], whatson.model.User](x0$4, x1$2) match {
+  case (_1: com.mohiva.play.silhouette.api.actions.SecuredRequest[whatson.auth.AuthEnv,play.api.mvc.AnyContent], _2: whatson.model.User)(com.mohiva.play.silhouette.api.actions.SecuredRequest[whatson.auth.AuthEnv,play.api.mvc.AnyContent], whatson.model.User)((request @ _), (user @ _)) =&gt; {
+    EventController.this.log.debug(&quot;Rest request to participate in event&quot;)(api.this.MarkerContext.NoMarker);
+    val q: slick.dbio.DBIOAction[(Seq[whatson.db.EventTable#TableElementType], Seq[whatson.db.ParticipantTable#TableElementType]),slick.dbio.NoStream,slick.dbio.Effect.Read with slick.dbio.Effect.Read] = slick.jdbc.PostgresProfile.api.streamableQueryActionExtensionMethods[whatson.db.EventTable#TableElementType, Seq](whatson.db.EventTable.event.filter[slick.lifted.Rep[Boolean]](((x: whatson.db.EventTable) =&gt; slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](x.id)(slick.jdbc.PostgresProfile.api.intColumnType).===[Int, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[Int](id)(slick.jdbc.PostgresProfile.api.intColumnType).bind)(lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType))))(lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition)).result.zip[Seq[whatson.db.ParticipantTable#TableElementType], slick.dbio.Effect.Read](slick.jdbc.PostgresProfile.api.streamableQueryActionExtensionMethods[whatson.db.ParticipantTable#TableElementType, Seq](whatson.db.ParticipantTable.participant.filter[slick.lifted.Rep[Boolean]](((x: whatson.db.ParticipantTable) =&gt; slick.jdbc.PostgresProfile.api.booleanColumnExtensionMethods(slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](x.eventID)(slick.jdbc.PostgresProfile.api.intColumnType).===[Int, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[Int](id)(slick.jdbc.PostgresProfile.api.intColumnType).bind)(lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType))).&amp;&amp;[Boolean, Boolean](slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](x.userID)(slick.jdbc.PostgresProfile.api.intColumnType).===[Int, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[Int](user.id.getOrElse[Int](-1))(slick.jdbc.PostgresProfile.api.intColumnType).bind)(lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType)))(lifted.this.OptionMapper2.getOptionMapper2TT[Boolean, Boolean, Boolean](slick.jdbc.PostgresProfile.api.booleanColumnType))))(lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition)).result);
+    EventController.this.db.run[(Seq[whatson.db.EventTable#TableElementType], Seq[whatson.db.ParticipantTable#TableElementType])](q).map[(Option[whatson.db.EventTable#TableElementType], Option[whatson.db.ParticipantTable#TableElementType])](((x: (Seq[whatson.db.EventTable#TableElementType], Seq[whatson.db.ParticipantTable#TableElementType])) =&gt; scala.Tuple2.apply[Option[whatson.db.EventTable#TableElementType], Option[whatson.db.ParticipantTable#TableElementType]](x._1.headOption, x._2.headOption)))(EventController.this.context).flatMap[play.api.mvc.Result](((x0$5: (Option[whatson.db.EventTable#TableElementType], Option[whatson.db.ParticipantTable#TableElementType])) =&gt; x0$5 match {
+      case (_1: Option[whatson.db.EventTable#TableElementType], _2: Option[whatson.db.ParticipantTable#TableElementType])(Option[whatson.db.EventTable#TableElementType], Option[whatson.db.ParticipantTable#TableElementType])((value: whatson.db.EventTable#TableElementType)Some[whatson.db.EventTable#TableElementType]((e @ _)), scala.None) =&gt; {
+        EventController.this.db.run[Int](slick.jdbc.PostgresProfile.api.queryInsertActionExtensionMethods[whatson.db.ParticipantTable#TableElementType, Seq](whatson.db.ParticipantTable.participant).+=(scala.Tuple2.apply[Int, Int](user.id.getOrElse[Int](-1), id)));
+        scala.concurrent.Future.successful[EventController.this.Status](EventController.this.Ok)
+      }
+      case (_1: Option[whatson.db.EventTable#TableElementType], _2: Option[whatson.db.ParticipantTable#TableElementType])(Option[whatson.db.EventTable#TableElementType], Option[whatson.db.ParticipantTable#TableElementType])((value: whatson.db.EventTable#TableElementType)Some[whatson.db.EventTable#TableElementType]((e @ _)), (value: whatson.db.ParticipantTable#TableElementType)Some[whatson.db.ParticipantTable#TableElementType]((p @ _))) =&gt; scala.concurrent.Future.successful[EventController.this.Status](EventController.this.Conflict)
+      case (_1: Option[whatson.db.EventTable#TableElementType], _2: Option[whatson.db.ParticipantTable#TableElementType])(Option[whatson.db.EventTable#TableElementType], Option[whatson.db.ParticipantTable#TableElementType])(scala.None, _) =&gt; scala.concurrent.Future.successful[EventController.this.Status](EventController.this.BadRequest)
+    }))(EventController.this.context)
+  }
+}))(EventController.this.context)
+        </td>
+      </tr><tr>
+        <td>
+          92
+        </td>
+        <td>
+          366
+        </td>
+        <td>
+          3156
+          -
+          3156
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          controllers.EventController.context
+        </td>
+        <td style="background: #AEF1AE">
+          EventController.this.context
+        </td>
+      </tr><tr>
+        <td>
+          92
+        </td>
+        <td>
+          314
+        </td>
+        <td>
+          3141
+          -
+          3154
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.mvc.PlayBodyParsers.default
+        </td>
+        <td style="background: #AEF1AE">
+          EventController.this.parse.default
+        </td>
+      </tr><tr>
+        <td>
+          93
+        </td>
+        <td>
+          316
+        </td>
+        <td>
+          3194
+          -
+          3194
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.LowPriorityMarkerContextImplicits.NoMarker
+        </td>
+        <td style="background: #AEF1AE">
+          api.this.MarkerContext.NoMarker
+        </td>
+      </tr><tr>
+        <td>
+          93
+        </td>
+        <td>
+          315
+        </td>
+        <td>
+          3195
+          -
+          3233
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;Rest request to participate in event&quot;
+        </td>
+      </tr><tr>
+        <td>
+          93
+        </td>
+        <td>
+          317
+        </td>
+        <td>
+          3185
+          -
+          3234
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          play.api.LoggerLike.debug
+        </td>
+        <td style="background: #AEF1AE">
+          EventController.this.log.debug(&quot;Rest request to participate in event&quot;)(api.this.MarkerContext.NoMarker)
+        </td>
+      </tr><tr>
+        <td>
+          95
+        </td>
+        <td>
+          322
+        </td>
+        <td>
+          3272
+          -
+          3272
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
+        </td>
+        <td style="background: #AEF1AE">
+          slick.jdbc.PostgresProfile.api.intColumnType
+        </td>
+      </tr><tr>
+        <td>
+          95
+        </td>
+        <td>
+          325
+        </td>
+        <td>
+          3261
+          -
+          3261
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.lifted.CanBeQueryCondition.BooleanColumnCanBeQueryCondition
+        </td>
+        <td style="background: #AEF1AE">
+          lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition
+        </td>
+      </tr><tr>
+        <td>
+          95
+        </td>
+        <td>
+          319
+        </td>
+        <td>
+          3269
+          -
+          3269
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
+        </td>
+        <td style="background: #AEF1AE">
+          slick.jdbc.PostgresProfile.api.intColumnType
+        </td>
+      </tr><tr>
+        <td>
+          95
+        </td>
+        <td>
+          318
+        </td>
+        <td>
+          3267
+          -
+          3271
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.db.EventTable.id
+        </td>
+        <td style="background: #AEF1AE">
+          x.id
+        </td>
+      </tr><tr>
+        <td>
+          95
+        </td>
+        <td>
+          321
+        </td>
+        <td>
+          3276
+          -
+          3283
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.lifted.LiteralColumn.bind
+        </td>
+        <td style="background: #AEF1AE">
+          slick.jdbc.PostgresProfile.api.valueToConstColumn[Int](id)(slick.jdbc.PostgresProfile.api.intColumnType).bind
+        </td>
+      </tr><tr>
+        <td>
+          95
+        </td>
+        <td>
+          324
+        </td>
+        <td>
+          3267
+          -
+          3283
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.ColumnExtensionMethods.===
+        </td>
+        <td style="background: #AEF1AE">
+          slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](x.id)(slick.jdbc.PostgresProfile.api.intColumnType).===[Int, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[Int](id)(slick.jdbc.PostgresProfile.api.intColumnType).bind)(lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType))
+        </td>
+      </tr><tr>
+        <td>
+          95
+        </td>
+        <td>
+          323
+        </td>
+        <td>
+          3272
+          -
+          3272
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.OptionMapper2.getOptionMapper2TT
+        </td>
+        <td style="background: #AEF1AE">
+          lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType)
+        </td>
+      </tr><tr>
+        <td>
+          95
+        </td>
+        <td>
+          326
+        </td>
+        <td>
+          3249
+          -
+          3284
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.Query.filter
+        </td>
+        <td style="background: #AEF1AE">
+          whatson.db.EventTable.event.filter[slick.lifted.Rep[Boolean]](((x: whatson.db.EventTable) =&gt; slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](x.id)(slick.jdbc.PostgresProfile.api.intColumnType).===[Int, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[Int](id)(slick.jdbc.PostgresProfile.api.intColumnType).bind)(lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType))))(lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition)
+        </td>
+      </tr><tr>
+        <td>
+          95
+        </td>
+        <td>
+          320
+        </td>
+        <td>
+          3276
+          -
+          3276
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
+        </td>
+        <td style="background: #AEF1AE">
+          slick.jdbc.PostgresProfile.api.intColumnType
+        </td>
+      </tr><tr>
+        <td>
+          96
+        </td>
+        <td>
+          346
+        </td>
+        <td>
+          3304
+          -
+          3410
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.Query.filter
+        </td>
+        <td style="background: #AEF1AE">
+          whatson.db.ParticipantTable.participant.filter[slick.lifted.Rep[Boolean]](((x: whatson.db.ParticipantTable) =&gt; slick.jdbc.PostgresProfile.api.booleanColumnExtensionMethods(slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](x.eventID)(slick.jdbc.PostgresProfile.api.intColumnType).===[Int, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[Int](id)(slick.jdbc.PostgresProfile.api.intColumnType).bind)(lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType))).&amp;&amp;[Boolean, Boolean](slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](x.userID)(slick.jdbc.PostgresProfile.api.intColumnType).===[Int, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[Int](user.id.getOrElse[Int](-1))(slick.jdbc.PostgresProfile.api.intColumnType).bind)(lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType)))(lifted.this.OptionMapper2.getOptionMapper2TT[Boolean, Boolean, Boolean](slick.jdbc.PostgresProfile.api.booleanColumnType))))(lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition)
+        </td>
+      </tr><tr>
+        <td>
+          96
+        </td>
+        <td>
+          331
+        </td>
+        <td>
+          3355
+          -
+          3355
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
+        </td>
+        <td style="background: #AEF1AE">
+          slick.jdbc.PostgresProfile.api.intColumnType
+        </td>
+      </tr><tr>
+        <td>
+          96
+        </td>
+        <td>
+          340
+        </td>
+        <td>
+          3379
+          -
+          3379
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.OptionMapper2.getOptionMapper2TT
+        </td>
+        <td style="background: #AEF1AE">
+          lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType)
+        </td>
+      </tr><tr>
+        <td>
+          96
+        </td>
+        <td>
+          343
+        </td>
+        <td>
+          3367
+          -
+          3367
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.OptionMapper2.getOptionMapper2TT
+        </td>
+        <td style="background: #AEF1AE">
+          lifted.this.OptionMapper2.getOptionMapper2TT[Boolean, Boolean, Boolean](slick.jdbc.PostgresProfile.api.booleanColumnType)
+        </td>
+      </tr><tr>
+        <td>
+          96
+        </td>
+        <td>
+          334
+        </td>
+        <td>
+          3370
+          -
+          3378
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.db.ParticipantTable.userID
+        </td>
+        <td style="background: #AEF1AE">
+          x.userID
+        </td>
+      </tr><tr>
+        <td>
+          96
+        </td>
+        <td>
+          337
+        </td>
+        <td>
+          3400
+          -
+          3400
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
+        </td>
+        <td style="background: #AEF1AE">
+          slick.jdbc.PostgresProfile.api.intColumnType
+        </td>
+      </tr><tr>
+        <td>
+          96
+        </td>
+        <td>
+          328
+        </td>
+        <td>
+          3347
+          -
+          3347
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
+        </td>
+        <td style="background: #AEF1AE">
+          slick.jdbc.PostgresProfile.api.intColumnType
+        </td>
+      </tr><tr>
+        <td>
+          96
+        </td>
+        <td>
+          336
+        </td>
+        <td>
+          3383
+          -
+          3404
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Option.getOrElse
+        </td>
+        <td style="background: #AEF1AE">
+          user.id.getOrElse[Int](-1)
+        </td>
+      </tr><tr>
+        <td>
+          96
+        </td>
+        <td>
+          345
+        </td>
+        <td>
+          3339
+          -
+          3339
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.lifted.CanBeQueryCondition.BooleanColumnCanBeQueryCondition
+        </td>
+        <td style="background: #AEF1AE">
+          lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition
+        </td>
+      </tr><tr>
+        <td>
+          96
+        </td>
+        <td>
+          327
+        </td>
+        <td>
+          3345
+          -
+          3354
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.db.ParticipantTable.eventID
+        </td>
+        <td style="background: #AEF1AE">
+          x.eventID
+        </td>
+      </tr><tr>
+        <td>
+          96
+        </td>
+        <td>
+          348
+        </td>
+        <td>
+          3249
+          -
+          3418
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          slick.dbio.DBIOAction.zip
+        </td>
+        <td style="background: #AEF1AE">
+          slick.jdbc.PostgresProfile.api.streamableQueryActionExtensionMethods[whatson.db.EventTable#TableElementType, Seq](whatson.db.EventTable.event.filter[slick.lifted.Rep[Boolean]](((x: whatson.db.EventTable) =&gt; slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](x.id)(slick.jdbc.PostgresProfile.api.intColumnType).===[Int, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[Int](id)(slick.jdbc.PostgresProfile.api.intColumnType).bind)(lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType))))(lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition)).result.zip[Seq[whatson.db.ParticipantTable#TableElementType], slick.dbio.Effect.Read](slick.jdbc.PostgresProfile.api.streamableQueryActionExtensionMethods[whatson.db.ParticipantTable#TableElementType, Seq](whatson.db.ParticipantTable.participant.filter[slick.lifted.Rep[Boolean]](((x: whatson.db.ParticipantTable) =&gt; slick.jdbc.PostgresProfile.api.booleanColumnExtensionMethods(slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](x.eventID)(slick.jdbc.PostgresProfile.api.intColumnType).===[Int, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[Int](id)(slick.jdbc.PostgresProfile.api.intColumnType).bind)(lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType))).&amp;&amp;[Boolean, Boolean](slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](x.userID)(slick.jdbc.PostgresProfile.api.intColumnType).===[Int, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[Int](user.id.getOrElse[Int](-1))(slick.jdbc.PostgresProfile.api.intColumnType).bind)(lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType)))(lifted.this.OptionMapper2.getOptionMapper2TT[Boolean, Boolean, Boolean](slick.jdbc.PostgresProfile.api.booleanColumnType))))(lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition)).result)
+        </td>
+      </tr><tr>
+        <td>
+          96
+        </td>
+        <td>
+          330
+        </td>
+        <td>
+          3359
+          -
+          3366
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.lifted.LiteralColumn.bind
+        </td>
+        <td style="background: #AEF1AE">
+          slick.jdbc.PostgresProfile.api.valueToConstColumn[Int](id)(slick.jdbc.PostgresProfile.api.intColumnType).bind
+        </td>
+      </tr><tr>
+        <td>
+          96
+        </td>
+        <td>
+          339
+        </td>
+        <td>
+          3379
+          -
+          3379
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
+        </td>
+        <td style="background: #AEF1AE">
+          slick.jdbc.PostgresProfile.api.intColumnType
+        </td>
+      </tr><tr>
+        <td>
+          96
+        </td>
+        <td>
+          333
+        </td>
+        <td>
+          3345
+          -
+          3366
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.ColumnExtensionMethods.===
+        </td>
+        <td style="background: #AEF1AE">
+          slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](x.eventID)(slick.jdbc.PostgresProfile.api.intColumnType).===[Int, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[Int](id)(slick.jdbc.PostgresProfile.api.intColumnType).bind)(lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType))
+        </td>
+      </tr><tr>
+        <td>
+          96
+        </td>
+        <td>
+          342
+        </td>
+        <td>
+          3367
+          -
+          3367
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.booleanColumnType
+        </td>
+        <td style="background: #AEF1AE">
+          slick.jdbc.PostgresProfile.api.booleanColumnType
+        </td>
+      </tr><tr>
+        <td>
+          96
+        </td>
+        <td>
+          332
+        </td>
+        <td>
+          3355
+          -
+          3355
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.OptionMapper2.getOptionMapper2TT
+        </td>
+        <td style="background: #AEF1AE">
+          lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType)
+        </td>
+      </tr><tr>
+        <td>
+          96
+        </td>
+        <td>
+          341
+        </td>
+        <td>
+          3370
+          -
+          3409
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.ColumnExtensionMethods.===
+        </td>
+        <td style="background: #AEF1AE">
+          slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](x.userID)(slick.jdbc.PostgresProfile.api.intColumnType).===[Int, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[Int](user.id.getOrElse[Int](-1))(slick.jdbc.PostgresProfile.api.intColumnType).bind)(lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType))
+        </td>
+      </tr><tr>
+        <td>
+          96
+        </td>
+        <td>
+          344
+        </td>
+        <td>
+          3345
+          -
+          3409
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.BooleanColumnExtensionMethods.&amp;&amp;
+        </td>
+        <td style="background: #AEF1AE">
+          slick.jdbc.PostgresProfile.api.booleanColumnExtensionMethods(slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](x.eventID)(slick.jdbc.PostgresProfile.api.intColumnType).===[Int, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[Int](id)(slick.jdbc.PostgresProfile.api.intColumnType).bind)(lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType))).&amp;&amp;[Boolean, Boolean](slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](x.userID)(slick.jdbc.PostgresProfile.api.intColumnType).===[Int, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[Int](user.id.getOrElse[Int](-1))(slick.jdbc.PostgresProfile.api.intColumnType).bind)(lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType)))(lifted.this.OptionMapper2.getOptionMapper2TT[Boolean, Boolean, Boolean](slick.jdbc.PostgresProfile.api.booleanColumnType))
+        </td>
+      </tr><tr>
+        <td>
+          96
+        </td>
+        <td>
+          335
+        </td>
+        <td>
+          3372
+          -
+          3372
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
+        </td>
+        <td style="background: #AEF1AE">
+          slick.jdbc.PostgresProfile.api.intColumnType
+        </td>
+      </tr><tr>
+        <td>
+          96
+        </td>
+        <td>
+          338
+        </td>
+        <td>
+          3383
+          -
+          3409
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.lifted.LiteralColumn.bind
+        </td>
+        <td style="background: #AEF1AE">
+          slick.jdbc.PostgresProfile.api.valueToConstColumn[Int](user.id.getOrElse[Int](-1))(slick.jdbc.PostgresProfile.api.intColumnType).bind
+        </td>
+      </tr><tr>
+        <td>
+          96
+        </td>
+        <td>
+          347
+        </td>
+        <td>
+          3304
+          -
+          3417
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcActionComponent.StreamingQueryActionExtensionMethodsImpl.result
+        </td>
+        <td style="background: #AEF1AE">
+          slick.jdbc.PostgresProfile.api.streamableQueryActionExtensionMethods[whatson.db.ParticipantTable#TableElementType, Seq](whatson.db.ParticipantTable.participant.filter[slick.lifted.Rep[Boolean]](((x: whatson.db.ParticipantTable) =&gt; slick.jdbc.PostgresProfile.api.booleanColumnExtensionMethods(slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](x.eventID)(slick.jdbc.PostgresProfile.api.intColumnType).===[Int, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[Int](id)(slick.jdbc.PostgresProfile.api.intColumnType).bind)(lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType))).&amp;&amp;[Boolean, Boolean](slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](x.userID)(slick.jdbc.PostgresProfile.api.intColumnType).===[Int, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[Int](user.id.getOrElse[Int](-1))(slick.jdbc.PostgresProfile.api.intColumnType).bind)(lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType)))(lifted.this.OptionMapper2.getOptionMapper2TT[Boolean, Boolean, Boolean](slick.jdbc.PostgresProfile.api.booleanColumnType))))(lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition)).result
+        </td>
+      </tr><tr>
+        <td>
+          96
+        </td>
+        <td>
+          329
+        </td>
+        <td>
+          3359
+          -
+          3359
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
+        </td>
+        <td style="background: #AEF1AE">
+          slick.jdbc.PostgresProfile.api.intColumnType
+        </td>
+      </tr><tr>
+        <td>
+          98
+        </td>
+        <td>
+          364
+        </td>
+        <td>
+          3486
+          -
+          3486
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          controllers.EventController.context
+        </td>
+        <td style="background: #AEF1AE">
+          EventController.this.context
+        </td>
+      </tr><tr>
+        <td>
+          98
+        </td>
+        <td>
+          349
+        </td>
+        <td>
+          3444
+          -
+          3459
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.TraversableLike.headOption
+        </td>
+        <td style="background: #AEF1AE">
+          x._1.headOption
+        </td>
+      </tr><tr>
+        <td>
+          98
+        </td>
+        <td>
+          352
+        </td>
+        <td>
+          3437
+          -
+          3437
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          controllers.EventController.context
+        </td>
+        <td style="background: #AEF1AE">
+          EventController.this.context
+        </td>
+      </tr><tr>
+        <td>
+          98
+        </td>
+        <td>
+          351
+        </td>
+        <td>
+          3443
+          -
+          3476
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Tuple2.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Tuple2.apply[Option[whatson.db.EventTable#TableElementType], Option[whatson.db.ParticipantTable#TableElementType]](x._1.headOption, x._2.headOption)
+        </td>
+      </tr><tr>
+        <td>
+          98
+        </td>
+        <td>
+          350
+        </td>
+        <td>
+          3460
+          -
+          3475
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.TraversableLike.headOption
+        </td>
+        <td style="background: #AEF1AE">
+          x._2.headOption
+        </td>
+      </tr><tr>
+        <td>
+          98
+        </td>
+        <td>
+          365
+        </td>
+        <td>
+          3424
+          -
+          3752
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.concurrent.Future.flatMap
+        </td>
+        <td style="background: #AEF1AE">
+          EventController.this.db.run[(Seq[whatson.db.EventTable#TableElementType], Seq[whatson.db.ParticipantTable#TableElementType])](q).map[(Option[whatson.db.EventTable#TableElementType], Option[whatson.db.ParticipantTable#TableElementType])](((x: (Seq[whatson.db.EventTable#TableElementType], Seq[whatson.db.ParticipantTable#TableElementType])) =&gt; scala.Tuple2.apply[Option[whatson.db.EventTable#TableElementType], Option[whatson.db.ParticipantTable#TableElementType]](x._1.headOption, x._2.headOption)))(EventController.this.context).flatMap[play.api.mvc.Result](((x0$5: (Option[whatson.db.EventTable#TableElementType], Option[whatson.db.ParticipantTable#TableElementType])) =&gt; x0$5 match {
+  case (_1: Option[whatson.db.EventTable#TableElementType], _2: Option[whatson.db.ParticipantTable#TableElementType])(Option[whatson.db.EventTable#TableElementType], Option[whatson.db.ParticipantTable#TableElementType])((value: whatson.db.EventTable#TableElementType)Some[whatson.db.EventTable#TableElementType]((e @ _)), scala.None) =&gt; {
+    EventController.this.db.run[Int](slick.jdbc.PostgresProfile.api.queryInsertActionExtensionMethods[whatson.db.ParticipantTable#TableElementType, Seq](whatson.db.ParticipantTable.participant).+=(scala.Tuple2.apply[Int, Int](user.id.getOrElse[Int](-1), id)));
+    scala.concurrent.Future.successful[EventController.this.Status](EventController.this.Ok)
+  }
+  case (_1: Option[whatson.db.EventTable#TableElementType], _2: Option[whatson.db.ParticipantTable#TableElementType])(Option[whatson.db.EventTable#TableElementType], Option[whatson.db.ParticipantTable#TableElementType])((value: whatson.db.EventTable#TableElementType)Some[whatson.db.EventTable#TableElementType]((e @ _)), (value: whatson.db.ParticipantTable#TableElementType)Some[whatson.db.ParticipantTable#TableElementType]((p @ _))) =&gt; scala.concurrent.Future.successful[EventController.this.Status](EventController.this.Conflict)
+  case (_1: Option[whatson.db.EventTable#TableElementType], _2: Option[whatson.db.ParticipantTable#TableElementType])(Option[whatson.db.EventTable#TableElementType], Option[whatson.db.ParticipantTable#TableElementType])(scala.None, _) =&gt; scala.concurrent.Future.successful[EventController.this.Status](EventController.this.BadRequest)
+}))(EventController.this.context)
+        </td>
+      </tr><tr>
+        <td>
+          100
+        </td>
+        <td>
+          355
+        </td>
+        <td>
+          3567
+          -
+          3593
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Tuple2.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Tuple2.apply[Int, Int](user.id.getOrElse[Int](-1), id)
+        </td>
+      </tr><tr>
+        <td>
+          100
+        </td>
+        <td>
+          354
+        </td>
+        <td>
+          3568
+          -
+          3589
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Option.getOrElse
+        </td>
+        <td style="background: #AEF1AE">
+          user.id.getOrElse[Int](-1)
+        </td>
+      </tr><tr>
+        <td>
+          100
+        </td>
+        <td>
+          357
+        </td>
+        <td>
+          3527
+          -
+          3595
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          slick.basic.BasicBackend.DatabaseDef.run
+        </td>
+        <td style="background: #AEF1AE">
+          EventController.this.db.run[Int](slick.jdbc.PostgresProfile.api.queryInsertActionExtensionMethods[whatson.db.ParticipantTable#TableElementType, Seq](whatson.db.ParticipantTable.participant).+=(scala.Tuple2.apply[Int, Int](user.id.getOrElse[Int](-1), id)))
+        </td>
+      </tr><tr>
+        <td>
+          100
+        </td>
+        <td>
+          353
+        </td>
+        <td>
+          3534
+          -
+          3562
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.db.ParticipantTable.participant
+        </td>
+        <td style="background: #AEF1AE">
+          whatson.db.ParticipantTable.participant
+        </td>
+      </tr><tr>
+        <td>
+          100
+        </td>
+        <td>
+          356
+        </td>
+        <td>
+          3534
+          -
+          3594
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          slick.jdbc.JdbcActionComponent.SimpleInsertActionComposer.+=
+        </td>
+        <td style="background: #AEF1AE">
+          slick.jdbc.PostgresProfile.api.queryInsertActionExtensionMethods[whatson.db.ParticipantTable#TableElementType, Seq](whatson.db.ParticipantTable.participant).+=(scala.Tuple2.apply[Int, Int](user.id.getOrElse[Int](-1), id))
+        </td>
+      </tr><tr>
+        <td>
+          101
+        </td>
+        <td>
+          358
+        </td>
+        <td>
+          3622
+          -
+          3624
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.mvc.Results.Ok
+        </td>
+        <td style="background: #AEF1AE">
+          EventController.this.Ok
+        </td>
+      </tr><tr>
+        <td>
+          101
+        </td>
+        <td>
+          359
+        </td>
+        <td>
+          3604
+          -
+          3625
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.concurrent.Future.successful
+        </td>
+        <td style="background: #AEF1AE">
+          scala.concurrent.Future.successful[EventController.this.Status](EventController.this.Ok)
+        </td>
+      </tr><tr>
+        <td>
+          103
+        </td>
+        <td>
+          361
+        </td>
+        <td>
+          3666
+          -
+          3693
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.concurrent.Future.successful
+        </td>
+        <td style="background: #AEF1AE">
+          scala.concurrent.Future.successful[EventController.this.Status](EventController.this.Conflict)
+        </td>
+      </tr><tr>
+        <td>
+          103
+        </td>
+        <td>
+          360
+        </td>
+        <td>
+          3684
+          -
+          3692
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.mvc.Results.Conflict
+        </td>
+        <td style="background: #AEF1AE">
+          EventController.this.Conflict
+        </td>
+      </tr><tr>
+        <td>
+          104
+        </td>
+        <td>
+          363
+        </td>
+        <td>
+          3717
+          -
+          3746
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.concurrent.Future.successful
+        </td>
+        <td style="background: #AEF1AE">
+          scala.concurrent.Future.successful[EventController.this.Status](EventController.this.BadRequest)
+        </td>
+      </tr><tr>
+        <td>
+          104
+        </td>
+        <td>
+          362
+        </td>
+        <td>
+          3735
+          -
+          3745
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.mvc.Results.BadRequest
+        </td>
+        <td style="background: #AEF1AE">
+          EventController.this.BadRequest
+        </td>
+      </tr><tr>
+        <td>
+          108
+        </td>
+        <td>
+          400
+        </td>
+        <td>
+          3789
+          -
+          4152
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          controllers.Util.userRequest
+        </td>
+        <td style="background: #AEF1AE">
+          EventController.this.userRequest[play.api.mvc.AnyContent](EventController.this.parse.default)(((x0$6: com.mohiva.play.silhouette.api.actions.SecuredRequest[whatson.auth.AuthEnv,play.api.mvc.AnyContent], x1$3: whatson.model.User) =&gt; scala.Tuple2.apply[com.mohiva.play.silhouette.api.actions.SecuredRequest[whatson.auth.AuthEnv,play.api.mvc.AnyContent], whatson.model.User](x0$6, x1$3) match {
+  case (_1: com.mohiva.play.silhouette.api.actions.SecuredRequest[whatson.auth.AuthEnv,play.api.mvc.AnyContent], _2: whatson.model.User)(com.mohiva.play.silhouette.api.actions.SecuredRequest[whatson.auth.AuthEnv,play.api.mvc.AnyContent], whatson.model.User)((request @ _), (user @ _)) =&gt; {
+    EventController.this.log.debug(&quot;Rest request to unparticipate in event&quot;)(api.this.MarkerContext.NoMarker);
+    EventController.this.db.run[Int](slick.jdbc.PostgresProfile.api.queryDeleteActionExtensionMethods[Seq](whatson.db.ParticipantTable.participant.filter[slick.lifted.Rep[Boolean]](((x: whatson.db.ParticipantTable) =&gt; slick.jdbc.PostgresProfile.api.booleanColumnExtensionMethods(slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](x.eventID)(slick.jdbc.PostgresProfile.api.intColumnType).===[Int, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[Int](id)(slick.jdbc.PostgresProfile.api.intColumnType).bind)(lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType))).&amp;&amp;[Boolean, Boolean](slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](x.userID)(slick.jdbc.PostgresProfile.api.intColumnType).===[Int, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[Int](user.id.getOrElse[Int](-1))(slick.jdbc.PostgresProfile.api.intColumnType).bind)(lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType)))(lifted.this.OptionMapper2.getOptionMapper2TT[Boolean, Boolean, Boolean](slick.jdbc.PostgresProfile.api.booleanColumnType))))(lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition)).delete).flatMap[play.api.mvc.Result](((x0$7: Int) =&gt; x0$7 match {
+      case 1 =&gt; scala.concurrent.Future.successful[EventController.this.Status](EventController.this.Ok)
+      case _ =&gt; scala.concurrent.Future.successful[EventController.this.Status](EventController.this.BadRequest)
+    }))(EventController.this.context)
+  }
+}))(EventController.this.context)
+        </td>
+      </tr><tr>
+        <td>
+          108
+        </td>
+        <td>
+          399
+        </td>
+        <td>
+          3816
+          -
+          3816
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          controllers.EventController.context
+        </td>
+        <td style="background: #AEF1AE">
+          EventController.this.context
+        </td>
+      </tr><tr>
+        <td>
+          108
+        </td>
+        <td>
+          368
+        </td>
+        <td>
+          3801
+          -
+          3814
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.mvc.PlayBodyParsers.default
+        </td>
+        <td style="background: #AEF1AE">
+          EventController.this.parse.default
+        </td>
+      </tr><tr>
+        <td>
+          109
+        </td>
+        <td>
+          370
+        </td>
+        <td>
+          3854
+          -
+          3854
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.LowPriorityMarkerContextImplicits.NoMarker
+        </td>
+        <td style="background: #AEF1AE">
+          api.this.MarkerContext.NoMarker
+        </td>
+      </tr><tr>
+        <td>
+          109
+        </td>
+        <td>
+          369
+        </td>
+        <td>
+          3855
+          -
+          3895
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;Rest request to unparticipate in event&quot;
+        </td>
+      </tr><tr>
+        <td>
+          109
+        </td>
+        <td>
+          371
+        </td>
+        <td>
+          3845
+          -
+          3896
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          play.api.LoggerLike.debug
+        </td>
+        <td style="background: #AEF1AE">
+          EventController.this.log.debug(&quot;Rest request to unparticipate in event&quot;)(api.this.MarkerContext.NoMarker)
+        </td>
+      </tr><tr>
+        <td>
+          111
+        </td>
+        <td>
+          391
+        </td>
+        <td>
+          3909
+          -
+          4015
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.Query.filter
+        </td>
+        <td style="background: #AEF1AE">
+          whatson.db.ParticipantTable.participant.filter[slick.lifted.Rep[Boolean]](((x: whatson.db.ParticipantTable) =&gt; slick.jdbc.PostgresProfile.api.booleanColumnExtensionMethods(slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](x.eventID)(slick.jdbc.PostgresProfile.api.intColumnType).===[Int, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[Int](id)(slick.jdbc.PostgresProfile.api.intColumnType).bind)(lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType))).&amp;&amp;[Boolean, Boolean](slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](x.userID)(slick.jdbc.PostgresProfile.api.intColumnType).===[Int, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[Int](user.id.getOrElse[Int](-1))(slick.jdbc.PostgresProfile.api.intColumnType).bind)(lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType)))(lifted.this.OptionMapper2.getOptionMapper2TT[Boolean, Boolean, Boolean](slick.jdbc.PostgresProfile.api.booleanColumnType))))(lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition)
+        </td>
+      </tr><tr>
+        <td>
+          111
+        </td>
+        <td>
+          373
+        </td>
+        <td>
+          3952
+          -
+          3952
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
+        </td>
+        <td style="background: #AEF1AE">
+          slick.jdbc.PostgresProfile.api.intColumnType
+        </td>
+      </tr><tr>
+        <td>
+          111
+        </td>
+        <td>
+          382
+        </td>
+        <td>
+          4005
+          -
+          4005
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
+        </td>
+        <td style="background: #AEF1AE">
+          slick.jdbc.PostgresProfile.api.intColumnType
+        </td>
+      </tr><tr>
+        <td>
+          111
+        </td>
+        <td>
+          376
+        </td>
+        <td>
+          3960
+          -
+          3960
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
+        </td>
+        <td style="background: #AEF1AE">
+          slick.jdbc.PostgresProfile.api.intColumnType
+        </td>
+      </tr><tr>
+        <td>
+          111
+        </td>
+        <td>
+          385
+        </td>
+        <td>
+          3984
+          -
+          3984
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.OptionMapper2.getOptionMapper2TT
+        </td>
+        <td style="background: #AEF1AE">
+          lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType)
+        </td>
+      </tr><tr>
+        <td>
+          111
+        </td>
+        <td>
+          388
+        </td>
+        <td>
+          3972
+          -
+          3972
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.OptionMapper2.getOptionMapper2TT
+        </td>
+        <td style="background: #AEF1AE">
+          lifted.this.OptionMapper2.getOptionMapper2TT[Boolean, Boolean, Boolean](slick.jdbc.PostgresProfile.api.booleanColumnType)
+        </td>
+      </tr><tr>
+        <td>
+          111
+        </td>
+        <td>
+          379
+        </td>
+        <td>
+          3975
+          -
+          3983
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.db.ParticipantTable.userID
+        </td>
+        <td style="background: #AEF1AE">
+          x.userID
+        </td>
+      </tr><tr>
+        <td>
+          111
+        </td>
+        <td>
+          387
+        </td>
+        <td>
+          3972
+          -
+          3972
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.booleanColumnType
+        </td>
+        <td style="background: #AEF1AE">
+          slick.jdbc.PostgresProfile.api.booleanColumnType
+        </td>
+      </tr><tr>
+        <td>
+          111
+        </td>
+        <td>
+          378
+        </td>
+        <td>
+          3950
+          -
+          3971
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.ColumnExtensionMethods.===
+        </td>
+        <td style="background: #AEF1AE">
+          slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](x.eventID)(slick.jdbc.PostgresProfile.api.intColumnType).===[Int, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[Int](id)(slick.jdbc.PostgresProfile.api.intColumnType).bind)(lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType))
+        </td>
+      </tr><tr>
+        <td>
+          111
+        </td>
+        <td>
+          381
+        </td>
+        <td>
+          3988
+          -
+          4009
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Option.getOrElse
+        </td>
+        <td style="background: #AEF1AE">
+          user.id.getOrElse[Int](-1)
+        </td>
+      </tr><tr>
+        <td>
+          111
+        </td>
+        <td>
+          390
+        </td>
+        <td>
+          3944
+          -
+          3944
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.lifted.CanBeQueryCondition.BooleanColumnCanBeQueryCondition
+        </td>
+        <td style="background: #AEF1AE">
+          lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition
+        </td>
+      </tr><tr>
+        <td>
+          111
+        </td>
+        <td>
+          372
+        </td>
+        <td>
+          3950
+          -
+          3959
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.db.ParticipantTable.eventID
+        </td>
+        <td style="background: #AEF1AE">
+          x.eventID
+        </td>
+      </tr><tr>
+        <td>
+          111
+        </td>
+        <td>
+          375
+        </td>
+        <td>
+          3964
+          -
+          3971
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.lifted.LiteralColumn.bind
+        </td>
+        <td style="background: #AEF1AE">
+          slick.jdbc.PostgresProfile.api.valueToConstColumn[Int](id)(slick.jdbc.PostgresProfile.api.intColumnType).bind
+        </td>
+      </tr><tr>
+        <td>
+          111
+        </td>
+        <td>
+          384
+        </td>
+        <td>
+          3984
+          -
+          3984
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
+        </td>
+        <td style="background: #AEF1AE">
+          slick.jdbc.PostgresProfile.api.intColumnType
+        </td>
+      </tr><tr>
+        <td>
+          111
+        </td>
+        <td>
+          383
+        </td>
+        <td>
+          3988
+          -
+          4014
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.lifted.LiteralColumn.bind
+        </td>
+        <td style="background: #AEF1AE">
+          slick.jdbc.PostgresProfile.api.valueToConstColumn[Int](user.id.getOrElse[Int](-1))(slick.jdbc.PostgresProfile.api.intColumnType).bind
+        </td>
+      </tr><tr>
+        <td>
+          111
+        </td>
+        <td>
+          392
+        </td>
+        <td>
+          3909
+          -
+          4022
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcActionComponent.DeleteActionExtensionMethodsImpl.delete
+        </td>
+        <td style="background: #AEF1AE">
+          slick.jdbc.PostgresProfile.api.queryDeleteActionExtensionMethods[Seq](whatson.db.ParticipantTable.participant.filter[slick.lifted.Rep[Boolean]](((x: whatson.db.ParticipantTable) =&gt; slick.jdbc.PostgresProfile.api.booleanColumnExtensionMethods(slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](x.eventID)(slick.jdbc.PostgresProfile.api.intColumnType).===[Int, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[Int](id)(slick.jdbc.PostgresProfile.api.intColumnType).bind)(lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType))).&amp;&amp;[Boolean, Boolean](slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](x.userID)(slick.jdbc.PostgresProfile.api.intColumnType).===[Int, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[Int](user.id.getOrElse[Int](-1))(slick.jdbc.PostgresProfile.api.intColumnType).bind)(lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType)))(lifted.this.OptionMapper2.getOptionMapper2TT[Boolean, Boolean, Boolean](slick.jdbc.PostgresProfile.api.booleanColumnType))))(lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition)).delete
+        </td>
+      </tr><tr>
+        <td>
+          111
+        </td>
+        <td>
+          386
+        </td>
+        <td>
+          3975
+          -
+          4014
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.ColumnExtensionMethods.===
+        </td>
+        <td style="background: #AEF1AE">
+          slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](x.userID)(slick.jdbc.PostgresProfile.api.intColumnType).===[Int, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[Int](user.id.getOrElse[Int](-1))(slick.jdbc.PostgresProfile.api.intColumnType).bind)(lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType))
+        </td>
+      </tr><tr>
+        <td>
+          111
+        </td>
+        <td>
+          377
+        </td>
+        <td>
+          3960
+          -
+          3960
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.OptionMapper2.getOptionMapper2TT
+        </td>
+        <td style="background: #AEF1AE">
+          lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType)
+        </td>
+      </tr><tr>
+        <td>
+          111
+        </td>
+        <td>
+          389
+        </td>
+        <td>
+          3950
+          -
+          4014
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.BooleanColumnExtensionMethods.&amp;&amp;
+        </td>
+        <td style="background: #AEF1AE">
+          slick.jdbc.PostgresProfile.api.booleanColumnExtensionMethods(slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](x.eventID)(slick.jdbc.PostgresProfile.api.intColumnType).===[Int, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[Int](id)(slick.jdbc.PostgresProfile.api.intColumnType).bind)(lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType))).&amp;&amp;[Boolean, Boolean](slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](x.userID)(slick.jdbc.PostgresProfile.api.intColumnType).===[Int, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[Int](user.id.getOrElse[Int](-1))(slick.jdbc.PostgresProfile.api.intColumnType).bind)(lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType)))(lifted.this.OptionMapper2.getOptionMapper2TT[Boolean, Boolean, Boolean](slick.jdbc.PostgresProfile.api.booleanColumnType))
+        </td>
+      </tr><tr>
+        <td>
+          111
+        </td>
+        <td>
+          380
+        </td>
+        <td>
+          3977
+          -
+          3977
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
+        </td>
+        <td style="background: #AEF1AE">
+          slick.jdbc.PostgresProfile.api.intColumnType
+        </td>
+      </tr><tr>
+        <td>
+          111
+        </td>
+        <td>
+          374
+        </td>
+        <td>
+          3964
+          -
+          3964
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
+        </td>
+        <td style="background: #AEF1AE">
+          slick.jdbc.PostgresProfile.api.intColumnType
+        </td>
+      </tr><tr>
+        <td>
+          112
+        </td>
+        <td>
+          397
+        </td>
+        <td>
+          4039
+          -
+          4039
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          controllers.EventController.context
+        </td>
+        <td style="background: #AEF1AE">
+          EventController.this.context
+        </td>
+      </tr><tr>
+        <td>
+          112
+        </td>
+        <td>
+          398
+        </td>
+        <td>
+          3902
+          -
+          4148
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.concurrent.Future.flatMap
+        </td>
+        <td style="background: #AEF1AE">
+          EventController.this.db.run[Int](slick.jdbc.PostgresProfile.api.queryDeleteActionExtensionMethods[Seq](whatson.db.ParticipantTable.participant.filter[slick.lifted.Rep[Boolean]](((x: whatson.db.ParticipantTable) =&gt; slick.jdbc.PostgresProfile.api.booleanColumnExtensionMethods(slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](x.eventID)(slick.jdbc.PostgresProfile.api.intColumnType).===[Int, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[Int](id)(slick.jdbc.PostgresProfile.api.intColumnType).bind)(lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType))).&amp;&amp;[Boolean, Boolean](slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](x.userID)(slick.jdbc.PostgresProfile.api.intColumnType).===[Int, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[Int](user.id.getOrElse[Int](-1))(slick.jdbc.PostgresProfile.api.intColumnType).bind)(lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType)))(lifted.this.OptionMapper2.getOptionMapper2TT[Boolean, Boolean, Boolean](slick.jdbc.PostgresProfile.api.booleanColumnType))))(lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition)).delete).flatMap[play.api.mvc.Result](((x0$7: Int) =&gt; x0$7 match {
+  case 1 =&gt; scala.concurrent.Future.successful[EventController.this.Status](EventController.this.Ok)
+  case _ =&gt; scala.concurrent.Future.successful[EventController.this.Status](EventController.this.BadRequest)
+}))(EventController.this.context)
+        </td>
+      </tr><tr>
+        <td>
+          114
+        </td>
+        <td>
+          394
+        </td>
+        <td>
+          4067
+          -
+          4088
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.concurrent.Future.successful
+        </td>
+        <td style="background: #AEF1AE">
+          scala.concurrent.Future.successful[EventController.this.Status](EventController.this.Ok)
+        </td>
+      </tr><tr>
+        <td>
+          114
+        </td>
+        <td>
+          393
+        </td>
+        <td>
+          4085
+          -
+          4087
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.mvc.Results.Ok
+        </td>
+        <td style="background: #AEF1AE">
+          EventController.this.Ok
+        </td>
+      </tr><tr>
+        <td>
+          116
+        </td>
+        <td>
+          396
+        </td>
+        <td>
+          4113
+          -
+          4142
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.concurrent.Future.successful
+        </td>
+        <td style="background: #AEF1AE">
+          scala.concurrent.Future.successful[EventController.this.Status](EventController.this.BadRequest)
+        </td>
+      </tr><tr>
+        <td>
+          116
+        </td>
+        <td>
+          395
+        </td>
+        <td>
+          4131
+          -
+          4141
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.mvc.Results.BadRequest
+        </td>
+        <td style="background: #AEF1AE">
+          EventController.this.BadRequest
         </td>
       </tr>
     </table>
