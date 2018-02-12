@@ -60,143 +60,160 @@
 </span>36 <span style=''>import slick.jdbc.JdbcProfile
 </span>37 <span style=''>import whatson.auth._
 </span>38 <span style=''>import whatson.model._
-</span>39 <span style=''>import whatson.service._
-</span>40 <span style=''>import whatson.util.FormErrorJson._
-</span>41 <span style=''>
-</span>42 <span style=''>class LoginController @Inject()(cc: ControllerComponents,
-</span>43 <span style=''>                               protected val dbConfigProvider: DatabaseConfigProvider,
-</span>44 <span style=''>                                silhouette: Silhouette[AuthEnv],
-</span>45 <span style=''>                                encoder: AuthenticatorEncoder,
-</span>46 <span style=''>                                settings: JWTAuthenticatorSettings,
-</span>47 <span style=''>                                loginService: LoginService,
-</span>48 <span style=''>                                authInfoRepository: AuthInfoRepository,
-</span>49 <span style=''>                                credentialsProvider: CredentialsProvider,
-</span>50 <span style=''>                                socialProviderRegistry: SocialProviderRegistry,
-</span>51 <span style=''>                                configuration: Configuration,
-</span>52 <span style=''>                                clock: Clock,
-</span>53 <span style=''>                                cache: AsyncCacheApi,
-</span>54 <span style=''>                                passwordHasher: PasswordHasher,
-</span>55 <span style=''>                                userService: UserService,
-</span>56 <span style=''>                                organizerService: OrganizerService,
-</span>57 <span style=''>                                mailService: MailService,
-</span>58 <span style=''>                                avatarService: AvatarService)
-</span>59 <span style=''>    (implicit context: ExecutionContext)
-</span>60 <span style=''>    extends AbstractController(cc)
-</span>61 <span style=''>    with HasDatabaseConfigProvider[JdbcProfile]{
-</span>62 <span style=''>
-</span>63 <span style=''>  val log = </span><span style='background: #AEF1AE'>Logger(&quot;api.login&quot;)</span><span style=''>
-</span>64 <span style=''>
-</span>65 <span style=''>  /**
-</span>66 <span style=''>    * Returns the user.
-</span>67 <span style=''>    *
-</span>68 <span style=''>    * @return The result to display.
-</span>69 <span style=''>    */
-</span>70 <span style=''>  def getUser = </span><span style='background: #AEF1AE'>silhouette.SecuredAction.async { implicit request =&gt;
-</span>71 <span style=''></span><span style='background: #AEF1AE'>    Future.successful(Ok(Json.toJson(request.identity)))
-</span>72 <span style=''></span><span style='background: #AEF1AE'>  }</span><span style=''>
-</span>73 <span style=''>
-</span>74 <span style=''>  def deleteUser = </span><span style='background: #F0ADAD'>silhouette.SecuredAction.async { implicit request =&gt;
-</span>75 <span style=''></span><span style='background: #F0ADAD'>    log.debug(&quot;Rest request to get user&quot;)
-</span>76 <span style=''></span><span style='background: #F0ADAD'>
-</span>77 <span style=''></span><span style='background: #F0ADAD'>    val q = login.filter(_.id === request.identity.id).delete
-</span>78 <span style=''></span><span style='background: #F0ADAD'>
-</span>79 <span style=''></span><span style='background: #F0ADAD'>    db.run(q).map {
-</span>80 <span style=''></span><span style='background: #F0ADAD'>      case 0 =&gt; NotFound
-</span>81 <span style=''></span><span style='background: #F0ADAD'>      case x =&gt; Ok(Json.toJson(x))
-</span>82 <span style=''></span><span style='background: #F0ADAD'>    }
-</span>83 <span style=''></span><span style='background: #F0ADAD'>  }</span><span style=''>
-</span>84 <span style=''>
-</span>85 <span style=''>  def updateUser = </span><span style='background: #F0ADAD'>silhouette.SecuredAction.async(parse.json(loginReads)) { implicit request =&gt;
-</span>86 <span style=''></span><span style='background: #F0ADAD'>    log.debug(&quot;Rest request to update user&quot;)
-</span>87 <span style=''></span><span style='background: #F0ADAD'>
-</span>88 <span style=''></span><span style='background: #F0ADAD'>    val q = login.filter(_.id === request.identity.id).update(request.body)
-</span>89 <span style=''></span><span style='background: #F0ADAD'>
-</span>90 <span style=''></span><span style='background: #F0ADAD'>    db.run(q).map {
-</span>91 <span style=''></span><span style='background: #F0ADAD'>      case 0 =&gt; NotFound
-</span>92 <span style=''></span><span style='background: #F0ADAD'>      case x =&gt; Ok(Json.toJson(x))
-</span>93 <span style=''></span><span style='background: #F0ADAD'>    }
-</span>94 <span style=''></span><span style='background: #F0ADAD'>  }</span><span style=''>
-</span>95 <span style=''>
-</span>96 <span style=''>  def confirm(token: String) = </span><span style='background: #AEF1AE'>Action.async { implicit request =&gt;
-</span>97 <span style=''></span><span style='background: #AEF1AE'>    log.debug(</span><span style='background: #F0ADAD'>&quot;Rest request to confirm account&quot;</span><span style='background: #AEF1AE'>)
-</span>98 <span style=''></span><span style='background: #AEF1AE'>
-</span>99 <span style=''></span><span style='background: #AEF1AE'>    JWTAuthenticator.unserialize(token, encoder, settings) match {
-</span>100 <span style=''></span><span style='background: #AEF1AE'>      case Success(auth) =&gt; {
-</span>101 <span style=''></span><span style='background: #AEF1AE'>        loginService.confirm(auth.loginInfo).map {
-</span>102 <span style=''></span><span style='background: #AEF1AE'>          case Some(l) =&gt; Redirect(&quot;http://&quot; + request.host + &quot;/#/mailConfirmed&quot;)
-</span>103 <span style=''></span><span style='background: #AEF1AE'>          case None =&gt; </span><span style='background: #F0ADAD'>NotFound</span><span style='background: #AEF1AE'>
-</span>104 <span style=''></span><span style='background: #AEF1AE'>        }
-</span>105 <span style=''></span><span style='background: #AEF1AE'>      }
-</span>106 <span style=''></span><span style='background: #AEF1AE'>      case _ =&gt; </span><span style='background: #F0ADAD'>Future(Unauthorized)</span><span style='background: #AEF1AE'>
-</span>107 <span style=''></span><span style='background: #AEF1AE'>    }
-</span>108 <span style=''></span><span style='background: #AEF1AE'>  }</span><span style=''>
-</span>109 <span style=''>
-</span>110 <span style=''>
-</span>111 <span style=''>  /**
-</span>112 <span style=''>    * Authenticates a user against a social provider.
-</span>113 <span style=''>    *
-</span>114 <span style=''>    * @param provider The ID of the provider to authenticate against.
-</span>115 <span style=''>    * @return The result to display.
-</span>116 <span style=''>    */
-</span>117 <span style=''>  def authenticate(provider: String, userType: Option[String]) = </span><span style='background: #F0ADAD'>Action.async { r =&gt;
-</span>118 <span style=''></span><span style='background: #F0ADAD'>    cacheAuthTokenForOauth1(r) { implicit request =&gt;
-</span>119 <span style=''></span><span style='background: #F0ADAD'>      (socialProviderRegistry.get[SocialProvider](provider) match {
-</span>120 <span style=''></span><span style='background: #F0ADAD'>         case Some(p: OAuth2Provider with CommonSocialProfileBuilder) =&gt;
-</span>121 <span style=''></span><span style='background: #F0ADAD'>           p.authenticate(UserStateItem(List(&quot;type&quot;-&gt;userType.getOrElse(&quot;user&quot;)).toMap)).flatMap {
-</span>122 <span style=''></span><span style='background: #F0ADAD'>             case Left(result) =&gt; Future.successful(result)
-</span>123 <span style=''></span><span style='background: #F0ADAD'>             case Right(StatefulAuthInfo(authInfo,state)) =&gt; for {
-</span>124 <span style=''></span><span style='background: #F0ADAD'>               profile &lt;- p.retrieveProfile(authInfo)
-</span>125 <span style=''></span><span style='background: #F0ADAD'>               login &lt;- loginService.save(profile)
-</span>126 <span style=''></span><span style='background: #F0ADAD'>               authInfo &lt;- authInfoRepository.save(profile.loginInfo, authInfo)
-</span>127 <span style=''></span><span style='background: #F0ADAD'>               authenticator &lt;- silhouette.env.authenticatorService.create(profile.loginInfo)
-</span>128 <span style=''></span><span style='background: #F0ADAD'>               token &lt;- silhouette.env.authenticatorService.init(authenticator)
-</span>129 <span style=''></span><span style='background: #F0ADAD'>               avatar &lt;- avatarService.retrieveURL(profile.email.getOrElse(&quot;&quot;))
-</span>130 <span style=''></span><span style='background: #F0ADAD'>             } yield {
-</span>131 <span style=''></span><span style='background: #F0ADAD'>               state.state.get(&quot;type&quot;) match {
-</span>132 <span style=''></span><span style='background: #F0ADAD'>                 case Some(&quot;user&quot;) =&gt; userService.save(login,avatar)
-</span>133 <span style=''></span><span style='background: #F0ADAD'>                 case Some(&quot;organizer&quot;) =&gt; organizerService.save(login,
-</span>134 <span style=''></span><span style='background: #F0ADAD'>                                                                 profile.firstName.getOrElse(&quot;&quot;) + &quot; &quot; + profile.lastName.getOrElse(&quot;&quot;),
-</span>135 <span style=''></span><span style='background: #F0ADAD'>                                                                 avatar)
-</span>136 <span style=''></span><span style='background: #F0ADAD'>                 case _ =&gt;
-</span>137 <span style=''></span><span style='background: #F0ADAD'>               }
-</span>138 <span style=''></span><span style='background: #F0ADAD'>               silhouette.env.eventBus.publish(LoginEvent(login, request))
-</span>139 <span style=''></span><span style='background: #F0ADAD'>               Redirect(&quot;http://&quot; + request.host + &quot;?token=&quot; + token)
-</span>140 <span style=''></span><span style='background: #F0ADAD'>             }
-</span>141 <span style=''></span><span style='background: #F0ADAD'>           }
-</span>142 <span style=''></span><span style='background: #F0ADAD'>         case _ =&gt; Future.failed(new ProviderException(s&quot;Cannot authenticate with unexpected social provider $provider&quot;))
-</span>143 <span style=''></span><span style='background: #F0ADAD'>       }).recover {
-</span>144 <span style=''></span><span style='background: #F0ADAD'>        case e: ProviderException =&gt;
-</span>145 <span style=''></span><span style='background: #F0ADAD'>          log.error(&quot;Unexpected provider error&quot;, e)
-</span>146 <span style=''></span><span style='background: #F0ADAD'>          Unauthorized(Json.obj(&quot;message&quot; -&gt; &quot;could.not.authenticate&quot;))
-</span>147 <span style=''></span><span style='background: #F0ADAD'>      }
-</span>148 <span style=''></span><span style='background: #F0ADAD'>    }
-</span>149 <span style=''></span><span style='background: #F0ADAD'>  }</span><span style=''>
-</span>150 <span style=''>
-</span>151 <span style=''>
-</span>152 <span style=''>  /**
-</span>153 <span style=''>    * Satellizer executes multiple requests to the same application endpoints for OAuth1.
-</span>154 <span style=''>    *
-</span>155 <span style=''>    * So this function caches the response from the OAuth provider and returns it on the second
-</span>156 <span style=''>    * request. Not nice, but it works as a temporary workaround until the bug is fixed.
-</span>157 <span style=''>    *
-</span>158 <span style=''>    * @param request The current request.
-</span>159 <span style=''>    * @param f The action to execute.
-</span>160 <span style=''>    * @return A result.
-</span>161 <span style=''>    * @see https://github.com/sahat/satellizer/issues/287
-</span>162 <span style=''>    */
-</span>163 <span style=''>  private def cacheAuthTokenForOauth1(request: Request[AnyContent])(f: Request[AnyContent] =&gt; Future[Result]): Future[Result] = {
-</span>164 <span style=''>    </span><span style='background: #F0ADAD'>request.getQueryString(&quot;oauth_token&quot;) -&gt; request.getQueryString(&quot;oauth_verifier&quot;)</span><span style=''> match {
-</span>165 <span style=''>      case (Some(token), Some(verifier)) =&gt; </span><span style='background: #F0ADAD'>cache.get[Result](token + &quot;-&quot; + verifier).flatMap {
-</span>166 <span style=''></span><span style='background: #F0ADAD'>        case Some(r) =&gt; Future(r)
-</span>167 <span style=''></span><span style='background: #F0ADAD'>        case None =&gt; f(request).map { result =&gt;
-</span>168 <span style=''></span><span style='background: #F0ADAD'>          cache.set(token + &quot;-&quot; + verifier, result, 1 minute)
-</span>169 <span style=''></span><span style='background: #F0ADAD'>          result
-</span>170 <span style=''></span><span style='background: #F0ADAD'>        }
-</span>171 <span style=''></span><span style='background: #F0ADAD'>      }</span><span style=''>
-</span>172 <span style=''>      case _ =&gt; </span><span style='background: #F0ADAD'>f(request)</span><span style=''>
-</span>173 <span style=''>    }
-</span>174 <span style=''>  }
-</span>175 <span style=''>}
+</span>39 <span style=''>import whatson.model.forms._
+</span>40 <span style=''>import whatson.service._
+</span>41 <span style=''>import whatson.util.FormErrorJson._
+</span>42 <span style=''>
+</span>43 <span style=''>class LoginController @Inject()(cc: ControllerComponents,
+</span>44 <span style=''>                               protected val dbConfigProvider: DatabaseConfigProvider,
+</span>45 <span style=''>                                silhouette: Silhouette[AuthEnv],
+</span>46 <span style=''>                                encoder: AuthenticatorEncoder,
+</span>47 <span style=''>                                settings: JWTAuthenticatorSettings,
+</span>48 <span style=''>                                loginService: LoginService,
+</span>49 <span style=''>                                authInfoRepository: AuthInfoRepository,
+</span>50 <span style=''>                                credentialsProvider: CredentialsProvider,
+</span>51 <span style=''>                                socialProviderRegistry: SocialProviderRegistry,
+</span>52 <span style=''>                                configuration: Configuration,
+</span>53 <span style=''>                                clock: Clock,
+</span>54 <span style=''>                                cache: AsyncCacheApi,
+</span>55 <span style=''>                                passwordHasher: PasswordHasher,
+</span>56 <span style=''>                                userService: UserService,
+</span>57 <span style=''>                                organizerService: OrganizerService,
+</span>58 <span style=''>                                mailService: MailService,
+</span>59 <span style=''>                                avatarService: AvatarService)
+</span>60 <span style=''>    (implicit context: ExecutionContext)
+</span>61 <span style=''>    extends AbstractController(cc)
+</span>62 <span style=''>    with HasDatabaseConfigProvider[JdbcProfile]{
+</span>63 <span style=''>
+</span>64 <span style=''>  val log = </span><span style='background: #AEF1AE'>Logger(&quot;api.login&quot;)</span><span style=''>
+</span>65 <span style=''>
+</span>66 <span style=''>  /**
+</span>67 <span style=''>    * Returns the user.
+</span>68 <span style=''>    *
+</span>69 <span style=''>    * @return The result to display.
+</span>70 <span style=''>    */
+</span>71 <span style=''>  def getUser = </span><span style='background: #AEF1AE'>silhouette.SecuredAction.async { implicit request =&gt;
+</span>72 <span style=''></span><span style='background: #AEF1AE'>    Future.successful(Ok(Json.toJson(request.identity)))
+</span>73 <span style=''></span><span style='background: #AEF1AE'>  }</span><span style=''>
+</span>74 <span style=''>
+</span>75 <span style=''>  def deleteUser = </span><span style='background: #F0ADAD'>silhouette.SecuredAction.async { implicit request =&gt;
+</span>76 <span style=''></span><span style='background: #F0ADAD'>    log.debug(&quot;Rest request to get user&quot;)
+</span>77 <span style=''></span><span style='background: #F0ADAD'>
+</span>78 <span style=''></span><span style='background: #F0ADAD'>    val q = login.filter(_.id === request.identity.id).delete
+</span>79 <span style=''></span><span style='background: #F0ADAD'>
+</span>80 <span style=''></span><span style='background: #F0ADAD'>    db.run(q).map {
+</span>81 <span style=''></span><span style='background: #F0ADAD'>      case 0 =&gt; NotFound
+</span>82 <span style=''></span><span style='background: #F0ADAD'>      case x =&gt; Ok(Json.toJson(x))
+</span>83 <span style=''></span><span style='background: #F0ADAD'>    }
+</span>84 <span style=''></span><span style='background: #F0ADAD'>  }</span><span style=''>
+</span>85 <span style=''>
+</span>86 <span style=''>  def updateUser = </span><span style='background: #F0ADAD'>silhouette.SecuredAction.async(parse.json) { implicit request =&gt;
+</span>87 <span style=''></span><span style='background: #F0ADAD'>    LoginUpdateForm.form.bindFromRequest().fold(
+</span>88 <span style=''></span><span style='background: #F0ADAD'>      form =&gt; {
+</span>89 <span style=''></span><span style='background: #F0ADAD'>        Future.successful(BadRequest(Json.toJson(form.errors)))
+</span>90 <span style=''></span><span style='background: #F0ADAD'>      },
+</span>91 <span style=''></span><span style='background: #F0ADAD'>      data =&gt; {
+</span>92 <span style=''></span><span style='background: #F0ADAD'>        log.debug(&quot;Rest request to update users password&quot;)
+</span>93 <span style=''></span><span style='background: #F0ADAD'>
+</span>94 <span style=''></span><span style='background: #F0ADAD'>        val authInfo = passwordHasher.hash(data.password)
+</span>95 <span style=''></span><span style='background: #F0ADAD'>        val q = login.filter(_.id === request.identity.id).result.map(_.headOption)
+</span>96 <span style=''></span><span style='background: #F0ADAD'>
+</span>97 <span style=''></span><span style='background: #F0ADAD'>        db.run(q).flatMap {
+</span>98 <span style=''></span><span style='background: #F0ADAD'>          case None =&gt; Future.successful(NotFound)
+</span>99 <span style=''></span><span style='background: #F0ADAD'>          case Some(login) =&gt; {
+</span>100 <span style=''></span><span style='background: #F0ADAD'>            for {
+</span>101 <span style=''></span><span style='background: #F0ADAD'>              authInfo &lt;- authInfoRepository.update(login.loginInfo,authInfo)
+</span>102 <span style=''></span><span style='background: #F0ADAD'>              authenticator &lt;- silhouette.env.authenticatorService.create(login.loginInfo)
+</span>103 <span style=''></span><span style='background: #F0ADAD'>              token &lt;- silhouette.env.authenticatorService.init(authenticator)
+</span>104 <span style=''></span><span style='background: #F0ADAD'>            } yield {
+</span>105 <span style=''></span><span style='background: #F0ADAD'>              mailService.sendPasswordChangeNotification(login.email,token)
+</span>106 <span style=''></span><span style='background: #F0ADAD'>              Ok(Json.obj(&quot;token&quot; -&gt; token))
+</span>107 <span style=''></span><span style='background: #F0ADAD'>            }
+</span>108 <span style=''></span><span style='background: #F0ADAD'>          }
+</span>109 <span style=''></span><span style='background: #F0ADAD'>        }
+</span>110 <span style=''></span><span style='background: #F0ADAD'>      })
+</span>111 <span style=''></span><span style='background: #F0ADAD'>  }</span><span style=''>
+</span>112 <span style=''>
+</span>113 <span style=''>  def confirm(token: String) = </span><span style='background: #AEF1AE'>Action.async { implicit request =&gt;
+</span>114 <span style=''></span><span style='background: #AEF1AE'>    log.debug(</span><span style='background: #F0ADAD'>&quot;Rest request to confirm account&quot;</span><span style='background: #AEF1AE'>)
+</span>115 <span style=''></span><span style='background: #AEF1AE'>
+</span>116 <span style=''></span><span style='background: #AEF1AE'>    JWTAuthenticator.unserialize(token, encoder, settings) match {
+</span>117 <span style=''></span><span style='background: #AEF1AE'>      case Success(auth) =&gt; {
+</span>118 <span style=''></span><span style='background: #AEF1AE'>        loginService.confirm(auth.loginInfo).map {
+</span>119 <span style=''></span><span style='background: #AEF1AE'>          case Some(l) =&gt; Redirect(&quot;http://&quot; + request.host + &quot;/#/mailConfirmed&quot;)
+</span>120 <span style=''></span><span style='background: #AEF1AE'>          case None =&gt; </span><span style='background: #F0ADAD'>NotFound</span><span style='background: #AEF1AE'>
+</span>121 <span style=''></span><span style='background: #AEF1AE'>        }
+</span>122 <span style=''></span><span style='background: #AEF1AE'>      }
+</span>123 <span style=''></span><span style='background: #AEF1AE'>      case _ =&gt; </span><span style='background: #F0ADAD'>Future(Unauthorized)</span><span style='background: #AEF1AE'>
+</span>124 <span style=''></span><span style='background: #AEF1AE'>    }
+</span>125 <span style=''></span><span style='background: #AEF1AE'>  }</span><span style=''>
+</span>126 <span style=''>
+</span>127 <span style=''>
+</span>128 <span style=''>  /**
+</span>129 <span style=''>    * Authenticates a user against a social provider.
+</span>130 <span style=''>    *
+</span>131 <span style=''>    * @param provider The ID of the provider to authenticate against.
+</span>132 <span style=''>    * @return The result to display.
+</span>133 <span style=''>    */
+</span>134 <span style=''>  def authenticate(provider: String, userType: Option[String]) = </span><span style='background: #F0ADAD'>Action.async { r =&gt;
+</span>135 <span style=''></span><span style='background: #F0ADAD'>    cacheAuthTokenForOauth1(r) { implicit request =&gt;
+</span>136 <span style=''></span><span style='background: #F0ADAD'>      (socialProviderRegistry.get[SocialProvider](provider) match {
+</span>137 <span style=''></span><span style='background: #F0ADAD'>         case Some(p: OAuth2Provider with CommonSocialProfileBuilder) =&gt;
+</span>138 <span style=''></span><span style='background: #F0ADAD'>           p.authenticate(UserStateItem(List(&quot;type&quot;-&gt;userType.getOrElse(&quot;user&quot;)).toMap)).flatMap {
+</span>139 <span style=''></span><span style='background: #F0ADAD'>             case Left(result) =&gt; Future.successful(result)
+</span>140 <span style=''></span><span style='background: #F0ADAD'>             case Right(StatefulAuthInfo(authInfo,state)) =&gt; for {
+</span>141 <span style=''></span><span style='background: #F0ADAD'>               profile &lt;- p.retrieveProfile(authInfo)
+</span>142 <span style=''></span><span style='background: #F0ADAD'>               login &lt;- loginService.save(profile)
+</span>143 <span style=''></span><span style='background: #F0ADAD'>               authInfo &lt;- authInfoRepository.save(profile.loginInfo, authInfo)
+</span>144 <span style=''></span><span style='background: #F0ADAD'>               authenticator &lt;- silhouette.env.authenticatorService.create(profile.loginInfo)
+</span>145 <span style=''></span><span style='background: #F0ADAD'>               token &lt;- silhouette.env.authenticatorService.init(authenticator)
+</span>146 <span style=''></span><span style='background: #F0ADAD'>               avatar &lt;- avatarService.retrieveURL(profile.email.getOrElse(&quot;&quot;))
+</span>147 <span style=''></span><span style='background: #F0ADAD'>             } yield {
+</span>148 <span style=''></span><span style='background: #F0ADAD'>               state.state.get(&quot;type&quot;) match {
+</span>149 <span style=''></span><span style='background: #F0ADAD'>                 case Some(&quot;user&quot;) =&gt; userService.save(login,avatar)
+</span>150 <span style=''></span><span style='background: #F0ADAD'>                 case Some(&quot;organizer&quot;) =&gt; organizerService.save(login,
+</span>151 <span style=''></span><span style='background: #F0ADAD'>                                                                 profile.firstName.getOrElse(&quot;&quot;) + &quot; &quot; + profile.lastName.getOrElse(&quot;&quot;),
+</span>152 <span style=''></span><span style='background: #F0ADAD'>                                                                 avatar)
+</span>153 <span style=''></span><span style='background: #F0ADAD'>                 case _ =&gt;
+</span>154 <span style=''></span><span style='background: #F0ADAD'>               }
+</span>155 <span style=''></span><span style='background: #F0ADAD'>               silhouette.env.eventBus.publish(LoginEvent(login, request))
+</span>156 <span style=''></span><span style='background: #F0ADAD'>               Redirect(&quot;http://&quot; + request.host + &quot;?token=&quot; + token)
+</span>157 <span style=''></span><span style='background: #F0ADAD'>             }
+</span>158 <span style=''></span><span style='background: #F0ADAD'>           }
+</span>159 <span style=''></span><span style='background: #F0ADAD'>         case _ =&gt; Future.failed(new ProviderException(s&quot;Cannot authenticate with unexpected social provider $provider&quot;))
+</span>160 <span style=''></span><span style='background: #F0ADAD'>       }).recover {
+</span>161 <span style=''></span><span style='background: #F0ADAD'>        case e: ProviderException =&gt;
+</span>162 <span style=''></span><span style='background: #F0ADAD'>          log.error(&quot;Unexpected provider error&quot;, e)
+</span>163 <span style=''></span><span style='background: #F0ADAD'>          Unauthorized(Json.obj(&quot;message&quot; -&gt; &quot;could.not.authenticate&quot;))
+</span>164 <span style=''></span><span style='background: #F0ADAD'>      }
+</span>165 <span style=''></span><span style='background: #F0ADAD'>    }
+</span>166 <span style=''></span><span style='background: #F0ADAD'>  }</span><span style=''>
+</span>167 <span style=''>
+</span>168 <span style=''>
+</span>169 <span style=''>  /**
+</span>170 <span style=''>    * Satellizer executes multiple requests to the same application endpoints for OAuth1.
+</span>171 <span style=''>    *
+</span>172 <span style=''>    * So this function caches the response from the OAuth provider and returns it on the second
+</span>173 <span style=''>    * request. Not nice, but it works as a temporary workaround until the bug is fixed.
+</span>174 <span style=''>    *
+</span>175 <span style=''>    * @param request The current request.
+</span>176 <span style=''>    * @param f The action to execute.
+</span>177 <span style=''>    * @return A result.
+</span>178 <span style=''>    * @see https://github.com/sahat/satellizer/issues/287
+</span>179 <span style=''>    */
+</span>180 <span style=''>  private def cacheAuthTokenForOauth1(request: Request[AnyContent])(f: Request[AnyContent] =&gt; Future[Result]): Future[Result] = {
+</span>181 <span style=''>    </span><span style='background: #F0ADAD'>request.getQueryString(&quot;oauth_token&quot;) -&gt; request.getQueryString(&quot;oauth_verifier&quot;)</span><span style=''> match {
+</span>182 <span style=''>      case (Some(token), Some(verifier)) =&gt; </span><span style='background: #F0ADAD'>cache.get[Result](token + &quot;-&quot; + verifier).flatMap {
+</span>183 <span style=''></span><span style='background: #F0ADAD'>        case Some(r) =&gt; Future(r)
+</span>184 <span style=''></span><span style='background: #F0ADAD'>        case None =&gt; f(request).map { result =&gt;
+</span>185 <span style=''></span><span style='background: #F0ADAD'>          cache.set(token + &quot;-&quot; + verifier, result, 1 minute)
+</span>186 <span style=''></span><span style='background: #F0ADAD'>          result
+</span>187 <span style=''></span><span style='background: #F0ADAD'>        }
+</span>188 <span style=''></span><span style='background: #F0ADAD'>      }</span><span style=''>
+</span>189 <span style=''>      case _ =&gt; </span><span style='background: #F0ADAD'>f(request)</span><span style=''>
+</span>190 <span style=''>    }
+</span>191 <span style=''>  }
+</span>192 <span style=''>}
 </span></pre>
           </div>
           <div class="tab-pane" id="statementlist">
@@ -210,15 +227,15 @@
         <th>Code</th>
       </tr><tr>
         <td>
-          63
+          64
         </td>
         <td>
-          654
+          932
         </td>
         <td>
-          2665
+          2694
           -
-          2684
+          2713
         </td>
         <td>
           Apply
@@ -231,15 +248,15 @@
         </td>
       </tr><tr>
         <td>
-          70
+          71
         </td>
         <td>
-          661
+          939
         </td>
         <td>
-          2782
+          2811
           -
-          2895
+          2924
         </td>
         <td>
           Apply
@@ -252,36 +269,15 @@
         </td>
       </tr><tr>
         <td>
-          71
+          72
         </td>
         <td>
-          660
+          935
         </td>
         <td>
-          2839
-          -
-          2891
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          scala.concurrent.Future.successful
-        </td>
-        <td style="background: #AEF1AE">
-          scala.concurrent.Future.successful[play.api.mvc.Result](LoginController.this.Ok.apply[play.api.libs.json.JsValue](play.api.libs.json.Json.toJson[whatson.auth.AuthEnv#I](request.identity)(whatson.model.Login.loginWrites))(http.this.Writeable.writeableOf_JsValue))
-        </td>
-      </tr><tr>
-        <td>
-          71
-        </td>
-        <td>
-          657
-        </td>
-        <td>
-          2860
-          -
           2889
+          -
+          2918
         </td>
         <td>
           ApplyToImplicitArgs
@@ -294,15 +290,36 @@
         </td>
       </tr><tr>
         <td>
-          71
+          72
         </td>
         <td>
-          659
+          938
         </td>
         <td>
-          2857
+          2868
           -
-          2890
+          2920
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.concurrent.Future.successful
+        </td>
+        <td style="background: #AEF1AE">
+          scala.concurrent.Future.successful[play.api.mvc.Result](LoginController.this.Ok.apply[play.api.libs.json.JsValue](play.api.libs.json.Json.toJson[whatson.auth.AuthEnv#I](request.identity)(whatson.model.Login.loginWrites))(http.this.Writeable.writeableOf_JsValue))
+        </td>
+      </tr><tr>
+        <td>
+          72
+        </td>
+        <td>
+          937
+        </td>
+        <td>
+          2886
+          -
+          2919
         </td>
         <td>
           ApplyToImplicitArgs
@@ -315,15 +332,15 @@
         </td>
       </tr><tr>
         <td>
-          71
+          72
         </td>
         <td>
-          656
+          934
         </td>
         <td>
-          2871
+          2900
           -
-          2871
+          2900
         </td>
         <td>
           Select
@@ -336,36 +353,15 @@
         </td>
       </tr><tr>
         <td>
-          71
+          72
         </td>
         <td>
-          655
+          936
         </td>
         <td>
-          2872
+          2888
           -
           2888
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          com.mohiva.play.silhouette.api.actions.SecuredRequest.identity
-        </td>
-        <td style="background: #AEF1AE">
-          request.identity
-        </td>
-      </tr><tr>
-        <td>
-          71
-        </td>
-        <td>
-          658
-        </td>
-        <td>
-          2859
-          -
-          2859
         </td>
         <td>
           Select
@@ -378,15 +374,36 @@
         </td>
       </tr><tr>
         <td>
-          74
+          72
         </td>
         <td>
-          684
+          933
         </td>
         <td>
-          2916
+          2901
           -
-          3164
+          2917
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.mohiva.play.silhouette.api.actions.SecuredRequest.identity
+        </td>
+        <td style="background: #AEF1AE">
+          request.identity
+        </td>
+      </tr><tr>
+        <td>
+          75
+        </td>
+        <td>
+          962
+        </td>
+        <td>
+          2945
+          -
+          3193
         </td>
         <td>
           Apply
@@ -406,15 +423,15 @@
         </td>
       </tr><tr>
         <td>
-          75
+          76
         </td>
         <td>
-          663
+          941
         </td>
         <td>
-          2982
+          3011
           -
-          2982
+          3011
         </td>
         <td>
           Select
@@ -427,15 +444,15 @@
         </td>
       </tr><tr>
         <td>
-          75
+          76
         </td>
         <td>
-          662
+          940
         </td>
         <td>
-          2983
+          3012
           -
-          3009
+          3038
         </td>
         <td>
           Literal
@@ -448,15 +465,15 @@
         </td>
       </tr><tr>
         <td>
-          75
+          76
         </td>
         <td>
-          664
+          942
         </td>
         <td>
-          2973
+          3002
           -
-          3010
+          3039
         </td>
         <td>
           ApplyToImplicitArgs
@@ -469,36 +486,15 @@
         </td>
       </tr><tr>
         <td>
-          77
+          78
         </td>
         <td>
-          669
+          950
         </td>
         <td>
-          3063
+          3071
           -
-          3063
-        </td>
-        <td>
-          ApplyToImplicitArgs
-        </td>
-        <td>
-          slick.ast.TypedType.typedTypeToOptionTypedType
-        </td>
-        <td style="background: #F0ADAD">
-          ast.this.TypedType.typedTypeToOptionTypedType[Int](slick.jdbc.PostgresProfile.api.intColumnType)
-        </td>
-      </tr><tr>
-        <td>
-          77
-        </td>
-        <td>
-          672
-        </td>
-        <td>
-          3042
-          -
-          3042
+          3071
         </td>
         <td>
           ApplyToImplicitArgs
@@ -511,15 +507,15 @@
         </td>
       </tr><tr>
         <td>
-          77
+          78
         </td>
         <td>
-          666
+          944
         </td>
         <td>
-          3039
+          3068
           -
-          3039
+          3068
         </td>
         <td>
           Select
@@ -532,15 +528,15 @@
         </td>
       </tr><tr>
         <td>
-          77
+          78
         </td>
         <td>
-          675
+          953
         </td>
         <td>
-          3024
+          3053
           -
-          3066
+          3095
         </td>
         <td>
           ApplyToImplicitArgs
@@ -553,15 +549,36 @@
         </td>
       </tr><tr>
         <td>
-          77
+          78
         </td>
         <td>
-          668
+          947
         </td>
         <td>
-          3063
+          3092
           -
-          3063
+          3092
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.ast.TypedType.typedTypeToOptionTypedType
+        </td>
+        <td style="background: #F0ADAD">
+          ast.this.TypedType.typedTypeToOptionTypedType[Int](slick.jdbc.PostgresProfile.api.intColumnType)
+        </td>
+      </tr><tr>
+        <td>
+          78
+        </td>
+        <td>
+          946
+        </td>
+        <td>
+          3092
+          -
+          3092
         </td>
         <td>
           Select
@@ -574,15 +591,15 @@
         </td>
       </tr><tr>
         <td>
-          77
+          78
         </td>
         <td>
-          671
+          949
         </td>
         <td>
-          3042
+          3071
           -
-          3042
+          3071
         </td>
         <td>
           Select
@@ -595,15 +612,15 @@
         </td>
       </tr><tr>
         <td>
-          77
+          78
         </td>
         <td>
-          665
+          943
         </td>
         <td>
-          3037
+          3066
           -
-          3041
+          3070
         </td>
         <td>
           Select
@@ -616,15 +633,15 @@
         </td>
       </tr><tr>
         <td>
-          77
+          78
         </td>
         <td>
-          674
+          952
         </td>
         <td>
-          3036
+          3065
           -
-          3036
+          3065
         </td>
         <td>
           Select
@@ -637,36 +654,15 @@
         </td>
       </tr><tr>
         <td>
-          77
+          78
         </td>
         <td>
-          673
+          954
         </td>
         <td>
-          3037
+          3053
           -
-          3065
-        </td>
-        <td>
-          ApplyToImplicitArgs
-        </td>
-        <td>
-          slick.lifted.ColumnExtensionMethods.===
-        </td>
-        <td style="background: #F0ADAD">
-          slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](x$1.id)(slick.jdbc.PostgresProfile.api.intColumnType).===[Option[Int], Option[Boolean]](slick.jdbc.PostgresProfile.api.valueToConstColumn[Option[Int]](request.identity.id)(ast.this.TypedType.typedTypeToOptionTypedType[Int](slick.jdbc.PostgresProfile.api.intColumnType)))(lifted.this.OptionMapper2.getOptionMapper2TO[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType))
-        </td>
-      </tr><tr>
-        <td>
-          77
-        </td>
-        <td>
-          676
-        </td>
-        <td>
-          3024
-          -
-          3073
+          3102
         </td>
         <td>
           Select
@@ -679,15 +675,15 @@
         </td>
       </tr><tr>
         <td>
-          77
+          78
         </td>
         <td>
-          667
+          945
         </td>
         <td>
-          3046
+          3075
           -
-          3065
+          3094
         </td>
         <td>
           Select
@@ -700,15 +696,15 @@
         </td>
       </tr><tr>
         <td>
-          77
+          78
         </td>
         <td>
-          670
+          948
         </td>
         <td>
-          3046
+          3075
           -
-          3065
+          3094
         </td>
         <td>
           ApplyToImplicitArgs
@@ -721,15 +717,36 @@
         </td>
       </tr><tr>
         <td>
-          79
+          78
         </td>
         <td>
-          683
+          951
         </td>
         <td>
-          3079
+          3066
           -
-          3160
+          3094
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.ColumnExtensionMethods.===
+        </td>
+        <td style="background: #F0ADAD">
+          slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](x$1.id)(slick.jdbc.PostgresProfile.api.intColumnType).===[Option[Int], Option[Boolean]](slick.jdbc.PostgresProfile.api.valueToConstColumn[Option[Int]](request.identity.id)(ast.this.TypedType.typedTypeToOptionTypedType[Int](slick.jdbc.PostgresProfile.api.intColumnType)))(lifted.this.OptionMapper2.getOptionMapper2TO[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType))
+        </td>
+      </tr><tr>
+        <td>
+          80
+        </td>
+        <td>
+          961
+        </td>
+        <td>
+          3108
+          -
+          3189
         </td>
         <td>
           ApplyToImplicitArgs
@@ -745,15 +762,15 @@
         </td>
       </tr><tr>
         <td>
-          79
+          80
         </td>
         <td>
-          682
+          960
         </td>
         <td>
-          3093
+          3122
           -
-          3093
+          3122
         </td>
         <td>
           Select
@@ -766,15 +783,15 @@
         </td>
       </tr><tr>
         <td>
-          80
+          81
         </td>
         <td>
-          677
+          955
         </td>
         <td>
-          3111
+          3140
           -
-          3119
+          3148
         </td>
         <td>
           Select
@@ -787,36 +804,15 @@
         </td>
       </tr><tr>
         <td>
-          81
+          82
         </td>
         <td>
-          678
+          959
         </td>
         <td>
-          3150
+          3165
           -
-          3150
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          play.api.libs.json.DefaultWrites.IntWrites
-        </td>
-        <td style="background: #F0ADAD">
-          json.this.Writes.IntWrites
-        </td>
-      </tr><tr>
-        <td>
-          81
-        </td>
-        <td>
-          681
-        </td>
-        <td>
-          3136
-          -
-          3154
+          3183
         </td>
         <td>
           ApplyToImplicitArgs
@@ -829,15 +825,36 @@
         </td>
       </tr><tr>
         <td>
-          81
+          82
         </td>
         <td>
-          680
+          956
         </td>
         <td>
-          3138
+          3179
           -
-          3138
+          3179
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.libs.json.DefaultWrites.IntWrites
+        </td>
+        <td style="background: #F0ADAD">
+          json.this.Writes.IntWrites
+        </td>
+      </tr><tr>
+        <td>
+          82
+        </td>
+        <td>
+          958
+        </td>
+        <td>
+          3167
+          -
+          3167
         </td>
         <td>
           Select
@@ -850,15 +867,15 @@
         </td>
       </tr><tr>
         <td>
-          81
+          82
         </td>
         <td>
-          679
+          957
         </td>
         <td>
-          3139
+          3168
           -
-          3153
+          3182
         </td>
         <td>
           ApplyToImplicitArgs
@@ -871,15 +888,36 @@
         </td>
       </tr><tr>
         <td>
-          85
+          86
         </td>
         <td>
-          710
+          963
         </td>
         <td>
-          3185
+          3245
           -
-          3474
+          3255
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.mvc.PlayBodyParsers.json
+        </td>
+        <td style="background: #F0ADAD">
+          LoginController.this.parse.json
+        </td>
+      </tr><tr>
+        <td>
+          86
+        </td>
+        <td>
+          1011
+        </td>
+        <td>
+          3214
+          -
+          4204
         </td>
         <td>
           Apply
@@ -888,110 +926,188 @@
           play.api.mvc.ActionBuilder.async
         </td>
         <td style="background: #F0ADAD">
-          LoginController.this.silhouette.SecuredAction.async[whatson.model.Login](LoginController.this.parse.json[whatson.model.Login](whatson.model.Login.loginReads))(((implicit request: com.mohiva.play.silhouette.api.actions.SecuredRequest[whatson.auth.AuthEnv,whatson.model.Login]) =&gt; {
-  LoginController.this.log.debug(&quot;Rest request to update user&quot;)(api.this.MarkerContext.NoMarker);
-  val q: slick.jdbc.PostgresProfile.ProfileAction[Int,slick.dbio.NoStream,slick.dbio.Effect.Write] = slick.jdbc.PostgresProfile.api.queryUpdateActionExtensionMethods[whatson.db.LoginTable#TableElementType, Seq](whatson.db.LoginTable.login.filter[slick.lifted.Rep[Option[Boolean]]](((x$2: whatson.db.LoginTable) =&gt; slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](x$2.id)(slick.jdbc.PostgresProfile.api.intColumnType).===[Option[Int], Option[Boolean]](slick.jdbc.PostgresProfile.api.valueToConstColumn[Option[Int]](request.identity.id)(ast.this.TypedType.typedTypeToOptionTypedType[Int](slick.jdbc.PostgresProfile.api.intColumnType)))(lifted.this.OptionMapper2.getOptionMapper2TO[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType))))(lifted.this.CanBeQueryCondition.BooleanOptionColumnCanBeQueryCondition)).update(request.body);
-  LoginController.this.db.run[Int](q).map[play.api.mvc.Result](((x0$2: Int) =&gt; x0$2 match {
-    case 0 =&gt; LoginController.this.NotFound
-    case (x @ _) =&gt; LoginController.this.Ok.apply[play.api.libs.json.JsValue](play.api.libs.json.Json.toJson[Int](x)(json.this.Writes.IntWrites))(http.this.Writeable.writeableOf_JsValue)
+          LoginController.this.silhouette.SecuredAction.async[play.api.libs.json.JsValue](LoginController.this.parse.json)(((implicit request: com.mohiva.play.silhouette.api.actions.SecuredRequest[whatson.auth.AuthEnv,play.api.libs.json.JsValue]) =&gt; whatson.model.forms.LoginUpdateForm.form.bindFromRequest()(request).fold[scala.concurrent.Future[play.api.mvc.Result]](((form: play.api.data.Form[whatson.model.forms.LoginUpdateForm.Data]) =&gt; scala.concurrent.Future.successful[play.api.mvc.Result](LoginController.this.BadRequest.apply[play.api.libs.json.JsValue](play.api.libs.json.Json.toJson[Seq[play.api.data.FormError]](form.errors)(whatson.util.FormErrorJson.formErrorFormat))(http.this.Writeable.writeableOf_JsValue))), ((data: whatson.model.forms.LoginUpdateForm.Data) =&gt; {
+  LoginController.this.log.debug(&quot;Rest request to update users password&quot;)(api.this.MarkerContext.NoMarker);
+  val authInfo: com.mohiva.play.silhouette.api.util.PasswordInfo = LoginController.this.passwordHasher.hash(data.password);
+  val q: slick.dbio.DBIOAction[Option[whatson.db.LoginTable#TableElementType],slick.dbio.NoStream,slick.dbio.Effect.Read] = slick.jdbc.PostgresProfile.api.streamableQueryActionExtensionMethods[whatson.db.LoginTable#TableElementType, Seq](whatson.db.LoginTable.login.filter[slick.lifted.Rep[Option[Boolean]]](((x$2: whatson.db.LoginTable) =&gt; slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](x$2.id)(slick.jdbc.PostgresProfile.api.intColumnType).===[Option[Int], Option[Boolean]](slick.jdbc.PostgresProfile.api.valueToConstColumn[Option[Int]](request.identity.id)(ast.this.TypedType.typedTypeToOptionTypedType[Int](slick.jdbc.PostgresProfile.api.intColumnType)))(lifted.this.OptionMapper2.getOptionMapper2TO[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType))))(lifted.this.CanBeQueryCondition.BooleanOptionColumnCanBeQueryCondition)).result.map[Option[whatson.db.LoginTable#TableElementType]](((x$3: Seq[whatson.db.LoginTable#TableElementType]) =&gt; x$3.headOption))(LoginController.this.context);
+  LoginController.this.db.run[Option[whatson.db.LoginTable#TableElementType]](q).flatMap[play.api.mvc.Result](((x0$2: Option[whatson.db.LoginTable#TableElementType]) =&gt; x0$2 match {
+    case scala.None =&gt; scala.concurrent.Future.successful[LoginController.this.Status](LoginController.this.NotFound)
+    case (value: whatson.db.LoginTable#TableElementType)Some[whatson.db.LoginTable#TableElementType]((login @ _)) =&gt; LoginController.this.authInfoRepository.update[com.mohiva.play.silhouette.api.util.PasswordInfo](login.loginInfo, authInfo).flatMap[play.api.mvc.Result](((authInfo: com.mohiva.play.silhouette.api.util.PasswordInfo) =&gt; LoginController.this.silhouette.env.authenticatorService.create(login.loginInfo)(request).flatMap[play.api.mvc.Result](((authenticator: whatson.auth.AuthEnv#A) =&gt; LoginController.this.silhouette.env.authenticatorService.init(authenticator)(request).map[play.api.mvc.Result](((token: whatson.auth.AuthEnv#A#Value) =&gt; {
+      LoginController.this.mailService.sendPasswordChangeNotification(login.email, token);
+      LoginController.this.Ok.apply[play.api.libs.json.JsObject](play.api.libs.json.Json.obj(scala.Predef.ArrowAssoc[String](&quot;token&quot;).-&gt;[play.api.libs.json.Json.JsValueWrapper](json.this.Json.toJsFieldJsValueWrapper[whatson.auth.AuthEnv#A#Value](token)(json.this.Writes.StringWrites))))(http.this.Writeable.writeableOf_JsValue)
+    }))(LoginController.this.context)))(LoginController.this.context)))(LoginController.this.context)
   }))(LoginController.this.context)
-}))
+}))))
         </td>
       </tr><tr>
         <td>
-          85
+          87
         </td>
         <td>
-          686
+          1010
         </td>
         <td>
-          3216
+          3283
           -
-          3238
+          4200
         </td>
         <td>
           Apply
         </td>
         <td>
-          play.api.mvc.PlayBodyParsers.json
+          play.api.data.Form.fold
         </td>
         <td style="background: #F0ADAD">
-          LoginController.this.parse.json[whatson.model.Login](whatson.model.Login.loginReads)
+          whatson.model.forms.LoginUpdateForm.form.bindFromRequest()(request).fold[scala.concurrent.Future[play.api.mvc.Result]](((form: play.api.data.Form[whatson.model.forms.LoginUpdateForm.Data]) =&gt; scala.concurrent.Future.successful[play.api.mvc.Result](LoginController.this.BadRequest.apply[play.api.libs.json.JsValue](play.api.libs.json.Json.toJson[Seq[play.api.data.FormError]](form.errors)(whatson.util.FormErrorJson.formErrorFormat))(http.this.Writeable.writeableOf_JsValue))), ((data: whatson.model.forms.LoginUpdateForm.Data) =&gt; {
+  LoginController.this.log.debug(&quot;Rest request to update users password&quot;)(api.this.MarkerContext.NoMarker);
+  val authInfo: com.mohiva.play.silhouette.api.util.PasswordInfo = LoginController.this.passwordHasher.hash(data.password);
+  val q: slick.dbio.DBIOAction[Option[whatson.db.LoginTable#TableElementType],slick.dbio.NoStream,slick.dbio.Effect.Read] = slick.jdbc.PostgresProfile.api.streamableQueryActionExtensionMethods[whatson.db.LoginTable#TableElementType, Seq](whatson.db.LoginTable.login.filter[slick.lifted.Rep[Option[Boolean]]](((x$2: whatson.db.LoginTable) =&gt; slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](x$2.id)(slick.jdbc.PostgresProfile.api.intColumnType).===[Option[Int], Option[Boolean]](slick.jdbc.PostgresProfile.api.valueToConstColumn[Option[Int]](request.identity.id)(ast.this.TypedType.typedTypeToOptionTypedType[Int](slick.jdbc.PostgresProfile.api.intColumnType)))(lifted.this.OptionMapper2.getOptionMapper2TO[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType))))(lifted.this.CanBeQueryCondition.BooleanOptionColumnCanBeQueryCondition)).result.map[Option[whatson.db.LoginTable#TableElementType]](((x$3: Seq[whatson.db.LoginTable#TableElementType]) =&gt; x$3.headOption))(LoginController.this.context);
+  LoginController.this.db.run[Option[whatson.db.LoginTable#TableElementType]](q).flatMap[play.api.mvc.Result](((x0$2: Option[whatson.db.LoginTable#TableElementType]) =&gt; x0$2 match {
+    case scala.None =&gt; scala.concurrent.Future.successful[LoginController.this.Status](LoginController.this.NotFound)
+    case (value: whatson.db.LoginTable#TableElementType)Some[whatson.db.LoginTable#TableElementType]((login @ _)) =&gt; LoginController.this.authInfoRepository.update[com.mohiva.play.silhouette.api.util.PasswordInfo](login.loginInfo, authInfo).flatMap[play.api.mvc.Result](((authInfo: com.mohiva.play.silhouette.api.util.PasswordInfo) =&gt; LoginController.this.silhouette.env.authenticatorService.create(login.loginInfo)(request).flatMap[play.api.mvc.Result](((authenticator: whatson.auth.AuthEnv#A) =&gt; LoginController.this.silhouette.env.authenticatorService.init(authenticator)(request).map[play.api.mvc.Result](((token: whatson.auth.AuthEnv#A#Value) =&gt; {
+      LoginController.this.mailService.sendPasswordChangeNotification(login.email, token);
+      LoginController.this.Ok.apply[play.api.libs.json.JsObject](play.api.libs.json.Json.obj(scala.Predef.ArrowAssoc[String](&quot;token&quot;).-&gt;[play.api.libs.json.Json.JsValueWrapper](json.this.Json.toJsFieldJsValueWrapper[whatson.auth.AuthEnv#A#Value](token)(json.this.Writes.StringWrites))))(http.this.Writeable.writeableOf_JsValue)
+    }))(LoginController.this.context)))(LoginController.this.context)))(LoginController.this.context)
+  }))(LoginController.this.context)
+}))
         </td>
       </tr><tr>
         <td>
-          85
+          89
         </td>
         <td>
-          685
+          968
         </td>
         <td>
-          3227
+          3370
           -
-          3237
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          whatson.model.Login.loginReads
-        </td>
-        <td style="background: #F0ADAD">
-          whatson.model.Login.loginReads
-        </td>
-      </tr><tr>
-        <td>
-          86
-        </td>
-        <td>
-          687
-        </td>
-        <td>
-          3276
-          -
-          3305
-        </td>
-        <td>
-          Literal
-        </td>
-        <td>
-          &lt;nosymbol&gt;
-        </td>
-        <td style="background: #F0ADAD">
-          &quot;Rest request to update user&quot;
-        </td>
-      </tr><tr>
-        <td>
-          86
-        </td>
-        <td>
-          689
-        </td>
-        <td>
-          3266
-          -
-          3306
+          3406
         </td>
         <td>
           ApplyToImplicitArgs
         </td>
         <td>
-          play.api.LoggerLike.debug
+          play.api.mvc.Results.Status.apply
         </td>
         <td style="background: #F0ADAD">
-          LoginController.this.log.debug(&quot;Rest request to update user&quot;)(api.this.MarkerContext.NoMarker)
+          LoginController.this.BadRequest.apply[play.api.libs.json.JsValue](play.api.libs.json.Json.toJson[Seq[play.api.data.FormError]](form.errors)(whatson.util.FormErrorJson.formErrorFormat))(http.this.Writeable.writeableOf_JsValue)
         </td>
       </tr><tr>
         <td>
-          86
+          89
         </td>
         <td>
-          688
+          965
         </td>
         <td>
-          3275
+          3392
           -
-          3275
+          3392
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.util.FormErrorJson.formErrorFormat
+        </td>
+        <td style="background: #F0ADAD">
+          whatson.util.FormErrorJson.formErrorFormat
+        </td>
+      </tr><tr>
+        <td>
+          89
+        </td>
+        <td>
+          964
+        </td>
+        <td>
+          3393
+          -
+          3404
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.data.Form.errors
+        </td>
+        <td style="background: #F0ADAD">
+          form.errors
+        </td>
+      </tr><tr>
+        <td>
+          89
+        </td>
+        <td>
+          967
+        </td>
+        <td>
+          3380
+          -
+          3380
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.http.DefaultWriteables.writeableOf_JsValue
+        </td>
+        <td style="background: #F0ADAD">
+          http.this.Writeable.writeableOf_JsValue
+        </td>
+      </tr><tr>
+        <td>
+          89
+        </td>
+        <td>
+          969
+        </td>
+        <td>
+          3352
+          -
+          3407
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.concurrent.Future.successful
+        </td>
+        <td style="background: #F0ADAD">
+          scala.concurrent.Future.successful[play.api.mvc.Result](LoginController.this.BadRequest.apply[play.api.libs.json.JsValue](play.api.libs.json.Json.toJson[Seq[play.api.data.FormError]](form.errors)(whatson.util.FormErrorJson.formErrorFormat))(http.this.Writeable.writeableOf_JsValue))
+        </td>
+      </tr><tr>
+        <td>
+          89
+        </td>
+        <td>
+          966
+        </td>
+        <td>
+          3381
+          -
+          3405
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          play.api.libs.json.Json.toJson
+        </td>
+        <td style="background: #F0ADAD">
+          play.api.libs.json.Json.toJson[Seq[play.api.data.FormError]](form.errors)(whatson.util.FormErrorJson.formErrorFormat)
+        </td>
+      </tr><tr>
+        <td>
+          92
+        </td>
+        <td>
+          971
+        </td>
+        <td>
+          3450
+          -
+          3450
         </td>
         <td>
           Select
@@ -1004,183 +1120,99 @@
         </td>
       </tr><tr>
         <td>
-          88
+          92
         </td>
         <td>
-          696
+          970
         </td>
         <td>
-          3338
+          3451
           -
-          3338
+          3490
         </td>
         <td>
-          Select
+          Literal
         </td>
         <td>
-          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
+          &lt;nosymbol&gt;
         </td>
         <td style="background: #F0ADAD">
-          slick.jdbc.PostgresProfile.api.intColumnType
+          &quot;Rest request to update users password&quot;
         </td>
       </tr><tr>
         <td>
-          88
+          92
         </td>
         <td>
-          690
+          972
         </td>
         <td>
-          3333
+          3441
           -
-          3337
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          whatson.db.LoginTable.id
-        </td>
-        <td style="background: #F0ADAD">
-          x$2.id
-        </td>
-      </tr><tr>
-        <td>
-          88
-        </td>
-        <td>
-          699
-        </td>
-        <td>
-          3332
-          -
-          3332
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          slick.lifted.CanBeQueryCondition.BooleanOptionColumnCanBeQueryCondition
-        </td>
-        <td style="background: #F0ADAD">
-          lifted.this.CanBeQueryCondition.BooleanOptionColumnCanBeQueryCondition
-        </td>
-      </tr><tr>
-        <td>
-          88
-        </td>
-        <td>
-          702
-        </td>
-        <td>
-          3320
-          -
-          3383
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          slick.jdbc.JdbcActionComponent.UpdateActionExtensionMethodsImpl.update
-        </td>
-        <td style="background: #F0ADAD">
-          slick.jdbc.PostgresProfile.api.queryUpdateActionExtensionMethods[whatson.db.LoginTable#TableElementType, Seq](whatson.db.LoginTable.login.filter[slick.lifted.Rep[Option[Boolean]]](((x$2: whatson.db.LoginTable) =&gt; slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](x$2.id)(slick.jdbc.PostgresProfile.api.intColumnType).===[Option[Int], Option[Boolean]](slick.jdbc.PostgresProfile.api.valueToConstColumn[Option[Int]](request.identity.id)(ast.this.TypedType.typedTypeToOptionTypedType[Int](slick.jdbc.PostgresProfile.api.intColumnType)))(lifted.this.OptionMapper2.getOptionMapper2TO[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType))))(lifted.this.CanBeQueryCondition.BooleanOptionColumnCanBeQueryCondition)).update(request.body)
-        </td>
-      </tr><tr>
-        <td>
-          88
-        </td>
-        <td>
-          693
-        </td>
-        <td>
-          3359
-          -
-          3359
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
-        </td>
-        <td style="background: #F0ADAD">
-          slick.jdbc.PostgresProfile.api.intColumnType
-        </td>
-      </tr><tr>
-        <td>
-          88
-        </td>
-        <td>
-          692
-        </td>
-        <td>
-          3342
-          -
-          3361
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          whatson.model.Login.id
-        </td>
-        <td style="background: #F0ADAD">
-          request.identity.id
-        </td>
-      </tr><tr>
-        <td>
-          88
-        </td>
-        <td>
-          701
-        </td>
-        <td>
-          3370
-          -
-          3382
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          play.api.mvc.WrappedRequest.body
-        </td>
-        <td style="background: #F0ADAD">
-          request.body
-        </td>
-      </tr><tr>
-        <td>
-          88
-        </td>
-        <td>
-          695
-        </td>
-        <td>
-          3342
-          -
-          3361
+          3491
         </td>
         <td>
           ApplyToImplicitArgs
         </td>
         <td>
-          slick.relational.RelationalProfile.API.valueToConstColumn
+          play.api.LoggerLike.debug
         </td>
         <td style="background: #F0ADAD">
-          slick.jdbc.PostgresProfile.api.valueToConstColumn[Option[Int]](request.identity.id)(ast.this.TypedType.typedTypeToOptionTypedType[Int](slick.jdbc.PostgresProfile.api.intColumnType))
+          LoginController.this.log.debug(&quot;Rest request to update users password&quot;)(api.this.MarkerContext.NoMarker)
         </td>
       </tr><tr>
         <td>
-          88
+          94
         </td>
         <td>
-          698
+          974
         </td>
         <td>
-          3333
+          3516
           -
-          3361
+          3550
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.mohiva.play.silhouette.api.util.PasswordHasher.hash
+        </td>
+        <td style="background: #F0ADAD">
+          LoginController.this.passwordHasher.hash(data.password)
+        </td>
+      </tr><tr>
+        <td>
+          94
+        </td>
+        <td>
+          973
+        </td>
+        <td>
+          3536
+          -
+          3549
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.model.forms.LoginUpdateForm.Data.password
+        </td>
+        <td style="background: #F0ADAD">
+          data.password
+        </td>
+      </tr><tr>
+        <td>
+          95
+        </td>
+        <td>
+          983
+        </td>
+        <td>
+          3580
+          -
+          3608
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1193,15 +1225,78 @@
         </td>
       </tr><tr>
         <td>
-          88
+          95
         </td>
         <td>
-          697
+          977
         </td>
         <td>
-          3338
+          3589
           -
-          3338
+          3608
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.model.Login.id
+        </td>
+        <td style="background: #F0ADAD">
+          request.identity.id
+        </td>
+      </tr><tr>
+        <td>
+          95
+        </td>
+        <td>
+          986
+        </td>
+        <td>
+          3621
+          -
+          3633
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.TraversableLike.headOption
+        </td>
+        <td style="background: #F0ADAD">
+          x$3.headOption
+        </td>
+      </tr><tr>
+        <td>
+          95
+        </td>
+        <td>
+          980
+        </td>
+        <td>
+          3589
+          -
+          3608
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.relational.RelationalProfile.API.valueToConstColumn
+        </td>
+        <td style="background: #F0ADAD">
+          slick.jdbc.PostgresProfile.api.valueToConstColumn[Option[Int]](request.identity.id)(ast.this.TypedType.typedTypeToOptionTypedType[Int](slick.jdbc.PostgresProfile.api.intColumnType))
+        </td>
+      </tr><tr>
+        <td>
+          95
+        </td>
+        <td>
+          982
+        </td>
+        <td>
+          3585
+          -
+          3585
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1214,36 +1309,15 @@
         </td>
       </tr><tr>
         <td>
-          88
+          95
         </td>
         <td>
-          691
+          985
         </td>
         <td>
-          3335
+          3567
           -
-          3335
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
-        </td>
-        <td style="background: #F0ADAD">
-          slick.jdbc.PostgresProfile.api.intColumnType
-        </td>
-      </tr><tr>
-        <td>
-          88
-        </td>
-        <td>
-          700
-        </td>
-        <td>
-          3320
-          -
-          3362
+          3609
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1256,15 +1330,36 @@
         </td>
       </tr><tr>
         <td>
-          88
+          95
         </td>
         <td>
-          694
+          976
         </td>
         <td>
-          3359
+          3582
           -
-          3359
+          3582
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
+        </td>
+        <td style="background: #F0ADAD">
+          slick.jdbc.PostgresProfile.api.intColumnType
+        </td>
+      </tr><tr>
+        <td>
+          95
+        </td>
+        <td>
+          979
+        </td>
+        <td>
+          3606
+          -
+          3606
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1277,15 +1372,57 @@
         </td>
       </tr><tr>
         <td>
-          90
+          95
         </td>
         <td>
-          708
+          988
         </td>
         <td>
-          3403
+          3567
           -
-          3403
+          3634
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.dbio.DBIOAction.map
+        </td>
+        <td style="background: #F0ADAD">
+          slick.jdbc.PostgresProfile.api.streamableQueryActionExtensionMethods[whatson.db.LoginTable#TableElementType, Seq](whatson.db.LoginTable.login.filter[slick.lifted.Rep[Option[Boolean]]](((x$2: whatson.db.LoginTable) =&gt; slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](x$2.id)(slick.jdbc.PostgresProfile.api.intColumnType).===[Option[Int], Option[Boolean]](slick.jdbc.PostgresProfile.api.valueToConstColumn[Option[Int]](request.identity.id)(ast.this.TypedType.typedTypeToOptionTypedType[Int](slick.jdbc.PostgresProfile.api.intColumnType)))(lifted.this.OptionMapper2.getOptionMapper2TO[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType))))(lifted.this.CanBeQueryCondition.BooleanOptionColumnCanBeQueryCondition)).result.map[Option[whatson.db.LoginTable#TableElementType]](((x$3: Seq[whatson.db.LoginTable#TableElementType]) =&gt; x$3.headOption))(LoginController.this.context)
+        </td>
+      </tr><tr>
+        <td>
+          95
+        </td>
+        <td>
+          978
+        </td>
+        <td>
+          3606
+          -
+          3606
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
+        </td>
+        <td style="background: #F0ADAD">
+          slick.jdbc.PostgresProfile.api.intColumnType
+        </td>
+      </tr><tr>
+        <td>
+          95
+        </td>
+        <td>
+          987
+        </td>
+        <td>
+          3620
+          -
+          3620
         </td>
         <td>
           Select
@@ -1298,39 +1435,126 @@
         </td>
       </tr><tr>
         <td>
-          90
+          95
         </td>
         <td>
-          709
+          981
         </td>
         <td>
-          3389
+          3585
           -
-          3470
+          3585
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
+        </td>
+        <td style="background: #F0ADAD">
+          slick.jdbc.PostgresProfile.api.intColumnType
+        </td>
+      </tr><tr>
+        <td>
+          95
+        </td>
+        <td>
+          975
+        </td>
+        <td>
+          3580
+          -
+          3584
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.db.LoginTable.id
+        </td>
+        <td style="background: #F0ADAD">
+          x$2.id
+        </td>
+      </tr><tr>
+        <td>
+          95
+        </td>
+        <td>
+          984
+        </td>
+        <td>
+          3579
+          -
+          3579
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.lifted.CanBeQueryCondition.BooleanOptionColumnCanBeQueryCondition
+        </td>
+        <td style="background: #F0ADAD">
+          lifted.this.CanBeQueryCondition.BooleanOptionColumnCanBeQueryCondition
+        </td>
+      </tr><tr>
+        <td>
+          97
+        </td>
+        <td>
+          1009
+        </td>
+        <td>
+          3644
+          -
+          4191
         </td>
         <td>
           ApplyToImplicitArgs
         </td>
         <td>
-          scala.concurrent.Future.map
+          scala.concurrent.Future.flatMap
         </td>
         <td style="background: #F0ADAD">
-          LoginController.this.db.run[Int](q).map[play.api.mvc.Result](((x0$2: Int) =&gt; x0$2 match {
-  case 0 =&gt; LoginController.this.NotFound
-  case (x @ _) =&gt; LoginController.this.Ok.apply[play.api.libs.json.JsValue](play.api.libs.json.Json.toJson[Int](x)(json.this.Writes.IntWrites))(http.this.Writeable.writeableOf_JsValue)
+          LoginController.this.db.run[Option[whatson.db.LoginTable#TableElementType]](q).flatMap[play.api.mvc.Result](((x0$2: Option[whatson.db.LoginTable#TableElementType]) =&gt; x0$2 match {
+  case scala.None =&gt; scala.concurrent.Future.successful[LoginController.this.Status](LoginController.this.NotFound)
+  case (value: whatson.db.LoginTable#TableElementType)Some[whatson.db.LoginTable#TableElementType]((login @ _)) =&gt; LoginController.this.authInfoRepository.update[com.mohiva.play.silhouette.api.util.PasswordInfo](login.loginInfo, authInfo).flatMap[play.api.mvc.Result](((authInfo: com.mohiva.play.silhouette.api.util.PasswordInfo) =&gt; LoginController.this.silhouette.env.authenticatorService.create(login.loginInfo)(request).flatMap[play.api.mvc.Result](((authenticator: whatson.auth.AuthEnv#A) =&gt; LoginController.this.silhouette.env.authenticatorService.init(authenticator)(request).map[play.api.mvc.Result](((token: whatson.auth.AuthEnv#A#Value) =&gt; {
+    LoginController.this.mailService.sendPasswordChangeNotification(login.email, token);
+    LoginController.this.Ok.apply[play.api.libs.json.JsObject](play.api.libs.json.Json.obj(scala.Predef.ArrowAssoc[String](&quot;token&quot;).-&gt;[play.api.libs.json.Json.JsValueWrapper](json.this.Json.toJsFieldJsValueWrapper[whatson.auth.AuthEnv#A#Value](token)(json.this.Writes.StringWrites))))(http.this.Writeable.writeableOf_JsValue)
+  }))(LoginController.this.context)))(LoginController.this.context)))(LoginController.this.context)
 }))(LoginController.this.context)
         </td>
       </tr><tr>
         <td>
-          91
+          97
         </td>
         <td>
-          703
+          1008
         </td>
         <td>
-          3421
+          3662
           -
-          3429
+          3662
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          controllers.LoginController.context
+        </td>
+        <td style="background: #F0ADAD">
+          LoginController.this.context
+        </td>
+      </tr><tr>
+        <td>
+          98
+        </td>
+        <td>
+          989
+        </td>
+        <td>
+          3705
+          -
+          3713
         </td>
         <td>
           Select
@@ -1343,57 +1567,255 @@
         </td>
       </tr><tr>
         <td>
-          92
+          98
         </td>
         <td>
-          705
+          990
         </td>
         <td>
-          3449
+          3687
           -
-          3463
+          3714
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.concurrent.Future.successful
+        </td>
+        <td style="background: #F0ADAD">
+          scala.concurrent.Future.successful[LoginController.this.Status](LoginController.this.NotFound)
+        </td>
+      </tr><tr>
+        <td>
+          101
+        </td>
+        <td>
+          1007
+        </td>
+        <td>
+          3759
+          -
+          4169
         </td>
         <td>
           ApplyToImplicitArgs
         </td>
         <td>
-          play.api.libs.json.Json.toJson
+          scala.concurrent.Future.flatMap
         </td>
         <td style="background: #F0ADAD">
-          play.api.libs.json.Json.toJson[Int](x)(json.this.Writes.IntWrites)
+          LoginController.this.authInfoRepository.update[com.mohiva.play.silhouette.api.util.PasswordInfo](login.loginInfo, authInfo).flatMap[play.api.mvc.Result](((authInfo: com.mohiva.play.silhouette.api.util.PasswordInfo) =&gt; LoginController.this.silhouette.env.authenticatorService.create(login.loginInfo)(request).flatMap[play.api.mvc.Result](((authenticator: whatson.auth.AuthEnv#A) =&gt; LoginController.this.silhouette.env.authenticatorService.init(authenticator)(request).map[play.api.mvc.Result](((token: whatson.auth.AuthEnv#A#Value) =&gt; {
+  LoginController.this.mailService.sendPasswordChangeNotification(login.email, token);
+  LoginController.this.Ok.apply[play.api.libs.json.JsObject](play.api.libs.json.Json.obj(scala.Predef.ArrowAssoc[String](&quot;token&quot;).-&gt;[play.api.libs.json.Json.JsValueWrapper](json.this.Json.toJsFieldJsValueWrapper[whatson.auth.AuthEnv#A#Value](token)(json.this.Writes.StringWrites))))(http.this.Writeable.writeableOf_JsValue)
+}))(LoginController.this.context)))(LoginController.this.context)))(LoginController.this.context)
         </td>
       </tr><tr>
         <td>
-          92
+          101
         </td>
         <td>
-          704
+          1006
         </td>
         <td>
-          3460
+          3788
           -
-          3460
+          3788
         </td>
         <td>
           Select
         </td>
         <td>
-          play.api.libs.json.DefaultWrites.IntWrites
+          controllers.LoginController.context
         </td>
         <td style="background: #F0ADAD">
-          json.this.Writes.IntWrites
+          LoginController.this.context
         </td>
       </tr><tr>
         <td>
-          92
+          101
         </td>
         <td>
-          707
+          991
         </td>
         <td>
-          3446
+          3817
           -
-          3464
+          3832
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.model.Login.loginInfo
+        </td>
+        <td style="background: #F0ADAD">
+          login.loginInfo
+        </td>
+      </tr><tr>
+        <td>
+          102
+        </td>
+        <td>
+          992
+        </td>
+        <td>
+          3917
+          -
+          3932
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.model.Login.loginInfo
+        </td>
+        <td style="background: #F0ADAD">
+          login.loginInfo
+        </td>
+      </tr><tr>
+        <td>
+          102
+        </td>
+        <td>
+          1004
+        </td>
+        <td>
+          3871
+          -
+          3871
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          controllers.LoginController.context
+        </td>
+        <td style="background: #F0ADAD">
+          LoginController.this.context
+        </td>
+      </tr><tr>
+        <td>
+          102
+        </td>
+        <td>
+          1005
+        </td>
+        <td>
+          3857
+          -
+          4169
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.concurrent.Future.flatMap
+        </td>
+        <td style="background: #F0ADAD">
+          LoginController.this.silhouette.env.authenticatorService.create(login.loginInfo)(request).flatMap[play.api.mvc.Result](((authenticator: whatson.auth.AuthEnv#A) =&gt; LoginController.this.silhouette.env.authenticatorService.init(authenticator)(request).map[play.api.mvc.Result](((token: whatson.auth.AuthEnv#A#Value) =&gt; {
+  LoginController.this.mailService.sendPasswordChangeNotification(login.email, token);
+  LoginController.this.Ok.apply[play.api.libs.json.JsObject](play.api.libs.json.Json.obj(scala.Predef.ArrowAssoc[String](&quot;token&quot;).-&gt;[play.api.libs.json.Json.JsValueWrapper](json.this.Json.toJsFieldJsValueWrapper[whatson.auth.AuthEnv#A#Value](token)(json.this.Writes.StringWrites))))(http.this.Writeable.writeableOf_JsValue)
+}))(LoginController.this.context)))(LoginController.this.context)
+        </td>
+      </tr><tr>
+        <td>
+          103
+        </td>
+        <td>
+          1003
+        </td>
+        <td>
+          3948
+          -
+          4169
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.concurrent.Future.map
+        </td>
+        <td style="background: #F0ADAD">
+          LoginController.this.silhouette.env.authenticatorService.init(authenticator)(request).map[play.api.mvc.Result](((token: whatson.auth.AuthEnv#A#Value) =&gt; {
+  LoginController.this.mailService.sendPasswordChangeNotification(login.email, token);
+  LoginController.this.Ok.apply[play.api.libs.json.JsObject](play.api.libs.json.Json.obj(scala.Predef.ArrowAssoc[String](&quot;token&quot;).-&gt;[play.api.libs.json.Json.JsValueWrapper](json.this.Json.toJsFieldJsValueWrapper[whatson.auth.AuthEnv#A#Value](token)(json.this.Writes.StringWrites))))(http.this.Writeable.writeableOf_JsValue)
+}))(LoginController.this.context)
+        </td>
+      </tr><tr>
+        <td>
+          103
+        </td>
+        <td>
+          1002
+        </td>
+        <td>
+          3954
+          -
+          3954
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          controllers.LoginController.context
+        </td>
+        <td style="background: #F0ADAD">
+          LoginController.this.context
+        </td>
+      </tr><tr>
+        <td>
+          105
+        </td>
+        <td>
+          994
+        </td>
+        <td>
+          4049
+          -
+          4110
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          whatson.service.MailService.sendPasswordChangeNotification
+        </td>
+        <td style="background: #F0ADAD">
+          LoginController.this.mailService.sendPasswordChangeNotification(login.email, token)
+        </td>
+      </tr><tr>
+        <td>
+          105
+        </td>
+        <td>
+          993
+        </td>
+        <td>
+          4092
+          -
+          4103
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.model.Login.email
+        </td>
+        <td style="background: #F0ADAD">
+          login.email
+        </td>
+      </tr><tr>
+        <td>
+          106
+        </td>
+        <td>
+          1001
+        </td>
+        <td>
+          4125
+          -
+          4155
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1402,19 +1824,82 @@
           play.api.mvc.Results.Status.apply
         </td>
         <td style="background: #F0ADAD">
-          LoginController.this.Ok.apply[play.api.libs.json.JsValue](play.api.libs.json.Json.toJson[Int](x)(json.this.Writes.IntWrites))(http.this.Writeable.writeableOf_JsValue)
+          LoginController.this.Ok.apply[play.api.libs.json.JsObject](play.api.libs.json.Json.obj(scala.Predef.ArrowAssoc[String](&quot;token&quot;).-&gt;[play.api.libs.json.Json.JsValueWrapper](json.this.Json.toJsFieldJsValueWrapper[whatson.auth.AuthEnv#A#Value](token)(json.this.Writes.StringWrites))))(http.this.Writeable.writeableOf_JsValue)
         </td>
       </tr><tr>
         <td>
-          92
+          106
         </td>
         <td>
-          706
+          995
         </td>
         <td>
-          3448
+          4137
           -
-          3448
+          4144
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;token&quot;
+        </td>
+      </tr><tr>
+        <td>
+          106
+        </td>
+        <td>
+          998
+        </td>
+        <td>
+          4137
+          -
+          4153
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Predef.ArrowAssoc.-&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          scala.Predef.ArrowAssoc[String](&quot;token&quot;).-&gt;[play.api.libs.json.Json.JsValueWrapper](json.this.Json.toJsFieldJsValueWrapper[whatson.auth.AuthEnv#A#Value](token)(json.this.Writes.StringWrites))
+        </td>
+      </tr><tr>
+        <td>
+          106
+        </td>
+        <td>
+          997
+        </td>
+        <td>
+          4148
+          -
+          4153
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          play.api.libs.json.Json.toJsFieldJsValueWrapper
+        </td>
+        <td style="background: #F0ADAD">
+          json.this.Json.toJsFieldJsValueWrapper[whatson.auth.AuthEnv#A#Value](token)(json.this.Writes.StringWrites)
+        </td>
+      </tr><tr>
+        <td>
+          106
+        </td>
+        <td>
+          1000
+        </td>
+        <td>
+          4127
+          -
+          4127
         </td>
         <td>
           Select
@@ -1427,15 +1912,57 @@
         </td>
       </tr><tr>
         <td>
-          96
+          106
         </td>
         <td>
-          728
+          996
         </td>
         <td>
-          3507
+          4148
           -
-          3918
+          4148
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.libs.json.DefaultWrites.StringWrites
+        </td>
+        <td style="background: #F0ADAD">
+          json.this.Writes.StringWrites
+        </td>
+      </tr><tr>
+        <td>
+          106
+        </td>
+        <td>
+          999
+        </td>
+        <td>
+          4128
+          -
+          4154
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          play.api.libs.json.Json.obj
+        </td>
+        <td style="background: #F0ADAD">
+          play.api.libs.json.Json.obj(scala.Predef.ArrowAssoc[String](&quot;token&quot;).-&gt;[play.api.libs.json.Json.JsValueWrapper](json.this.Json.toJsFieldJsValueWrapper[whatson.auth.AuthEnv#A#Value](token)(json.this.Writes.StringWrites)))
+        </td>
+      </tr><tr>
+        <td>
+          113
+        </td>
+        <td>
+          1029
+        </td>
+        <td>
+          4237
+          -
+          4648
         </td>
         <td>
           Apply
@@ -1457,57 +1984,15 @@
         </td>
       </tr><tr>
         <td>
-          97
+          114
         </td>
         <td>
-          711
+          1013
         </td>
         <td>
-          3556
+          4285
           -
-          3589
-        </td>
-        <td>
-          Literal
-        </td>
-        <td>
-          &lt;nosymbol&gt;
-        </td>
-        <td style="background: #F0ADAD">
-          &quot;Rest request to confirm account&quot;
-        </td>
-      </tr><tr>
-        <td>
-          97
-        </td>
-        <td>
-          713
-        </td>
-        <td>
-          3546
-          -
-          3590
-        </td>
-        <td>
-          ApplyToImplicitArgs
-        </td>
-        <td>
-          play.api.LoggerLike.debug
-        </td>
-        <td style="background: #AEF1AE">
-          LoginController.this.log.debug(&quot;Rest request to confirm account&quot;)(api.this.MarkerContext.NoMarker)
-        </td>
-      </tr><tr>
-        <td>
-          97
-        </td>
-        <td>
-          712
-        </td>
-        <td>
-          3555
-          -
-          3555
+          4285
         </td>
         <td>
           Select
@@ -1520,57 +2005,57 @@
         </td>
       </tr><tr>
         <td>
-          99
+          114
         </td>
         <td>
-          714
+          1012
         </td>
         <td>
-          3632
+          4286
           -
-          3639
+          4319
         </td>
         <td>
-          Select
+          Literal
         </td>
         <td>
-          controllers.LoginController.encoder
+          &lt;nosymbol&gt;
         </td>
-        <td style="background: #AEF1AE">
-          LoginController.this.encoder
+        <td style="background: #F0ADAD">
+          &quot;Rest request to confirm account&quot;
         </td>
       </tr><tr>
         <td>
-          99
+          114
         </td>
         <td>
-          716
+          1014
         </td>
         <td>
-          3596
+          4276
           -
-          3650
+          4320
         </td>
         <td>
-          Apply
+          ApplyToImplicitArgs
         </td>
         <td>
-          com.mohiva.play.silhouette.impl.authenticators.JWTAuthenticator.unserialize
+          play.api.LoggerLike.debug
         </td>
         <td style="background: #AEF1AE">
-          com.mohiva.play.silhouette.impl.authenticators.JWTAuthenticator.unserialize(token, LoginController.this.encoder, LoginController.this.settings)
+          LoginController.this.log.debug(&quot;Rest request to confirm account&quot;)(api.this.MarkerContext.NoMarker)
         </td>
       </tr><tr>
         <td>
-          99
+          116
         </td>
         <td>
-          715
+          1016
         </td>
         <td>
-          3641
+          4371
           -
-          3649
+          4379
         </td>
         <td>
           Select
@@ -1583,57 +2068,57 @@
         </td>
       </tr><tr>
         <td>
-          101
+          116
         </td>
         <td>
-          723
+          1015
         </td>
         <td>
-          3738
+          4362
           -
-          3738
+          4369
         </td>
         <td>
           Select
         </td>
         <td>
-          controllers.LoginController.context
+          controllers.LoginController.encoder
         </td>
         <td style="background: #AEF1AE">
-          LoginController.this.context
+          LoginController.this.encoder
         </td>
       </tr><tr>
         <td>
-          101
+          116
         </td>
         <td>
-          717
+          1017
         </td>
         <td>
-          3718
+          4326
           -
-          3732
+          4380
         </td>
         <td>
-          Select
+          Apply
         </td>
         <td>
-          com.mohiva.play.silhouette.impl.authenticators.JWTAuthenticator.loginInfo
+          com.mohiva.play.silhouette.impl.authenticators.JWTAuthenticator.unserialize
         </td>
         <td style="background: #AEF1AE">
-          auth.loginInfo
+          com.mohiva.play.silhouette.impl.authenticators.JWTAuthenticator.unserialize(token, LoginController.this.encoder, LoginController.this.settings)
         </td>
       </tr><tr>
         <td>
-          101
+          118
         </td>
         <td>
-          724
+          1025
         </td>
         <td>
-          3697
+          4427
           -
-          3863
+          4593
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1649,57 +2134,57 @@
         </td>
       </tr><tr>
         <td>
-          102
+          118
         </td>
         <td>
-          720
+          1024
         </td>
         <td>
-          3766
+          4468
           -
-          3766
+          4468
         </td>
         <td>
           Select
         </td>
         <td>
-          play.api.mvc.Results.Redirect$default$3
+          controllers.LoginController.context
         </td>
         <td style="background: #AEF1AE">
-          LoginController.this.Redirect$default$3
+          LoginController.this.context
         </td>
       </tr><tr>
         <td>
-          102
+          118
         </td>
         <td>
-          719
+          1018
         </td>
         <td>
-          3766
+          4448
           -
-          3766
+          4462
         </td>
         <td>
           Select
         </td>
         <td>
-          play.api.mvc.Results.Redirect$default$2
+          com.mohiva.play.silhouette.impl.authenticators.JWTAuthenticator.loginInfo
         </td>
         <td style="background: #AEF1AE">
-          LoginController.this.Redirect$default$2
+          auth.loginInfo
         </td>
       </tr><tr>
         <td>
-          102
+          119
         </td>
         <td>
-          718
+          1019
         </td>
         <td>
-          3775
+          4505
           -
-          3820
+          4550
         </td>
         <td>
           Apply
@@ -1712,15 +2197,15 @@
         </td>
       </tr><tr>
         <td>
-          102
+          119
         </td>
         <td>
-          721
+          1022
         </td>
         <td>
-          3766
+          4496
           -
-          3821
+          4551
         </td>
         <td>
           Apply
@@ -1733,15 +2218,57 @@
         </td>
       </tr><tr>
         <td>
-          103
+          119
         </td>
         <td>
-          722
+          1021
         </td>
         <td>
-          3845
+          4496
           -
-          3853
+          4496
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.mvc.Results.Redirect$default$3
+        </td>
+        <td style="background: #AEF1AE">
+          LoginController.this.Redirect$default$3
+        </td>
+      </tr><tr>
+        <td>
+          119
+        </td>
+        <td>
+          1020
+        </td>
+        <td>
+          4496
+          -
+          4496
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.mvc.Results.Redirect$default$2
+        </td>
+        <td style="background: #AEF1AE">
+          LoginController.this.Redirect$default$2
+        </td>
+      </tr><tr>
+        <td>
+          120
+        </td>
+        <td>
+          1023
+        </td>
+        <td>
+          4575
+          -
+          4583
         </td>
         <td>
           Select
@@ -1754,57 +2281,15 @@
         </td>
       </tr><tr>
         <td>
-          106
+          123
         </td>
         <td>
-          726
+          1028
         </td>
         <td>
-          3894
+          4618
           -
-          3894
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          controllers.LoginController.context
-        </td>
-        <td style="background: #F0ADAD">
-          LoginController.this.context
-        </td>
-      </tr><tr>
-        <td>
-          106
-        </td>
-        <td>
-          725
-        </td>
-        <td>
-          3895
-          -
-          3907
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          play.api.mvc.Results.Unauthorized
-        </td>
-        <td style="background: #F0ADAD">
-          LoginController.this.Unauthorized
-        </td>
-      </tr><tr>
-        <td>
-          106
-        </td>
-        <td>
-          727
-        </td>
-        <td>
-          3888
-          -
-          3908
+          4638
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1817,15 +2302,57 @@
         </td>
       </tr><tr>
         <td>
-          117
+          123
         </td>
         <td>
-          790
+          1027
         </td>
         <td>
-          4166
+          4624
           -
-          6003
+          4624
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          controllers.LoginController.context
+        </td>
+        <td style="background: #F0ADAD">
+          LoginController.this.context
+        </td>
+      </tr><tr>
+        <td>
+          123
+        </td>
+        <td>
+          1026
+        </td>
+        <td>
+          4625
+          -
+          4637
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.mvc.Results.Unauthorized
+        </td>
+        <td style="background: #F0ADAD">
+          LoginController.this.Unauthorized
+        </td>
+      </tr><tr>
+        <td>
+          134
+        </td>
+        <td>
+          1091
+        </td>
+        <td>
+          4896
+          -
+          6733
         </td>
         <td>
           Apply
@@ -1871,15 +2398,15 @@
         </td>
       </tr><tr>
         <td>
-          118
+          135
         </td>
         <td>
-          789
+          1090
         </td>
         <td>
-          4190
+          4920
           -
-          5999
+          6729
         </td>
         <td>
           Apply
@@ -1925,15 +2452,15 @@
         </td>
       </tr><tr>
         <td>
-          119
+          136
         </td>
         <td>
-          729
+          1030
         </td>
         <td>
-          4246
+          4976
           -
-          4298
+          5028
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1946,36 +2473,99 @@
         </td>
       </tr><tr>
         <td>
-          121
+          138
         </td>
         <td>
-          738
+          1070
         </td>
         <td>
-          4405
+          5207
           -
-          4405
+          5207
         </td>
         <td>
-          ApplyToImplicitArgs
+          Select
         </td>
         <td>
-          com.mohiva.play.silhouette.api.util.ExtractableRequest.convertImplicit
+          controllers.LoginController.context
         </td>
         <td style="background: #F0ADAD">
-          util.this.ExtractableRequest.convertImplicit[play.api.mvc.AnyContent](request, util.this.RequestExtractor.anyContentExtractor)
+          LoginController.this.context
         </td>
       </tr><tr>
         <td>
-          121
+          138
         </td>
         <td>
-          732
+          1037
         </td>
         <td>
-          4425
+          5135
           -
-          4459
+          5135
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.mohiva.play.silhouette.impl.providers.state.UserStateItem.csrfFormat
+        </td>
+        <td style="background: #F0ADAD">
+          state.this.UserStateItem.csrfFormat
+        </td>
+      </tr><tr>
+        <td>
+          138
+        </td>
+        <td>
+          1031
+        </td>
+        <td>
+          5155
+          -
+          5161
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;type&quot;
+        </td>
+      </tr><tr>
+        <td>
+          138
+        </td>
+        <td>
+          1034
+        </td>
+        <td>
+          5191
+          -
+          5191
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Predef.$conforms
+        </td>
+        <td style="background: #F0ADAD">
+          scala.Predef.$conforms[(String, String)]
+        </td>
+      </tr><tr>
+        <td>
+          138
+        </td>
+        <td>
+          1033
+        </td>
+        <td>
+          5155
+          -
+          5189
         </td>
         <td>
           Apply
@@ -1988,15 +2578,15 @@
         </td>
       </tr><tr>
         <td>
-          121
+          138
         </td>
         <td>
-          735
+          1036
         </td>
         <td>
-          4406
+          5136
           -
-          4467
+          5197
         </td>
         <td>
           Apply
@@ -2009,15 +2599,78 @@
         </td>
       </tr><tr>
         <td>
-          121
+          138
         </td>
         <td>
-          770
+          1039
         </td>
         <td>
-          4391
+          5135
           -
-          5682
+          5135
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          com.mohiva.play.silhouette.api.util.ExtractableRequest.convertImplicit
+        </td>
+        <td style="background: #F0ADAD">
+          util.this.ExtractableRequest.convertImplicit[play.api.mvc.AnyContent](request, util.this.RequestExtractor.anyContentExtractor)
+        </td>
+      </tr><tr>
+        <td>
+          138
+        </td>
+        <td>
+          1038
+        </td>
+        <td>
+          5135
+          -
+          5135
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.mohiva.play.silhouette.api.util.DefaultRequestExtractors.anyContentExtractor
+        </td>
+        <td style="background: #F0ADAD">
+          util.this.RequestExtractor.anyContentExtractor
+        </td>
+      </tr><tr>
+        <td>
+          138
+        </td>
+        <td>
+          1032
+        </td>
+        <td>
+          5163
+          -
+          5189
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Option.getOrElse
+        </td>
+        <td style="background: #F0ADAD">
+          userType.getOrElse[String](&quot;user&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          138
+        </td>
+        <td>
+          1071
+        </td>
+        <td>
+          5121
+          -
+          6412
         </td>
         <td>
           ApplyToImplicitArgs
@@ -2041,57 +2694,15 @@
         </td>
       </tr><tr>
         <td>
-          121
+          138
         </td>
         <td>
-          737
+          1035
         </td>
         <td>
-          4405
+          5150
           -
-          4405
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          com.mohiva.play.silhouette.api.util.DefaultRequestExtractors.anyContentExtractor
-        </td>
-        <td style="background: #F0ADAD">
-          util.this.RequestExtractor.anyContentExtractor
-        </td>
-      </tr><tr>
-        <td>
-          121
-        </td>
-        <td>
-          731
-        </td>
-        <td>
-          4433
-          -
-          4459
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          scala.Option.getOrElse
-        </td>
-        <td style="background: #F0ADAD">
-          userType.getOrElse[String](&quot;user&quot;)
-        </td>
-      </tr><tr>
-        <td>
-          121
-        </td>
-        <td>
-          734
-        </td>
-        <td>
-          4420
-          -
-          4466
+          5196
         </td>
         <td>
           ApplyToImplicitArgs
@@ -2104,99 +2715,15 @@
         </td>
       </tr><tr>
         <td>
-          121
+          139
         </td>
         <td>
-          733
+          1040
         </td>
         <td>
-          4461
+          5243
           -
-          4461
-        </td>
-        <td>
-          TypeApply
-        </td>
-        <td>
-          scala.Predef.$conforms
-        </td>
-        <td style="background: #F0ADAD">
-          scala.Predef.$conforms[(String, String)]
-        </td>
-      </tr><tr>
-        <td>
-          121
-        </td>
-        <td>
-          769
-        </td>
-        <td>
-          4477
-          -
-          4477
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          controllers.LoginController.context
-        </td>
-        <td style="background: #F0ADAD">
-          LoginController.this.context
-        </td>
-      </tr><tr>
-        <td>
-          121
-        </td>
-        <td>
-          736
-        </td>
-        <td>
-          4405
-          -
-          4405
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          com.mohiva.play.silhouette.impl.providers.state.UserStateItem.csrfFormat
-        </td>
-        <td style="background: #F0ADAD">
-          state.this.UserStateItem.csrfFormat
-        </td>
-      </tr><tr>
-        <td>
-          121
-        </td>
-        <td>
-          730
-        </td>
-        <td>
-          4425
-          -
-          4431
-        </td>
-        <td>
-          Literal
-        </td>
-        <td>
-          &lt;nosymbol&gt;
-        </td>
-        <td style="background: #F0ADAD">
-          &quot;type&quot;
-        </td>
-      </tr><tr>
-        <td>
-          122
-        </td>
-        <td>
-          739
-        </td>
-        <td>
-          4513
-          -
-          4538
+          5268
         </td>
         <td>
           Apply
@@ -2209,15 +2736,15 @@
         </td>
       </tr><tr>
         <td>
-          124
+          141
         </td>
         <td>
-          768
+          1069
         </td>
         <td>
-          4600
+          5330
           -
-          5669
+          6399
         </td>
         <td>
           ApplyToImplicitArgs
@@ -2238,15 +2765,15 @@
         </td>
       </tr><tr>
         <td>
-          124
+          141
         </td>
         <td>
-          767
+          1068
         </td>
         <td>
-          4629
+          5359
           -
-          4629
+          5359
         </td>
         <td>
           Select
@@ -2259,36 +2786,15 @@
         </td>
       </tr><tr>
         <td>
-          125
+          142
         </td>
         <td>
-          765
+          1067
         </td>
         <td>
-          4681
+          5405
           -
-          4681
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          controllers.LoginController.context
-        </td>
-        <td style="background: #F0ADAD">
-          LoginController.this.context
-        </td>
-      </tr><tr>
-        <td>
-          125
-        </td>
-        <td>
-          766
-        </td>
-        <td>
-          4675
-          -
-          5669
+          6399
         </td>
         <td>
           ApplyToImplicitArgs
@@ -2309,15 +2815,57 @@
         </td>
       </tr><tr>
         <td>
-          126
+          142
         </td>
         <td>
-          764
+          1066
         </td>
         <td>
-          4726
+          5411
           -
-          5669
+          5411
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          controllers.LoginController.context
+        </td>
+        <td style="background: #F0ADAD">
+          LoginController.this.context
+        </td>
+      </tr><tr>
+        <td>
+          143
+        </td>
+        <td>
+          1064
+        </td>
+        <td>
+          5465
+          -
+          5465
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          controllers.LoginController.context
+        </td>
+        <td style="background: #F0ADAD">
+          LoginController.this.context
+        </td>
+      </tr><tr>
+        <td>
+          143
+        </td>
+        <td>
+          1065
+        </td>
+        <td>
+          5456
+          -
+          6399
         </td>
         <td>
           ApplyToImplicitArgs
@@ -2338,15 +2886,15 @@
         </td>
       </tr><tr>
         <td>
-          126
+          143
         </td>
         <td>
-          740
+          1041
         </td>
         <td>
-          4762
+          5492
           -
-          4779
+          5509
         </td>
         <td>
           Select
@@ -2359,36 +2907,15 @@
         </td>
       </tr><tr>
         <td>
-          126
+          144
         </td>
         <td>
-          763
+          1042
         </td>
         <td>
-          4735
+          5596
           -
-          4735
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          controllers.LoginController.context
-        </td>
-        <td style="background: #F0ADAD">
-          LoginController.this.context
-        </td>
-      </tr><tr>
-        <td>
-          127
-        </td>
-        <td>
-          741
-        </td>
-        <td>
-          4866
-          -
-          4883
+          5613
         </td>
         <td>
           Select
@@ -2401,15 +2928,15 @@
         </td>
       </tr><tr>
         <td>
-          127
+          144
         </td>
         <td>
-          762
+          1063
         </td>
         <td>
-          4806
+          5536
           -
-          5669
+          6399
         </td>
         <td>
           ApplyToImplicitArgs
@@ -2430,15 +2957,15 @@
         </td>
       </tr><tr>
         <td>
-          127
+          144
         </td>
         <td>
-          761
+          1062
         </td>
         <td>
-          4820
+          5550
           -
-          4820
+          5550
         </td>
         <td>
           Select
@@ -2451,36 +2978,15 @@
         </td>
       </tr><tr>
         <td>
-          128
+          145
         </td>
         <td>
-          759
+          1061
         </td>
         <td>
-          4906
+          5630
           -
-          4906
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          controllers.LoginController.context
-        </td>
-        <td style="background: #F0ADAD">
-          LoginController.this.context
-        </td>
-      </tr><tr>
-        <td>
-          128
-        </td>
-        <td>
-          760
-        </td>
-        <td>
-          4900
-          -
-          5669
+          6399
         </td>
         <td>
           ApplyToImplicitArgs
@@ -2501,15 +3007,78 @@
         </td>
       </tr><tr>
         <td>
-          129
+          145
         </td>
         <td>
-          758
+          1060
         </td>
         <td>
-          4980
+          5636
           -
-          5669
+          5636
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          controllers.LoginController.context
+        </td>
+        <td style="background: #F0ADAD">
+          LoginController.this.context
+        </td>
+      </tr><tr>
+        <td>
+          146
+        </td>
+        <td>
+          1043
+        </td>
+        <td>
+          5746
+          -
+          5773
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Option.getOrElse
+        </td>
+        <td style="background: #F0ADAD">
+          profile.email.getOrElse[String](&quot;&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          146
+        </td>
+        <td>
+          1058
+        </td>
+        <td>
+          5717
+          -
+          5717
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          controllers.LoginController.context
+        </td>
+        <td style="background: #F0ADAD">
+          LoginController.this.context
+        </td>
+      </tr><tr>
+        <td>
+          146
+        </td>
+        <td>
+          1059
+        </td>
+        <td>
+          5710
+          -
+          6399
         </td>
         <td>
           ApplyToImplicitArgs
@@ -2530,57 +3099,15 @@
         </td>
       </tr><tr>
         <td>
-          129
+          148
         </td>
         <td>
-          757
+          1044
         </td>
         <td>
-          4987
+          5813
           -
-          4987
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          controllers.LoginController.context
-        </td>
-        <td style="background: #F0ADAD">
-          LoginController.this.context
-        </td>
-      </tr><tr>
-        <td>
-          129
-        </td>
-        <td>
-          742
-        </td>
-        <td>
-          5016
-          -
-          5043
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          scala.Option.getOrElse
-        </td>
-        <td style="background: #F0ADAD">
-          profile.email.getOrElse[String](&quot;&quot;)
-        </td>
-      </tr><tr>
-        <td>
-          131
-        </td>
-        <td>
-          743
-        </td>
-        <td>
-          5083
-          -
-          5106
+          5836
         </td>
         <td>
           Apply
@@ -2593,15 +3120,15 @@
         </td>
       </tr><tr>
         <td>
-          132
+          149
         </td>
         <td>
-          744
+          1045
         </td>
         <td>
-          5153
+          5883
           -
-          5183
+          5913
         </td>
         <td>
           Apply
@@ -2614,15 +3141,15 @@
         </td>
       </tr><tr>
         <td>
-          133
+          150
         </td>
         <td>
-          749
+          1050
         </td>
         <td>
-          5227
+          5957
           -
-          5465
+          6195
         </td>
         <td>
           Apply
@@ -2635,57 +3162,15 @@
         </td>
       </tr><tr>
         <td>
-          134
+          151
         </td>
         <td>
-          747
+          1046
         </td>
         <td>
-          5361
+          6079
           -
-          5391
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          scala.Option.getOrElse
-        </td>
-        <td style="background: #F0ADAD">
-          profile.lastName.getOrElse[String](&quot;&quot;)
-        </td>
-      </tr><tr>
-        <td>
-          134
-        </td>
-        <td>
-          746
-        </td>
-        <td>
-          5355
-          -
-          5358
-        </td>
-        <td>
-          Literal
-        </td>
-        <td>
-          &lt;nosymbol&gt;
-        </td>
-        <td style="background: #F0ADAD">
-          &quot; &quot;
-        </td>
-      </tr><tr>
-        <td>
-          134
-        </td>
-        <td>
-          745
-        </td>
-        <td>
-          5349
-          -
-          5351
+          6081
         </td>
         <td>
           Literal
@@ -2698,15 +3183,15 @@
         </td>
       </tr><tr>
         <td>
-          134
+          151
         </td>
         <td>
-          748
+          1049
         </td>
         <td>
-          5321
+          6051
           -
-          5391
+          6121
         </td>
         <td>
           Apply
@@ -2719,15 +3204,57 @@
         </td>
       </tr><tr>
         <td>
-          136
+          151
         </td>
         <td>
-          750
+          1048
         </td>
         <td>
-          5490
+          6091
           -
-          5492
+          6121
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Option.getOrElse
+        </td>
+        <td style="background: #F0ADAD">
+          profile.lastName.getOrElse[String](&quot;&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          151
+        </td>
+        <td>
+          1047
+        </td>
+        <td>
+          6085
+          -
+          6088
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot; &quot;
+        </td>
+      </tr><tr>
+        <td>
+          153
+        </td>
+        <td>
+          1051
+        </td>
+        <td>
+          6220
+          -
+          6222
         </td>
         <td>
           Literal
@@ -2740,36 +3267,15 @@
         </td>
       </tr><tr>
         <td>
-          138
+          155
         </td>
         <td>
-          752
+          1052
         </td>
         <td>
-          5525
+          6287
           -
-          5584
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          akka.event.SubchannelClassification.publish
-        </td>
-        <td style="background: #F0ADAD">
-          LoginController.this.silhouette.env.eventBus.publish(com.mohiva.play.silhouette.api.LoginEvent.apply[whatson.model.Login](login, request))
-        </td>
-      </tr><tr>
-        <td>
-          138
-        </td>
-        <td>
-          751
-        </td>
-        <td>
-          5557
-          -
-          5583
+          6313
         </td>
         <td>
           Apply
@@ -2782,78 +3288,36 @@
         </td>
       </tr><tr>
         <td>
-          139
+          155
         </td>
         <td>
-          756
+          1053
         </td>
         <td>
-          5600
+          6255
           -
-          5654
+          6314
         </td>
         <td>
           Apply
         </td>
         <td>
-          play.api.mvc.Results.Redirect
+          akka.event.SubchannelClassification.publish
         </td>
         <td style="background: #F0ADAD">
-          LoginController.this.Redirect(&quot;http://&quot;.+(request.host).+(&quot;?token=&quot;).+(token), LoginController.this.Redirect$default$2, LoginController.this.Redirect$default$3)
+          LoginController.this.silhouette.env.eventBus.publish(com.mohiva.play.silhouette.api.LoginEvent.apply[whatson.model.Login](login, request))
         </td>
       </tr><tr>
         <td>
-          139
+          156
         </td>
         <td>
-          753
+          1055
         </td>
         <td>
-          5609
+          6330
           -
-          5653
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          java.lang.String.+
-        </td>
-        <td style="background: #F0ADAD">
-          &quot;http://&quot;.+(request.host).+(&quot;?token=&quot;).+(token)
-        </td>
-      </tr><tr>
-        <td>
-          139
-        </td>
-        <td>
-          755
-        </td>
-        <td>
-          5600
-          -
-          5600
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          play.api.mvc.Results.Redirect$default$3
-        </td>
-        <td style="background: #F0ADAD">
-          LoginController.this.Redirect$default$3
-        </td>
-      </tr><tr>
-        <td>
-          139
-        </td>
-        <td>
-          754
-        </td>
-        <td>
-          5600
-          -
-          5600
+          6330
         </td>
         <td>
           Select
@@ -2866,78 +3330,78 @@
         </td>
       </tr><tr>
         <td>
-          142
+          156
         </td>
         <td>
-          774
+          1057
         </td>
         <td>
-          5702
+          6330
           -
-          5804
+          6384
         </td>
         <td>
           Apply
         </td>
         <td>
-          scala.concurrent.Future.failed
+          play.api.mvc.Results.Redirect
         </td>
         <td style="background: #F0ADAD">
-          scala.concurrent.Future.failed[Nothing](new com.mohiva.play.silhouette.api.exceptions.ProviderException(scala.StringContext.apply(&quot;Cannot authenticate with unexpected social provider &quot;, &quot;&quot;).s(provider), exceptions.this.ProviderException.&lt;init&gt;$default$2))
+          LoginController.this.Redirect(&quot;http://&quot;.+(request.host).+(&quot;?token=&quot;).+(token), LoginController.this.Redirect$default$2, LoginController.this.Redirect$default$3)
         </td>
       </tr><tr>
         <td>
-          142
+          156
         </td>
         <td>
-          771
+          1054
         </td>
         <td>
-          5738
+          6339
           -
-          5802
+          6383
         </td>
         <td>
           Apply
         </td>
         <td>
-          scala.StringContext.s
+          java.lang.String.+
         </td>
         <td style="background: #F0ADAD">
-          scala.StringContext.apply(&quot;Cannot authenticate with unexpected social provider &quot;, &quot;&quot;).s(provider)
+          &quot;http://&quot;.+(request.host).+(&quot;?token=&quot;).+(token)
         </td>
       </tr><tr>
         <td>
-          142
+          156
         </td>
         <td>
-          773
+          1056
         </td>
         <td>
-          5716
+          6330
           -
-          5803
+          6330
         </td>
         <td>
-          Apply
+          Select
         </td>
         <td>
-          com.mohiva.play.silhouette.api.exceptions.ProviderException.&lt;init&gt;
+          play.api.mvc.Results.Redirect$default$3
         </td>
         <td style="background: #F0ADAD">
-          new com.mohiva.play.silhouette.api.exceptions.ProviderException(scala.StringContext.apply(&quot;Cannot authenticate with unexpected social provider &quot;, &quot;&quot;).s(provider), exceptions.this.ProviderException.&lt;init&gt;$default$2)
+          LoginController.this.Redirect$default$3
         </td>
       </tr><tr>
         <td>
-          142
+          159
         </td>
         <td>
-          772
+          1073
         </td>
         <td>
-          5716
+          6446
           -
-          5716
+          6446
         </td>
         <td>
           Select
@@ -2950,15 +3414,99 @@
         </td>
       </tr><tr>
         <td>
-          143
+          159
         </td>
         <td>
-          786
+          1075
         </td>
         <td>
-          5823
+          6432
           -
-          5823
+          6534
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.concurrent.Future.failed
+        </td>
+        <td style="background: #F0ADAD">
+          scala.concurrent.Future.failed[Nothing](new com.mohiva.play.silhouette.api.exceptions.ProviderException(scala.StringContext.apply(&quot;Cannot authenticate with unexpected social provider &quot;, &quot;&quot;).s(provider), exceptions.this.ProviderException.&lt;init&gt;$default$2))
+        </td>
+      </tr><tr>
+        <td>
+          159
+        </td>
+        <td>
+          1072
+        </td>
+        <td>
+          6468
+          -
+          6532
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #F0ADAD">
+          scala.StringContext.apply(&quot;Cannot authenticate with unexpected social provider &quot;, &quot;&quot;).s(provider)
+        </td>
+      </tr><tr>
+        <td>
+          159
+        </td>
+        <td>
+          1074
+        </td>
+        <td>
+          6446
+          -
+          6533
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.mohiva.play.silhouette.api.exceptions.ProviderException.&lt;init&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          new com.mohiva.play.silhouette.api.exceptions.ProviderException(scala.StringContext.apply(&quot;Cannot authenticate with unexpected social provider &quot;, &quot;&quot;).s(provider), exceptions.this.ProviderException.&lt;init&gt;$default$2)
+        </td>
+      </tr><tr>
+        <td>
+          160
+        </td>
+        <td>
+          1088
+        </td>
+        <td>
+          6553
+          -
+          6553
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          controllers.LoginController.context
+        </td>
+        <td style="background: #F0ADAD">
+          LoginController.this.context
+        </td>
+      </tr><tr>
+        <td>
+          160
+        </td>
+        <td>
+          1087
+        </td>
+        <td>
+          6553
+          -
+          6553
         </td>
         <td>
           Apply
@@ -2971,15 +3519,15 @@
         </td>
       </tr><tr>
         <td>
-          143
+          160
         </td>
         <td>
-          788
+          1089
         </td>
         <td>
-          4246
+          4976
           -
-          5993
+          6723
         </td>
         <td>
           ApplyToImplicitArgs
@@ -3025,78 +3573,15 @@
         </td>
       </tr><tr>
         <td>
-          143
+          162
         </td>
         <td>
-          787
+          1076
         </td>
         <td>
-          5823
+          6612
           -
-          5823
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          controllers.LoginController.context
-        </td>
-        <td style="background: #F0ADAD">
-          LoginController.this.context
-        </td>
-      </tr><tr>
-        <td>
-          145
-        </td>
-        <td>
-          777
-        </td>
-        <td>
-          5872
-          -
-          5913
-        </td>
-        <td>
-          ApplyToImplicitArgs
-        </td>
-        <td>
-          play.api.LoggerLike.error
-        </td>
-        <td style="background: #F0ADAD">
-          LoginController.this.log.error(&quot;Unexpected provider error&quot;, e)(api.this.MarkerContext.NoMarker)
-        </td>
-      </tr><tr>
-        <td>
-          145
-        </td>
-        <td>
-          776
-        </td>
-        <td>
-          5881
-          -
-          5881
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          play.api.LowPriorityMarkerContextImplicits.NoMarker
-        </td>
-        <td style="background: #F0ADAD">
-          api.this.MarkerContext.NoMarker
-        </td>
-      </tr><tr>
-        <td>
-          145
-        </td>
-        <td>
-          775
-        </td>
-        <td>
-          5882
-          -
-          5909
+          6639
         </td>
         <td>
           Literal
@@ -3109,120 +3594,57 @@
         </td>
       </tr><tr>
         <td>
-          146
+          162
         </td>
         <td>
-          783
+          1078
         </td>
         <td>
-          5937
+          6602
           -
-          5984
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          play.api.libs.json.Json.obj
-        </td>
-        <td style="background: #F0ADAD">
-          play.api.libs.json.Json.obj(scala.Predef.ArrowAssoc[String](&quot;message&quot;).-&gt;[play.api.libs.json.Json.JsValueWrapper](json.this.Json.toJsFieldJsValueWrapper[String](&quot;could.not.authenticate&quot;)(json.this.Writes.StringWrites)))
-        </td>
-      </tr><tr>
-        <td>
-          146
-        </td>
-        <td>
-          779
-        </td>
-        <td>
-          5959
-          -
-          5983
-        </td>
-        <td>
-          Literal
-        </td>
-        <td>
-          &lt;nosymbol&gt;
-        </td>
-        <td style="background: #F0ADAD">
-          &quot;could.not.authenticate&quot;
-        </td>
-      </tr><tr>
-        <td>
-          146
-        </td>
-        <td>
-          782
-        </td>
-        <td>
-          5946
-          -
-          5983
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          scala.Predef.ArrowAssoc.-&gt;
-        </td>
-        <td style="background: #F0ADAD">
-          scala.Predef.ArrowAssoc[String](&quot;message&quot;).-&gt;[play.api.libs.json.Json.JsValueWrapper](json.this.Json.toJsFieldJsValueWrapper[String](&quot;could.not.authenticate&quot;)(json.this.Writes.StringWrites))
-        </td>
-      </tr><tr>
-        <td>
-          146
-        </td>
-        <td>
-          785
-        </td>
-        <td>
-          5924
-          -
-          5985
+          6643
         </td>
         <td>
           ApplyToImplicitArgs
         </td>
         <td>
-          play.api.mvc.Results.Status.apply
+          play.api.LoggerLike.error
         </td>
         <td style="background: #F0ADAD">
-          LoginController.this.Unauthorized.apply[play.api.libs.json.JsObject](play.api.libs.json.Json.obj(scala.Predef.ArrowAssoc[String](&quot;message&quot;).-&gt;[play.api.libs.json.Json.JsValueWrapper](json.this.Json.toJsFieldJsValueWrapper[String](&quot;could.not.authenticate&quot;)(json.this.Writes.StringWrites))))(http.this.Writeable.writeableOf_JsValue)
+          LoginController.this.log.error(&quot;Unexpected provider error&quot;, e)(api.this.MarkerContext.NoMarker)
         </td>
       </tr><tr>
         <td>
-          146
+          162
         </td>
         <td>
-          784
+          1077
         </td>
         <td>
-          5936
+          6611
           -
-          5936
+          6611
         </td>
         <td>
           Select
         </td>
         <td>
-          play.api.http.DefaultWriteables.writeableOf_JsValue
+          play.api.LowPriorityMarkerContextImplicits.NoMarker
         </td>
         <td style="background: #F0ADAD">
-          http.this.Writeable.writeableOf_JsValue
+          api.this.MarkerContext.NoMarker
         </td>
       </tr><tr>
         <td>
-          146
+          163
         </td>
         <td>
-          778
+          1079
         </td>
         <td>
-          5946
+          6676
           -
-          5955
+          6685
         </td>
         <td>
           Literal
@@ -3235,15 +3657,15 @@
         </td>
       </tr><tr>
         <td>
-          146
+          163
         </td>
         <td>
-          781
+          1082
         </td>
         <td>
-          5959
+          6689
           -
-          5983
+          6713
         </td>
         <td>
           ApplyToImplicitArgs
@@ -3256,15 +3678,57 @@
         </td>
       </tr><tr>
         <td>
-          146
+          163
         </td>
         <td>
-          780
+          1085
         </td>
         <td>
-          5959
+          6666
           -
-          5959
+          6666
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.http.DefaultWriteables.writeableOf_JsValue
+        </td>
+        <td style="background: #F0ADAD">
+          http.this.Writeable.writeableOf_JsValue
+        </td>
+      </tr><tr>
+        <td>
+          163
+        </td>
+        <td>
+          1084
+        </td>
+        <td>
+          6667
+          -
+          6714
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          play.api.libs.json.Json.obj
+        </td>
+        <td style="background: #F0ADAD">
+          play.api.libs.json.Json.obj(scala.Predef.ArrowAssoc[String](&quot;message&quot;).-&gt;[play.api.libs.json.Json.JsValueWrapper](json.this.Json.toJsFieldJsValueWrapper[String](&quot;could.not.authenticate&quot;)(json.this.Writes.StringWrites)))
+        </td>
+      </tr><tr>
+        <td>
+          163
+        </td>
+        <td>
+          1081
+        </td>
+        <td>
+          6689
+          -
+          6689
         </td>
         <td>
           Select
@@ -3277,57 +3741,78 @@
         </td>
       </tr><tr>
         <td>
-          164
+          163
         </td>
         <td>
-          792
+          1080
         </td>
         <td>
-          6642
+          6689
           -
-          6682
+          6713
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;could.not.authenticate&quot;
+        </td>
+      </tr><tr>
+        <td>
+          163
+        </td>
+        <td>
+          1083
+        </td>
+        <td>
+          6676
+          -
+          6713
         </td>
         <td>
           Apply
         </td>
         <td>
-          play.api.mvc.RequestHeader.getQueryString
+          scala.Predef.ArrowAssoc.-&gt;
         </td>
         <td style="background: #F0ADAD">
-          request.getQueryString(&quot;oauth_verifier&quot;)
+          scala.Predef.ArrowAssoc[String](&quot;message&quot;).-&gt;[play.api.libs.json.Json.JsValueWrapper](json.this.Json.toJsFieldJsValueWrapper[String](&quot;could.not.authenticate&quot;)(json.this.Writes.StringWrites))
         </td>
       </tr><tr>
         <td>
-          164
+          163
         </td>
         <td>
-          791
+          1086
         </td>
         <td>
-          6601
+          6654
           -
-          6638
+          6715
         </td>
         <td>
-          Apply
+          ApplyToImplicitArgs
         </td>
         <td>
-          play.api.mvc.RequestHeader.getQueryString
+          play.api.mvc.Results.Status.apply
         </td>
         <td style="background: #F0ADAD">
-          request.getQueryString(&quot;oauth_token&quot;)
+          LoginController.this.Unauthorized.apply[play.api.libs.json.JsObject](play.api.libs.json.Json.obj(scala.Predef.ArrowAssoc[String](&quot;message&quot;).-&gt;[play.api.libs.json.Json.JsValueWrapper](json.this.Json.toJsFieldJsValueWrapper[String](&quot;could.not.authenticate&quot;)(json.this.Writes.StringWrites))))(http.this.Writeable.writeableOf_JsValue)
         </td>
       </tr><tr>
         <td>
-          164
+          181
         </td>
         <td>
-          793
+          1094
         </td>
         <td>
-          6601
+          7331
           -
-          6682
+          7412
         </td>
         <td>
           Apply
@@ -3340,15 +3825,57 @@
         </td>
       </tr><tr>
         <td>
-          165
+          181
         </td>
         <td>
-          804
+          1093
         </td>
         <td>
-          6735
+          7372
           -
-          6965
+          7412
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          play.api.mvc.RequestHeader.getQueryString
+        </td>
+        <td style="background: #F0ADAD">
+          request.getQueryString(&quot;oauth_verifier&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          181
+        </td>
+        <td>
+          1092
+        </td>
+        <td>
+          7331
+          -
+          7368
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          play.api.mvc.RequestHeader.getQueryString
+        </td>
+        <td style="background: #F0ADAD">
+          request.getQueryString(&quot;oauth_token&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          182
+        </td>
+        <td>
+          1105
+        </td>
+        <td>
+          7465
+          -
+          7695
         </td>
         <td>
           ApplyToImplicitArgs
@@ -3367,36 +3894,15 @@
         </td>
       </tr><tr>
         <td>
-          165
+          182
         </td>
         <td>
-          803
+          1095
         </td>
         <td>
-          6785
+          7483
           -
-          6785
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          controllers.LoginController.context
-        </td>
-        <td style="background: #F0ADAD">
-          LoginController.this.context
-        </td>
-      </tr><tr>
-        <td>
-          165
-        </td>
-        <td>
-          794
-        </td>
-        <td>
-          6753
-          -
-          6775
+          7505
         </td>
         <td>
           Apply
@@ -3409,15 +3915,15 @@
         </td>
       </tr><tr>
         <td>
-          166
+          182
         </td>
         <td>
-          795
+          1104
         </td>
         <td>
-          6817
+          7515
           -
-          6817
+          7515
         </td>
         <td>
           Select
@@ -3430,15 +3936,15 @@
         </td>
       </tr><tr>
         <td>
-          166
+          183
         </td>
         <td>
-          796
+          1097
         </td>
         <td>
-          6811
+          7541
           -
-          6820
+          7550
         </td>
         <td>
           ApplyToImplicitArgs
@@ -3451,15 +3957,15 @@
         </td>
       </tr><tr>
         <td>
-          167
+          183
         </td>
         <td>
-          801
+          1096
         </td>
         <td>
-          6857
+          7547
           -
-          6857
+          7547
         </td>
         <td>
           Select
@@ -3472,15 +3978,36 @@
         </td>
       </tr><tr>
         <td>
-          167
+          184
         </td>
         <td>
-          802
+          1102
         </td>
         <td>
-          6842
+          7587
           -
-          6957
+          7587
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          controllers.LoginController.context
+        </td>
+        <td style="background: #F0ADAD">
+          LoginController.this.context
+        </td>
+      </tr><tr>
+        <td>
+          184
+        </td>
+        <td>
+          1103
+        </td>
+        <td>
+          7572
+          -
+          7687
         </td>
         <td>
           ApplyToImplicitArgs
@@ -3496,57 +4023,15 @@
         </td>
       </tr><tr>
         <td>
-          168
+          185
         </td>
         <td>
-          797
+          1100
         </td>
         <td>
-          6889
+          7651
           -
-          6911
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          java.lang.String.+
-        </td>
-        <td style="background: #F0ADAD">
-          token.+(&quot;-&quot;).+(verifier)
-        </td>
-      </tr><tr>
-        <td>
-          168
-        </td>
-        <td>
-          800
-        </td>
-        <td>
-          6879
-          -
-          6930
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          play.api.cache.AsyncCacheApi.set
-        </td>
-        <td style="background: #F0ADAD">
-          LoginController.this.cache.set(token.+(&quot;-&quot;).+(verifier), result, scala.concurrent.duration.`package`.DurationInt(1).minute)
-        </td>
-      </tr><tr>
-        <td>
-          168
-        </td>
-        <td>
-          799
-        </td>
-        <td>
-          6921
-          -
-          6929
+          7659
         </td>
         <td>
           Select
@@ -3559,15 +4044,15 @@
         </td>
       </tr><tr>
         <td>
-          168
+          185
         </td>
         <td>
-          798
+          1099
         </td>
         <td>
-          6921
+          7651
           -
-          6922
+          7652
         </td>
         <td>
           Literal
@@ -3580,15 +4065,57 @@
         </td>
       </tr><tr>
         <td>
-          172
+          185
         </td>
         <td>
-          805
+          1098
         </td>
         <td>
-          6982
+          7619
           -
-          6992
+          7641
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.+
+        </td>
+        <td style="background: #F0ADAD">
+          token.+(&quot;-&quot;).+(verifier)
+        </td>
+      </tr><tr>
+        <td>
+          185
+        </td>
+        <td>
+          1101
+        </td>
+        <td>
+          7609
+          -
+          7660
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          play.api.cache.AsyncCacheApi.set
+        </td>
+        <td style="background: #F0ADAD">
+          LoginController.this.cache.set(token.+(&quot;-&quot;).+(verifier), result, scala.concurrent.duration.`package`.DurationInt(1).minute)
+        </td>
+      </tr><tr>
+        <td>
+          189
+        </td>
+        <td>
+          1106
+        </td>
+        <td>
+          7712
+          -
+          7722
         </td>
         <td>
           Apply

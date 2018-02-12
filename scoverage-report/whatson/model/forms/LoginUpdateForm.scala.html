@@ -2,7 +2,7 @@
       <head>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
         <title id="title">
-          whatson/db/Sortable.scala.html
+          whatson/model/forms/LoginUpdateForm.scala.html
         </title>
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
         $(document).ready(function() {$(".tablesorter").tablesorter();});
@@ -22,19 +22,27 @@
         </ul>
         <div class="tab-content">
           <div class="tab-pane active" id="codegrid">
-            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package whatson.db
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package whatson.model.forms
 </span>2 <span style=''>
-</span>3 <span style=''>import scala.language.higherKinds
-</span>4 <span style=''>
-</span>5 <span style=''>trait Sortable[R,O] {
-</span>6 <span style=''>  def sortColumn[U,C[D]](name: String, dir: Boolean): R
-</span>7 <span style=''>  def sortColumn[U,C[D]](name: String, dir: Boolean, param: O): R = </span><span style='background: #F0ADAD'>sortColumn(name, dir)</span><span style=''>
-</span>8 <span style=''>  
-</span>9 <span style=''>  def sortColumn[U,C[D]](name: Option[String], dir: Boolean): R = </span><span style='background: #AEF1AE'>sortColumn(name.getOrElse(defaultSort),dir)</span><span style=''>
-</span>10 <span style=''>  def sortColumn[U,C[D]](name: Option[String], dir: Boolean, param: O): R = </span><span style='background: #F0ADAD'>sortColumn(name.getOrElse(defaultSort),dir,param)</span><span style=''>
-</span>11 <span style=''>  
-</span>12 <span style=''>  val defaultSort: String
-</span>13 <span style=''>}
+</span>3 <span style=''>import play.api.data.Form
+</span>4 <span style=''>import play.api.data.Forms._
+</span>5 <span style=''>import play.api.libs.json.Json
+</span>6 <span style=''>import java.sql.Timestamp
+</span>7 <span style=''>import whatson.util.DateTime._
+</span>8 <span style=''>import whatson.model._
+</span>9 <span style=''>
+</span>10 <span style=''>object LoginUpdateForm {
+</span>11 <span style=''>  val map = </span><span style='background: #F0ADAD'>mapping(
+</span>12 <span style=''></span><span style='background: #F0ADAD'>    &quot;password&quot; -&gt; nonEmptyText
+</span>13 <span style=''></span><span style='background: #F0ADAD'>    )(Data.apply)(Data.unapply)</span><span style=''>
+</span>14 <span style=''>  val form = </span><span style='background: #F0ADAD'>Form(map)</span><span style=''>
+</span>15 <span style=''>
+</span>16 <span style=''>  case class Data(password: String)
+</span>17 <span style=''>
+</span>18 <span style=''>  object Data {
+</span>19 <span style=''>    implicit val jsonFormat = Json.format[Data]
+</span>20 <span style=''>  }
+</span>21 <span style=''>}
 </span></pre>
           </div>
           <div class="tab-pane" id="statementlist">
@@ -48,150 +56,175 @@
         <th>Code</th>
       </tr><tr>
         <td>
-          7
+          12
         </td>
         <td>
-          1902
+          2206
         </td>
         <td>
-          201
+          246
           -
-          222
+          256
         </td>
         <td>
-          Apply
+          Literal
         </td>
         <td>
-          whatson.db.Sortable.sortColumn
+          &lt;nosymbol&gt;
         </td>
         <td style="background: #F0ADAD">
-          Sortable.this.sortColumn[Nothing, Nothing](name, dir)
+          &quot;password&quot;
         </td>
       </tr><tr>
         <td>
-          9
+          12
         </td>
         <td>
-          1904
+          2208
         </td>
         <td>
-          303
+          246
           -
-          330
+          272
         </td>
         <td>
           Apply
         </td>
         <td>
-          scala.Option.getOrElse
+          scala.Predef.ArrowAssoc.-&gt;
         </td>
-        <td style="background: #AEF1AE">
-          name.getOrElse[String](Sortable.this.defaultSort)
+        <td style="background: #F0ADAD">
+          scala.Predef.ArrowAssoc[String](&quot;password&quot;).-&gt;[play.api.data.Mapping[String]](play.api.data.Forms.nonEmptyText)
         </td>
       </tr><tr>
         <td>
-          9
+          12
         </td>
         <td>
-          1903
+          2207
+        </td>
+        <td>
+          260
+          -
+          272
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.data.Forms.nonEmptyText
+        </td>
+        <td style="background: #F0ADAD">
+          play.api.data.Forms.nonEmptyText
+        </td>
+      </tr><tr>
+        <td>
+          13
+        </td>
+        <td>
+          2209
+        </td>
+        <td>
+          279
+          -
+          289
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          whatson.model.forms.LoginUpdateForm.Data.apply
+        </td>
+        <td style="background: #F0ADAD">
+          LoginUpdateForm.this.Data.apply(password)
+        </td>
+      </tr><tr>
+        <td>
+          13
+        </td>
+        <td>
+          2211
+        </td>
+        <td>
+          233
+          -
+          304
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          play.api.data.Forms.mapping
+        </td>
+        <td style="background: #F0ADAD">
+          play.api.data.Forms.mapping[whatson.model.forms.LoginUpdateForm.Data, String](scala.Predef.ArrowAssoc[String](&quot;password&quot;).-&gt;[play.api.data.Mapping[String]](play.api.data.Forms.nonEmptyText))({
+  ((password: String) =&gt; LoginUpdateForm.this.Data.apply(password))
+})({
+  ((x$0: whatson.model.forms.LoginUpdateForm.Data) =&gt; LoginUpdateForm.this.Data.unapply(x$0))
+})
+        </td>
+      </tr><tr>
+        <td>
+          13
+        </td>
+        <td>
+          2210
+        </td>
+        <td>
+          291
+          -
+          303
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          whatson.model.forms.LoginUpdateForm.Data.unapply
+        </td>
+        <td style="background: #F0ADAD">
+          LoginUpdateForm.this.Data.unapply(x$0)
+        </td>
+      </tr><tr>
+        <td>
+          14
+        </td>
+        <td>
+          2212
+        </td>
+        <td>
+          323
+          -
+          326
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.model.forms.LoginUpdateForm.map
+        </td>
+        <td style="background: #F0ADAD">
+          LoginUpdateForm.this.map
+        </td>
+      </tr><tr>
+        <td>
+          14
+        </td>
+        <td>
+          2213
         </td>
         <td>
           318
           -
-          329
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          whatson.db.Sortable.defaultSort
-        </td>
-        <td style="background: #AEF1AE">
-          Sortable.this.defaultSort
-        </td>
-      </tr><tr>
-        <td>
-          9
-        </td>
-        <td>
-          1905
-        </td>
-        <td>
-          292
-          -
-          335
+          327
         </td>
         <td>
           Apply
         </td>
         <td>
-          whatson.db.Sortable.sortColumn
-        </td>
-        <td style="background: #AEF1AE">
-          Sortable.this.sortColumn[Nothing, Nothing](name.getOrElse[String](Sortable.this.defaultSort), dir)
-        </td>
-      </tr><tr>
-        <td>
-          10
-        </td>
-        <td>
-          1907
-        </td>
-        <td>
-          423
-          -
-          450
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          scala.Option.getOrElse
+          play.api.data.Form.apply
         </td>
         <td style="background: #F0ADAD">
-          name.getOrElse[String](Sortable.this.defaultSort)
-        </td>
-      </tr><tr>
-        <td>
-          10
-        </td>
-        <td>
-          1906
-        </td>
-        <td>
-          438
-          -
-          449
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          whatson.db.Sortable.defaultSort
-        </td>
-        <td style="background: #F0ADAD">
-          Sortable.this.defaultSort
-        </td>
-      </tr><tr>
-        <td>
-          10
-        </td>
-        <td>
-          1908
-        </td>
-        <td>
-          412
-          -
-          461
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          whatson.db.Sortable.sortColumn
-        </td>
-        <td style="background: #F0ADAD">
-          Sortable.this.sortColumn[Nothing, Nothing](name.getOrElse[String](Sortable.this.defaultSort), dir, param)
+          play.api.data.Form.apply[whatson.model.forms.LoginUpdateForm.Data](LoginUpdateForm.this.map)
         </td>
       </tr>
     </table>

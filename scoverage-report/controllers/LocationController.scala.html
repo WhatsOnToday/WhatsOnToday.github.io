@@ -41,61 +41,69 @@
 </span>17 <span style=''>import whatson.model.Location._
 </span>18 <span style=''>import com.mohiva.play.silhouette.api._
 </span>19 <span style=''>import whatson.auth._
-</span>20 <span style=''>
-</span>21 <span style=''>
-</span>22 <span style=''>class LocationController @Inject()(cc: ControllerComponents,
-</span>23 <span style=''>                                   protected val dbConfigProvider: DatabaseConfigProvider,
-</span>24 <span style=''>                                   silhouette: Silhouette[AuthEnv])
-</span>25 <span style=''>    (implicit context: ExecutionContext)
-</span>26 <span style=''>    extends AbstractController(cc)
-</span>27 <span style=''>    with HasDatabaseConfigProvider[JdbcProfile] {
-</span>28 <span style=''>
-</span>29 <span style=''>  val log = </span><span style='background: #AEF1AE'>Logger(&quot;api.location&quot;)</span><span style=''>
+</span>20 <span style=''>import whatson.model.forms._
+</span>21 <span style=''>import whatson.util.FormErrorJson._
+</span>22 <span style=''>
+</span>23 <span style=''>
+</span>24 <span style=''>class LocationController @Inject()(cc: ControllerComponents,
+</span>25 <span style=''>                                   protected val dbConfigProvider: DatabaseConfigProvider,
+</span>26 <span style=''>                                   silhouette: Silhouette[AuthEnv])
+</span>27 <span style=''>    (implicit context: ExecutionContext)
+</span>28 <span style=''>    extends AbstractController(cc)
+</span>29 <span style=''>    with HasDatabaseConfigProvider[JdbcProfile] {
 </span>30 <span style=''>
-</span>31 <span style=''>  def searchLocations(search: Option[String]) = </span><span style='background: #AEF1AE'>Action.async { implicit request: Request[AnyContent] =&gt;
-</span>32 <span style=''></span><span style='background: #AEF1AE'>    log.debug(&quot;Rest request to search locations&quot;)
-</span>33 <span style=''></span><span style='background: #AEF1AE'>
-</span>34 <span style=''></span><span style='background: #AEF1AE'>    val q = for {
-</span>35 <span style=''></span><span style='background: #AEF1AE'>      l &lt;- location if similar(l.name,search.getOrElse(&quot;&quot;).bind) || search.getOrElse(&quot;&quot;).bind === &quot;&quot;
-</span>36 <span style=''></span><span style='background: #AEF1AE'>    } yield l
-</span>37 <span style=''></span><span style='background: #AEF1AE'>
-</span>38 <span style=''></span><span style='background: #AEF1AE'>    val s = q.queryPaged.detailed
-</span>39 <span style=''></span><span style='background: #AEF1AE'>    returnPaged(s,q,db)
-</span>40 <span style=''></span><span style='background: #AEF1AE'>  }</span><span style=''>
-</span>41 <span style=''>
-</span>42 <span style=''>  def getLocation(id: Int) = </span><span style='background: #AEF1AE'>Action.async { implicit request: Request[AnyContent] =&gt;
-</span>43 <span style=''></span><span style='background: #AEF1AE'>    log.debug(&quot;Rest request to get location&quot;)
-</span>44 <span style=''></span><span style='background: #AEF1AE'>
-</span>45 <span style=''></span><span style='background: #AEF1AE'>    val q = for(l &lt;- location if l.id === id.bind) yield l;
+</span>31 <span style=''>  val log = </span><span style='background: #AEF1AE'>Logger(&quot;api.location&quot;)</span><span style=''>
+</span>32 <span style=''>
+</span>33 <span style=''>  def searchLocations(search: Option[String]) = </span><span style='background: #AEF1AE'>Action.async { implicit request: Request[AnyContent] =&gt;
+</span>34 <span style=''></span><span style='background: #AEF1AE'>    log.debug(&quot;Rest request to search locations&quot;)
+</span>35 <span style=''></span><span style='background: #AEF1AE'>
+</span>36 <span style=''></span><span style='background: #AEF1AE'>    val q = for {
+</span>37 <span style=''></span><span style='background: #AEF1AE'>      l &lt;- location if similar(l.name,search.getOrElse(&quot;&quot;).bind) || search.getOrElse(&quot;&quot;).bind === &quot;&quot;
+</span>38 <span style=''></span><span style='background: #AEF1AE'>    } yield l
+</span>39 <span style=''></span><span style='background: #AEF1AE'>
+</span>40 <span style=''></span><span style='background: #AEF1AE'>    val s = q.queryPaged.detailed
+</span>41 <span style=''></span><span style='background: #AEF1AE'>    returnPaged(s,q,db)
+</span>42 <span style=''></span><span style='background: #AEF1AE'>  }</span><span style=''>
+</span>43 <span style=''>
+</span>44 <span style=''>  def getLocation(id: Int) = </span><span style='background: #AEF1AE'>Action.async { implicit request: Request[AnyContent] =&gt;
+</span>45 <span style=''></span><span style='background: #AEF1AE'>    log.debug(&quot;Rest request to get location&quot;)
 </span>46 <span style=''></span><span style='background: #AEF1AE'>
-</span>47 <span style=''></span><span style='background: #AEF1AE'>    db.run(q.detailed).map(x =&gt; x.headOption match {
-</span>48 <span style=''></span><span style='background: #AEF1AE'>      case Some(r) =&gt; Ok(Json.toJson(r))
-</span>49 <span style=''></span><span style='background: #AEF1AE'>      case _ =&gt; NotFound
-</span>50 <span style=''></span><span style='background: #AEF1AE'>    })
-</span>51 <span style=''></span><span style='background: #AEF1AE'>  }</span><span style=''>
-</span>52 <span style=''>
-</span>53 <span style=''>  def getNearby(id: Int) = </span><span style='background: #AEF1AE'>Action.async { implicit request: Request[AnyContent] =&gt;
-</span>54 <span style=''></span><span style='background: #AEF1AE'>    log.debug(&quot;Rest request to get location close to another location&quot;)
-</span>55 <span style=''></span><span style='background: #AEF1AE'>
-</span>56 <span style=''></span><span style='background: #AEF1AE'>    val q = for(l &lt;- location if l.id === id.bind) yield l;
+</span>47 <span style=''></span><span style='background: #AEF1AE'>    val q = for(l &lt;- location if l.id === id.bind) yield l;
+</span>48 <span style=''></span><span style='background: #AEF1AE'>
+</span>49 <span style=''></span><span style='background: #AEF1AE'>    db.run(q.detailed).map(x =&gt; x.headOption match {
+</span>50 <span style=''></span><span style='background: #AEF1AE'>      case Some(r) =&gt; Ok(Json.toJson(r))
+</span>51 <span style=''></span><span style='background: #AEF1AE'>      case _ =&gt; NotFound
+</span>52 <span style=''></span><span style='background: #AEF1AE'>    })
+</span>53 <span style=''></span><span style='background: #AEF1AE'>  }</span><span style=''>
+</span>54 <span style=''>
+</span>55 <span style=''>  def getNearby(id: Int) = </span><span style='background: #AEF1AE'>Action.async { implicit request: Request[AnyContent] =&gt;
+</span>56 <span style=''></span><span style='background: #AEF1AE'>    log.debug(&quot;Rest request to get location close to another location&quot;)
 </span>57 <span style=''></span><span style='background: #AEF1AE'>
-</span>58 <span style=''></span><span style='background: #AEF1AE'>    db.run(q.detailed).map(_.headOption).flatMap {
-</span>59 <span style=''></span><span style='background: #AEF1AE'>      case Some(r) =&gt; {
-</span>60 <span style=''></span><span style='background: #AEF1AE'>        val s = location.sortBy(y =&gt; geoDistance(r.latitude, r.longitude, y.latitude, y.longitude))
-</span>61 <span style=''></span><span style='background: #AEF1AE'>        s.returnPaged(db)
-</span>62 <span style=''></span><span style='background: #AEF1AE'>      }
-</span>63 <span style=''></span><span style='background: #AEF1AE'>      case None =&gt; Future(NotFound)
-</span>64 <span style=''></span><span style='background: #AEF1AE'>    }
-</span>65 <span style=''></span><span style='background: #AEF1AE'>  }</span><span style=''>
-</span>66 <span style=''>
-</span>67 <span style=''>  def createLocation() = </span><span style='background: #AEF1AE'>silhouette.SecuredAction.async(parse.json(locationReads)) { implicit request: Request[Location] =&gt;
-</span>68 <span style=''></span><span style='background: #AEF1AE'>    log.debug(&quot;Rest request to create location&quot;)
-</span>69 <span style=''></span><span style='background: #AEF1AE'>
-</span>70 <span style=''></span><span style='background: #AEF1AE'>    val inserted = db.run(insertAndReturn[Location,LocationTable](location,request.body))
-</span>71 <span style=''></span><span style='background: #AEF1AE'>
-</span>72 <span style=''></span><span style='background: #AEF1AE'>    inserted.map(x =&gt; Ok(Json.toJson(x)))
-</span>73 <span style=''></span><span style='background: #AEF1AE'>  }</span><span style=''>
-</span>74 <span style=''>}
+</span>58 <span style=''></span><span style='background: #AEF1AE'>    val q = for(l &lt;- location if l.id === id.bind) yield l;
+</span>59 <span style=''></span><span style='background: #AEF1AE'>
+</span>60 <span style=''></span><span style='background: #AEF1AE'>    db.run(q.detailed).map(_.headOption).flatMap {
+</span>61 <span style=''></span><span style='background: #AEF1AE'>      case Some(r) =&gt; {
+</span>62 <span style=''></span><span style='background: #AEF1AE'>        val s = location.sortBy(y =&gt; geoDistance(r.latitude, r.longitude, y.latitude, y.longitude))
+</span>63 <span style=''></span><span style='background: #AEF1AE'>        s.returnPaged(db)
+</span>64 <span style=''></span><span style='background: #AEF1AE'>      }
+</span>65 <span style=''></span><span style='background: #AEF1AE'>      case None =&gt; Future(NotFound)
+</span>66 <span style=''></span><span style='background: #AEF1AE'>    }
+</span>67 <span style=''></span><span style='background: #AEF1AE'>  }</span><span style=''>
+</span>68 <span style=''>
+</span>69 <span style=''>  def createLocation() = </span><span style='background: #AEF1AE'>silhouette.SecuredAction.async(parse.json) { implicit request =&gt;
+</span>70 <span style=''></span><span style='background: #AEF1AE'>    LocationForm.form.bindFromRequest()(request).fold(
+</span>71 <span style=''></span><span style='background: #AEF1AE'>      form =&gt; {
+</span>72 <span style=''></span><span style='background: #AEF1AE'>        </span><span style='background: #F0ADAD'>Future.successful(BadRequest(Json.toJson(form.errors)))</span><span style='background: #AEF1AE'>
+</span>73 <span style=''></span><span style='background: #AEF1AE'>      },
+</span>74 <span style=''></span><span style='background: #AEF1AE'>      data =&gt; {
+</span>75 <span style=''></span><span style='background: #AEF1AE'>        log.debug(&quot;Rest request to create location&quot;)
+</span>76 <span style=''></span><span style='background: #AEF1AE'>
+</span>77 <span style=''></span><span style='background: #AEF1AE'>        val inserted = db.run(insertAndReturn[Location,LocationTable](location,data))
+</span>78 <span style=''></span><span style='background: #AEF1AE'>
+</span>79 <span style=''></span><span style='background: #AEF1AE'>        inserted.map(x =&gt; Ok(Json.toJson(x)))
+</span>80 <span style=''></span><span style='background: #AEF1AE'>      })
+</span>81 <span style=''></span><span style='background: #AEF1AE'>  }</span><span style=''>
+</span>82 <span style=''>}
 </span></pre>
           </div>
           <div class="tab-pane" id="statementlist">
@@ -109,15 +117,15 @@
         <th>Code</th>
       </tr><tr>
         <td>
-          29
+          31
         </td>
         <td>
-          539
+          812
         </td>
         <td>
-          912
+          977
           -
-          934
+          999
         </td>
         <td>
           Apply
@@ -130,15 +138,15 @@
         </td>
       </tr><tr>
         <td>
-          31
+          33
         </td>
         <td>
-          572
+          845
         </td>
         <td>
-          984
+          1049
           -
-          1286
+          1351
         </td>
         <td>
           Apply
@@ -156,36 +164,15 @@
         </td>
       </tr><tr>
         <td>
-          32
+          34
         </td>
         <td>
-          541
+          813
         </td>
         <td>
-          1053
+          1119
           -
-          1053
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          play.api.LowPriorityMarkerContextImplicits.NoMarker
-        </td>
-        <td style="background: #AEF1AE">
-          api.this.MarkerContext.NoMarker
-        </td>
-      </tr><tr>
-        <td>
-          32
-        </td>
-        <td>
-          540
-        </td>
-        <td>
-          1054
-          -
-          1088
+          1153
         </td>
         <td>
           Literal
@@ -198,15 +185,15 @@
         </td>
       </tr><tr>
         <td>
-          32
+          34
         </td>
         <td>
-          542
+          815
         </td>
         <td>
-          1044
+          1109
           -
-          1089
+          1154
         </td>
         <td>
           ApplyToImplicitArgs
@@ -219,78 +206,36 @@
         </td>
       </tr><tr>
         <td>
-          35
+          34
         </td>
         <td>
-          550
+          814
         </td>
         <td>
-          1177
+          1118
           -
-          1202
+          1118
         </td>
         <td>
           Select
         </td>
         <td>
-          slick.lifted.LiteralColumn.bind
+          play.api.LowPriorityMarkerContextImplicits.NoMarker
         </td>
         <td style="background: #AEF1AE">
-          slick.jdbc.PostgresProfile.api.valueToConstColumn[String](search.getOrElse[String](&quot;&quot;))(slick.jdbc.PostgresProfile.api.stringColumnType).bind
+          api.this.MarkerContext.NoMarker
         </td>
       </tr><tr>
         <td>
-          35
+          37
         </td>
         <td>
-          559
+          828
         </td>
         <td>
-          1174
+          1268
           -
-          1174
-        </td>
-        <td>
-          ApplyToImplicitArgs
-        </td>
-        <td>
-          slick.lifted.OptionMapper2.getOptionMapper2TT
-        </td>
-        <td style="background: #AEF1AE">
-          lifted.this.OptionMapper2.getOptionMapper2TT[Boolean, Boolean, Boolean](slick.jdbc.PostgresProfile.api.booleanColumnType)
-        </td>
-      </tr><tr>
-        <td>
-          35
-        </td>
-        <td>
-          558
-        </td>
-        <td>
-          1174
-          -
-          1174
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.booleanColumnType
-        </td>
-        <td style="background: #AEF1AE">
-          slick.jdbc.PostgresProfile.api.booleanColumnType
-        </td>
-      </tr><tr>
-        <td>
-          35
-        </td>
-        <td>
-          549
-        </td>
-        <td>
-          1193
-          -
-          1193
+          1268
         </td>
         <td>
           Select
@@ -303,78 +248,15 @@
         </td>
       </tr><tr>
         <td>
-          35
+          37
         </td>
         <td>
-          552
+          837
         </td>
         <td>
-          1207
+          1168
           -
-          1209
-        </td>
-        <td>
-          Literal
-        </td>
-        <td>
-          &lt;nosymbol&gt;
-        </td>
-        <td style="background: #AEF1AE">
-          &quot;&quot;
-        </td>
-      </tr><tr>
-        <td>
-          35
-        </td>
-        <td>
-          561
-        </td>
-        <td>
-          1120
-          -
-          1120
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          slick.lifted.CanBeQueryCondition.BooleanColumnCanBeQueryCondition
-        </td>
-        <td style="background: #AEF1AE">
-          lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition
-        </td>
-      </tr><tr>
-        <td>
-          35
-        </td>
-        <td>
-          543
-        </td>
-        <td>
-          1140
-          -
-          1146
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          whatson.db.LocationTable.name
-        </td>
-        <td style="background: #AEF1AE">
-          l.name
-        </td>
-      </tr><tr>
-        <td>
-          35
-        </td>
-        <td>
-          564
-        </td>
-        <td>
-          1103
-          -
-          1223
+          1288
         </td>
         <td>
           ApplyToImplicitArgs
@@ -387,15 +269,15 @@
         </td>
       </tr><tr>
         <td>
-          35
+          37
         </td>
         <td>
-          546
+          819
         </td>
         <td>
-          1147
+          1212
           -
-          1172
+          1237
         </td>
         <td>
           Select
@@ -408,15 +290,36 @@
         </td>
       </tr><tr>
         <td>
-          35
+          37
         </td>
         <td>
-          555
+          831
         </td>
         <td>
-          1203
+          1239
           -
-          1203
+          1239
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.booleanColumnType
+        </td>
+        <td style="background: #AEF1AE">
+          slick.jdbc.PostgresProfile.api.booleanColumnType
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          822
+        </td>
+        <td>
+          1258
+          -
+          1258
         </td>
         <td>
           Select
@@ -429,36 +332,15 @@
         </td>
       </tr><tr>
         <td>
-          35
+          37
         </td>
         <td>
-          563
+          830
         </td>
         <td>
-          1117
+          1242
           -
-          1117
-        </td>
-        <td>
-          ApplyToImplicitArgs
-        </td>
-        <td>
-          slick.lifted.AbstractTableShapeImplicits.tableShape
-        </td>
-        <td style="background: #AEF1AE">
-          lifted.this.Shape.tableShape[slick.lifted.FlatShapeLevel, whatson.model.Location, whatson.db.LocationTable](scala.Predef.$conforms[whatson.db.LocationTable])
-        </td>
-      </tr><tr>
-        <td>
-          35
-        </td>
-        <td>
-          557
-        </td>
-        <td>
-          1177
-          -
-          1209
+          1274
         </td>
         <td>
           ApplyToImplicitArgs
@@ -471,15 +353,15 @@
         </td>
       </tr><tr>
         <td>
-          35
+          37
         </td>
         <td>
-          548
+          821
         </td>
         <td>
-          1177
+          1242
           -
-          1197
+          1262
         </td>
         <td>
           Apply
@@ -492,15 +374,15 @@
         </td>
       </tr><tr>
         <td>
-          35
+          37
         </td>
         <td>
-          551
+          824
         </td>
         <td>
-          1198
+          1263
           -
-          1198
+          1263
         </td>
         <td>
           Select
@@ -513,15 +395,15 @@
         </td>
       </tr><tr>
         <td>
-          35
+          37
         </td>
         <td>
-          560
+          833
         </td>
         <td>
-          1132
+          1197
           -
-          1209
+          1274
         </td>
         <td>
           ApplyToImplicitArgs
@@ -534,15 +416,36 @@
         </td>
       </tr><tr>
         <td>
-          35
+          37
         </td>
         <td>
-          545
+          836
         </td>
         <td>
-          1163
+          1182
           -
-          1163
+          1182
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.AbstractTableShapeImplicits.tableShape
+        </td>
+        <td style="background: #AEF1AE">
+          lifted.this.Shape.tableShape[slick.lifted.FlatShapeLevel, whatson.model.Location, whatson.db.LocationTable](scala.Predef.$conforms[whatson.db.LocationTable])
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          818
+        </td>
+        <td>
+          1228
+          -
+          1228
         </td>
         <td>
           Select
@@ -555,15 +458,15 @@
         </td>
       </tr><tr>
         <td>
-          35
+          37
         </td>
         <td>
-          554
+          827
         </td>
         <td>
-          1207
+          1272
           -
-          1209
+          1274
         </td>
         <td>
           ApplyToImplicitArgs
@@ -576,57 +479,15 @@
         </td>
       </tr><tr>
         <td>
-          35
+          37
         </td>
         <td>
-          562
+          817
         </td>
         <td>
-          1117
+          1212
           -
-          1117
-        </td>
-        <td>
-          TypeApply
-        </td>
-        <td>
-          scala.Predef.$conforms
-        </td>
-        <td style="background: #AEF1AE">
-          scala.Predef.$conforms[whatson.db.LocationTable]
-        </td>
-      </tr><tr>
-        <td>
-          35
-        </td>
-        <td>
-          553
-        </td>
-        <td>
-          1207
-          -
-          1207
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.stringColumnType
-        </td>
-        <td style="background: #AEF1AE">
-          slick.jdbc.PostgresProfile.api.stringColumnType
-        </td>
-      </tr><tr>
-        <td>
-          35
-        </td>
-        <td>
-          544
-        </td>
-        <td>
-          1147
-          -
-          1167
+          1232
         </td>
         <td>
           Apply
@@ -639,36 +500,57 @@
         </td>
       </tr><tr>
         <td>
-          35
+          37
         </td>
         <td>
-          556
+          826
         </td>
         <td>
-          1203
+          1272
           -
-          1203
+          1272
         </td>
         <td>
-          ApplyToImplicitArgs
+          Select
         </td>
         <td>
-          slick.lifted.OptionMapper2.getOptionMapper2TT
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.stringColumnType
         </td>
         <td style="background: #AEF1AE">
-          lifted.this.OptionMapper2.getOptionMapper2TT[String, String, Boolean](slick.jdbc.PostgresProfile.api.stringColumnType)
+          slick.jdbc.PostgresProfile.api.stringColumnType
         </td>
       </tr><tr>
         <td>
-          35
+          37
         </td>
         <td>
-          547
+          835
         </td>
         <td>
-          1132
+          1182
           -
-          1173
+          1182
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Predef.$conforms
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Predef.$conforms[whatson.db.LocationTable]
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          820
+        </td>
+        <td>
+          1197
+          -
+          1238
         </td>
         <td>
           Apply
@@ -681,36 +563,141 @@
         </td>
       </tr><tr>
         <td>
-          38
+          37
         </td>
         <td>
-          567
+          829
         </td>
         <td>
-          1237
+          1268
           -
-          1258
+          1268
         </td>
         <td>
           ApplyToImplicitArgs
         </td>
         <td>
-          whatson.model.detail.LocationDetail.LocationDetailQuery.detailed
+          slick.lifted.OptionMapper2.getOptionMapper2TT
         </td>
         <td style="background: #AEF1AE">
-          whatson.model.detail.LocationDetail.LocationDetailQuery(whatson.db.Util.QueryUtils[whatson.db.LocationTable, whatson.model.Location](q).queryPaged[Any, Nothing, Nothing](request)).detailed(LocationController.this.context)
+          lifted.this.OptionMapper2.getOptionMapper2TT[String, String, Boolean](slick.jdbc.PostgresProfile.api.stringColumnType)
         </td>
       </tr><tr>
         <td>
-          38
+          37
         </td>
         <td>
-          566
+          823
         </td>
         <td>
-          1250
+          1242
           -
-          1250
+          1267
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.lifted.LiteralColumn.bind
+        </td>
+        <td style="background: #AEF1AE">
+          slick.jdbc.PostgresProfile.api.valueToConstColumn[String](search.getOrElse[String](&quot;&quot;))(slick.jdbc.PostgresProfile.api.stringColumnType).bind
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          832
+        </td>
+        <td>
+          1239
+          -
+          1239
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.OptionMapper2.getOptionMapper2TT
+        </td>
+        <td style="background: #AEF1AE">
+          lifted.this.OptionMapper2.getOptionMapper2TT[Boolean, Boolean, Boolean](slick.jdbc.PostgresProfile.api.booleanColumnType)
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          825
+        </td>
+        <td>
+          1272
+          -
+          1274
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          834
+        </td>
+        <td>
+          1185
+          -
+          1185
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.lifted.CanBeQueryCondition.BooleanColumnCanBeQueryCondition
+        </td>
+        <td style="background: #AEF1AE">
+          lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          816
+        </td>
+        <td>
+          1205
+          -
+          1211
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.db.LocationTable.name
+        </td>
+        <td style="background: #AEF1AE">
+          l.name
+        </td>
+      </tr><tr>
+        <td>
+          40
+        </td>
+        <td>
+          839
+        </td>
+        <td>
+          1315
+          -
+          1315
         </td>
         <td>
           Select
@@ -723,15 +710,15 @@
         </td>
       </tr><tr>
         <td>
-          38
+          40
         </td>
         <td>
-          565
+          838
         </td>
         <td>
-          1237
+          1302
           -
-          1249
+          1314
         </td>
         <td>
           ApplyToImplicitArgs
@@ -744,57 +731,36 @@
         </td>
       </tr><tr>
         <td>
-          39
+          40
         </td>
         <td>
-          568
+          840
         </td>
         <td>
-          1279
+          1302
           -
-          1281
+          1323
         </td>
         <td>
-          Select
+          ApplyToImplicitArgs
         </td>
         <td>
-          play.api.db.slick.HasDatabaseConfig.db
+          whatson.model.detail.LocationDetail.LocationDetailQuery.detailed
         </td>
         <td style="background: #AEF1AE">
-          LocationController.this.db
+          whatson.model.detail.LocationDetail.LocationDetailQuery(whatson.db.Util.QueryUtils[whatson.db.LocationTable, whatson.model.Location](q).queryPaged[Any, Nothing, Nothing](request)).detailed(LocationController.this.context)
         </td>
       </tr><tr>
         <td>
-          39
+          41
         </td>
         <td>
-          570
+          842
         </td>
         <td>
-          1274
+          1339
           -
-          1274
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          whatson.model.detail.LocationDetail.locationDetailWrites
-        </td>
-        <td style="background: #AEF1AE">
-          whatson.model.detail.LocationDetail.locationDetailWrites
-        </td>
-      </tr><tr>
-        <td>
-          39
-        </td>
-        <td>
-          569
-        </td>
-        <td>
-          1274
-          -
-          1274
+          1339
         </td>
         <td>
           Select
@@ -807,15 +773,15 @@
         </td>
       </tr><tr>
         <td>
-          39
+          41
         </td>
         <td>
-          571
+          844
         </td>
         <td>
-          1263
+          1328
           -
-          1282
+          1347
         </td>
         <td>
           ApplyToImplicitArgs
@@ -828,15 +794,57 @@
         </td>
       </tr><tr>
         <td>
-          42
+          41
         </td>
         <td>
-          597
+          841
         </td>
         <td>
-          1317
+          1344
           -
-          1610
+          1346
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.db.slick.HasDatabaseConfig.db
+        </td>
+        <td style="background: #AEF1AE">
+          LocationController.this.db
+        </td>
+      </tr><tr>
+        <td>
+          41
+        </td>
+        <td>
+          843
+        </td>
+        <td>
+          1339
+          -
+          1339
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.model.detail.LocationDetail.locationDetailWrites
+        </td>
+        <td style="background: #AEF1AE">
+          whatson.model.detail.LocationDetail.locationDetailWrites
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          870
+        </td>
+        <td>
+          1382
+          -
+          1675
         </td>
         <td>
           Apply
@@ -856,15 +864,15 @@
         </td>
       </tr><tr>
         <td>
-          43
+          45
         </td>
         <td>
-          573
+          846
         </td>
         <td>
-          1387
+          1452
           -
-          1417
+          1482
         </td>
         <td>
           Literal
@@ -877,15 +885,15 @@
         </td>
       </tr><tr>
         <td>
-          43
+          45
         </td>
         <td>
-          575
+          848
         </td>
         <td>
-          1377
+          1442
           -
-          1418
+          1483
         </td>
         <td>
           ApplyToImplicitArgs
@@ -898,15 +906,15 @@
         </td>
       </tr><tr>
         <td>
-          43
+          45
         </td>
         <td>
-          574
+          847
         </td>
         <td>
-          1386
+          1451
           -
-          1386
+          1451
         </td>
         <td>
           Select
@@ -919,99 +927,15 @@
         </td>
       </tr><tr>
         <td>
-          45
+          47
         </td>
         <td>
-          577
+          855
         </td>
         <td>
-          1455
+          1518
           -
-          1455
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
-        </td>
-        <td style="background: #AEF1AE">
-          slick.jdbc.PostgresProfile.api.intColumnType
-        </td>
-      </tr><tr>
-        <td>
-          45
-        </td>
-        <td>
-          576
-        </td>
-        <td>
-          1453
-          -
-          1457
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          whatson.db.LocationTable.id
-        </td>
-        <td style="background: #AEF1AE">
-          l.id
-        </td>
-      </tr><tr>
-        <td>
-          45
-        </td>
-        <td>
-          585
-        </td>
-        <td>
-          1438
-          -
-          1438
-        </td>
-        <td>
-          ApplyToImplicitArgs
-        </td>
-        <td>
-          slick.lifted.AbstractTableShapeImplicits.tableShape
-        </td>
-        <td style="background: #AEF1AE">
-          lifted.this.Shape.tableShape[slick.lifted.FlatShapeLevel, whatson.model.Location, whatson.db.LocationTable](scala.Predef.$conforms[whatson.db.LocationTable])
-        </td>
-      </tr><tr>
-        <td>
-          45
-        </td>
-        <td>
-          579
-        </td>
-        <td>
-          1462
-          -
-          1469
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          slick.lifted.LiteralColumn.bind
-        </td>
-        <td style="background: #AEF1AE">
-          slick.jdbc.PostgresProfile.api.valueToConstColumn[Int](id)(slick.jdbc.PostgresProfile.api.intColumnType).bind
-        </td>
-      </tr><tr>
-        <td>
-          45
-        </td>
-        <td>
-          582
-        </td>
-        <td>
-          1453
-          -
-          1469
+          1534
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1024,36 +948,15 @@
         </td>
       </tr><tr>
         <td>
-          45
+          47
         </td>
         <td>
-          581
+          857
         </td>
         <td>
-          1458
+          1503
           -
-          1458
-        </td>
-        <td>
-          ApplyToImplicitArgs
-        </td>
-        <td>
-          slick.lifted.OptionMapper2.getOptionMapper2TT
-        </td>
-        <td style="background: #AEF1AE">
-          lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType)
-        </td>
-      </tr><tr>
-        <td>
-          45
-        </td>
-        <td>
-          584
-        </td>
-        <td>
-          1438
-          -
-          1438
+          1503
         </td>
         <td>
           TypeApply
@@ -1066,15 +969,15 @@
         </td>
       </tr><tr>
         <td>
-          45
+          47
         </td>
         <td>
-          578
+          851
         </td>
         <td>
-          1462
+          1527
           -
-          1462
+          1527
         </td>
         <td>
           Select
@@ -1087,36 +990,36 @@
         </td>
       </tr><tr>
         <td>
-          45
+          47
         </td>
         <td>
-          586
+          854
         </td>
         <td>
-          1432
+          1523
           -
-          1478
+          1523
         </td>
         <td>
           ApplyToImplicitArgs
         </td>
         <td>
-          slick.lifted.Query.map
+          slick.lifted.OptionMapper2.getOptionMapper2TT
         </td>
         <td style="background: #AEF1AE">
-          whatson.db.LocationTable.location.withFilter[slick.lifted.Rep[Boolean]](((l: whatson.db.LocationTable) =&gt; slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](l.id)(slick.jdbc.PostgresProfile.api.intColumnType).===[Int, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[Int](id)(slick.jdbc.PostgresProfile.api.intColumnType).bind)(lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType))))(lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition).map[whatson.db.LocationTable, whatson.db.LocationTable, whatson.model.Location](((l: whatson.db.LocationTable) =&gt; l))(lifted.this.Shape.tableShape[slick.lifted.FlatShapeLevel, whatson.model.Location, whatson.db.LocationTable](scala.Predef.$conforms[whatson.db.LocationTable]))
+          lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType)
         </td>
       </tr><tr>
         <td>
-          45
+          47
         </td>
         <td>
-          580
+          853
         </td>
         <td>
-          1458
+          1523
           -
-          1458
+          1523
         </td>
         <td>
           Select
@@ -1129,15 +1032,15 @@
         </td>
       </tr><tr>
         <td>
-          45
+          47
         </td>
         <td>
-          583
+          856
         </td>
         <td>
-          1441
+          1506
           -
-          1441
+          1506
         </td>
         <td>
           Select
@@ -1153,33 +1056,117 @@
           47
         </td>
         <td>
-          588
+          859
         </td>
         <td>
-          1492
+          1497
           -
-          1502
+          1543
         </td>
         <td>
           ApplyToImplicitArgs
         </td>
         <td>
-          whatson.model.detail.LocationDetail.LocationDetailQuery.detailed
+          slick.lifted.Query.map
         </td>
         <td style="background: #AEF1AE">
-          whatson.model.detail.LocationDetail.LocationDetailQuery(q).detailed(LocationController.this.context)
+          whatson.db.LocationTable.location.withFilter[slick.lifted.Rep[Boolean]](((l: whatson.db.LocationTable) =&gt; slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](l.id)(slick.jdbc.PostgresProfile.api.intColumnType).===[Int, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[Int](id)(slick.jdbc.PostgresProfile.api.intColumnType).bind)(lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType))))(lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition).map[whatson.db.LocationTable, whatson.db.LocationTable, whatson.model.Location](((l: whatson.db.LocationTable) =&gt; l))(lifted.this.Shape.tableShape[slick.lifted.FlatShapeLevel, whatson.model.Location, whatson.db.LocationTable](scala.Predef.$conforms[whatson.db.LocationTable]))
         </td>
       </tr><tr>
         <td>
           47
         </td>
         <td>
-          587
+          850
         </td>
         <td>
-          1494
+          1520
           -
-          1494
+          1520
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
+        </td>
+        <td style="background: #AEF1AE">
+          slick.jdbc.PostgresProfile.api.intColumnType
+        </td>
+      </tr><tr>
+        <td>
+          47
+        </td>
+        <td>
+          858
+        </td>
+        <td>
+          1503
+          -
+          1503
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.AbstractTableShapeImplicits.tableShape
+        </td>
+        <td style="background: #AEF1AE">
+          lifted.this.Shape.tableShape[slick.lifted.FlatShapeLevel, whatson.model.Location, whatson.db.LocationTable](scala.Predef.$conforms[whatson.db.LocationTable])
+        </td>
+      </tr><tr>
+        <td>
+          47
+        </td>
+        <td>
+          849
+        </td>
+        <td>
+          1518
+          -
+          1522
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.db.LocationTable.id
+        </td>
+        <td style="background: #AEF1AE">
+          l.id
+        </td>
+      </tr><tr>
+        <td>
+          47
+        </td>
+        <td>
+          852
+        </td>
+        <td>
+          1527
+          -
+          1534
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.lifted.LiteralColumn.bind
+        </td>
+        <td style="background: #AEF1AE">
+          slick.jdbc.PostgresProfile.api.valueToConstColumn[Int](id)(slick.jdbc.PostgresProfile.api.intColumnType).bind
+        </td>
+      </tr><tr>
+        <td>
+          49
+        </td>
+        <td>
+          860
+        </td>
+        <td>
+          1559
+          -
+          1559
         </td>
         <td>
           Select
@@ -1192,15 +1179,15 @@
         </td>
       </tr><tr>
         <td>
-          47
+          49
         </td>
         <td>
-          596
+          869
         </td>
         <td>
-          1485
+          1550
           -
-          1606
+          1671
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1216,36 +1203,15 @@
         </td>
       </tr><tr>
         <td>
-          47
+          49
         </td>
         <td>
-          595
+          862
         </td>
         <td>
-          1507
+          1578
           -
-          1507
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          controllers.LocationController.context
-        </td>
-        <td style="background: #AEF1AE">
-          LocationController.this.context
-        </td>
-      </tr><tr>
-        <td>
-          47
-        </td>
-        <td>
-          589
-        </td>
-        <td>
-          1513
-          -
-          1525
+          1590
         </td>
         <td>
           Select
@@ -1258,15 +1224,57 @@
         </td>
       </tr><tr>
         <td>
-          48
+          49
         </td>
         <td>
-          591
+          868
         </td>
         <td>
-          1559
+          1572
           -
-          1573
+          1572
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          controllers.LocationController.context
+        </td>
+        <td style="background: #AEF1AE">
+          LocationController.this.context
+        </td>
+      </tr><tr>
+        <td>
+          49
+        </td>
+        <td>
+          861
+        </td>
+        <td>
+          1557
+          -
+          1567
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          whatson.model.detail.LocationDetail.LocationDetailQuery.detailed
+        </td>
+        <td style="background: #AEF1AE">
+          whatson.model.detail.LocationDetail.LocationDetailQuery(q).detailed(LocationController.this.context)
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          864
+        </td>
+        <td>
+          1624
+          -
+          1638
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1279,15 +1287,15 @@
         </td>
       </tr><tr>
         <td>
-          48
+          50
         </td>
         <td>
-          590
+          863
         </td>
         <td>
-          1570
+          1635
           -
-          1570
+          1635
         </td>
         <td>
           Select
@@ -1300,15 +1308,15 @@
         </td>
       </tr><tr>
         <td>
-          48
+          50
         </td>
         <td>
-          593
+          866
         </td>
         <td>
-          1556
+          1621
           -
-          1574
+          1639
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1321,15 +1329,15 @@
         </td>
       </tr><tr>
         <td>
-          48
+          50
         </td>
         <td>
-          592
+          865
         </td>
         <td>
-          1558
+          1623
           -
-          1558
+          1623
         </td>
         <td>
           Select
@@ -1342,15 +1350,15 @@
         </td>
       </tr><tr>
         <td>
-          49
+          51
         </td>
         <td>
-          594
+          867
         </td>
         <td>
-          1591
+          1656
           -
-          1599
+          1664
         </td>
         <td>
           Select
@@ -1363,15 +1371,15 @@
         </td>
       </tr><tr>
         <td>
-          53
+          55
         </td>
         <td>
-          637
+          910
         </td>
         <td>
-          1639
+          1704
           -
-          2083
+          2148
         </td>
         <td>
           Apply
@@ -1396,15 +1404,15 @@
         </td>
       </tr><tr>
         <td>
-          54
+          56
         </td>
         <td>
-          600
+          873
         </td>
         <td>
-          1699
+          1764
           -
-          1766
+          1831
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1417,15 +1425,15 @@
         </td>
       </tr><tr>
         <td>
-          54
+          56
         </td>
         <td>
-          599
+          872
         </td>
         <td>
-          1708
+          1773
           -
-          1708
+          1773
         </td>
         <td>
           Select
@@ -1438,15 +1446,15 @@
         </td>
       </tr><tr>
         <td>
-          54
+          56
         </td>
         <td>
-          598
+          871
         </td>
         <td>
-          1709
+          1774
           -
-          1765
+          1830
         </td>
         <td>
           Literal
@@ -1459,15 +1467,15 @@
         </td>
       </tr><tr>
         <td>
-          56
+          58
         </td>
         <td>
-          609
+          882
         </td>
         <td>
-          1786
+          1851
           -
-          1786
+          1851
         </td>
         <td>
           TypeApply
@@ -1480,57 +1488,15 @@
         </td>
       </tr><tr>
         <td>
-          56
+          58
         </td>
         <td>
-          603
+          881
         </td>
         <td>
-          1810
+          1854
           -
-          1810
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
-        </td>
-        <td style="background: #AEF1AE">
-          slick.jdbc.PostgresProfile.api.intColumnType
-        </td>
-      </tr><tr>
-        <td>
-          56
-        </td>
-        <td>
-          606
-        </td>
-        <td>
-          1806
-          -
-          1806
-        </td>
-        <td>
-          ApplyToImplicitArgs
-        </td>
-        <td>
-          slick.lifted.OptionMapper2.getOptionMapper2TT
-        </td>
-        <td style="background: #AEF1AE">
-          lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType)
-        </td>
-      </tr><tr>
-        <td>
-          56
-        </td>
-        <td>
-          608
-        </td>
-        <td>
-          1789
-          -
-          1789
+          1854
         </td>
         <td>
           Select
@@ -1543,15 +1509,36 @@
         </td>
       </tr><tr>
         <td>
-          56
+          58
         </td>
         <td>
-          611
+          875
         </td>
         <td>
-          1780
+          1868
           -
-          1826
+          1868
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
+        </td>
+        <td style="background: #AEF1AE">
+          slick.jdbc.PostgresProfile.api.intColumnType
+        </td>
+      </tr><tr>
+        <td>
+          58
+        </td>
+        <td>
+          884
+        </td>
+        <td>
+          1845
+          -
+          1891
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1564,15 +1551,15 @@
         </td>
       </tr><tr>
         <td>
-          56
+          58
         </td>
         <td>
-          602
+          878
         </td>
         <td>
-          1803
+          1871
           -
-          1803
+          1871
         </td>
         <td>
           Select
@@ -1585,36 +1572,15 @@
         </td>
       </tr><tr>
         <td>
-          56
+          58
         </td>
         <td>
-          605
+          877
         </td>
         <td>
-          1806
+          1875
           -
-          1806
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
-        </td>
-        <td style="background: #AEF1AE">
-          slick.jdbc.PostgresProfile.api.intColumnType
-        </td>
-      </tr><tr>
-        <td>
-          56
-        </td>
-        <td>
-          604
-        </td>
-        <td>
-          1810
-          -
-          1817
+          1882
         </td>
         <td>
           Select
@@ -1627,15 +1593,15 @@
         </td>
       </tr><tr>
         <td>
-          56
+          58
         </td>
         <td>
-          607
+          880
         </td>
         <td>
-          1801
+          1866
           -
-          1817
+          1882
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1648,36 +1614,15 @@
         </td>
       </tr><tr>
         <td>
-          56
+          58
         </td>
         <td>
-          601
+          883
         </td>
         <td>
-          1801
+          1851
           -
-          1805
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          whatson.db.LocationTable.id
-        </td>
-        <td style="background: #AEF1AE">
-          l.id
-        </td>
-      </tr><tr>
-        <td>
-          56
-        </td>
-        <td>
-          610
-        </td>
-        <td>
-          1786
-          -
-          1786
+          1851
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1693,12 +1638,138 @@
           58
         </td>
         <td>
-          636
+          874
         </td>
         <td>
-          1833
+          1866
           -
-          2079
+          1870
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.db.LocationTable.id
+        </td>
+        <td style="background: #AEF1AE">
+          l.id
+        </td>
+      </tr><tr>
+        <td>
+          58
+        </td>
+        <td>
+          876
+        </td>
+        <td>
+          1875
+          -
+          1875
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
+        </td>
+        <td style="background: #AEF1AE">
+          slick.jdbc.PostgresProfile.api.intColumnType
+        </td>
+      </tr><tr>
+        <td>
+          58
+        </td>
+        <td>
+          879
+        </td>
+        <td>
+          1871
+          -
+          1871
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.OptionMapper2.getOptionMapper2TT
+        </td>
+        <td style="background: #AEF1AE">
+          lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType)
+        </td>
+      </tr><tr>
+        <td>
+          60
+        </td>
+        <td>
+          908
+        </td>
+        <td>
+          1943
+          -
+          1943
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          controllers.LocationController.context
+        </td>
+        <td style="background: #AEF1AE">
+          LocationController.this.context
+        </td>
+      </tr><tr>
+        <td>
+          60
+        </td>
+        <td>
+          887
+        </td>
+        <td>
+          1921
+          -
+          1933
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.TraversableLike.headOption
+        </td>
+        <td style="background: #AEF1AE">
+          x$1.headOption
+        </td>
+      </tr><tr>
+        <td>
+          60
+        </td>
+        <td>
+          886
+        </td>
+        <td>
+          1905
+          -
+          1915
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          whatson.model.detail.LocationDetail.LocationDetailQuery.detailed
+        </td>
+        <td style="background: #AEF1AE">
+          whatson.model.detail.LocationDetail.LocationDetailQuery(q).detailed(LocationController.this.context)
+        </td>
+      </tr><tr>
+        <td>
+          60
+        </td>
+        <td>
+          909
+        </td>
+        <td>
+          1898
+          -
+          2144
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1719,15 +1790,15 @@
         </td>
       </tr><tr>
         <td>
-          58
+          60
         </td>
         <td>
-          612
+          885
         </td>
         <td>
-          1842
+          1907
           -
-          1842
+          1907
         </td>
         <td>
           Select
@@ -1737,102 +1808,228 @@
         </td>
         <td style="background: #AEF1AE">
           LocationController.this.context
-        </td>
-      </tr><tr>
-        <td>
-          58
-        </td>
-        <td>
-          615
-        </td>
-        <td>
-          1855
-          -
-          1855
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          controllers.LocationController.context
-        </td>
-        <td style="background: #AEF1AE">
-          LocationController.this.context
-        </td>
-      </tr><tr>
-        <td>
-          58
-        </td>
-        <td>
-          635
-        </td>
-        <td>
-          1878
-          -
-          1878
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          controllers.LocationController.context
-        </td>
-        <td style="background: #AEF1AE">
-          LocationController.this.context
-        </td>
-      </tr><tr>
-        <td>
-          58
-        </td>
-        <td>
-          614
-        </td>
-        <td>
-          1856
-          -
-          1868
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          scala.collection.TraversableLike.headOption
-        </td>
-        <td style="background: #AEF1AE">
-          x$1.headOption
-        </td>
-      </tr><tr>
-        <td>
-          58
-        </td>
-        <td>
-          613
-        </td>
-        <td>
-          1840
-          -
-          1850
-        </td>
-        <td>
-          ApplyToImplicitArgs
-        </td>
-        <td>
-          whatson.model.detail.LocationDetail.LocationDetailQuery.detailed
-        </td>
-        <td style="background: #AEF1AE">
-          whatson.model.detail.LocationDetail.LocationDetailQuery(q).detailed(LocationController.this.context)
         </td>
       </tr><tr>
         <td>
           60
         </td>
         <td>
-          627
+          888
         </td>
         <td>
           1920
           -
-          2003
+          1920
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          controllers.LocationController.context
+        </td>
+        <td style="background: #AEF1AE">
+          LocationController.this.context
+        </td>
+      </tr><tr>
+        <td>
+          62
+        </td>
+        <td>
+          891
+        </td>
+        <td>
+          2018
+          -
+          2028
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.relational.RelationalProfile.API.valueToConstColumn
+        </td>
+        <td style="background: #AEF1AE">
+          slick.jdbc.PostgresProfile.api.valueToConstColumn[Float](r.latitude)(slick.jdbc.PostgresProfile.api.floatColumnType)
+        </td>
+      </tr><tr>
+        <td>
+          62
+        </td>
+        <td>
+          899
+        </td>
+        <td>
+          2000
+          -
+          2000
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.relational.RelationalProfile.API.columnToOrdered
+        </td>
+        <td style="background: #AEF1AE">
+          slick.jdbc.PostgresProfile.api.columnToOrdered[Float](c)(slick.jdbc.PostgresProfile.api.floatColumnType)
+        </td>
+      </tr><tr>
+        <td>
+          62
+        </td>
+        <td>
+          890
+        </td>
+        <td>
+          2020
+          -
+          2020
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.floatColumnType
+        </td>
+        <td style="background: #AEF1AE">
+          slick.jdbc.PostgresProfile.api.floatColumnType
+        </td>
+      </tr><tr>
+        <td>
+          62
+        </td>
+        <td>
+          893
+        </td>
+        <td>
+          2032
+          -
+          2032
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.floatColumnType
+        </td>
+        <td style="background: #AEF1AE">
+          slick.jdbc.PostgresProfile.api.floatColumnType
+        </td>
+      </tr><tr>
+        <td>
+          62
+        </td>
+        <td>
+          896
+        </td>
+        <td>
+          2055
+          -
+          2066
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.db.LocationTable.longitude
+        </td>
+        <td style="background: #AEF1AE">
+          y.longitude
+        </td>
+      </tr><tr>
+        <td>
+          62
+        </td>
+        <td>
+          895
+        </td>
+        <td>
+          2043
+          -
+          2053
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.db.LocationTable.latitude
+        </td>
+        <td style="background: #AEF1AE">
+          y.latitude
+        </td>
+      </tr><tr>
+        <td>
+          62
+        </td>
+        <td>
+          889
+        </td>
+        <td>
+          2018
+          -
+          2028
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.model.detail.LocationDetail.latitude
+        </td>
+        <td style="background: #AEF1AE">
+          r.latitude
+        </td>
+      </tr><tr>
+        <td>
+          62
+        </td>
+        <td>
+          898
+        </td>
+        <td>
+          2000
+          -
+          2000
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.floatColumnType
+        </td>
+        <td style="background: #AEF1AE">
+          slick.jdbc.PostgresProfile.api.floatColumnType
+        </td>
+      </tr><tr>
+        <td>
+          62
+        </td>
+        <td>
+          892
+        </td>
+        <td>
+          2030
+          -
+          2041
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.model.detail.LocationDetail.longitude
+        </td>
+        <td style="background: #AEF1AE">
+          r.longitude
+        </td>
+      </tr><tr>
+        <td>
+          62
+        </td>
+        <td>
+          900
+        </td>
+        <td>
+          1985
+          -
+          2068
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1847,36 +2044,15 @@
         </td>
       </tr><tr>
         <td>
-          60
+          62
         </td>
         <td>
-          618
+          894
         </td>
         <td>
-          1953
+          2030
           -
-          1963
-        </td>
-        <td>
-          ApplyToImplicitArgs
-        </td>
-        <td>
-          slick.relational.RelationalProfile.API.valueToConstColumn
-        </td>
-        <td style="background: #AEF1AE">
-          slick.jdbc.PostgresProfile.api.valueToConstColumn[Float](r.latitude)(slick.jdbc.PostgresProfile.api.floatColumnType)
-        </td>
-      </tr><tr>
-        <td>
-          60
-        </td>
-        <td>
-          621
-        </td>
-        <td>
-          1965
-          -
-          1976
+          2041
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1889,15 +2065,15 @@
         </td>
       </tr><tr>
         <td>
-          60
+          62
         </td>
         <td>
-          624
+          897
         </td>
         <td>
-          1941
+          2006
           -
-          2002
+          2067
         </td>
         <td>
           Apply
@@ -1910,204 +2086,15 @@
         </td>
       </tr><tr>
         <td>
-          60
+          63
         </td>
         <td>
-          623
+          902
         </td>
         <td>
-          1990
+          2090
           -
-          2001
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          whatson.db.LocationTable.longitude
-        </td>
-        <td style="background: #AEF1AE">
-          y.longitude
-        </td>
-      </tr><tr>
-        <td>
-          60
-        </td>
-        <td>
-          626
-        </td>
-        <td>
-          1935
-          -
-          1935
-        </td>
-        <td>
-          ApplyToImplicitArgs
-        </td>
-        <td>
-          slick.relational.RelationalProfile.API.columnToOrdered
-        </td>
-        <td style="background: #AEF1AE">
-          slick.jdbc.PostgresProfile.api.columnToOrdered[Float](c)(slick.jdbc.PostgresProfile.api.floatColumnType)
-        </td>
-      </tr><tr>
-        <td>
-          60
-        </td>
-        <td>
-          617
-        </td>
-        <td>
-          1955
-          -
-          1955
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.floatColumnType
-        </td>
-        <td style="background: #AEF1AE">
-          slick.jdbc.PostgresProfile.api.floatColumnType
-        </td>
-      </tr><tr>
-        <td>
-          60
-        </td>
-        <td>
-          620
-        </td>
-        <td>
-          1967
-          -
-          1967
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.floatColumnType
-        </td>
-        <td style="background: #AEF1AE">
-          slick.jdbc.PostgresProfile.api.floatColumnType
-        </td>
-      </tr><tr>
-        <td>
-          60
-        </td>
-        <td>
-          622
-        </td>
-        <td>
-          1978
-          -
-          1988
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          whatson.db.LocationTable.latitude
-        </td>
-        <td style="background: #AEF1AE">
-          y.latitude
-        </td>
-      </tr><tr>
-        <td>
-          60
-        </td>
-        <td>
-          616
-        </td>
-        <td>
-          1953
-          -
-          1963
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          whatson.model.detail.LocationDetail.latitude
-        </td>
-        <td style="background: #AEF1AE">
-          r.latitude
-        </td>
-      </tr><tr>
-        <td>
-          60
-        </td>
-        <td>
-          625
-        </td>
-        <td>
-          1935
-          -
-          1935
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.floatColumnType
-        </td>
-        <td style="background: #AEF1AE">
-          slick.jdbc.PostgresProfile.api.floatColumnType
-        </td>
-      </tr><tr>
-        <td>
-          60
-        </td>
-        <td>
-          619
-        </td>
-        <td>
-          1965
-          -
-          1976
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          whatson.model.detail.LocationDetail.longitude
-        </td>
-        <td style="background: #AEF1AE">
-          r.longitude
-        </td>
-      </tr><tr>
-        <td>
-          61
-        </td>
-        <td>
-          630
-        </td>
-        <td>
-          2025
-          -
-          2025
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          whatson.model.Location.locationWrites
-        </td>
-        <td style="background: #AEF1AE">
-          whatson.model.Location.locationWrites
-        </td>
-      </tr><tr>
-        <td>
-          61
-        </td>
-        <td>
-          629
-        </td>
-        <td>
-          2025
-          -
-          2025
+          2090
         </td>
         <td>
           Select
@@ -2120,15 +2107,15 @@
         </td>
       </tr><tr>
         <td>
-          61
+          63
         </td>
         <td>
-          631
+          904
         </td>
         <td>
-          2012
+          2077
           -
-          2029
+          2094
         </td>
         <td>
           ApplyToImplicitArgs
@@ -2141,15 +2128,15 @@
         </td>
       </tr><tr>
         <td>
-          61
+          63
         </td>
         <td>
-          628
+          901
         </td>
         <td>
-          2026
+          2091
           -
-          2028
+          2093
         </td>
         <td>
           Select
@@ -2165,33 +2152,33 @@
           63
         </td>
         <td>
-          633
+          903
         </td>
         <td>
-          2063
+          2090
           -
-          2063
+          2090
         </td>
         <td>
           Select
         </td>
         <td>
-          controllers.LocationController.context
+          whatson.model.Location.locationWrites
         </td>
         <td style="background: #AEF1AE">
-          LocationController.this.context
+          whatson.model.Location.locationWrites
         </td>
       </tr><tr>
         <td>
-          63
+          65
         </td>
         <td>
-          632
+          905
         </td>
         <td>
-          2064
+          2129
           -
-          2072
+          2137
         </td>
         <td>
           Select
@@ -2204,15 +2191,15 @@
         </td>
       </tr><tr>
         <td>
-          63
+          65
         </td>
         <td>
-          634
+          907
         </td>
         <td>
-          2057
+          2122
           -
-          2073
+          2138
         </td>
         <td>
           ApplyToImplicitArgs
@@ -2225,250 +2212,15 @@
         </td>
       </tr><tr>
         <td>
-          67
+          65
         </td>
         <td>
-          639
+          906
         </td>
         <td>
-          2141
+          2128
           -
-          2166
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          play.api.mvc.PlayBodyParsers.json
-        </td>
-        <td style="background: #AEF1AE">
-          LocationController.this.parse.json[whatson.model.Location](whatson.model.Location.locationReads)
-        </td>
-      </tr><tr>
-        <td>
-          67
-        </td>
-        <td>
-          653
-        </td>
-        <td>
-          2110
-          -
-          2395
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          play.api.mvc.ActionBuilder.async
-        </td>
-        <td style="background: #AEF1AE">
-          LocationController.this.silhouette.SecuredAction.async[whatson.model.Location](LocationController.this.parse.json[whatson.model.Location](whatson.model.Location.locationReads))(((implicit request: play.api.mvc.Request[whatson.model.Location]) =&gt; {
-  LocationController.this.log.debug(&quot;Rest request to create location&quot;)(api.this.MarkerContext.NoMarker);
-  val inserted: scala.concurrent.Future[whatson.model.Location] = LocationController.this.db.run[whatson.model.Location](whatson.db.Util.insertAndReturn[whatson.model.Location, whatson.db.LocationTable](whatson.db.LocationTable.location, request.body));
-  inserted.map[play.api.mvc.Result](((x: whatson.model.Location) =&gt; LocationController.this.Ok.apply[play.api.libs.json.JsValue](play.api.libs.json.Json.toJson[whatson.model.Location](x)(whatson.model.Location.locationWrites))(http.this.Writeable.writeableOf_JsValue)))(LocationController.this.context)
-}))
-        </td>
-      </tr><tr>
-        <td>
-          67
-        </td>
-        <td>
-          638
-        </td>
-        <td>
-          2152
-          -
-          2165
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          whatson.model.Location.locationReads
-        </td>
-        <td style="background: #AEF1AE">
-          whatson.model.Location.locationReads
-        </td>
-      </tr><tr>
-        <td>
-          68
-        </td>
-        <td>
-          642
-        </td>
-        <td>
-          2213
-          -
-          2257
-        </td>
-        <td>
-          ApplyToImplicitArgs
-        </td>
-        <td>
-          play.api.LoggerLike.debug
-        </td>
-        <td style="background: #AEF1AE">
-          LocationController.this.log.debug(&quot;Rest request to create location&quot;)(api.this.MarkerContext.NoMarker)
-        </td>
-      </tr><tr>
-        <td>
-          68
-        </td>
-        <td>
-          641
-        </td>
-        <td>
-          2222
-          -
-          2222
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          play.api.LowPriorityMarkerContextImplicits.NoMarker
-        </td>
-        <td style="background: #AEF1AE">
-          api.this.MarkerContext.NoMarker
-        </td>
-      </tr><tr>
-        <td>
-          68
-        </td>
-        <td>
-          640
-        </td>
-        <td>
-          2223
-          -
-          2256
-        </td>
-        <td>
-          Literal
-        </td>
-        <td>
-          &lt;nosymbol&gt;
-        </td>
-        <td style="background: #AEF1AE">
-          &quot;Rest request to create location&quot;
-        </td>
-      </tr><tr>
-        <td>
-          70
-        </td>
-        <td>
-          645
-        </td>
-        <td>
-          2285
-          -
-          2347
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          whatson.db.Util.insertAndReturn
-        </td>
-        <td style="background: #AEF1AE">
-          whatson.db.Util.insertAndReturn[whatson.model.Location, whatson.db.LocationTable](whatson.db.LocationTable.location, request.body)
-        </td>
-      </tr><tr>
-        <td>
-          70
-        </td>
-        <td>
-          644
-        </td>
-        <td>
-          2334
-          -
-          2346
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          play.api.mvc.Request.body
-        </td>
-        <td style="background: #AEF1AE">
-          request.body
-        </td>
-      </tr><tr>
-        <td>
-          70
-        </td>
-        <td>
-          646
-        </td>
-        <td>
-          2278
-          -
-          2348
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          slick.basic.BasicBackend.DatabaseDef.run
-        </td>
-        <td style="background: #AEF1AE">
-          LocationController.this.db.run[whatson.model.Location](whatson.db.Util.insertAndReturn[whatson.model.Location, whatson.db.LocationTable](whatson.db.LocationTable.location, request.body))
-        </td>
-      </tr><tr>
-        <td>
-          70
-        </td>
-        <td>
-          643
-        </td>
-        <td>
-          2325
-          -
-          2333
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          whatson.db.LocationTable.location
-        </td>
-        <td style="background: #AEF1AE">
-          whatson.db.LocationTable.location
-        </td>
-      </tr><tr>
-        <td>
-          72
-        </td>
-        <td>
-          648
-        </td>
-        <td>
-          2375
-          -
-          2389
-        </td>
-        <td>
-          ApplyToImplicitArgs
-        </td>
-        <td>
-          play.api.libs.json.Json.toJson
-        </td>
-        <td style="background: #AEF1AE">
-          play.api.libs.json.Json.toJson[whatson.model.Location](x)(whatson.model.Location.locationWrites)
-        </td>
-      </tr><tr>
-        <td>
-          72
-        </td>
-        <td>
-          651
-        </td>
-        <td>
-          2366
-          -
-          2366
+          2128
         </td>
         <td>
           Select
@@ -2481,15 +2233,149 @@
         </td>
       </tr><tr>
         <td>
+          69
+        </td>
+        <td>
+          911
+        </td>
+        <td>
+          2206
+          -
+          2216
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.mvc.PlayBodyParsers.json
+        </td>
+        <td style="background: #AEF1AE">
+          LocationController.this.parse.json
+        </td>
+      </tr><tr>
+        <td>
+          69
+        </td>
+        <td>
+          931
+        </td>
+        <td>
+          2175
+          -
+          2599
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          play.api.mvc.ActionBuilder.async
+        </td>
+        <td style="background: #AEF1AE">
+          LocationController.this.silhouette.SecuredAction.async[play.api.libs.json.JsValue](LocationController.this.parse.json)(((implicit request: com.mohiva.play.silhouette.api.actions.SecuredRequest[whatson.auth.AuthEnv,play.api.libs.json.JsValue]) =&gt; whatson.model.forms.LocationForm.form.bindFromRequest()(request).fold[scala.concurrent.Future[play.api.mvc.Result]](((form: play.api.data.Form[whatson.model.Location]) =&gt; scala.concurrent.Future.successful[play.api.mvc.Result](LocationController.this.BadRequest.apply[play.api.libs.json.JsValue](play.api.libs.json.Json.toJson[Seq[play.api.data.FormError]](form.errors)(whatson.util.FormErrorJson.formErrorFormat))(http.this.Writeable.writeableOf_JsValue))), ((data: whatson.model.Location) =&gt; {
+  LocationController.this.log.debug(&quot;Rest request to create location&quot;)(api.this.MarkerContext.NoMarker);
+  val inserted: scala.concurrent.Future[whatson.model.Location] = LocationController.this.db.run[whatson.model.Location](whatson.db.Util.insertAndReturn[whatson.model.Location, whatson.db.LocationTable](whatson.db.LocationTable.location, data));
+  inserted.map[play.api.mvc.Result](((x: whatson.model.Location) =&gt; LocationController.this.Ok.apply[play.api.libs.json.JsValue](play.api.libs.json.Json.toJson[whatson.model.Location](x)(whatson.model.Location.locationWrites))(http.this.Writeable.writeableOf_JsValue)))(LocationController.this.context)
+}))))
+        </td>
+      </tr><tr>
+        <td>
+          70
+        </td>
+        <td>
+          930
+        </td>
+        <td>
+          2244
+          -
+          2595
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          play.api.data.Form.fold
+        </td>
+        <td style="background: #AEF1AE">
+          whatson.model.forms.LocationForm.form.bindFromRequest()(request).fold[scala.concurrent.Future[play.api.mvc.Result]](((form: play.api.data.Form[whatson.model.Location]) =&gt; scala.concurrent.Future.successful[play.api.mvc.Result](LocationController.this.BadRequest.apply[play.api.libs.json.JsValue](play.api.libs.json.Json.toJson[Seq[play.api.data.FormError]](form.errors)(whatson.util.FormErrorJson.formErrorFormat))(http.this.Writeable.writeableOf_JsValue))), ((data: whatson.model.Location) =&gt; {
+  LocationController.this.log.debug(&quot;Rest request to create location&quot;)(api.this.MarkerContext.NoMarker);
+  val inserted: scala.concurrent.Future[whatson.model.Location] = LocationController.this.db.run[whatson.model.Location](whatson.db.Util.insertAndReturn[whatson.model.Location, whatson.db.LocationTable](whatson.db.LocationTable.location, data));
+  inserted.map[play.api.mvc.Result](((x: whatson.model.Location) =&gt; LocationController.this.Ok.apply[play.api.libs.json.JsValue](play.api.libs.json.Json.toJson[whatson.model.Location](x)(whatson.model.Location.locationWrites))(http.this.Writeable.writeableOf_JsValue)))(LocationController.this.context)
+}))
+        </td>
+      </tr><tr>
+        <td>
           72
         </td>
         <td>
-          650
+          917
         </td>
         <td>
-          2372
+          2319
           -
-          2390
+          2374
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.concurrent.Future.successful
+        </td>
+        <td style="background: #F0ADAD">
+          scala.concurrent.Future.successful[play.api.mvc.Result](LocationController.this.BadRequest.apply[play.api.libs.json.JsValue](play.api.libs.json.Json.toJson[Seq[play.api.data.FormError]](form.errors)(whatson.util.FormErrorJson.formErrorFormat))(http.this.Writeable.writeableOf_JsValue))
+        </td>
+      </tr><tr>
+        <td>
+          72
+        </td>
+        <td>
+          914
+        </td>
+        <td>
+          2348
+          -
+          2372
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          play.api.libs.json.Json.toJson
+        </td>
+        <td style="background: #F0ADAD">
+          play.api.libs.json.Json.toJson[Seq[play.api.data.FormError]](form.errors)(whatson.util.FormErrorJson.formErrorFormat)
+        </td>
+      </tr><tr>
+        <td>
+          72
+        </td>
+        <td>
+          913
+        </td>
+        <td>
+          2359
+          -
+          2359
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.util.FormErrorJson.formErrorFormat
+        </td>
+        <td style="background: #F0ADAD">
+          whatson.util.FormErrorJson.formErrorFormat
+        </td>
+      </tr><tr>
+        <td>
+          72
+        </td>
+        <td>
+          916
+        </td>
+        <td>
+          2337
+          -
+          2373
         </td>
         <td>
           ApplyToImplicitArgs
@@ -2497,41 +2383,188 @@
         <td>
           play.api.mvc.Results.Status.apply
         </td>
-        <td style="background: #AEF1AE">
-          LocationController.this.Ok.apply[play.api.libs.json.JsValue](play.api.libs.json.Json.toJson[whatson.model.Location](x)(whatson.model.Location.locationWrites))(http.this.Writeable.writeableOf_JsValue)
+        <td style="background: #F0ADAD">
+          LocationController.this.BadRequest.apply[play.api.libs.json.JsValue](play.api.libs.json.Json.toJson[Seq[play.api.data.FormError]](form.errors)(whatson.util.FormErrorJson.formErrorFormat))(http.this.Writeable.writeableOf_JsValue)
         </td>
       </tr><tr>
         <td>
           72
         </td>
         <td>
-          647
+          912
         </td>
         <td>
-          2386
+          2360
           -
-          2386
+          2371
         </td>
         <td>
           Select
         </td>
         <td>
-          whatson.model.Location.locationWrites
+          play.api.data.Form.errors
         </td>
-        <td style="background: #AEF1AE">
-          whatson.model.Location.locationWrites
+        <td style="background: #F0ADAD">
+          form.errors
         </td>
       </tr><tr>
         <td>
           72
         </td>
         <td>
-          649
+          915
         </td>
         <td>
-          2374
+          2347
           -
-          2374
+          2347
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.http.DefaultWriteables.writeableOf_JsValue
+        </td>
+        <td style="background: #F0ADAD">
+          http.this.Writeable.writeableOf_JsValue
+        </td>
+      </tr><tr>
+        <td>
+          75
+        </td>
+        <td>
+          920
+        </td>
+        <td>
+          2408
+          -
+          2452
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          play.api.LoggerLike.debug
+        </td>
+        <td style="background: #AEF1AE">
+          LocationController.this.log.debug(&quot;Rest request to create location&quot;)(api.this.MarkerContext.NoMarker)
+        </td>
+      </tr><tr>
+        <td>
+          75
+        </td>
+        <td>
+          919
+        </td>
+        <td>
+          2417
+          -
+          2417
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.LowPriorityMarkerContextImplicits.NoMarker
+        </td>
+        <td style="background: #AEF1AE">
+          api.this.MarkerContext.NoMarker
+        </td>
+      </tr><tr>
+        <td>
+          75
+        </td>
+        <td>
+          918
+        </td>
+        <td>
+          2418
+          -
+          2451
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;Rest request to create location&quot;
+        </td>
+      </tr><tr>
+        <td>
+          77
+        </td>
+        <td>
+          923
+        </td>
+        <td>
+          2477
+          -
+          2539
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          slick.basic.BasicBackend.DatabaseDef.run
+        </td>
+        <td style="background: #AEF1AE">
+          LocationController.this.db.run[whatson.model.Location](whatson.db.Util.insertAndReturn[whatson.model.Location, whatson.db.LocationTable](whatson.db.LocationTable.location, data))
+        </td>
+      </tr><tr>
+        <td>
+          77
+        </td>
+        <td>
+          922
+        </td>
+        <td>
+          2484
+          -
+          2538
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          whatson.db.Util.insertAndReturn
+        </td>
+        <td style="background: #AEF1AE">
+          whatson.db.Util.insertAndReturn[whatson.model.Location, whatson.db.LocationTable](whatson.db.LocationTable.location, data)
+        </td>
+      </tr><tr>
+        <td>
+          77
+        </td>
+        <td>
+          921
+        </td>
+        <td>
+          2524
+          -
+          2532
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.db.LocationTable.location
+        </td>
+        <td style="background: #AEF1AE">
+          whatson.db.LocationTable.location
+        </td>
+      </tr><tr>
+        <td>
+          79
+        </td>
+        <td>
+          926
+        </td>
+        <td>
+          2569
+          -
+          2569
         </td>
         <td>
           Select
@@ -2544,15 +2577,15 @@
         </td>
       </tr><tr>
         <td>
-          72
+          79
         </td>
         <td>
-          652
+          929
         </td>
         <td>
-          2354
+          2549
           -
-          2391
+          2586
         </td>
         <td>
           ApplyToImplicitArgs
@@ -2562,6 +2595,90 @@
         </td>
         <td style="background: #AEF1AE">
           inserted.map[play.api.mvc.Result](((x: whatson.model.Location) =&gt; LocationController.this.Ok.apply[play.api.libs.json.JsValue](play.api.libs.json.Json.toJson[whatson.model.Location](x)(whatson.model.Location.locationWrites))(http.this.Writeable.writeableOf_JsValue)))(LocationController.this.context)
+        </td>
+      </tr><tr>
+        <td>
+          79
+        </td>
+        <td>
+          925
+        </td>
+        <td>
+          2570
+          -
+          2584
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          play.api.libs.json.Json.toJson
+        </td>
+        <td style="background: #AEF1AE">
+          play.api.libs.json.Json.toJson[whatson.model.Location](x)(whatson.model.Location.locationWrites)
+        </td>
+      </tr><tr>
+        <td>
+          79
+        </td>
+        <td>
+          928
+        </td>
+        <td>
+          2561
+          -
+          2561
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          controllers.LocationController.context
+        </td>
+        <td style="background: #AEF1AE">
+          LocationController.this.context
+        </td>
+      </tr><tr>
+        <td>
+          79
+        </td>
+        <td>
+          927
+        </td>
+        <td>
+          2567
+          -
+          2585
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          play.api.mvc.Results.Status.apply
+        </td>
+        <td style="background: #AEF1AE">
+          LocationController.this.Ok.apply[play.api.libs.json.JsValue](play.api.libs.json.Json.toJson[whatson.model.Location](x)(whatson.model.Location.locationWrites))(http.this.Writeable.writeableOf_JsValue)
+        </td>
+      </tr><tr>
+        <td>
+          79
+        </td>
+        <td>
+          924
+        </td>
+        <td>
+          2581
+          -
+          2581
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.model.Location.locationWrites
+        </td>
+        <td style="background: #AEF1AE">
+          whatson.model.Location.locationWrites
         </td>
       </tr>
     </table>
