@@ -83,27 +83,28 @@
 </span>59 <span style=''></span><span style='background: #AEF1AE'>
 </span>60 <span style=''></span><span style='background: #AEF1AE'>    db.run(q.detailed).map(_.headOption).flatMap {
 </span>61 <span style=''></span><span style='background: #AEF1AE'>      case Some(r) =&gt; {
-</span>62 <span style=''></span><span style='background: #AEF1AE'>        val s = location.sortBy(y =&gt; geoDistance(r.latitude, r.longitude, y.latitude, y.longitude))
-</span>63 <span style=''></span><span style='background: #AEF1AE'>        s.returnPaged(db)
-</span>64 <span style=''></span><span style='background: #AEF1AE'>      }
-</span>65 <span style=''></span><span style='background: #AEF1AE'>      case None =&gt; Future(NotFound)
-</span>66 <span style=''></span><span style='background: #AEF1AE'>    }
-</span>67 <span style=''></span><span style='background: #AEF1AE'>  }</span><span style=''>
-</span>68 <span style=''>
-</span>69 <span style=''>  def createLocation() = </span><span style='background: #AEF1AE'>silhouette.SecuredAction.async(parse.json) { implicit request =&gt;
-</span>70 <span style=''></span><span style='background: #AEF1AE'>    LocationForm.form.bindFromRequest()(request).fold(
-</span>71 <span style=''></span><span style='background: #AEF1AE'>      form =&gt; {
-</span>72 <span style=''></span><span style='background: #AEF1AE'>        </span><span style='background: #F0ADAD'>Future.successful(BadRequest(Json.toJson(form.errors)))</span><span style='background: #AEF1AE'>
-</span>73 <span style=''></span><span style='background: #AEF1AE'>      },
-</span>74 <span style=''></span><span style='background: #AEF1AE'>      data =&gt; {
-</span>75 <span style=''></span><span style='background: #AEF1AE'>        log.debug(&quot;Rest request to create location&quot;)
-</span>76 <span style=''></span><span style='background: #AEF1AE'>
-</span>77 <span style=''></span><span style='background: #AEF1AE'>        val inserted = db.run(insertAndReturn[Location,LocationTable](location,data))
-</span>78 <span style=''></span><span style='background: #AEF1AE'>
-</span>79 <span style=''></span><span style='background: #AEF1AE'>        inserted.map(x =&gt; Ok(Json.toJson(x)))
-</span>80 <span style=''></span><span style='background: #AEF1AE'>      })
-</span>81 <span style=''></span><span style='background: #AEF1AE'>  }</span><span style=''>
-</span>82 <span style=''>}
+</span>62 <span style=''></span><span style='background: #AEF1AE'>        val q = location.sortBy(y =&gt; geoDistance(r.latitude, r.longitude, y.latitude, y.longitude))
+</span>63 <span style=''></span><span style='background: #AEF1AE'>        val s = q.queryPaged.detailed
+</span>64 <span style=''></span><span style='background: #AEF1AE'>        returnPaged(s,q,db)
+</span>65 <span style=''></span><span style='background: #AEF1AE'>      }
+</span>66 <span style=''></span><span style='background: #AEF1AE'>      case None =&gt; Future(NotFound)
+</span>67 <span style=''></span><span style='background: #AEF1AE'>    }
+</span>68 <span style=''></span><span style='background: #AEF1AE'>  }</span><span style=''>
+</span>69 <span style=''>
+</span>70 <span style=''>  def createLocation() = </span><span style='background: #AEF1AE'>silhouette.SecuredAction.async(parse.json) { implicit request =&gt;
+</span>71 <span style=''></span><span style='background: #AEF1AE'>    LocationForm.form.bindFromRequest()(request).fold(
+</span>72 <span style=''></span><span style='background: #AEF1AE'>      form =&gt; {
+</span>73 <span style=''></span><span style='background: #AEF1AE'>        </span><span style='background: #F0ADAD'>Future.successful(BadRequest(Json.toJson(form.errors)))</span><span style='background: #AEF1AE'>
+</span>74 <span style=''></span><span style='background: #AEF1AE'>      },
+</span>75 <span style=''></span><span style='background: #AEF1AE'>      data =&gt; {
+</span>76 <span style=''></span><span style='background: #AEF1AE'>        log.debug(&quot;Rest request to create location&quot;)
+</span>77 <span style=''></span><span style='background: #AEF1AE'>
+</span>78 <span style=''></span><span style='background: #AEF1AE'>        val inserted = db.run(insertAndReturn[Location,LocationTable](location,data))
+</span>79 <span style=''></span><span style='background: #AEF1AE'>
+</span>80 <span style=''></span><span style='background: #AEF1AE'>        inserted.map(x =&gt; Ok(Json.toJson(x)))
+</span>81 <span style=''></span><span style='background: #AEF1AE'>      })
+</span>82 <span style=''></span><span style='background: #AEF1AE'>  }</span><span style=''>
+</span>83 <span style=''>}
 </span></pre>
           </div>
           <div class="tab-pane" id="statementlist">
@@ -1374,12 +1375,12 @@
           55
         </td>
         <td>
-          912
+          915
         </td>
         <td>
           1704
           -
-          2148
+          2188
         </td>
         <td>
           Apply
@@ -1393,10 +1394,11 @@
   val q: slick.lifted.Query[whatson.db.LocationTable,whatson.model.Location,Seq] = whatson.db.LocationTable.location.withFilter[slick.lifted.Rep[Boolean]](((l: whatson.db.LocationTable) =&gt; slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](l.id)(slick.jdbc.PostgresProfile.api.intColumnType).===[Int, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[Int](id)(slick.jdbc.PostgresProfile.api.intColumnType).bind)(lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType))))(lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition).map[whatson.db.LocationTable, whatson.db.LocationTable, whatson.model.Location](((l: whatson.db.LocationTable) =&gt; l))(lifted.this.Shape.tableShape[slick.lifted.FlatShapeLevel, whatson.model.Location, whatson.db.LocationTable](scala.Predef.$conforms[whatson.db.LocationTable]));
   LocationController.this.db.run[Seq[whatson.model.detail.LocationDetail]](whatson.model.detail.LocationDetail.LocationDetailQuery(q).detailed(LocationController.this.context)).map[Option[whatson.model.detail.LocationDetail]](((x$1: Seq[whatson.model.detail.LocationDetail]) =&gt; x$1.headOption))(LocationController.this.context).flatMap[play.api.mvc.Result](((x0$1: Option[whatson.model.detail.LocationDetail]) =&gt; x0$1 match {
     case (value: whatson.model.detail.LocationDetail)Some[whatson.model.detail.LocationDetail]((r @ _)) =&gt; {
-      val s: slick.lifted.Query[whatson.db.LocationTable,whatson.db.LocationTable#TableElementType,Seq] = whatson.db.LocationTable.location.sortBy[slick.lifted.Rep[Float]](((y: whatson.db.LocationTable) =&gt; whatson.db.Util.geoDistance(slick.jdbc.PostgresProfile.api.valueToConstColumn[Float](r.latitude)(slick.jdbc.PostgresProfile.api.floatColumnType), slick.jdbc.PostgresProfile.api.valueToConstColumn[Float](r.longitude)(slick.jdbc.PostgresProfile.api.floatColumnType), y.latitude, y.longitude)))({
+      val q: slick.lifted.Query[whatson.db.LocationTable,whatson.db.LocationTable#TableElementType,Seq] = whatson.db.LocationTable.location.sortBy[slick.lifted.Rep[Float]](((y: whatson.db.LocationTable) =&gt; whatson.db.Util.geoDistance(slick.jdbc.PostgresProfile.api.valueToConstColumn[Float](r.latitude)(slick.jdbc.PostgresProfile.api.floatColumnType), slick.jdbc.PostgresProfile.api.valueToConstColumn[Float](r.longitude)(slick.jdbc.PostgresProfile.api.floatColumnType), y.latitude, y.longitude)))({
         ((c: slick.jdbc.PostgresProfile.api.Rep[Float]) =&gt; slick.jdbc.PostgresProfile.api.columnToOrdered[Float](c)(slick.jdbc.PostgresProfile.api.floatColumnType))
       });
-      whatson.db.Util.QueryUtils[whatson.db.LocationTable, whatson.db.LocationTable#TableElementType](s).returnPaged(LocationController.this.db)(request, LocationController.this.context, whatson.model.Location.locationWrites)
+      val s: slick.dbio.DBIOAction[Seq[whatson.model.detail.LocationDetail],slick.dbio.NoStream,slick.dbio.Effect.Read with slick.dbio.Effect.Read with slick.dbio.Effect.Read] = whatson.model.detail.LocationDetail.LocationDetailQuery(whatson.db.Util.QueryUtils[whatson.db.LocationTable, whatson.db.LocationTable#TableElementType](q).queryPaged[Any, Nothing, Nothing](request)).detailed(LocationController.this.context);
+      whatson.db.Util.returnPaged[whatson.model.detail.LocationDetail, whatson.db.LocationTable, whatson.db.LocationTable#TableElementType](s, q, LocationController.this.db)(request, LocationController.this.context, whatson.model.detail.LocationDetail.locationDetailWrites)
     }
     case scala.None =&gt; scala.concurrent.Future.apply[LocationController.this.Status](LocationController.this.NotFound)(LocationController.this.context)
   }))(LocationController.this.context)
@@ -1722,12 +1724,33 @@
           60
         </td>
         <td>
-          911
+          887
+        </td>
+        <td>
+          1907
+          -
+          1907
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          controllers.LocationController.context
+        </td>
+        <td style="background: #AEF1AE">
+          LocationController.this.context
+        </td>
+      </tr><tr>
+        <td>
+          60
+        </td>
+        <td>
+          914
         </td>
         <td>
           1898
           -
-          2144
+          2184
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1738,10 +1761,11 @@
         <td style="background: #AEF1AE">
           LocationController.this.db.run[Seq[whatson.model.detail.LocationDetail]](whatson.model.detail.LocationDetail.LocationDetailQuery(q).detailed(LocationController.this.context)).map[Option[whatson.model.detail.LocationDetail]](((x$1: Seq[whatson.model.detail.LocationDetail]) =&gt; x$1.headOption))(LocationController.this.context).flatMap[play.api.mvc.Result](((x0$1: Option[whatson.model.detail.LocationDetail]) =&gt; x0$1 match {
   case (value: whatson.model.detail.LocationDetail)Some[whatson.model.detail.LocationDetail]((r @ _)) =&gt; {
-    val s: slick.lifted.Query[whatson.db.LocationTable,whatson.db.LocationTable#TableElementType,Seq] = whatson.db.LocationTable.location.sortBy[slick.lifted.Rep[Float]](((y: whatson.db.LocationTable) =&gt; whatson.db.Util.geoDistance(slick.jdbc.PostgresProfile.api.valueToConstColumn[Float](r.latitude)(slick.jdbc.PostgresProfile.api.floatColumnType), slick.jdbc.PostgresProfile.api.valueToConstColumn[Float](r.longitude)(slick.jdbc.PostgresProfile.api.floatColumnType), y.latitude, y.longitude)))({
+    val q: slick.lifted.Query[whatson.db.LocationTable,whatson.db.LocationTable#TableElementType,Seq] = whatson.db.LocationTable.location.sortBy[slick.lifted.Rep[Float]](((y: whatson.db.LocationTable) =&gt; whatson.db.Util.geoDistance(slick.jdbc.PostgresProfile.api.valueToConstColumn[Float](r.latitude)(slick.jdbc.PostgresProfile.api.floatColumnType), slick.jdbc.PostgresProfile.api.valueToConstColumn[Float](r.longitude)(slick.jdbc.PostgresProfile.api.floatColumnType), y.latitude, y.longitude)))({
       ((c: slick.jdbc.PostgresProfile.api.Rep[Float]) =&gt; slick.jdbc.PostgresProfile.api.columnToOrdered[Float](c)(slick.jdbc.PostgresProfile.api.floatColumnType))
     });
-    whatson.db.Util.QueryUtils[whatson.db.LocationTable, whatson.db.LocationTable#TableElementType](s).returnPaged(LocationController.this.db)(request, LocationController.this.context, whatson.model.Location.locationWrites)
+    val s: slick.dbio.DBIOAction[Seq[whatson.model.detail.LocationDetail],slick.dbio.NoStream,slick.dbio.Effect.Read with slick.dbio.Effect.Read with slick.dbio.Effect.Read] = whatson.model.detail.LocationDetail.LocationDetailQuery(whatson.db.Util.QueryUtils[whatson.db.LocationTable, whatson.db.LocationTable#TableElementType](q).queryPaged[Any, Nothing, Nothing](request)).detailed(LocationController.this.context);
+    whatson.db.Util.returnPaged[whatson.model.detail.LocationDetail, whatson.db.LocationTable, whatson.db.LocationTable#TableElementType](s, q, LocationController.this.db)(request, LocationController.this.context, whatson.model.detail.LocationDetail.locationDetailWrites)
   }
   case scala.None =&gt; scala.concurrent.Future.apply[LocationController.this.Status](LocationController.this.NotFound)(LocationController.this.context)
 }))(LocationController.this.context)
@@ -1751,12 +1775,12 @@
           60
         </td>
         <td>
-          887
+          913
         </td>
         <td>
-          1907
+          1943
           -
-          1907
+          1943
         </td>
         <td>
           Select
@@ -1787,27 +1811,6 @@
         </td>
         <td style="background: #AEF1AE">
           x$1.headOption
-        </td>
-      </tr><tr>
-        <td>
-          60
-        </td>
-        <td>
-          910
-        </td>
-        <td>
-          1943
-          -
-          1943
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          controllers.LocationController.context
-        </td>
-        <td style="background: #AEF1AE">
-          LocationController.this.context
         </td>
       </tr><tr>
         <td>
@@ -2092,18 +2095,18 @@
           905
         </td>
         <td>
-          2090
+          2085
           -
-          2090
+          2106
         </td>
         <td>
-          Select
+          ApplyToImplicitArgs
         </td>
         <td>
-          whatson.model.Location.locationWrites
+          whatson.model.detail.LocationDetail.LocationDetailQuery.detailed
         </td>
         <td style="background: #AEF1AE">
-          whatson.model.Location.locationWrites
+          whatson.model.detail.LocationDetail.LocationDetailQuery(whatson.db.Util.QueryUtils[whatson.db.LocationTable, whatson.db.LocationTable#TableElementType](q).queryPaged[Any, Nothing, Nothing](request)).detailed(LocationController.this.context)
         </td>
       </tr><tr>
         <td>
@@ -2113,9 +2116,9 @@
           904
         </td>
         <td>
-          2090
+          2098
           -
-          2090
+          2098
         </td>
         <td>
           Select
@@ -2134,51 +2137,51 @@
           903
         </td>
         <td>
-          2091
+          2085
           -
-          2093
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          play.api.db.slick.HasDatabaseConfig.db
-        </td>
-        <td style="background: #AEF1AE">
-          LocationController.this.db
-        </td>
-      </tr><tr>
-        <td>
-          63
-        </td>
-        <td>
-          906
-        </td>
-        <td>
-          2077
-          -
-          2094
+          2097
         </td>
         <td>
           ApplyToImplicitArgs
         </td>
         <td>
-          whatson.db.Util.QueryUtils.returnPaged
+          whatson.db.Util.QueryUtils.queryPaged
         </td>
         <td style="background: #AEF1AE">
-          whatson.db.Util.QueryUtils[whatson.db.LocationTable, whatson.db.LocationTable#TableElementType](s).returnPaged(LocationController.this.db)(request, LocationController.this.context, whatson.model.Location.locationWrites)
+          whatson.db.Util.QueryUtils[whatson.db.LocationTable, whatson.db.LocationTable#TableElementType](q).queryPaged[Any, Nothing, Nothing](request)
         </td>
       </tr><tr>
         <td>
-          65
+          64
         </td>
         <td>
           908
         </td>
         <td>
-          2128
+          2126
           -
-          2128
+          2126
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.model.detail.LocationDetail.locationDetailWrites
+        </td>
+        <td style="background: #AEF1AE">
+          whatson.model.detail.LocationDetail.locationDetailWrites
+        </td>
+      </tr><tr>
+        <td>
+          64
+        </td>
+        <td>
+          907
+        </td>
+        <td>
+          2126
+          -
+          2126
         </td>
         <td>
           Select
@@ -2191,15 +2194,78 @@
         </td>
       </tr><tr>
         <td>
-          65
+          64
         </td>
         <td>
-          907
+          909
         </td>
         <td>
-          2129
+          2115
           -
-          2137
+          2134
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          whatson.db.Util.returnPaged
+        </td>
+        <td style="background: #AEF1AE">
+          whatson.db.Util.returnPaged[whatson.model.detail.LocationDetail, whatson.db.LocationTable, whatson.db.LocationTable#TableElementType](s, q, LocationController.this.db)(request, LocationController.this.context, whatson.model.detail.LocationDetail.locationDetailWrites)
+        </td>
+      </tr><tr>
+        <td>
+          64
+        </td>
+        <td>
+          906
+        </td>
+        <td>
+          2131
+          -
+          2133
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.db.slick.HasDatabaseConfig.db
+        </td>
+        <td style="background: #AEF1AE">
+          LocationController.this.db
+        </td>
+      </tr><tr>
+        <td>
+          66
+        </td>
+        <td>
+          911
+        </td>
+        <td>
+          2168
+          -
+          2168
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          controllers.LocationController.context
+        </td>
+        <td style="background: #AEF1AE">
+          LocationController.this.context
+        </td>
+      </tr><tr>
+        <td>
+          66
+        </td>
+        <td>
+          910
+        </td>
+        <td>
+          2169
+          -
+          2177
         </td>
         <td>
           Select
@@ -2212,15 +2278,15 @@
         </td>
       </tr><tr>
         <td>
-          65
+          66
         </td>
         <td>
-          909
+          912
         </td>
         <td>
-          2122
+          2162
           -
-          2138
+          2178
         </td>
         <td>
           ApplyToImplicitArgs
@@ -2233,15 +2299,15 @@
         </td>
       </tr><tr>
         <td>
-          69
+          70
         </td>
         <td>
-          913
+          916
         </td>
         <td>
-          2206
+          2246
           -
-          2216
+          2256
         </td>
         <td>
           Select
@@ -2254,15 +2320,15 @@
         </td>
       </tr><tr>
         <td>
-          69
+          70
         </td>
         <td>
-          933
+          936
         </td>
         <td>
-          2175
+          2215
           -
-          2599
+          2639
         </td>
         <td>
           Apply
@@ -2279,15 +2345,15 @@
         </td>
       </tr><tr>
         <td>
-          70
+          71
         </td>
         <td>
-          932
+          935
         </td>
         <td>
-          2244
+          2284
           -
-          2595
+          2635
         </td>
         <td>
           Apply
@@ -2304,36 +2370,15 @@
         </td>
       </tr><tr>
         <td>
-          72
+          73
         </td>
         <td>
           917
         </td>
         <td>
-          2347
+          2400
           -
-          2347
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          play.api.http.DefaultWriteables.writeableOf_JsValue
-        </td>
-        <td style="background: #F0ADAD">
-          http.this.Writeable.writeableOf_JsValue
-        </td>
-      </tr><tr>
-        <td>
-          72
-        </td>
-        <td>
-          914
-        </td>
-        <td>
-          2360
-          -
-          2371
+          2411
         </td>
         <td>
           Select
@@ -2346,36 +2391,36 @@
         </td>
       </tr><tr>
         <td>
-          72
+          73
         </td>
         <td>
-          916
+          920
         </td>
         <td>
-          2348
+          2387
           -
-          2372
+          2387
         </td>
         <td>
-          ApplyToImplicitArgs
+          Select
         </td>
         <td>
-          play.api.libs.json.Json.toJson
+          play.api.http.DefaultWriteables.writeableOf_JsValue
         </td>
         <td style="background: #F0ADAD">
-          play.api.libs.json.Json.toJson[Seq[play.api.data.FormError]](form.errors)(whatson.util.FormErrorJson.formErrorFormat)
+          http.this.Writeable.writeableOf_JsValue
         </td>
       </tr><tr>
         <td>
-          72
+          73
         </td>
         <td>
-          919
+          922
         </td>
         <td>
-          2319
+          2359
           -
-          2374
+          2414
         </td>
         <td>
           Apply
@@ -2388,15 +2433,57 @@
         </td>
       </tr><tr>
         <td>
-          72
+          73
+        </td>
+        <td>
+          919
+        </td>
+        <td>
+          2388
+          -
+          2412
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          play.api.libs.json.Json.toJson
+        </td>
+        <td style="background: #F0ADAD">
+          play.api.libs.json.Json.toJson[Seq[play.api.data.FormError]](form.errors)(whatson.util.FormErrorJson.formErrorFormat)
+        </td>
+      </tr><tr>
+        <td>
+          73
         </td>
         <td>
           918
         </td>
         <td>
-          2337
+          2399
           -
-          2373
+          2399
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.util.FormErrorJson.formErrorFormat
+        </td>
+        <td style="background: #F0ADAD">
+          whatson.util.FormErrorJson.formErrorFormat
+        </td>
+      </tr><tr>
+        <td>
+          73
+        </td>
+        <td>
+          921
+        </td>
+        <td>
+          2377
+          -
+          2413
         </td>
         <td>
           ApplyToImplicitArgs
@@ -2409,36 +2496,15 @@
         </td>
       </tr><tr>
         <td>
-          72
+          76
         </td>
         <td>
-          915
+          923
         </td>
         <td>
-          2359
+          2458
           -
-          2359
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          whatson.util.FormErrorJson.formErrorFormat
-        </td>
-        <td style="background: #F0ADAD">
-          whatson.util.FormErrorJson.formErrorFormat
-        </td>
-      </tr><tr>
-        <td>
-          75
-        </td>
-        <td>
-          920
-        </td>
-        <td>
-          2418
-          -
-          2451
+          2491
         </td>
         <td>
           Literal
@@ -2451,15 +2517,15 @@
         </td>
       </tr><tr>
         <td>
-          75
+          76
         </td>
         <td>
-          922
+          925
         </td>
         <td>
-          2408
+          2448
           -
-          2452
+          2492
         </td>
         <td>
           ApplyToImplicitArgs
@@ -2472,15 +2538,15 @@
         </td>
       </tr><tr>
         <td>
-          75
+          76
         </td>
         <td>
-          921
+          924
         </td>
         <td>
-          2417
+          2457
           -
-          2417
+          2457
         </td>
         <td>
           Select
@@ -2493,15 +2559,15 @@
         </td>
       </tr><tr>
         <td>
-          77
+          78
         </td>
         <td>
-          923
+          926
         </td>
         <td>
-          2524
+          2564
           -
-          2532
+          2572
         </td>
         <td>
           Select
@@ -2514,15 +2580,15 @@
         </td>
       </tr><tr>
         <td>
-          77
+          78
         </td>
         <td>
-          925
+          928
         </td>
         <td>
-          2477
+          2517
           -
-          2539
+          2579
         </td>
         <td>
           Apply
@@ -2535,15 +2601,15 @@
         </td>
       </tr><tr>
         <td>
-          77
+          78
         </td>
         <td>
-          924
+          927
         </td>
         <td>
-          2484
+          2524
           -
-          2538
+          2578
         </td>
         <td>
           Apply
@@ -2556,36 +2622,15 @@
         </td>
       </tr><tr>
         <td>
-          79
+          80
         </td>
         <td>
-          926
+          932
         </td>
         <td>
-          2581
+          2607
           -
-          2581
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          whatson.model.Location.locationWrites
-        </td>
-        <td style="background: #AEF1AE">
-          whatson.model.Location.locationWrites
-        </td>
-      </tr><tr>
-        <td>
-          79
-        </td>
-        <td>
-          929
-        </td>
-        <td>
-          2567
-          -
-          2585
+          2625
         </td>
         <td>
           ApplyToImplicitArgs
@@ -2598,36 +2643,36 @@
         </td>
       </tr><tr>
         <td>
-          79
+          80
+        </td>
+        <td>
+          929
+        </td>
+        <td>
+          2621
+          -
+          2621
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.model.Location.locationWrites
+        </td>
+        <td style="background: #AEF1AE">
+          whatson.model.Location.locationWrites
+        </td>
+      </tr><tr>
+        <td>
+          80
         </td>
         <td>
           931
         </td>
         <td>
-          2549
+          2609
           -
-          2586
-        </td>
-        <td>
-          ApplyToImplicitArgs
-        </td>
-        <td>
-          scala.concurrent.Future.map
-        </td>
-        <td style="background: #AEF1AE">
-          inserted.map[play.api.mvc.Result](((x: whatson.model.Location) =&gt; LocationController.this.Ok.apply[play.api.libs.json.JsValue](play.api.libs.json.Json.toJson[whatson.model.Location](x)(whatson.model.Location.locationWrites))(http.this.Writeable.writeableOf_JsValue)))(LocationController.this.context)
-        </td>
-      </tr><tr>
-        <td>
-          79
-        </td>
-        <td>
-          928
-        </td>
-        <td>
-          2569
-          -
-          2569
+          2609
         </td>
         <td>
           Select
@@ -2640,15 +2685,36 @@
         </td>
       </tr><tr>
         <td>
-          79
+          80
         </td>
         <td>
-          927
+          934
         </td>
         <td>
-          2570
+          2589
           -
-          2584
+          2626
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.concurrent.Future.map
+        </td>
+        <td style="background: #AEF1AE">
+          inserted.map[play.api.mvc.Result](((x: whatson.model.Location) =&gt; LocationController.this.Ok.apply[play.api.libs.json.JsValue](play.api.libs.json.Json.toJson[whatson.model.Location](x)(whatson.model.Location.locationWrites))(http.this.Writeable.writeableOf_JsValue)))(LocationController.this.context)
+        </td>
+      </tr><tr>
+        <td>
+          80
+        </td>
+        <td>
+          930
+        </td>
+        <td>
+          2610
+          -
+          2624
         </td>
         <td>
           ApplyToImplicitArgs
@@ -2661,15 +2727,15 @@
         </td>
       </tr><tr>
         <td>
-          79
+          80
         </td>
         <td>
-          930
+          933
         </td>
         <td>
-          2561
+          2601
           -
-          2561
+          2601
         </td>
         <td>
           Select
