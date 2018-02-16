@@ -76,7 +76,7 @@
 </span>52 <span style=''></span><span style='background: #AEF1AE'>    val q = for(l &lt;- image if l.id === id.bind) yield l;
 </span>53 <span style=''></span><span style='background: #AEF1AE'>
 </span>54 <span style=''></span><span style='background: #AEF1AE'>    db.run(q.result).map(x =&gt; x.headOption match {
-</span>55 <span style=''></span><span style='background: #AEF1AE'>      case Some(r) =&gt; Ok(r.data).as(r.contentType.getOrElse(&quot;image/jpg&quot;))
+</span>55 <span style=''></span><span style='background: #AEF1AE'>      case Some(r) =&gt; Ok(r.data).as(r.contentType)
 </span>56 <span style=''></span><span style='background: #AEF1AE'>      case _ =&gt; NotFound
 </span>57 <span style=''></span><span style='background: #AEF1AE'>    })
 </span>58 <span style=''></span><span style='background: #AEF1AE'>  }</span><span style=''>
@@ -84,47 +84,49 @@
 </span>60 <span style=''>  def createImage(name: String) = </span><span style='background: #F0ADAD'>Action(parse.multipartFormData).async { request =&gt;
 </span>61 <span style=''></span><span style='background: #F0ADAD'>    log.debug(&quot;Rest request to create image&quot;)
 </span>62 <span style=''></span><span style='background: #F0ADAD'>
-</span>63 <span style=''></span><span style='background: #F0ADAD'>    request.body.file(&quot;image&quot;).map { x =&gt;
-</span>64 <span style=''></span><span style='background: #F0ADAD'>      val file = x.ref.path.toFile()
-</span>65 <span style=''></span><span style='background: #F0ADAD'>      val str = new FileInputStream(file)
-</span>66 <span style=''></span><span style='background: #F0ADAD'>      val bytes = IOUtils.toByteArray(str)
-</span>67 <span style=''></span><span style='background: #F0ADAD'>
-</span>68 <span style=''></span><span style='background: #F0ADAD'>      val img = Image(None,name,bytes,x.contentType)
-</span>69 <span style=''></span><span style='background: #F0ADAD'>
-</span>70 <span style=''></span><span style='background: #F0ADAD'>      db.run(insertAndReturn[Image,ImageTable](image,img))
-</span>71 <span style=''></span><span style='background: #F0ADAD'>    }.map(_.map(x =&gt; Ok(Json.toJson(x)))).getOrElse(Future.successful(BadRequest))
-</span>72 <span style=''></span><span style='background: #F0ADAD'>  }</span><span style=''>
-</span>73 <span style=''>
-</span>74 <span style=''>  def attachImage(id: Int, entityType: String, entityId: Int) = </span><span style='background: #AEF1AE'>userOrganizerRequest(parse.default) { case (request,login) =&gt;
-</span>75 <span style=''></span><span style='background: #AEF1AE'>    log.debug(&quot;Rest request to attach image&quot;)
-</span>76 <span style=''></span><span style='background: #AEF1AE'>
-</span>77 <span style=''></span><span style='background: #AEF1AE'>    val authorized = (EntityType.withName(entityType), login) match {
-</span>78 <span style=''></span><span style='background: #AEF1AE'>      case (EntityType.Event,Right(Organizer(idOrg,_,_,_))) =&gt; {
-</span>79 <span style=''></span><span style='background: #AEF1AE'>        val q = for(e &lt;- EventTable.event if e.id === id.bind &amp;&amp; e.creatorId === idOrg) yield e;
-</span>80 <span style=''></span><span style='background: #AEF1AE'>        db.run(q.result).map(_.headOption).map {
-</span>81 <span style=''></span><span style='background: #AEF1AE'>          case Some(e) =&gt; true
-</span>82 <span style=''></span><span style='background: #AEF1AE'>          case None =&gt; false
-</span>83 <span style=''></span><span style='background: #AEF1AE'>        }
-</span>84 <span style=''></span><span style='background: #AEF1AE'>      }
-</span>85 <span style=''></span><span style='background: #AEF1AE'>      case (EntityType.Organizer,Right(Organizer(idOrg,_,_,_))) =&gt; Future.successful(entityId == idOrg.getOrElse(-1))
-</span>86 <span style=''></span><span style='background: #AEF1AE'>      case (EntityType.Location,_) =&gt; Future.successful(true)
-</span>87 <span style=''></span><span style='background: #AEF1AE'>      case _ =&gt; Future.successful(false)
-</span>88 <span style=''></span><span style='background: #AEF1AE'>    }
-</span>89 <span style=''></span><span style='background: #AEF1AE'>
-</span>90 <span style=''></span><span style='background: #AEF1AE'>    authorized.flatMap {
-</span>91 <span style=''></span><span style='background: #AEF1AE'>      case true =&gt; {
-</span>92 <span style=''></span><span style='background: #AEF1AE'>        val imgEnt = ImageEntity(id, entityId, EntityType.withName(entityType))
-</span>93 <span style=''></span><span style='background: #AEF1AE'>        val inserted = db.run(ImageEntityTable.imageEntity += imgEnt)
-</span>94 <span style=''></span><span style='background: #AEF1AE'>
-</span>95 <span style=''></span><span style='background: #AEF1AE'>        inserted.map {
-</span>96 <span style=''></span><span style='background: #AEF1AE'>          case 0 =&gt; </span><span style='background: #F0ADAD'>NotFound</span><span style='background: #AEF1AE'>
-</span>97 <span style=''></span><span style='background: #AEF1AE'>          case _ =&gt; Ok(Json.toJson(imgEnt))
-</span>98 <span style=''></span><span style='background: #AEF1AE'>        }
-</span>99 <span style=''></span><span style='background: #AEF1AE'>      }
-</span>100 <span style=''></span><span style='background: #AEF1AE'>      case false =&gt; Future.successful(Unauthorized)
-</span>101 <span style=''></span><span style='background: #AEF1AE'>    }
-</span>102 <span style=''></span><span style='background: #AEF1AE'>  }</span><span style=''>
-</span>103 <span style=''>}
+</span>63 <span style=''></span><span style='background: #F0ADAD'>    request.body.file(&quot;image&quot;).flatMap { x =&gt;
+</span>64 <span style=''></span><span style='background: #F0ADAD'>      x.contentType.map { contentType =&gt;
+</span>65 <span style=''></span><span style='background: #F0ADAD'>        val file = x.ref.path.toFile()
+</span>66 <span style=''></span><span style='background: #F0ADAD'>        val str = new FileInputStream(file)
+</span>67 <span style=''></span><span style='background: #F0ADAD'>        val bytes = IOUtils.toByteArray(str)
+</span>68 <span style=''></span><span style='background: #F0ADAD'>
+</span>69 <span style=''></span><span style='background: #F0ADAD'>        val img = Image(None,name,bytes,contentType)
+</span>70 <span style=''></span><span style='background: #F0ADAD'>
+</span>71 <span style=''></span><span style='background: #F0ADAD'>        db.run(insertAndReturn[Image,ImageTable](image,img))
+</span>72 <span style=''></span><span style='background: #F0ADAD'>      }
+</span>73 <span style=''></span><span style='background: #F0ADAD'>    }.map(_.map(x =&gt; Ok(Json.toJson(x)))).getOrElse(Future.successful(BadRequest))
+</span>74 <span style=''></span><span style='background: #F0ADAD'>  }</span><span style=''>
+</span>75 <span style=''>
+</span>76 <span style=''>  def attachImage(id: Int, entityType: String, entityId: Int) = </span><span style='background: #AEF1AE'>userOrganizerRequest(parse.default) { case (request,login) =&gt;
+</span>77 <span style=''></span><span style='background: #AEF1AE'>    log.debug(&quot;Rest request to attach image&quot;)
+</span>78 <span style=''></span><span style='background: #AEF1AE'>
+</span>79 <span style=''></span><span style='background: #AEF1AE'>    val authorized = (EntityType.withName(entityType), login) match {
+</span>80 <span style=''></span><span style='background: #AEF1AE'>      case (EntityType.Event,Right(Organizer(idOrg,_,_,_))) =&gt; {
+</span>81 <span style=''></span><span style='background: #AEF1AE'>        val q = for(e &lt;- EventTable.event if e.id === id.bind &amp;&amp; e.creatorId === idOrg) yield e;
+</span>82 <span style=''></span><span style='background: #AEF1AE'>        db.run(q.result).map(_.headOption).map {
+</span>83 <span style=''></span><span style='background: #AEF1AE'>          case Some(e) =&gt; true
+</span>84 <span style=''></span><span style='background: #AEF1AE'>          case None =&gt; false
+</span>85 <span style=''></span><span style='background: #AEF1AE'>        }
+</span>86 <span style=''></span><span style='background: #AEF1AE'>      }
+</span>87 <span style=''></span><span style='background: #AEF1AE'>      case (EntityType.Organizer,Right(Organizer(idOrg,_,_,_))) =&gt; Future.successful(entityId == idOrg.getOrElse(-1))
+</span>88 <span style=''></span><span style='background: #AEF1AE'>      case (EntityType.Location,_) =&gt; Future.successful(true)
+</span>89 <span style=''></span><span style='background: #AEF1AE'>      case _ =&gt; Future.successful(false)
+</span>90 <span style=''></span><span style='background: #AEF1AE'>    }
+</span>91 <span style=''></span><span style='background: #AEF1AE'>
+</span>92 <span style=''></span><span style='background: #AEF1AE'>    authorized.flatMap {
+</span>93 <span style=''></span><span style='background: #AEF1AE'>      case true =&gt; {
+</span>94 <span style=''></span><span style='background: #AEF1AE'>        val imgEnt = ImageEntity(id, entityId, EntityType.withName(entityType))
+</span>95 <span style=''></span><span style='background: #AEF1AE'>        val inserted = db.run(ImageEntityTable.imageEntity += imgEnt)
+</span>96 <span style=''></span><span style='background: #AEF1AE'>
+</span>97 <span style=''></span><span style='background: #AEF1AE'>        inserted.map {
+</span>98 <span style=''></span><span style='background: #AEF1AE'>          case 0 =&gt; </span><span style='background: #F0ADAD'>NotFound</span><span style='background: #AEF1AE'>
+</span>99 <span style=''></span><span style='background: #AEF1AE'>          case _ =&gt; Ok(Json.toJson(imgEnt))
+</span>100 <span style=''></span><span style='background: #AEF1AE'>        }
+</span>101 <span style=''></span><span style='background: #AEF1AE'>      }
+</span>102 <span style=''></span><span style='background: #AEF1AE'>      case false =&gt; Future.successful(Unauthorized)
+</span>103 <span style=''></span><span style='background: #AEF1AE'>    }
+</span>104 <span style=''></span><span style='background: #AEF1AE'>  }</span><span style=''>
+</span>105 <span style=''>}
 </span></pre>
           </div>
           <div class="tab-pane" id="statementlist">
@@ -681,7 +683,7 @@
         <td>
           1488
           -
-          1812
+          1789
         </td>
         <td>
           Apply
@@ -694,7 +696,7 @@
   ImageController.this.log.debug(&quot;Rest request to get image bytes&quot;)(api.this.MarkerContext.NoMarker);
   val q: slick.lifted.Query[whatson.db.ImageTable,whatson.model.Image,Seq] = whatson.db.ImageTable.image.withFilter[slick.lifted.Rep[Boolean]](((l: whatson.db.ImageTable) =&gt; slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](l.id)(slick.jdbc.PostgresProfile.api.intColumnType).===[Int, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[Int](id)(slick.jdbc.PostgresProfile.api.intColumnType).bind)(lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType))))(lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition).map[whatson.db.ImageTable, whatson.db.ImageTable, whatson.model.Image](((l: whatson.db.ImageTable) =&gt; l))(lifted.this.Shape.tableShape[slick.lifted.FlatShapeLevel, whatson.model.Image, whatson.db.ImageTable](scala.Predef.$conforms[whatson.db.ImageTable]));
   ImageController.this.db.run[Seq[whatson.model.Image]](slick.jdbc.PostgresProfile.api.streamableQueryActionExtensionMethods[whatson.model.Image, Seq](q).result).map[play.api.mvc.Result](((x: Seq[whatson.model.Image]) =&gt; x.headOption match {
-    case (value: whatson.model.Image)Some[whatson.model.Image]((r @ _)) =&gt; ImageController.this.Ok.apply[Array[Byte]](r.data)(http.this.Writeable.wByteArray).as(r.contentType.getOrElse[String](&quot;image/jpg&quot;))
+    case (value: whatson.model.Image)Some[whatson.model.Image]((r @ _)) =&gt; ImageController.this.Ok.apply[Array[Byte]](r.data)(http.this.Writeable.wByteArray).as(r.contentType)
     case _ =&gt; ImageController.this.NotFound
   }))(ImageController.this.context)
 }))
@@ -1066,7 +1068,7 @@
         <td>
           1656
           -
-          1808
+          1785
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1076,7 +1078,7 @@
         </td>
         <td style="background: #AEF1AE">
           ImageController.this.db.run[Seq[whatson.model.Image]](slick.jdbc.PostgresProfile.api.streamableQueryActionExtensionMethods[whatson.model.Image, Seq](q).result).map[play.api.mvc.Result](((x: Seq[whatson.model.Image]) =&gt; x.headOption match {
-  case (value: whatson.model.Image)Some[whatson.model.Image]((r @ _)) =&gt; ImageController.this.Ok.apply[Array[Byte]](r.data)(http.this.Writeable.wByteArray).as(r.contentType.getOrElse[String](&quot;image/jpg&quot;))
+  case (value: whatson.model.Image)Some[whatson.model.Image]((r @ _)) =&gt; ImageController.this.Ok.apply[Array[Byte]](r.data)(http.this.Writeable.wByteArray).as(r.contentType)
   case _ =&gt; ImageController.this.NotFound
 }))(ImageController.this.context)
         </td>
@@ -1090,16 +1092,16 @@
         <td>
           1739
           -
-          1775
+          1752
         </td>
         <td>
-          Apply
+          Select
         </td>
         <td>
-          scala.Option.getOrElse
+          whatson.model.Image.contentType
         </td>
         <td style="background: #AEF1AE">
-          r.contentType.getOrElse[String](&quot;image/jpg&quot;)
+          r.contentType
         </td>
       </tr><tr>
         <td>
@@ -1153,7 +1155,7 @@
         <td>
           1725
           -
-          1776
+          1753
         </td>
         <td>
           Apply
@@ -1162,7 +1164,7 @@
           play.api.mvc.Result.as
         </td>
         <td style="background: #AEF1AE">
-          ImageController.this.Ok.apply[Array[Byte]](r.data)(http.this.Writeable.wByteArray).as(r.contentType.getOrElse[String](&quot;image/jpg&quot;))
+          ImageController.this.Ok.apply[Array[Byte]](r.data)(http.this.Writeable.wByteArray).as(r.contentType)
         </td>
       </tr><tr>
         <td>
@@ -1172,9 +1174,9 @@
           731
         </td>
         <td>
-          1793
+          1770
           -
-          1801
+          1778
         </td>
         <td>
           Select
@@ -1193,9 +1195,9 @@
           735
         </td>
         <td>
-          1855
+          1832
           -
-          1878
+          1855
         </td>
         <td>
           Select
@@ -1214,9 +1216,9 @@
           758
         </td>
         <td>
-          1848
+          1825
           -
-          2310
+          2348
         </td>
         <td>
           Apply
@@ -1227,13 +1229,13 @@
         <td style="background: #F0ADAD">
           ImageController.this.Action.apply[play.api.mvc.MultipartFormData[play.api.libs.Files.TemporaryFile]](ImageController.this.parse.multipartFormData).async(((request: play.api.mvc.Request[play.api.mvc.MultipartFormData[play.api.libs.Files.TemporaryFile]]) =&gt; {
   ImageController.this.log.debug(&quot;Rest request to create image&quot;)(api.this.MarkerContext.NoMarker);
-  request.body.file(&quot;image&quot;).map[scala.concurrent.Future[whatson.model.Image]](((x: play.api.mvc.MultipartFormData.FilePart[play.api.libs.Files.TemporaryFile]) =&gt; {
+  request.body.file(&quot;image&quot;).flatMap[scala.concurrent.Future[whatson.model.Image]](((x: play.api.mvc.MultipartFormData.FilePart[play.api.libs.Files.TemporaryFile]) =&gt; x.contentType.map[scala.concurrent.Future[whatson.model.Image]](((contentType: String) =&gt; {
   val file: java.io.File = x.ref.path.toFile();
   val str: java.io.FileInputStream = new java.io.FileInputStream(file);
   val bytes: Array[Byte] = org.apache.commons.io.IOUtils.toByteArray(str);
-  val img: whatson.model.Image = whatson.model.Image.apply(scala.None, name, bytes, x.contentType);
+  val img: whatson.model.Image = whatson.model.Image.apply(scala.None, name, bytes, contentType);
   ImageController.this.db.run[whatson.model.Image](whatson.db.Util.insertAndReturn[whatson.model.Image, whatson.db.ImageTable](whatson.db.ImageTable.image, img))
-})).map[scala.concurrent.Future[play.api.mvc.Result]](((x$1: scala.concurrent.Future[whatson.model.Image]) =&gt; x$1.map[play.api.mvc.Result](((x: whatson.model.Image) =&gt; ImageController.this.Ok.apply[play.api.libs.json.JsValue](play.api.libs.json.Json.toJson[whatson.model.Image](x)(whatson.model.Image.imageWrites))(http.this.Writeable.writeableOf_JsValue)))(ImageController.this.context))).getOrElse[scala.concurrent.Future[play.api.mvc.Result]](scala.concurrent.Future.successful[ImageController.this.Status](ImageController.this.BadRequest))
+})))).map[scala.concurrent.Future[play.api.mvc.Result]](((x$1: scala.concurrent.Future[whatson.model.Image]) =&gt; x$1.map[play.api.mvc.Result](((x: whatson.model.Image) =&gt; ImageController.this.Ok.apply[play.api.libs.json.JsValue](play.api.libs.json.Json.toJson[whatson.model.Image](x)(whatson.model.Image.imageWrites))(http.this.Writeable.writeableOf_JsValue)))(ImageController.this.context))).getOrElse[scala.concurrent.Future[play.api.mvc.Result]](scala.concurrent.Future.successful[ImageController.this.Status](ImageController.this.BadRequest))
 }))
         </td>
       </tr><tr>
@@ -1244,9 +1246,9 @@
           738
         </td>
         <td>
-          1903
+          1880
           -
-          1944
+          1921
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1265,9 +1267,9 @@
           737
         </td>
         <td>
-          1912
+          1889
           -
-          1912
+          1889
         </td>
         <td>
           Select
@@ -1286,9 +1288,9 @@
           736
         </td>
         <td>
-          1913
+          1890
           -
-          1943
+          1920
         </td>
         <td>
           Literal
@@ -1307,9 +1309,9 @@
           739
         </td>
         <td>
-          1968
+          1945
           -
-          1975
+          1952
         </td>
         <td>
           Literal
@@ -1325,12 +1327,39 @@
           64
         </td>
         <td>
+          748
+        </td>
+        <td>
+          1975
+          -
+          2261
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Option.map
+        </td>
+        <td style="background: #F0ADAD">
+          x.contentType.map[scala.concurrent.Future[whatson.model.Image]](((contentType: String) =&gt; {
+  val file: java.io.File = x.ref.path.toFile();
+  val str: java.io.FileInputStream = new java.io.FileInputStream(file);
+  val bytes: Array[Byte] = org.apache.commons.io.IOUtils.toByteArray(str);
+  val img: whatson.model.Image = whatson.model.Image.apply(scala.None, name, bytes, contentType);
+  ImageController.this.db.run[whatson.model.Image](whatson.db.Util.insertAndReturn[whatson.model.Image, whatson.db.ImageTable](whatson.db.ImageTable.image, img))
+}))
+        </td>
+      </tr><tr>
+        <td>
+          65
+        </td>
+        <td>
           740
         </td>
         <td>
-          2005
+          2029
           -
-          2024
+          2048
         </td>
         <td>
           Apply
@@ -1343,15 +1372,15 @@
         </td>
       </tr><tr>
         <td>
-          65
+          66
         </td>
         <td>
           741
         </td>
         <td>
-          2041
+          2067
           -
-          2066
+          2092
         </td>
         <td>
           Apply
@@ -1364,15 +1393,15 @@
         </td>
       </tr><tr>
         <td>
-          66
+          67
         </td>
         <td>
           742
         </td>
         <td>
-          2085
+          2113
           -
-          2109
+          2137
         </td>
         <td>
           Apply
@@ -1385,57 +1414,15 @@
         </td>
       </tr><tr>
         <td>
-          68
+          69
         </td>
         <td>
           744
         </td>
         <td>
-          2149
+          2157
           -
-          2162
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          play.api.mvc.MultipartFormData.FilePart.contentType
-        </td>
-        <td style="background: #F0ADAD">
-          x.contentType
-        </td>
-      </tr><tr>
-        <td>
-          68
-        </td>
-        <td>
-          743
-        </td>
-        <td>
-          2133
-          -
-          2137
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          scala.None
-        </td>
-        <td style="background: #F0ADAD">
-          scala.None
-        </td>
-      </tr><tr>
-        <td>
-          68
-        </td>
-        <td>
-          745
-        </td>
-        <td>
-          2127
-          -
-          2163
+          2191
         </td>
         <td>
           Apply
@@ -1444,61 +1431,40 @@
           whatson.model.Image.apply
         </td>
         <td style="background: #F0ADAD">
-          whatson.model.Image.apply(scala.None, name, bytes, x.contentType)
+          whatson.model.Image.apply(scala.None, name, bytes, contentType)
         </td>
       </tr><tr>
         <td>
-          70
+          69
         </td>
         <td>
-          747
+          743
         </td>
         <td>
-          2178
+          2163
           -
-          2222
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          whatson.db.Util.insertAndReturn
-        </td>
-        <td style="background: #F0ADAD">
-          whatson.db.Util.insertAndReturn[whatson.model.Image, whatson.db.ImageTable](whatson.db.ImageTable.image, img)
-        </td>
-      </tr><tr>
-        <td>
-          70
-        </td>
-        <td>
-          746
-        </td>
-        <td>
-          2212
-          -
-          2217
+          2167
         </td>
         <td>
           Select
         </td>
         <td>
-          whatson.db.ImageTable.image
+          scala.None
         </td>
         <td style="background: #F0ADAD">
-          whatson.db.ImageTable.image
+          scala.None
         </td>
       </tr><tr>
         <td>
-          70
+          71
         </td>
         <td>
-          748
+          747
         </td>
         <td>
-          2171
+          2201
           -
-          2223
+          2253
         </td>
         <td>
           Apply
@@ -1514,12 +1480,54 @@
           71
         </td>
         <td>
+          746
+        </td>
+        <td>
+          2208
+          -
+          2252
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          whatson.db.Util.insertAndReturn
+        </td>
+        <td style="background: #F0ADAD">
+          whatson.db.Util.insertAndReturn[whatson.model.Image, whatson.db.ImageTable](whatson.db.ImageTable.image, img)
+        </td>
+      </tr><tr>
+        <td>
+          71
+        </td>
+        <td>
+          745
+        </td>
+        <td>
+          2242
+          -
+          2247
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.db.ImageTable.image
+        </td>
+        <td style="background: #F0ADAD">
+          whatson.db.ImageTable.image
+        </td>
+      </tr><tr>
+        <td>
+          73
+        </td>
+        <td>
           756
         </td>
         <td>
-          2276
+          2314
           -
-          2305
+          2343
         </td>
         <td>
           Apply
@@ -1532,15 +1540,15 @@
         </td>
       </tr><tr>
         <td>
-          71
+          73
         </td>
         <td>
           750
         </td>
         <td>
-          2248
+          2286
           -
-          2262
+          2300
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1553,15 +1561,15 @@
         </td>
       </tr><tr>
         <td>
-          71
+          73
         </td>
         <td>
           753
         </td>
         <td>
-          2239
+          2277
           -
-          2239
+          2277
         </td>
         <td>
           Select
@@ -1574,15 +1582,15 @@
         </td>
       </tr><tr>
         <td>
-          71
+          73
         </td>
         <td>
           752
         </td>
         <td>
-          2245
+          2283
           -
-          2263
+          2301
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1595,15 +1603,15 @@
         </td>
       </tr><tr>
         <td>
-          71
+          73
         </td>
         <td>
           755
         </td>
         <td>
-          2294
+          2332
           -
-          2304
+          2342
         </td>
         <td>
           Select
@@ -1616,15 +1624,15 @@
         </td>
       </tr><tr>
         <td>
-          71
+          73
         </td>
         <td>
           749
         </td>
         <td>
-          2259
+          2297
           -
-          2259
+          2297
         </td>
         <td>
           Select
@@ -1637,15 +1645,15 @@
         </td>
       </tr><tr>
         <td>
-          71
+          73
         </td>
         <td>
           757
         </td>
         <td>
-          1950
+          1927
           -
-          2306
+          2344
         </td>
         <td>
           Apply
@@ -1654,25 +1662,25 @@
           scala.Option.getOrElse
         </td>
         <td style="background: #F0ADAD">
-          request.body.file(&quot;image&quot;).map[scala.concurrent.Future[whatson.model.Image]](((x: play.api.mvc.MultipartFormData.FilePart[play.api.libs.Files.TemporaryFile]) =&gt; {
+          request.body.file(&quot;image&quot;).flatMap[scala.concurrent.Future[whatson.model.Image]](((x: play.api.mvc.MultipartFormData.FilePart[play.api.libs.Files.TemporaryFile]) =&gt; x.contentType.map[scala.concurrent.Future[whatson.model.Image]](((contentType: String) =&gt; {
   val file: java.io.File = x.ref.path.toFile();
   val str: java.io.FileInputStream = new java.io.FileInputStream(file);
   val bytes: Array[Byte] = org.apache.commons.io.IOUtils.toByteArray(str);
-  val img: whatson.model.Image = whatson.model.Image.apply(scala.None, name, bytes, x.contentType);
+  val img: whatson.model.Image = whatson.model.Image.apply(scala.None, name, bytes, contentType);
   ImageController.this.db.run[whatson.model.Image](whatson.db.Util.insertAndReturn[whatson.model.Image, whatson.db.ImageTable](whatson.db.ImageTable.image, img))
-})).map[scala.concurrent.Future[play.api.mvc.Result]](((x$1: scala.concurrent.Future[whatson.model.Image]) =&gt; x$1.map[play.api.mvc.Result](((x: whatson.model.Image) =&gt; ImageController.this.Ok.apply[play.api.libs.json.JsValue](play.api.libs.json.Json.toJson[whatson.model.Image](x)(whatson.model.Image.imageWrites))(http.this.Writeable.writeableOf_JsValue)))(ImageController.this.context))).getOrElse[scala.concurrent.Future[play.api.mvc.Result]](scala.concurrent.Future.successful[ImageController.this.Status](ImageController.this.BadRequest))
+})))).map[scala.concurrent.Future[play.api.mvc.Result]](((x$1: scala.concurrent.Future[whatson.model.Image]) =&gt; x$1.map[play.api.mvc.Result](((x: whatson.model.Image) =&gt; ImageController.this.Ok.apply[play.api.libs.json.JsValue](play.api.libs.json.Json.toJson[whatson.model.Image](x)(whatson.model.Image.imageWrites))(http.this.Writeable.writeableOf_JsValue)))(ImageController.this.context))).getOrElse[scala.concurrent.Future[play.api.mvc.Result]](scala.concurrent.Future.successful[ImageController.this.Status](ImageController.this.BadRequest))
         </td>
       </tr><tr>
         <td>
-          71
+          73
         </td>
         <td>
           751
         </td>
         <td>
-          2247
+          2285
           -
-          2247
+          2285
         </td>
         <td>
           Select
@@ -1685,15 +1693,15 @@
         </td>
       </tr><tr>
         <td>
-          71
+          73
         </td>
         <td>
           754
         </td>
         <td>
-          2234
+          2272
           -
-          2264
+          2302
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1706,15 +1714,15 @@
         </td>
       </tr><tr>
         <td>
-          74
+          76
         </td>
         <td>
           759
         </td>
         <td>
-          2397
+          2435
           -
-          2410
+          2448
         </td>
         <td>
           Select
@@ -1727,15 +1735,15 @@
         </td>
       </tr><tr>
         <td>
-          74
+          76
         </td>
         <td>
           813
         </td>
         <td>
-          2376
+          2414
           -
-          3444
+          3482
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1775,15 +1783,15 @@
         </td>
       </tr><tr>
         <td>
-          74
+          76
         </td>
         <td>
           812
         </td>
         <td>
-          2412
+          2450
           -
-          2412
+          2450
         </td>
         <td>
           Select
@@ -1796,15 +1804,15 @@
         </td>
       </tr><tr>
         <td>
-          75
+          77
         </td>
         <td>
           762
         </td>
         <td>
-          2442
+          2480
           -
-          2483
+          2521
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1817,15 +1825,15 @@
         </td>
       </tr><tr>
         <td>
-          75
+          77
         </td>
         <td>
           761
         </td>
         <td>
-          2451
+          2489
           -
-          2451
+          2489
         </td>
         <td>
           Select
@@ -1838,15 +1846,15 @@
         </td>
       </tr><tr>
         <td>
-          75
+          77
         </td>
         <td>
           760
         </td>
         <td>
-          2452
+          2490
           -
-          2482
+          2520
         </td>
         <td>
           Literal
@@ -1859,15 +1867,15 @@
         </td>
       </tr><tr>
         <td>
-          79
+          81
         </td>
         <td>
           765
         </td>
         <td>
-          2674
+          2712
           -
-          2674
+          2712
         </td>
         <td>
           Select
@@ -1880,15 +1888,15 @@
         </td>
       </tr><tr>
         <td>
-          79
+          81
         </td>
         <td>
           774
         </td>
         <td>
-          2701
+          2739
           -
-          2706
+          2744
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1901,15 +1909,15 @@
         </td>
       </tr><tr>
         <td>
-          79
+          81
         </td>
         <td>
           783
         </td>
         <td>
-          2642
+          2680
           -
-          2642
+          2680
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1922,15 +1930,15 @@
         </td>
       </tr><tr>
         <td>
-          79
+          81
         </td>
         <td>
           777
         </td>
         <td>
-          2685
+          2723
           -
-          2706
+          2744
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1943,15 +1951,15 @@
         </td>
       </tr><tr>
         <td>
-          79
+          81
         </td>
         <td>
           768
         </td>
         <td>
-          2670
+          2708
           -
-          2670
+          2708
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1964,15 +1972,15 @@
         </td>
       </tr><tr>
         <td>
-          79
+          81
         </td>
         <td>
           771
         </td>
         <td>
-          2687
+          2725
           -
-          2687
+          2725
         </td>
         <td>
           Select
@@ -1985,15 +1993,15 @@
         </td>
       </tr><tr>
         <td>
-          79
+          81
         </td>
         <td>
           770
         </td>
         <td>
-          2685
+          2723
           -
-          2696
+          2734
         </td>
         <td>
           Select
@@ -2006,15 +2014,15 @@
         </td>
       </tr><tr>
         <td>
-          79
+          81
         </td>
         <td>
           779
         </td>
         <td>
-          2682
+          2720
           -
-          2682
+          2720
         </td>
         <td>
           ApplyToImplicitArgs
@@ -2027,15 +2035,15 @@
         </td>
       </tr><tr>
         <td>
-          79
+          81
         </td>
         <td>
           782
         </td>
         <td>
-          2642
+          2680
           -
-          2642
+          2680
         </td>
         <td>
           TypeApply
@@ -2048,15 +2056,15 @@
         </td>
       </tr><tr>
         <td>
-          79
+          81
         </td>
         <td>
           764
         </td>
         <td>
-          2667
+          2705
           -
-          2667
+          2705
         </td>
         <td>
           Select
@@ -2069,15 +2077,15 @@
         </td>
       </tr><tr>
         <td>
-          79
+          81
         </td>
         <td>
           773
         </td>
         <td>
-          2701
+          2739
           -
-          2701
+          2739
         </td>
         <td>
           ApplyToImplicitArgs
@@ -2090,15 +2098,15 @@
         </td>
       </tr><tr>
         <td>
-          79
+          81
         </td>
         <td>
           767
         </td>
         <td>
-          2670
+          2708
           -
-          2670
+          2708
         </td>
         <td>
           Select
@@ -2111,15 +2119,15 @@
         </td>
       </tr><tr>
         <td>
-          79
+          81
         </td>
         <td>
           776
         </td>
         <td>
-          2697
+          2735
           -
-          2697
+          2735
         </td>
         <td>
           ApplyToImplicitArgs
@@ -2132,15 +2140,15 @@
         </td>
       </tr><tr>
         <td>
-          79
+          81
         </td>
         <td>
           775
         </td>
         <td>
-          2697
+          2735
           -
-          2697
+          2735
         </td>
         <td>
           Select
@@ -2153,15 +2161,15 @@
         </td>
       </tr><tr>
         <td>
-          79
+          81
         </td>
         <td>
           784
         </td>
         <td>
-          2636
+          2674
           -
-          2715
+          2753
         </td>
         <td>
           ApplyToImplicitArgs
@@ -2174,15 +2182,15 @@
         </td>
       </tr><tr>
         <td>
-          79
+          81
         </td>
         <td>
           766
         </td>
         <td>
-          2674
+          2712
           -
-          2681
+          2719
         </td>
         <td>
           Select
@@ -2195,15 +2203,15 @@
         </td>
       </tr><tr>
         <td>
-          79
+          81
         </td>
         <td>
           778
         </td>
         <td>
-          2682
+          2720
           -
-          2682
+          2720
         </td>
         <td>
           Select
@@ -2216,15 +2224,15 @@
         </td>
       </tr><tr>
         <td>
-          79
+          81
         </td>
         <td>
           769
         </td>
         <td>
-          2665
+          2703
           -
-          2681
+          2719
         </td>
         <td>
           ApplyToImplicitArgs
@@ -2237,15 +2245,15 @@
         </td>
       </tr><tr>
         <td>
-          79
+          81
         </td>
         <td>
           772
         </td>
         <td>
-          2701
+          2739
           -
-          2701
+          2739
         </td>
         <td>
           Select
@@ -2258,15 +2266,15 @@
         </td>
       </tr><tr>
         <td>
-          79
+          81
         </td>
         <td>
           763
         </td>
         <td>
-          2665
+          2703
           -
-          2669
+          2707
         </td>
         <td>
           Select
@@ -2279,15 +2287,15 @@
         </td>
       </tr><tr>
         <td>
-          79
+          81
         </td>
         <td>
           781
         </td>
         <td>
-          2656
+          2694
           -
-          2656
+          2694
         </td>
         <td>
           Select
@@ -2300,15 +2308,15 @@
         </td>
       </tr><tr>
         <td>
-          79
+          81
         </td>
         <td>
           780
         </td>
         <td>
-          2665
+          2703
           -
-          2706
+          2744
         </td>
         <td>
           ApplyToImplicitArgs
@@ -2321,15 +2329,15 @@
         </td>
       </tr><tr>
         <td>
-          80
+          82
         </td>
         <td>
           786
         </td>
         <td>
-          2746
+          2784
           -
-          2758
+          2796
         </td>
         <td>
           Select
@@ -2342,15 +2350,15 @@
         </td>
       </tr><tr>
         <td>
-          80
+          82
         </td>
         <td>
           791
         </td>
         <td>
-          2725
+          2763
           -
-          2835
+          2873
         </td>
         <td>
           ApplyToImplicitArgs
@@ -2366,15 +2374,15 @@
         </td>
       </tr><tr>
         <td>
-          80
+          82
         </td>
         <td>
           785
         </td>
         <td>
-          2732
+          2770
           -
-          2740
+          2778
         </td>
         <td>
           Select
@@ -2387,15 +2395,15 @@
         </td>
       </tr><tr>
         <td>
-          80
+          82
         </td>
         <td>
           787
         </td>
         <td>
-          2745
+          2783
           -
-          2745
+          2783
         </td>
         <td>
           Select
@@ -2408,15 +2416,15 @@
         </td>
       </tr><tr>
         <td>
-          80
+          82
         </td>
         <td>
           790
         </td>
         <td>
-          2764
+          2802
           -
-          2764
+          2802
         </td>
         <td>
           Select
@@ -2429,15 +2437,15 @@
         </td>
       </tr><tr>
         <td>
-          81
+          83
         </td>
         <td>
           788
         </td>
         <td>
-          2792
+          2830
           -
-          2796
+          2834
         </td>
         <td>
           Literal
@@ -2450,15 +2458,15 @@
         </td>
       </tr><tr>
         <td>
-          82
+          84
         </td>
         <td>
           789
         </td>
         <td>
-          2820
+          2858
           -
-          2825
+          2863
         </td>
         <td>
           Literal
@@ -2471,15 +2479,15 @@
         </td>
       </tr><tr>
         <td>
-          85
+          87
         </td>
         <td>
           792
         </td>
         <td>
-          2941
+          2979
           -
-          2960
+          2998
         </td>
         <td>
           Apply
@@ -2492,15 +2500,15 @@
         </td>
       </tr><tr>
         <td>
-          85
+          87
         </td>
         <td>
           794
         </td>
         <td>
-          2911
+          2949
           -
-          2961
+          2999
         </td>
         <td>
           Apply
@@ -2513,15 +2521,15 @@
         </td>
       </tr><tr>
         <td>
-          85
+          87
         </td>
         <td>
           793
         </td>
         <td>
-          2929
+          2967
           -
-          2960
+          2998
         </td>
         <td>
           Apply
@@ -2534,15 +2542,15 @@
         </td>
       </tr><tr>
         <td>
-          86
+          88
         </td>
         <td>
           795
         </td>
         <td>
-          3000
+          3038
           -
-          3023
+          3061
         </td>
         <td>
           Apply
@@ -2555,15 +2563,15 @@
         </td>
       </tr><tr>
         <td>
-          87
+          89
         </td>
         <td>
           796
         </td>
         <td>
-          3040
+          3078
           -
-          3064
+          3102
         </td>
         <td>
           Apply
@@ -2576,15 +2584,15 @@
         </td>
       </tr><tr>
         <td>
-          90
+          92
         </td>
         <td>
           810
         </td>
         <td>
-          3095
+          3133
           -
-          3095
+          3133
         </td>
         <td>
           Select
@@ -2597,15 +2605,15 @@
         </td>
       </tr><tr>
         <td>
-          90
+          92
         </td>
         <td>
           811
         </td>
         <td>
-          3076
+          3114
           -
-          3440
+          3478
         </td>
         <td>
           ApplyToImplicitArgs
@@ -2628,15 +2636,15 @@
         </td>
       </tr><tr>
         <td>
-          92
+          94
         </td>
         <td>
           797
         </td>
         <td>
-          3165
+          3203
           -
-          3196
+          3234
         </td>
         <td>
           Apply
@@ -2649,15 +2657,15 @@
         </td>
       </tr><tr>
         <td>
-          92
+          94
         </td>
         <td>
           798
         </td>
         <td>
-          3139
+          3177
           -
-          3197
+          3235
         </td>
         <td>
           Apply
@@ -2670,15 +2678,15 @@
         </td>
       </tr><tr>
         <td>
-          93
+          95
         </td>
         <td>
           800
         </td>
         <td>
-          3221
+          3259
           -
-          3267
+          3305
         </td>
         <td>
           Apply
@@ -2691,15 +2699,15 @@
         </td>
       </tr><tr>
         <td>
-          93
+          95
         </td>
         <td>
           799
         </td>
         <td>
-          3228
-          -
           3266
+          -
+          3304
         </td>
         <td>
           Apply
@@ -2712,15 +2720,15 @@
         </td>
       </tr><tr>
         <td>
-          95
+          97
         </td>
         <td>
           806
         </td>
         <td>
-          3290
+          3328
           -
-          3290
+          3328
         </td>
         <td>
           Select
@@ -2733,15 +2741,15 @@
         </td>
       </tr><tr>
         <td>
-          95
+          97
         </td>
         <td>
           807
         </td>
         <td>
-          3277
+          3315
           -
-          3374
+          3412
         </td>
         <td>
           ApplyToImplicitArgs
@@ -2757,15 +2765,15 @@
         </td>
       </tr><tr>
         <td>
-          96
+          98
         </td>
         <td>
           801
         </td>
         <td>
-          3312
+          3350
           -
-          3320
+          3358
         </td>
         <td>
           Select
@@ -2778,15 +2786,15 @@
         </td>
       </tr><tr>
         <td>
-          97
+          99
         </td>
         <td>
           804
         </td>
         <td>
-          3343
+          3381
           -
-          3343
+          3381
         </td>
         <td>
           Select
@@ -2799,15 +2807,15 @@
         </td>
       </tr><tr>
         <td>
-          97
+          99
         </td>
         <td>
           803
         </td>
         <td>
-          3344
+          3382
           -
-          3363
+          3401
         </td>
         <td>
           ApplyToImplicitArgs
@@ -2820,15 +2828,15 @@
         </td>
       </tr><tr>
         <td>
-          97
+          99
         </td>
         <td>
           802
         </td>
         <td>
-          3355
+          3393
           -
-          3355
+          3393
         </td>
         <td>
           Select
@@ -2841,15 +2849,15 @@
         </td>
       </tr><tr>
         <td>
-          97
+          99
         </td>
         <td>
           805
         </td>
         <td>
-          3341
+          3379
           -
-          3364
+          3402
         </td>
         <td>
           ApplyToImplicitArgs
@@ -2862,15 +2870,15 @@
         </td>
       </tr><tr>
         <td>
-          100
+          102
         </td>
         <td>
           809
         </td>
         <td>
-          3403
+          3441
           -
-          3434
+          3472
         </td>
         <td>
           Apply
@@ -2883,15 +2891,15 @@
         </td>
       </tr><tr>
         <td>
-          100
+          102
         </td>
         <td>
           808
         </td>
         <td>
-          3421
+          3459
           -
-          3433
+          3471
         </td>
         <td>
           Select
