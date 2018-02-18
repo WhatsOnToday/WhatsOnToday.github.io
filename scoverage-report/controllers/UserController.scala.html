@@ -47,61 +47,79 @@
 </span>23 <span style=''>import whatson.model.forms._
 </span>24 <span style=''>import whatson.service._
 </span>25 <span style=''>import whatson.util.FormErrorJson._
-</span>26 <span style=''>
-</span>27 <span style=''>class UserController@Inject() (
-</span>28 <span style=''>  silhouette: Silhouette[AuthEnv],
-</span>29 <span style=''>  loginService: LoginService,
-</span>30 <span style=''>  authInfoRepository: AuthInfoRepository,
-</span>31 <span style=''>  credentialsProvider: CredentialsProvider,
-</span>32 <span style=''>  socialProviderRegistry: SocialProviderRegistry,
-</span>33 <span style=''>  configuration: Configuration,
-</span>34 <span style=''>  clock: Clock,
-</span>35 <span style=''>  cc: ControllerComponents,
-</span>36 <span style=''>  cache: AsyncCacheApi,
-</span>37 <span style=''>  passwordHasher: PasswordHasher,
-</span>38 <span style=''>  protected val dbConfigProvider: DatabaseConfigProvider,
-</span>39 <span style=''>  userService: UserService,
-</span>40 <span style=''>  mailService: MailService,
-</span>41 <span style=''>  avatarService: AvatarService)
-</span>42 <span style=''>    extends AbstractController(cc) with HasDatabaseConfigProvider[JdbcProfile] {
-</span>43 <span style=''>
-</span>44 <span style=''>  val log = </span><span style='background: #AEF1AE'>Logger(&quot;api.user&quot;)</span><span style=''>
-</span>45 <span style=''>
-</span>46 <span style=''>  /**
-</span>47 <span style=''>   * Handles the submitted JSON data.
-</span>48 <span style=''>   *
-</span>49 <span style=''>   * @return The result to display.
-</span>50 <span style=''>   */
-</span>51 <span style=''>  def signUp = </span><span style='background: #AEF1AE'>Action.async(parse.json) { implicit request =&gt;
-</span>52 <span style=''></span><span style='background: #AEF1AE'>    UserSignUpForm.form.bindFromRequest.fold(
-</span>53 <span style=''></span><span style='background: #AEF1AE'>      form =&gt; {
-</span>54 <span style=''></span><span style='background: #AEF1AE'>        Future.successful(BadRequest(Json.toJson(form.errors)))
-</span>55 <span style=''></span><span style='background: #AEF1AE'>      },
-</span>56 <span style=''></span><span style='background: #AEF1AE'>      data =&gt; {
-</span>57 <span style=''></span><span style='background: #AEF1AE'>        val loginInfo = LoginInfo(CredentialsProvider.ID, data.email)
-</span>58 <span style=''></span><span style='background: #AEF1AE'>        loginService.retrieveAll(loginInfo).flatMap {
-</span>59 <span style=''></span><span style='background: #AEF1AE'>          case Some(login) =&gt;
-</span>60 <span style=''></span><span style='background: #AEF1AE'>            Future.successful(BadRequest(Json.obj(&quot;message&quot; -&gt; &quot;user.exists&quot;)))
-</span>61 <span style=''></span><span style='background: #AEF1AE'>          case None =&gt;
-</span>62 <span style=''></span><span style='background: #AEF1AE'>            val authInfo = passwordHasher.hash(data.password)
-</span>63 <span style=''></span><span style='background: #AEF1AE'>            val login = Login(None, data.email, None, None, None, loginInfo.providerID, loginInfo.providerKey, false)
-</span>64 <span style=''></span><span style='background: #AEF1AE'>            for {
-</span>65 <span style=''></span><span style='background: #AEF1AE'>              login &lt;- loginService.save(login)
-</span>66 <span style=''></span><span style='background: #AEF1AE'>              authInfo &lt;- authInfoRepository.add(loginInfo, authInfo)
-</span>67 <span style=''></span><span style='background: #AEF1AE'>              authenticator &lt;- silhouette.env.authenticatorService.create(loginInfo)
-</span>68 <span style=''></span><span style='background: #AEF1AE'>              token &lt;- silhouette.env.authenticatorService.init(authenticator)
-</span>69 <span style=''></span><span style='background: #AEF1AE'>              avatar &lt;- avatarService.retrieveURL(data.email)
-</span>70 <span style=''></span><span style='background: #AEF1AE'>            } yield {
-</span>71 <span style=''></span><span style='background: #AEF1AE'>              silhouette.env.eventBus.publish(SignUpEvent(login, request))
-</span>72 <span style=''></span><span style='background: #AEF1AE'>              silhouette.env.eventBus.publish(LoginEvent(login, request))
-</span>73 <span style=''></span><span style='background: #AEF1AE'>              userService.save(login,avatar)
-</span>74 <span style=''></span><span style='background: #AEF1AE'>              mailService.sendUserConfirmation(data.email,token)
-</span>75 <span style=''></span><span style='background: #AEF1AE'>              Ok(Json.obj(&quot;message&quot; -&gt; &quot;mail.sent&quot;))
-</span>76 <span style=''></span><span style='background: #AEF1AE'>            }
-</span>77 <span style=''></span><span style='background: #AEF1AE'>        }
-</span>78 <span style=''></span><span style='background: #AEF1AE'>      })
-</span>79 <span style=''></span><span style='background: #AEF1AE'>  }</span><span style=''>
-</span>80 <span style=''>}
+</span>26 <span style=''>import whatson.db._
+</span>27 <span style=''>import slick.jdbc.JdbcProfile
+</span>28 <span style=''>import slick.jdbc.PostgresProfile.api._
+</span>29 <span style=''>import whatson.db.Util._
+</span>30 <span style=''>import whatson.model.detail.EventDetail._
+</span>31 <span style=''>
+</span>32 <span style=''>
+</span>33 <span style=''>class UserController@Inject() (
+</span>34 <span style=''>  val silhouette: Silhouette[AuthEnv],
+</span>35 <span style=''>  loginService: LoginService,
+</span>36 <span style=''>  authInfoRepository: AuthInfoRepository,
+</span>37 <span style=''>  credentialsProvider: CredentialsProvider,
+</span>38 <span style=''>  socialProviderRegistry: SocialProviderRegistry,
+</span>39 <span style=''>  configuration: Configuration,
+</span>40 <span style=''>  clock: Clock,
+</span>41 <span style=''>  cc: ControllerComponents,
+</span>42 <span style=''>  cache: AsyncCacheApi,
+</span>43 <span style=''>  passwordHasher: PasswordHasher,
+</span>44 <span style=''>  protected val dbConfigProvider: DatabaseConfigProvider,
+</span>45 <span style=''>  val userService: UserService,
+</span>46 <span style=''>  mailService: MailService,
+</span>47 <span style=''>  avatarService: AvatarService,
+</span>48 <span style=''>  val organizerService: OrganizerService)
+</span>49 <span style=''>    extends AbstractController(cc) with HasDatabaseConfigProvider[JdbcProfile]
+</span>50 <span style=''>    with Util{
+</span>51 <span style=''>
+</span>52 <span style=''>  val log = </span><span style='background: #AEF1AE'>Logger(&quot;api.user&quot;)</span><span style=''>
+</span>53 <span style=''>
+</span>54 <span style=''>  /**
+</span>55 <span style=''>   * Handles the submitted JSON data.
+</span>56 <span style=''>   *
+</span>57 <span style=''>   * @return The result to display.
+</span>58 <span style=''>   */
+</span>59 <span style=''>  def signUp = </span><span style='background: #AEF1AE'>Action.async(parse.json) { implicit request =&gt;
+</span>60 <span style=''></span><span style='background: #AEF1AE'>    UserSignUpForm.form.bindFromRequest.fold(
+</span>61 <span style=''></span><span style='background: #AEF1AE'>      form =&gt; {
+</span>62 <span style=''></span><span style='background: #AEF1AE'>        Future.successful(BadRequest(Json.toJson(form.errors)))
+</span>63 <span style=''></span><span style='background: #AEF1AE'>      },
+</span>64 <span style=''></span><span style='background: #AEF1AE'>      data =&gt; {
+</span>65 <span style=''></span><span style='background: #AEF1AE'>        val loginInfo = LoginInfo(CredentialsProvider.ID, data.email)
+</span>66 <span style=''></span><span style='background: #AEF1AE'>        loginService.retrieveAll(loginInfo).flatMap {
+</span>67 <span style=''></span><span style='background: #AEF1AE'>          case Some(login) =&gt;
+</span>68 <span style=''></span><span style='background: #AEF1AE'>            Future.successful(BadRequest(Json.obj(&quot;message&quot; -&gt; &quot;user.exists&quot;)))
+</span>69 <span style=''></span><span style='background: #AEF1AE'>          case None =&gt;
+</span>70 <span style=''></span><span style='background: #AEF1AE'>            val authInfo = passwordHasher.hash(data.password)
+</span>71 <span style=''></span><span style='background: #AEF1AE'>            val login = Login(None, data.email, None, None, None, loginInfo.providerID, loginInfo.providerKey, false)
+</span>72 <span style=''></span><span style='background: #AEF1AE'>            for {
+</span>73 <span style=''></span><span style='background: #AEF1AE'>              login &lt;- loginService.save(login)
+</span>74 <span style=''></span><span style='background: #AEF1AE'>              authInfo &lt;- authInfoRepository.add(loginInfo, authInfo)
+</span>75 <span style=''></span><span style='background: #AEF1AE'>              authenticator &lt;- silhouette.env.authenticatorService.create(loginInfo)
+</span>76 <span style=''></span><span style='background: #AEF1AE'>              token &lt;- silhouette.env.authenticatorService.init(authenticator)
+</span>77 <span style=''></span><span style='background: #AEF1AE'>              avatar &lt;- avatarService.retrieveURL(data.email)
+</span>78 <span style=''></span><span style='background: #AEF1AE'>            } yield {
+</span>79 <span style=''></span><span style='background: #AEF1AE'>              silhouette.env.eventBus.publish(SignUpEvent(login, request))
+</span>80 <span style=''></span><span style='background: #AEF1AE'>              silhouette.env.eventBus.publish(LoginEvent(login, request))
+</span>81 <span style=''></span><span style='background: #AEF1AE'>              userService.save(login,avatar)
+</span>82 <span style=''></span><span style='background: #AEF1AE'>              mailService.sendUserConfirmation(data.email,token)
+</span>83 <span style=''></span><span style='background: #AEF1AE'>              Ok(Json.obj(&quot;message&quot; -&gt; &quot;mail.sent&quot;))
+</span>84 <span style=''></span><span style='background: #AEF1AE'>            }
+</span>85 <span style=''></span><span style='background: #AEF1AE'>        }
+</span>86 <span style=''></span><span style='background: #AEF1AE'>      })
+</span>87 <span style=''></span><span style='background: #AEF1AE'>  }</span><span style=''>
+</span>88 <span style=''>
+</span>89 <span style=''>  def getParticipatingEvents = </span><span style='background: #AEF1AE'>userRequest(parse.default) { case (request,user) =&gt;
+</span>90 <span style=''></span><span style='background: #AEF1AE'>    log.debug(&quot;Rest request to get events participating in&quot;)
+</span>91 <span style=''></span><span style='background: #AEF1AE'>
+</span>92 <span style=''></span><span style='background: #AEF1AE'>    implicit val r = request
+</span>93 <span style=''></span><span style='background: #AEF1AE'>    val q = UserTable.user.filter(_.id === user.id.getOrElse(-1)).flatMap(_.events)
+</span>94 <span style=''></span><span style='background: #AEF1AE'>    val s = q.queryPaged(request).detailed
+</span>95 <span style=''></span><span style='background: #AEF1AE'>
+</span>96 <span style=''></span><span style='background: #AEF1AE'>    returnPaged(s,q,db)
+</span>97 <span style=''></span><span style='background: #AEF1AE'>  }</span><span style=''>
+</span>98 <span style=''>}
 </span></pre>
           </div>
           <div class="tab-pane" id="statementlist">
@@ -115,15 +133,15 @@
         <th>Code</th>
       </tr><tr>
         <td>
-          44
+          52
         </td>
         <td>
           1272
         </td>
         <td>
-          1541
+          1762
           -
-          1559
+          1780
         </td>
         <td>
           Apply
@@ -136,15 +154,15 @@
         </td>
       </tr><tr>
         <td>
-          51
+          59
         </td>
         <td>
           1273
         </td>
         <td>
-          1680
+          1901
           -
-          1690
+          1911
         </td>
         <td>
           Select
@@ -157,15 +175,15 @@
         </td>
       </tr><tr>
         <td>
-          51
+          59
         </td>
         <td>
           1332
         </td>
         <td>
-          1667
+          1888
           -
-          3034
+          3255
         </td>
         <td>
           Apply
@@ -194,15 +212,15 @@
         </td>
       </tr><tr>
         <td>
-          52
+          60
         </td>
         <td>
           1331
         </td>
         <td>
-          1718
+          1939
           -
-          3030
+          3251
         </td>
         <td>
           Apply
@@ -231,15 +249,15 @@
         </td>
       </tr><tr>
         <td>
-          54
+          62
         </td>
         <td>
           1276
         </td>
         <td>
-          1813
+          2034
           -
-          1837
+          2058
         </td>
         <td>
           ApplyToImplicitArgs
@@ -252,15 +270,15 @@
         </td>
       </tr><tr>
         <td>
-          54
+          62
         </td>
         <td>
           1279
         </td>
         <td>
-          1784
+          2005
           -
-          1839
+          2060
         </td>
         <td>
           Apply
@@ -273,15 +291,15 @@
         </td>
       </tr><tr>
         <td>
-          54
+          62
         </td>
         <td>
           1278
         </td>
         <td>
-          1802
+          2023
           -
-          1838
+          2059
         </td>
         <td>
           ApplyToImplicitArgs
@@ -294,15 +312,15 @@
         </td>
       </tr><tr>
         <td>
-          54
+          62
         </td>
         <td>
           1275
         </td>
         <td>
-          1824
+          2045
           -
-          1824
+          2045
         </td>
         <td>
           Select
@@ -315,15 +333,15 @@
         </td>
       </tr><tr>
         <td>
-          54
+          62
         </td>
         <td>
           1277
         </td>
         <td>
-          1812
+          2033
           -
-          1812
+          2033
         </td>
         <td>
           Select
@@ -336,15 +354,15 @@
         </td>
       </tr><tr>
         <td>
-          54
+          62
         </td>
         <td>
           1274
         </td>
         <td>
-          1825
+          2046
           -
-          1836
+          2057
         </td>
         <td>
           Select
@@ -357,15 +375,15 @@
         </td>
       </tr><tr>
         <td>
-          57
+          65
         </td>
         <td>
           1282
         </td>
         <td>
-          1889
+          2110
           -
-          1934
+          2155
         </td>
         <td>
           Apply
@@ -378,15 +396,15 @@
         </td>
       </tr><tr>
         <td>
-          57
+          65
         </td>
         <td>
           1281
         </td>
         <td>
-          1923
+          2144
           -
-          1933
+          2154
         </td>
         <td>
           Select
@@ -399,15 +417,15 @@
         </td>
       </tr><tr>
         <td>
-          57
+          65
         </td>
         <td>
           1280
         </td>
         <td>
-          1899
+          2120
           -
-          1921
+          2142
         </td>
         <td>
           Select
@@ -420,15 +438,15 @@
         </td>
       </tr><tr>
         <td>
-          58
+          66
         </td>
         <td>
           1330
         </td>
         <td>
-          1943
+          2164
           -
-          3021
+          3242
         </td>
         <td>
           ApplyToImplicitArgs
@@ -454,15 +472,15 @@
         </td>
       </tr><tr>
         <td>
-          58
+          66
         </td>
         <td>
           1329
         </td>
         <td>
-          1987
+          2208
           -
-          1987
+          2208
         </td>
         <td>
           Select
@@ -475,15 +493,15 @@
         </td>
       </tr><tr>
         <td>
-          60
+          68
         </td>
         <td>
           1291
         </td>
         <td>
-          2031
+          2252
           -
-          2098
+          2319
         </td>
         <td>
           Apply
@@ -496,15 +514,15 @@
         </td>
       </tr><tr>
         <td>
-          60
+          68
         </td>
         <td>
           1285
         </td>
         <td>
-          2082
+          2303
           -
-          2082
+          2303
         </td>
         <td>
           Select
@@ -517,15 +535,15 @@
         </td>
       </tr><tr>
         <td>
-          60
+          68
         </td>
         <td>
           1288
         </td>
         <td>
-          2060
+          2281
           -
-          2096
+          2317
         </td>
         <td>
           Apply
@@ -538,15 +556,15 @@
         </td>
       </tr><tr>
         <td>
-          60
+          68
         </td>
         <td>
           1287
         </td>
         <td>
-          2069
+          2290
           -
-          2095
+          2316
         </td>
         <td>
           Apply
@@ -559,15 +577,15 @@
         </td>
       </tr><tr>
         <td>
-          60
+          68
         </td>
         <td>
           1290
         </td>
         <td>
-          2049
+          2270
           -
-          2097
+          2318
         </td>
         <td>
           ApplyToImplicitArgs
@@ -580,15 +598,15 @@
         </td>
       </tr><tr>
         <td>
-          60
+          68
         </td>
         <td>
           1284
         </td>
         <td>
-          2082
+          2303
           -
-          2095
+          2316
         </td>
         <td>
           Literal
@@ -601,15 +619,15 @@
         </td>
       </tr><tr>
         <td>
-          60
+          68
         </td>
         <td>
           1283
         </td>
         <td>
-          2069
+          2290
           -
-          2078
+          2299
         </td>
         <td>
           Literal
@@ -622,15 +640,15 @@
         </td>
       </tr><tr>
         <td>
-          60
+          68
         </td>
         <td>
           1286
         </td>
         <td>
-          2082
+          2303
           -
-          2095
+          2316
         </td>
         <td>
           ApplyToImplicitArgs
@@ -643,15 +661,15 @@
         </td>
       </tr><tr>
         <td>
-          60
+          68
         </td>
         <td>
           1289
         </td>
         <td>
-          2059
+          2280
           -
-          2059
+          2280
         </td>
         <td>
           Select
@@ -664,15 +682,15 @@
         </td>
       </tr><tr>
         <td>
-          62
+          70
         </td>
         <td>
           1293
         </td>
         <td>
-          2149
+          2370
           -
-          2183
+          2404
         </td>
         <td>
           Apply
@@ -685,15 +703,15 @@
         </td>
       </tr><tr>
         <td>
-          62
+          70
         </td>
         <td>
           1292
         </td>
         <td>
-          2169
+          2390
           -
-          2182
+          2403
         </td>
         <td>
           Select
@@ -706,15 +724,15 @@
         </td>
       </tr><tr>
         <td>
-          63
+          71
         </td>
         <td>
           1297
         </td>
         <td>
-          2238
+          2459
           -
-          2242
+          2463
         </td>
         <td>
           Select
@@ -727,15 +745,15 @@
         </td>
       </tr><tr>
         <td>
-          63
+          71
         </td>
         <td>
           1300
         </td>
         <td>
-          2272
+          2493
           -
-          2293
+          2514
         </td>
         <td>
           Select
@@ -748,15 +766,15 @@
         </td>
       </tr><tr>
         <td>
-          63
+          71
         </td>
         <td>
           1294
         </td>
         <td>
-          2214
+          2435
           -
-          2218
+          2439
         </td>
         <td>
           Select
@@ -769,15 +787,15 @@
         </td>
       </tr><tr>
         <td>
-          63
+          71
         </td>
         <td>
           1296
         </td>
         <td>
-          2232
+          2453
           -
-          2236
+          2457
         </td>
         <td>
           Select
@@ -790,15 +808,15 @@
         </td>
       </tr><tr>
         <td>
-          63
+          71
         </td>
         <td>
           1299
         </td>
         <td>
-          2250
+          2471
           -
-          2270
+          2491
         </td>
         <td>
           Select
@@ -811,15 +829,15 @@
         </td>
       </tr><tr>
         <td>
-          63
+          71
         </td>
         <td>
           1302
         </td>
         <td>
-          2208
+          2429
           -
-          2301
+          2522
         </td>
         <td>
           Apply
@@ -832,15 +850,15 @@
         </td>
       </tr><tr>
         <td>
-          63
+          71
         </td>
         <td>
           1301
         </td>
         <td>
-          2295
+          2516
           -
-          2300
+          2521
         </td>
         <td>
           Literal
@@ -853,15 +871,15 @@
         </td>
       </tr><tr>
         <td>
-          63
+          71
         </td>
         <td>
           1295
         </td>
         <td>
-          2220
+          2441
           -
-          2230
+          2451
         </td>
         <td>
           Select
@@ -874,15 +892,15 @@
         </td>
       </tr><tr>
         <td>
-          63
+          71
         </td>
         <td>
           1298
         </td>
         <td>
-          2244
+          2465
           -
-          2248
+          2469
         </td>
         <td>
           Select
@@ -895,15 +913,15 @@
         </td>
       </tr><tr>
         <td>
-          65
+          73
         </td>
         <td>
           1327
         </td>
         <td>
-          2340
+          2561
           -
-          2340
+          2561
         </td>
         <td>
           Select
@@ -916,15 +934,15 @@
         </td>
       </tr><tr>
         <td>
-          65
+          73
         </td>
         <td>
           1328
         </td>
         <td>
-          2314
+          2535
           -
-          3011
+          3232
         </td>
         <td>
           ApplyToImplicitArgs
@@ -943,15 +961,15 @@
         </td>
       </tr><tr>
         <td>
-          66
+          74
         </td>
         <td>
           1326
         </td>
         <td>
-          2382
+          2603
           -
-          3011
+          3232
         </td>
         <td>
           ApplyToImplicitArgs
@@ -970,15 +988,15 @@
         </td>
       </tr><tr>
         <td>
-          66
+          74
         </td>
         <td>
           1325
         </td>
         <td>
-          2391
+          2612
           -
-          2391
+          2612
         </td>
         <td>
           Select
@@ -991,15 +1009,15 @@
         </td>
       </tr><tr>
         <td>
-          67
+          75
         </td>
         <td>
           1324
         </td>
         <td>
-          2452
+          2673
           -
-          3011
+          3232
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1018,15 +1036,15 @@
         </td>
       </tr><tr>
         <td>
-          67
+          75
         </td>
         <td>
           1323
         </td>
         <td>
-          2466
+          2687
           -
-          2466
+          2687
         </td>
         <td>
           Select
@@ -1039,15 +1057,15 @@
         </td>
       </tr><tr>
         <td>
-          68
+          76
         </td>
         <td>
           1321
         </td>
         <td>
-          2543
+          2764
           -
-          2543
+          2764
         </td>
         <td>
           Select
@@ -1060,15 +1078,15 @@
         </td>
       </tr><tr>
         <td>
-          68
+          76
         </td>
         <td>
           1322
         </td>
         <td>
-          2537
+          2758
           -
-          3011
+          3232
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1087,15 +1105,15 @@
         </td>
       </tr><tr>
         <td>
-          69
+          77
         </td>
         <td>
           1303
         </td>
         <td>
-          2652
+          2873
           -
-          2662
+          2883
         </td>
         <td>
           Select
@@ -1108,15 +1126,15 @@
         </td>
       </tr><tr>
         <td>
-          69
+          77
         </td>
         <td>
           1320
         </td>
         <td>
-          2616
+          2837
           -
-          3011
+          3232
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1135,15 +1153,15 @@
         </td>
       </tr><tr>
         <td>
-          69
+          77
         </td>
         <td>
           1319
         </td>
         <td>
-          2623
+          2844
           -
-          2623
+          2844
         </td>
         <td>
           Select
@@ -1156,15 +1174,15 @@
         </td>
       </tr><tr>
         <td>
-          71
+          79
         </td>
         <td>
           1305
         </td>
         <td>
-          2700
+          2921
           -
-          2760
+          2981
         </td>
         <td>
           Apply
@@ -1177,15 +1195,15 @@
         </td>
       </tr><tr>
         <td>
-          71
+          79
         </td>
         <td>
           1304
         </td>
         <td>
-          2732
+          2953
           -
-          2759
+          2980
         </td>
         <td>
           Apply
@@ -1198,15 +1216,15 @@
         </td>
       </tr><tr>
         <td>
-          72
+          80
         </td>
         <td>
           1306
         </td>
         <td>
-          2807
+          3028
           -
-          2833
+          3054
         </td>
         <td>
           Apply
@@ -1219,15 +1237,15 @@
         </td>
       </tr><tr>
         <td>
-          72
+          80
         </td>
         <td>
           1307
         </td>
         <td>
-          2775
+          2996
           -
-          2834
+          3055
         </td>
         <td>
           Apply
@@ -1240,15 +1258,15 @@
         </td>
       </tr><tr>
         <td>
-          73
+          81
         </td>
         <td>
           1308
         </td>
         <td>
-          2849
+          3070
           -
-          2879
+          3100
         </td>
         <td>
           Apply
@@ -1261,15 +1279,15 @@
         </td>
       </tr><tr>
         <td>
-          74
+          82
         </td>
         <td>
           1309
         </td>
         <td>
-          2927
+          3148
           -
-          2937
+          3158
         </td>
         <td>
           Select
@@ -1282,15 +1300,15 @@
         </td>
       </tr><tr>
         <td>
-          74
+          82
         </td>
         <td>
           1310
         </td>
         <td>
-          2894
+          3115
           -
-          2944
+          3165
         </td>
         <td>
           Apply
@@ -1303,15 +1321,15 @@
         </td>
       </tr><tr>
         <td>
-          75
+          83
         </td>
         <td>
           1315
         </td>
         <td>
-          2971
+          3192
           -
-          2995
+          3216
         </td>
         <td>
           Apply
@@ -1324,15 +1342,15 @@
         </td>
       </tr><tr>
         <td>
-          75
+          83
         </td>
         <td>
           1318
         </td>
         <td>
-          2959
+          3180
           -
-          2997
+          3218
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1345,15 +1363,15 @@
         </td>
       </tr><tr>
         <td>
-          75
+          83
         </td>
         <td>
           1312
         </td>
         <td>
-          2984
+          3205
           -
-          2995
+          3216
         </td>
         <td>
           Literal
@@ -1366,15 +1384,15 @@
         </td>
       </tr><tr>
         <td>
-          75
+          83
         </td>
         <td>
           1314
         </td>
         <td>
-          2984
+          3205
           -
-          2995
+          3216
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1387,15 +1405,15 @@
         </td>
       </tr><tr>
         <td>
-          75
+          83
         </td>
         <td>
           1317
         </td>
         <td>
-          2961
+          3182
           -
-          2961
+          3182
         </td>
         <td>
           Select
@@ -1408,15 +1426,15 @@
         </td>
       </tr><tr>
         <td>
-          75
+          83
         </td>
         <td>
           1311
         </td>
         <td>
-          2971
+          3192
           -
-          2980
+          3201
         </td>
         <td>
           Literal
@@ -1429,15 +1447,15 @@
         </td>
       </tr><tr>
         <td>
-          75
+          83
         </td>
         <td>
           1313
         </td>
         <td>
-          2984
+          3205
           -
-          2984
+          3205
         </td>
         <td>
           Select
@@ -1450,15 +1468,15 @@
         </td>
       </tr><tr>
         <td>
-          75
+          83
         </td>
         <td>
           1316
         </td>
         <td>
-          2962
+          3183
           -
-          2996
+          3217
         </td>
         <td>
           Apply
@@ -1468,6 +1486,518 @@
         </td>
         <td style="background: #AEF1AE">
           play.api.libs.json.Json.obj(scala.Predef.ArrowAssoc[String](&quot;message&quot;).-&gt;[play.api.libs.json.Json.JsValueWrapper](json.this.Json.toJsFieldJsValueWrapper[String](&quot;mail.sent&quot;)(json.this.Writes.StringWrites)))
+        </td>
+      </tr><tr>
+        <td>
+          89
+        </td>
+        <td>
+          1333
+        </td>
+        <td>
+          3300
+          -
+          3313
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.mvc.PlayBodyParsers.default
+        </td>
+        <td style="background: #AEF1AE">
+          UserController.this.parse.default
+        </td>
+      </tr><tr>
+        <td>
+          89
+        </td>
+        <td>
+          1356
+        </td>
+        <td>
+          3288
+          -
+          3586
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          controllers.Util.userRequest
+        </td>
+        <td style="background: #AEF1AE">
+          UserController.this.userRequest[play.api.mvc.AnyContent](UserController.this.parse.default)(((x0$2: com.mohiva.play.silhouette.api.actions.SecuredRequest[whatson.auth.AuthEnv,play.api.mvc.AnyContent], x1$1: whatson.model.User) =&gt; scala.Tuple2.apply[com.mohiva.play.silhouette.api.actions.SecuredRequest[whatson.auth.AuthEnv,play.api.mvc.AnyContent], whatson.model.User](x0$2, x1$1) match {
+  case (_1: com.mohiva.play.silhouette.api.actions.SecuredRequest[whatson.auth.AuthEnv,play.api.mvc.AnyContent], _2: whatson.model.User)(com.mohiva.play.silhouette.api.actions.SecuredRequest[whatson.auth.AuthEnv,play.api.mvc.AnyContent], whatson.model.User)((request @ _), (user @ _)) =&gt; {
+    UserController.this.log.debug(&quot;Rest request to get events participating in&quot;)(api.this.MarkerContext.NoMarker);
+    implicit val r: com.mohiva.play.silhouette.api.actions.SecuredRequest[whatson.auth.AuthEnv,play.api.mvc.AnyContent] = request;
+    val q: slick.lifted.Query[whatson.db.EventTable,whatson.model.Event,Seq] = whatson.db.UserTable.user.filter[slick.lifted.Rep[Boolean]](((x$1: whatson.db.UserTable) =&gt; slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](x$1.id)(slick.jdbc.PostgresProfile.api.intColumnType).===[Int, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[Int](user.id.getOrElse[Int](-1))(slick.jdbc.PostgresProfile.api.intColumnType))(lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType))))(lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition).flatMap[whatson.db.EventTable, whatson.model.Event, Seq](((x$2: whatson.db.UserTable) =&gt; x$2.events));
+    val s: slick.dbio.DBIOAction[Seq[whatson.model.detail.EventDetail],slick.dbio.NoStream,slick.dbio.Effect.Read with slick.dbio.Effect.Read with slick.dbio.Effect.Read with slick.dbio.Effect.Read] = whatson.model.detail.EventDetail.EventDetailQuery(whatson.db.Util.QueryUtils[whatson.db.EventTable, whatson.model.Event](q).queryPaged[play.api.mvc.AnyContent, Nothing, Nothing](request)).detailed(play.api.libs.concurrent.Execution.Implicits.defaultContext);
+    whatson.db.Util.returnPaged[whatson.model.detail.EventDetail, whatson.db.EventTable, whatson.model.Event](s, q, UserController.this.db)(r, play.api.libs.concurrent.Execution.Implicits.defaultContext, whatson.model.detail.EventDetail.eventDetailWrites)
+  }
+}))(play.api.libs.concurrent.Execution.Implicits.defaultContext)
+        </td>
+      </tr><tr>
+        <td>
+          89
+        </td>
+        <td>
+          1355
+        </td>
+        <td>
+          3315
+          -
+          3315
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.libs.concurrent.Execution.Implicits.defaultContext
+        </td>
+        <td style="background: #AEF1AE">
+          play.api.libs.concurrent.Execution.Implicits.defaultContext
+        </td>
+      </tr><tr>
+        <td>
+          90
+        </td>
+        <td>
+          1336
+        </td>
+        <td>
+          3344
+          -
+          3400
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          play.api.LoggerLike.debug
+        </td>
+        <td style="background: #AEF1AE">
+          UserController.this.log.debug(&quot;Rest request to get events participating in&quot;)(api.this.MarkerContext.NoMarker)
+        </td>
+      </tr><tr>
+        <td>
+          90
+        </td>
+        <td>
+          1335
+        </td>
+        <td>
+          3353
+          -
+          3353
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.LowPriorityMarkerContextImplicits.NoMarker
+        </td>
+        <td style="background: #AEF1AE">
+          api.this.MarkerContext.NoMarker
+        </td>
+      </tr><tr>
+        <td>
+          90
+        </td>
+        <td>
+          1334
+        </td>
+        <td>
+          3354
+          -
+          3399
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;Rest request to get events participating in&quot;
+        </td>
+      </tr><tr>
+        <td>
+          93
+        </td>
+        <td>
+          1342
+        </td>
+        <td>
+          3470
+          -
+          3470
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
+        </td>
+        <td style="background: #AEF1AE">
+          slick.jdbc.PostgresProfile.api.intColumnType
+        </td>
+      </tr><tr>
+        <td>
+          93
+        </td>
+        <td>
+          1345
+        </td>
+        <td>
+          3464
+          -
+          3464
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.lifted.CanBeQueryCondition.BooleanColumnCanBeQueryCondition
+        </td>
+        <td style="background: #AEF1AE">
+          lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition
+        </td>
+      </tr><tr>
+        <td>
+          93
+        </td>
+        <td>
+          1339
+        </td>
+        <td>
+          3474
+          -
+          3495
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Option.getOrElse
+        </td>
+        <td style="background: #AEF1AE">
+          user.id.getOrElse[Int](-1)
+        </td>
+      </tr><tr>
+        <td>
+          93
+        </td>
+        <td>
+          1338
+        </td>
+        <td>
+          3467
+          -
+          3467
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
+        </td>
+        <td style="background: #AEF1AE">
+          slick.jdbc.PostgresProfile.api.intColumnType
+        </td>
+      </tr><tr>
+        <td>
+          93
+        </td>
+        <td>
+          1347
+        </td>
+        <td>
+          3443
+          -
+          3514
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          slick.lifted.Query.flatMap
+        </td>
+        <td style="background: #AEF1AE">
+          whatson.db.UserTable.user.filter[slick.lifted.Rep[Boolean]](((x$1: whatson.db.UserTable) =&gt; slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](x$1.id)(slick.jdbc.PostgresProfile.api.intColumnType).===[Int, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[Int](user.id.getOrElse[Int](-1))(slick.jdbc.PostgresProfile.api.intColumnType))(lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType))))(lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition).flatMap[whatson.db.EventTable, whatson.model.Event, Seq](((x$2: whatson.db.UserTable) =&gt; x$2.events))
+        </td>
+      </tr><tr>
+        <td>
+          93
+        </td>
+        <td>
+          1341
+        </td>
+        <td>
+          3474
+          -
+          3495
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.relational.RelationalProfile.API.valueToConstColumn
+        </td>
+        <td style="background: #AEF1AE">
+          slick.jdbc.PostgresProfile.api.valueToConstColumn[Int](user.id.getOrElse[Int](-1))(slick.jdbc.PostgresProfile.api.intColumnType)
+        </td>
+      </tr><tr>
+        <td>
+          93
+        </td>
+        <td>
+          1344
+        </td>
+        <td>
+          3465
+          -
+          3495
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.ColumnExtensionMethods.===
+        </td>
+        <td style="background: #AEF1AE">
+          slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](x$1.id)(slick.jdbc.PostgresProfile.api.intColumnType).===[Int, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[Int](user.id.getOrElse[Int](-1))(slick.jdbc.PostgresProfile.api.intColumnType))(lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType))
+        </td>
+      </tr><tr>
+        <td>
+          93
+        </td>
+        <td>
+          1343
+        </td>
+        <td>
+          3470
+          -
+          3470
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.OptionMapper2.getOptionMapper2TT
+        </td>
+        <td style="background: #AEF1AE">
+          lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType)
+        </td>
+      </tr><tr>
+        <td>
+          93
+        </td>
+        <td>
+          1346
+        </td>
+        <td>
+          3505
+          -
+          3513
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.db.UserTable.events
+        </td>
+        <td style="background: #AEF1AE">
+          x$2.events
+        </td>
+      </tr><tr>
+        <td>
+          93
+        </td>
+        <td>
+          1337
+        </td>
+        <td>
+          3465
+          -
+          3469
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.db.UserTable.id
+        </td>
+        <td style="background: #AEF1AE">
+          x$1.id
+        </td>
+      </tr><tr>
+        <td>
+          93
+        </td>
+        <td>
+          1340
+        </td>
+        <td>
+          3491
+          -
+          3491
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
+        </td>
+        <td style="background: #AEF1AE">
+          slick.jdbc.PostgresProfile.api.intColumnType
+        </td>
+      </tr><tr>
+        <td>
+          94
+        </td>
+        <td>
+          1348
+        </td>
+        <td>
+          3527
+          -
+          3548
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          whatson.db.Util.QueryUtils.queryPaged
+        </td>
+        <td style="background: #AEF1AE">
+          whatson.db.Util.QueryUtils[whatson.db.EventTable, whatson.model.Event](q).queryPaged[play.api.mvc.AnyContent, Nothing, Nothing](request)
+        </td>
+      </tr><tr>
+        <td>
+          94
+        </td>
+        <td>
+          1350
+        </td>
+        <td>
+          3527
+          -
+          3557
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          whatson.model.detail.EventDetail.EventDetailQuery.detailed
+        </td>
+        <td style="background: #AEF1AE">
+          whatson.model.detail.EventDetail.EventDetailQuery(whatson.db.Util.QueryUtils[whatson.db.EventTable, whatson.model.Event](q).queryPaged[play.api.mvc.AnyContent, Nothing, Nothing](request)).detailed(play.api.libs.concurrent.Execution.Implicits.defaultContext)
+        </td>
+      </tr><tr>
+        <td>
+          94
+        </td>
+        <td>
+          1349
+        </td>
+        <td>
+          3549
+          -
+          3549
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.libs.concurrent.Execution.Implicits.defaultContext
+        </td>
+        <td style="background: #AEF1AE">
+          play.api.libs.concurrent.Execution.Implicits.defaultContext
+        </td>
+      </tr><tr>
+        <td>
+          96
+        </td>
+        <td>
+          1351
+        </td>
+        <td>
+          3579
+          -
+          3581
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.db.slick.HasDatabaseConfig.db
+        </td>
+        <td style="background: #AEF1AE">
+          UserController.this.db
+        </td>
+      </tr><tr>
+        <td>
+          96
+        </td>
+        <td>
+          1354
+        </td>
+        <td>
+          3563
+          -
+          3582
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          whatson.db.Util.returnPaged
+        </td>
+        <td style="background: #AEF1AE">
+          whatson.db.Util.returnPaged[whatson.model.detail.EventDetail, whatson.db.EventTable, whatson.model.Event](s, q, UserController.this.db)(r, play.api.libs.concurrent.Execution.Implicits.defaultContext, whatson.model.detail.EventDetail.eventDetailWrites)
+        </td>
+      </tr><tr>
+        <td>
+          96
+        </td>
+        <td>
+          1353
+        </td>
+        <td>
+          3574
+          -
+          3574
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.model.detail.EventDetail.eventDetailWrites
+        </td>
+        <td style="background: #AEF1AE">
+          whatson.model.detail.EventDetail.eventDetailWrites
+        </td>
+      </tr><tr>
+        <td>
+          96
+        </td>
+        <td>
+          1352
+        </td>
+        <td>
+          3574
+          -
+          3574
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.libs.concurrent.Execution.Implicits.defaultContext
+        </td>
+        <td style="background: #AEF1AE">
+          play.api.libs.concurrent.Execution.Implicits.defaultContext
         </td>
       </tr>
     </table>
