@@ -34,14 +34,17 @@
 </span>10 <span style=''>  def entityId = </span><span style='background: #AEF1AE'>column[Int](&quot;entity_fk&quot;)</span><span style=''>
 </span>11 <span style=''>  def entityType = </span><span style='background: #AEF1AE'>column[EntityType.Value](&quot;entity_type&quot;)</span><span style=''>
 </span>12 <span style=''>
-</span>13 <span style=''>  def * = </span><span style='background: #AEF1AE'>(imageId,entityId,entityType) &lt;&gt; (ImageEntity.tupled, ImageEntity.unapply)</span><span style=''>
+</span>13 <span style=''>  def imageTag = </span><span style='background: #AEF1AE'>column[Option[String]](&quot;tag&quot;)</span><span style=''>
 </span>14 <span style=''>
-</span>15 <span style=''>  def image = </span><span style='background: #AEF1AE'>foreignKey(&quot;image&quot;,imageId,ImageTable.image)(_.id)</span><span style=''>
-</span>16 <span style=''>}
-</span>17 <span style=''>
-</span>18 <span style=''>object ImageEntityTable {
-</span>19 <span style=''>  val imageEntity = TableQuery[ImageEntityTable]
-</span>20 <span style=''>}
+</span>15 <span style=''>  def * = </span><span style='background: #AEF1AE'>(imageId,entityId,entityType,imageTag) &lt;&gt; (ImageEntity.tupled, ImageEntity.unapply)</span><span style=''>
+</span>16 <span style=''>
+</span>17 <span style=''>  def image = </span><span style='background: #AEF1AE'>foreignKey(&quot;image&quot;,imageId,ImageTable.image)(_.id)</span><span style=''>
+</span>18 <span style=''>  def taggedImage = </span><span style='background: #AEF1AE'>foreignKey(&quot;image&quot;,imageId,ImageTable.image)(_.id).map(i =&gt; (imageTag,i))</span><span style=''>
+</span>19 <span style=''>}
+</span>20 <span style=''>
+</span>21 <span style=''>object ImageEntityTable {
+</span>22 <span style=''>  val imageEntity = TableQuery[ImageEntityTable]
+</span>23 <span style=''>}
 </span></pre>
           </div>
           <div class="tab-pane" id="statementlist">
@@ -58,28 +61,7 @@
           8
         </td>
         <td>
-          1629
-        </td>
-        <td>
-          228
-          -
-          238
-        </td>
-        <td>
-          Literal
-        </td>
-        <td>
-          &lt;nosymbol&gt;
-        </td>
-        <td style="background: #AEF1AE">
-          &quot;image_fk&quot;
-        </td>
-      </tr><tr>
-        <td>
-          8
-        </td>
-        <td>
-          1631
+          1665
         </td>
         <td>
           216
@@ -100,7 +82,7 @@
           8
         </td>
         <td>
-          1630
+          1664
         </td>
         <td>
           227
@@ -118,15 +100,15 @@
         </td>
       </tr><tr>
         <td>
-          10
+          8
         </td>
         <td>
-          1632
+          1663
         </td>
         <td>
-          270
+          228
           -
-          281
+          238
         </td>
         <td>
           Literal
@@ -135,14 +117,14 @@
           &lt;nosymbol&gt;
         </td>
         <td style="background: #AEF1AE">
-          &quot;entity_fk&quot;
+          &quot;image_fk&quot;
         </td>
       </tr><tr>
         <td>
           10
         </td>
         <td>
-          1634
+          1668
         </td>
         <td>
           258
@@ -163,7 +145,7 @@
           10
         </td>
         <td>
-          1633
+          1667
         </td>
         <td>
           269
@@ -181,15 +163,15 @@
         </td>
       </tr><tr>
         <td>
-          11
+          10
         </td>
         <td>
-          1635
+          1666
         </td>
         <td>
-          327
+          270
           -
-          340
+          281
         </td>
         <td>
           Literal
@@ -198,14 +180,14 @@
           &lt;nosymbol&gt;
         </td>
         <td style="background: #AEF1AE">
-          &quot;entity_type&quot;
+          &quot;entity_fk&quot;
         </td>
       </tr><tr>
         <td>
           11
         </td>
         <td>
-          1637
+          1671
         </td>
         <td>
           302
@@ -226,7 +208,7 @@
           11
         </td>
         <td>
-          1636
+          1670
         </td>
         <td>
           326
@@ -244,57 +226,162 @@
         </td>
       </tr><tr>
         <td>
-          13
+          11
         </td>
         <td>
-          1638
+          1669
         </td>
         <td>
-          354
+          327
           -
-          361
+          340
         </td>
         <td>
-          Select
+          Literal
         </td>
         <td>
-          whatson.db.ImageEntityTable.imageId
+          &lt;nosymbol&gt;
         </td>
         <td style="background: #AEF1AE">
-          ImageEntityTable.this.imageId
+          &quot;entity_type&quot;
         </td>
       </tr><tr>
         <td>
           13
         </td>
         <td>
-          1647
+          1674
         </td>
         <td>
-          353
+          382
           -
-          353
+          382
         </td>
         <td>
           ApplyToImplicitArgs
         </td>
         <td>
-          slick.lifted.RepShapeImplicits.repColumnShape
+          slick.ast.TypedType.typedTypeToOptionTypedType
         </td>
         <td style="background: #AEF1AE">
-          lifted.this.Shape.repColumnShape[whatson.model.EntityType.Value, Nothing](whatson.model.EntityType.enumMapper)
+          ast.this.TypedType.typedTypeToOptionTypedType[String](slick.jdbc.PostgresProfile.api.stringColumnType)
         </td>
       </tr><tr>
         <td>
           13
         </td>
         <td>
-          1650
+          1673
         </td>
         <td>
-          407
+          382
           -
-          426
+          382
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.stringColumnType
+        </td>
+        <td style="background: #AEF1AE">
+          slick.jdbc.PostgresProfile.api.stringColumnType
+        </td>
+      </tr><tr>
+        <td>
+          13
+        </td>
+        <td>
+          1675
+        </td>
+        <td>
+          360
+          -
+          389
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.relational.RelationalTableComponent.Table.column
+        </td>
+        <td style="background: #AEF1AE">
+          ImageEntityTable.this.column[Option[String]](&quot;tag&quot;)(ast.this.TypedType.typedTypeToOptionTypedType[String](slick.jdbc.PostgresProfile.api.stringColumnType))
+        </td>
+      </tr><tr>
+        <td>
+          13
+        </td>
+        <td>
+          1672
+        </td>
+        <td>
+          383
+          -
+          388
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;tag&quot;
+        </td>
+      </tr><tr>
+        <td>
+          15
+        </td>
+        <td>
+          1689
+        </td>
+        <td>
+          401
+          -
+          401
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.RepShapeImplicits.optionShape
+        </td>
+        <td style="background: #AEF1AE">
+          lifted.this.Shape.optionShape[String, String, String, Nothing](lifted.this.Shape.repColumnShape[String, Nothing](slick.jdbc.PostgresProfile.api.stringColumnType))
+        </td>
+      </tr><tr>
+        <td>
+          15
+        </td>
+        <td>
+          1680
+        </td>
+        <td>
+          401
+          -
+          439
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Tuple4.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Tuple4.apply[slick.lifted.Rep[Int], slick.lifted.Rep[Int], slick.lifted.Rep[whatson.model.EntityType.Value], slick.lifted.Rep[Option[String]]](ImageEntityTable.this.imageId, ImageEntityTable.this.entityId, ImageEntityTable.this.entityType, ImageEntityTable.this.imageTag)
+        </td>
+      </tr><tr>
+        <td>
+          15
+        </td>
+        <td>
+          1692
+        </td>
+        <td>
+          464
+          -
+          483
         </td>
         <td>
           Apply
@@ -307,59 +394,15 @@
         </td>
       </tr><tr>
         <td>
-          13
+          15
         </td>
         <td>
-          1641
+          1683
         </td>
         <td>
-          353
+          401
           -
-          382
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          scala.Tuple3.apply
-        </td>
-        <td style="background: #AEF1AE">
-          scala.Tuple3.apply[slick.lifted.Rep[Int], slick.lifted.Rep[Int], slick.lifted.Rep[whatson.model.EntityType.Value]](ImageEntityTable.this.imageId, ImageEntityTable.this.entityId, ImageEntityTable.this.entityType)
-        </td>
-      </tr><tr>
-        <td>
-          13
-        </td>
-        <td>
-          1653
-        </td>
-        <td>
-          353
-          -
-          427
-        </td>
-        <td>
-          ApplyToImplicitArgs
-        </td>
-        <td>
-          slick.lifted.ProvenShape.proveShapeOf
-        </td>
-        <td style="background: #AEF1AE">
-          lifted.this.ProvenShape.proveShapeOf[slick.lifted.MappedProjection[whatson.model.ImageEntity,(Int, Int, whatson.model.EntityType.Value)], whatson.model.ImageEntity](slick.jdbc.PostgresProfile.api.anyToShapedValue[(slick.lifted.Rep[Int], slick.lifted.Rep[Int], slick.lifted.Rep[whatson.model.EntityType.Value]), (Int, Int, whatson.model.EntityType.Value)](scala.Tuple3.apply[slick.lifted.Rep[Int], slick.lifted.Rep[Int], slick.lifted.Rep[whatson.model.EntityType.Value]](ImageEntityTable.this.imageId, ImageEntityTable.this.entityId, ImageEntityTable.this.entityType))(lifted.this.Shape.tuple3Shape[slick.jdbc.PostgresProfile.api.FlatShapeLevel, slick.lifted.Rep[Int], slick.lifted.Rep[Int], slick.lifted.Rep[whatson.model.EntityType.Value], Int, Int, whatson.model.EntityType.Value, slick.lifted.Rep[Int], slick.lifted.Rep[Int], slick.lifted.Rep[whatson.model.EntityType.Value]](lifted.this.Shape.repColumnShape[Int, Nothing](slick.jdbc.PostgresProfile.api.intColumnType), lifted.this.Shape.repColumnShape[Int, Nothing](slick.jdbc.PostgresProfile.api.intColumnType), lifted.this.Shape.repColumnShape[whatson.model.EntityType.Value, Nothing](whatson.model.EntityType.enumMapper))).&lt;&gt;[whatson.model.ImageEntity](whatson.model.ImageEntity.tupled, {
-  ((x$0: whatson.model.ImageEntity) =&gt; whatson.model.ImageEntity.unapply(x$0))
-})((ClassTag.apply[whatson.model.ImageEntity](classOf[whatson.model.ImageEntity]): scala.reflect.ClassTag[whatson.model.ImageEntity])))(lifted.this.MappedProjection.mappedProjectionShape[slick.lifted.FlatShapeLevel, whatson.model.ImageEntity, (Int, Int, whatson.model.EntityType.Value)])
-        </td>
-      </tr><tr>
-        <td>
-          13
-        </td>
-        <td>
-          1644
-        </td>
-        <td>
-          353
-          -
-          353
+          401
         </td>
         <td>
           Select
@@ -372,185 +415,15 @@
         </td>
       </tr><tr>
         <td>
-          13
+          15
         </td>
         <td>
-          1652
+          1677
         </td>
         <td>
-          383
+          410
           -
-          383
-        </td>
-        <td>
-          TypeApply
-        </td>
-        <td>
-          slick.lifted.MappedProjection.mappedProjectionShape
-        </td>
-        <td style="background: #AEF1AE">
-          lifted.this.MappedProjection.mappedProjectionShape[slick.lifted.FlatShapeLevel, whatson.model.ImageEntity, (Int, Int, whatson.model.EntityType.Value)]
-        </td>
-      </tr><tr>
-        <td>
-          13
-        </td>
-        <td>
-          1643
-        </td>
-        <td>
-          353
-          -
-          353
-        </td>
-        <td>
-          ApplyToImplicitArgs
-        </td>
-        <td>
-          slick.lifted.RepShapeImplicits.repColumnShape
-        </td>
-        <td style="background: #AEF1AE">
-          lifted.this.Shape.repColumnShape[Int, Nothing](slick.jdbc.PostgresProfile.api.intColumnType)
-        </td>
-      </tr><tr>
-        <td>
-          13
-        </td>
-        <td>
-          1646
-        </td>
-        <td>
-          353
-          -
-          353
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          whatson.db.DbEnumeration.enumMapper
-        </td>
-        <td style="background: #AEF1AE">
-          whatson.model.EntityType.enumMapper
-        </td>
-      </tr><tr>
-        <td>
-          13
-        </td>
-        <td>
-          1640
-        </td>
-        <td>
-          371
-          -
-          381
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          whatson.db.ImageEntityTable.entityType
-        </td>
-        <td style="background: #AEF1AE">
-          ImageEntityTable.this.entityType
-        </td>
-      </tr><tr>
-        <td>
-          13
-        </td>
-        <td>
-          1649
-        </td>
-        <td>
-          387
-          -
-          405
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          whatson.model.ImageEntity.tupled
-        </td>
-        <td style="background: #AEF1AE">
-          whatson.model.ImageEntity.tupled
-        </td>
-      </tr><tr>
-        <td>
-          13
-        </td>
-        <td>
-          1651
-        </td>
-        <td>
-          353
-          -
-          427
-        </td>
-        <td>
-          ApplyToImplicitArgs
-        </td>
-        <td>
-          slick.lifted.ShapedValue.&lt;&gt;
-        </td>
-        <td style="background: #AEF1AE">
-          slick.jdbc.PostgresProfile.api.anyToShapedValue[(slick.lifted.Rep[Int], slick.lifted.Rep[Int], slick.lifted.Rep[whatson.model.EntityType.Value]), (Int, Int, whatson.model.EntityType.Value)](scala.Tuple3.apply[slick.lifted.Rep[Int], slick.lifted.Rep[Int], slick.lifted.Rep[whatson.model.EntityType.Value]](ImageEntityTable.this.imageId, ImageEntityTable.this.entityId, ImageEntityTable.this.entityType))(lifted.this.Shape.tuple3Shape[slick.jdbc.PostgresProfile.api.FlatShapeLevel, slick.lifted.Rep[Int], slick.lifted.Rep[Int], slick.lifted.Rep[whatson.model.EntityType.Value], Int, Int, whatson.model.EntityType.Value, slick.lifted.Rep[Int], slick.lifted.Rep[Int], slick.lifted.Rep[whatson.model.EntityType.Value]](lifted.this.Shape.repColumnShape[Int, Nothing](slick.jdbc.PostgresProfile.api.intColumnType), lifted.this.Shape.repColumnShape[Int, Nothing](slick.jdbc.PostgresProfile.api.intColumnType), lifted.this.Shape.repColumnShape[whatson.model.EntityType.Value, Nothing](whatson.model.EntityType.enumMapper))).&lt;&gt;[whatson.model.ImageEntity](whatson.model.ImageEntity.tupled, {
-  ((x$0: whatson.model.ImageEntity) =&gt; whatson.model.ImageEntity.unapply(x$0))
-})((ClassTag.apply[whatson.model.ImageEntity](classOf[whatson.model.ImageEntity]): scala.reflect.ClassTag[whatson.model.ImageEntity]))
-        </td>
-      </tr><tr>
-        <td>
-          13
-        </td>
-        <td>
-          1642
-        </td>
-        <td>
-          353
-          -
-          353
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
-        </td>
-        <td style="background: #AEF1AE">
-          slick.jdbc.PostgresProfile.api.intColumnType
-        </td>
-      </tr><tr>
-        <td>
-          13
-        </td>
-        <td>
-          1645
-        </td>
-        <td>
-          353
-          -
-          353
-        </td>
-        <td>
-          ApplyToImplicitArgs
-        </td>
-        <td>
-          slick.lifted.RepShapeImplicits.repColumnShape
-        </td>
-        <td style="background: #AEF1AE">
-          lifted.this.Shape.repColumnShape[Int, Nothing](slick.jdbc.PostgresProfile.api.intColumnType)
-        </td>
-      </tr><tr>
-        <td>
-          13
-        </td>
-        <td>
-          1639
-        </td>
-        <td>
-          362
-          -
-          370
+          418
         </td>
         <td>
           Select
@@ -563,120 +436,164 @@
         </td>
       </tr><tr>
         <td>
-          13
+          15
         </td>
         <td>
-          1648
+          1695
         </td>
         <td>
-          353
+          401
           -
-          353
+          484
         </td>
         <td>
           ApplyToImplicitArgs
         </td>
         <td>
-          slick.lifted.TupleShapeImplicits.tuple3Shape
+          slick.lifted.ProvenShape.proveShapeOf
         </td>
         <td style="background: #AEF1AE">
-          lifted.this.Shape.tuple3Shape[slick.jdbc.PostgresProfile.api.FlatShapeLevel, slick.lifted.Rep[Int], slick.lifted.Rep[Int], slick.lifted.Rep[whatson.model.EntityType.Value], Int, Int, whatson.model.EntityType.Value, slick.lifted.Rep[Int], slick.lifted.Rep[Int], slick.lifted.Rep[whatson.model.EntityType.Value]](lifted.this.Shape.repColumnShape[Int, Nothing](slick.jdbc.PostgresProfile.api.intColumnType), lifted.this.Shape.repColumnShape[Int, Nothing](slick.jdbc.PostgresProfile.api.intColumnType), lifted.this.Shape.repColumnShape[whatson.model.EntityType.Value, Nothing](whatson.model.EntityType.enumMapper))
+          lifted.this.ProvenShape.proveShapeOf[slick.lifted.MappedProjection[whatson.model.ImageEntity,(Int, Int, whatson.model.EntityType.Value, Option[String])], whatson.model.ImageEntity](slick.jdbc.PostgresProfile.api.anyToShapedValue[(slick.lifted.Rep[Int], slick.lifted.Rep[Int], slick.lifted.Rep[whatson.model.EntityType.Value], slick.lifted.Rep[Option[String]]), (Int, Int, whatson.model.EntityType.Value, Option[String])](scala.Tuple4.apply[slick.lifted.Rep[Int], slick.lifted.Rep[Int], slick.lifted.Rep[whatson.model.EntityType.Value], slick.lifted.Rep[Option[String]]](ImageEntityTable.this.imageId, ImageEntityTable.this.entityId, ImageEntityTable.this.entityType, ImageEntityTable.this.imageTag))(lifted.this.Shape.tuple4Shape[slick.jdbc.PostgresProfile.api.FlatShapeLevel, slick.lifted.Rep[Int], slick.lifted.Rep[Int], slick.lifted.Rep[whatson.model.EntityType.Value], slick.lifted.Rep[Option[String]], Int, Int, whatson.model.EntityType.Value, Option[String], slick.lifted.Rep[Int], slick.lifted.Rep[Int], slick.lifted.Rep[whatson.model.EntityType.Value], slick.lifted.Rep[Option[String]]](lifted.this.Shape.repColumnShape[Int, Nothing](slick.jdbc.PostgresProfile.api.intColumnType), lifted.this.Shape.repColumnShape[Int, Nothing](slick.jdbc.PostgresProfile.api.intColumnType), lifted.this.Shape.repColumnShape[whatson.model.EntityType.Value, Nothing](whatson.model.EntityType.enumMapper), lifted.this.Shape.optionShape[String, String, String, Nothing](lifted.this.Shape.repColumnShape[String, Nothing](slick.jdbc.PostgresProfile.api.stringColumnType)))).&lt;&gt;[whatson.model.ImageEntity](whatson.model.ImageEntity.tupled, {
+  ((x$0: whatson.model.ImageEntity) =&gt; whatson.model.ImageEntity.unapply(x$0))
+})((ClassTag.apply[whatson.model.ImageEntity](classOf[whatson.model.ImageEntity]): scala.reflect.ClassTag[whatson.model.ImageEntity])))(lifted.this.MappedProjection.mappedProjectionShape[slick.lifted.FlatShapeLevel, whatson.model.ImageEntity, (Int, Int, whatson.model.EntityType.Value, Option[String])])
         </td>
       </tr><tr>
         <td>
           15
         </td>
         <td>
-          1656
+          1686
         </td>
         <td>
-          470
+          401
           -
-          486
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          whatson.db.ImageTable.image
-        </td>
-        <td style="background: #AEF1AE">
-          ImageTable.image
-        </td>
-      </tr><tr>
-        <td>
-          15
-        </td>
-        <td>
-          1659
-        </td>
-        <td>
-          453
-          -
-          453
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          slick.lifted.AbstractTable.foreignKey$default$6
-        </td>
-        <td style="background: #AEF1AE">
-          ImageEntityTable.this.foreignKey$default$6[slick.lifted.Rep[Int], Int, whatson.db.ImageTable, whatson.model.Image](x$2, x$3, x$4)
-        </td>
-      </tr><tr>
-        <td>
-          15
-        </td>
-        <td>
-          1662
-        </td>
-        <td>
-          487
-          -
-          487
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
-        </td>
-        <td style="background: #AEF1AE">
-          slick.jdbc.PostgresProfile.api.intColumnType
-        </td>
-      </tr><tr>
-        <td>
-          15
-        </td>
-        <td>
-          1661
-        </td>
-        <td>
-          487
-          -
-          487
+          401
         </td>
         <td>
           ApplyToImplicitArgs
         </td>
         <td>
-          slick.lifted.AbstractTableShapeImplicits.tableShape
+          slick.lifted.RepShapeImplicits.repColumnShape
         </td>
         <td style="background: #AEF1AE">
-          lifted.this.Shape.tableShape[slick.lifted.FlatShapeLevel, whatson.model.Image, whatson.db.ImageTable](scala.Predef.$conforms[whatson.db.ImageTable])
+          lifted.this.Shape.repColumnShape[whatson.model.EntityType.Value, Nothing](whatson.model.EntityType.enumMapper)
         </td>
       </tr><tr>
         <td>
           15
         </td>
         <td>
-          1655
+          1694
         </td>
         <td>
+          440
+          -
+          440
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          slick.lifted.MappedProjection.mappedProjectionShape
+        </td>
+        <td style="background: #AEF1AE">
+          lifted.this.MappedProjection.mappedProjectionShape[slick.lifted.FlatShapeLevel, whatson.model.ImageEntity, (Int, Int, whatson.model.EntityType.Value, Option[String])]
+        </td>
+      </tr><tr>
+        <td>
+          15
+        </td>
+        <td>
+          1679
+        </td>
+        <td>
+          430
+          -
+          438
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.db.ImageEntityTable.imageTag
+        </td>
+        <td style="background: #AEF1AE">
+          ImageEntityTable.this.imageTag
+        </td>
+      </tr><tr>
+        <td>
+          15
+        </td>
+        <td>
+          1688
+        </td>
+        <td>
+          401
+          -
+          401
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.RepShapeImplicits.repColumnShape
+        </td>
+        <td style="background: #AEF1AE">
+          lifted.this.Shape.repColumnShape[String, Nothing](slick.jdbc.PostgresProfile.api.stringColumnType)
+        </td>
+      </tr><tr>
+        <td>
+          15
+        </td>
+        <td>
+          1682
+        </td>
+        <td>
+          401
+          -
+          401
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.RepShapeImplicits.repColumnShape
+        </td>
+        <td style="background: #AEF1AE">
+          lifted.this.Shape.repColumnShape[Int, Nothing](slick.jdbc.PostgresProfile.api.intColumnType)
+        </td>
+      </tr><tr>
+        <td>
+          15
+        </td>
+        <td>
+          1691
+        </td>
+        <td>
+          444
+          -
           462
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.model.ImageEntity.tupled
+        </td>
+        <td style="background: #AEF1AE">
+          whatson.model.ImageEntity.tupled
+        </td>
+      </tr><tr>
+        <td>
+          15
+        </td>
+        <td>
+          1676
+        </td>
+        <td>
+          402
           -
-          469
+          409
         </td>
         <td>
           Select
@@ -692,96 +609,56 @@
           15
         </td>
         <td>
-          1664
+          1685
         </td>
         <td>
-          443
+          401
           -
-          493
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          slick.lifted.AbstractTable.foreignKey
-        </td>
-        <td style="background: #AEF1AE">
-          ImageEntityTable.this.foreignKey[slick.lifted.Rep[Int], Int, whatson.db.ImageTable, whatson.model.Image](x$2, x$3, x$4)(x$5, x$6, x$7)(lifted.this.Shape.tableShape[slick.lifted.FlatShapeLevel, whatson.model.Image, whatson.db.ImageTable](scala.Predef.$conforms[whatson.db.ImageTable]), lifted.this.Shape.repColumnShape[Int, Nothing](slick.jdbc.PostgresProfile.api.intColumnType))
-        </td>
-      </tr><tr>
-        <td>
-          15
-        </td>
-        <td>
-          1658
-        </td>
-        <td>
-          453
-          -
-          453
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          slick.lifted.AbstractTable.foreignKey$default$5
-        </td>
-        <td style="background: #AEF1AE">
-          ImageEntityTable.this.foreignKey$default$5[slick.lifted.Rep[Int], Int, whatson.db.ImageTable, whatson.model.Image](x$2, x$3, x$4)
-        </td>
-      </tr><tr>
-        <td>
-          15
-        </td>
-        <td>
-          1657
-        </td>
-        <td>
-          488
-          -
-          492
+          401
         </td>
         <td>
           Select
         </td>
         <td>
-          whatson.db.ImageTable.id
+          whatson.db.DbEnumeration.enumMapper
         </td>
         <td style="background: #AEF1AE">
-          x$1.id
+          whatson.model.EntityType.enumMapper
         </td>
       </tr><tr>
         <td>
           15
         </td>
         <td>
-          1660
+          1693
         </td>
         <td>
-          487
+          401
           -
-          487
+          484
         </td>
         <td>
-          TypeApply
+          ApplyToImplicitArgs
         </td>
         <td>
-          scala.Predef.$conforms
+          slick.lifted.ShapedValue.&lt;&gt;
         </td>
         <td style="background: #AEF1AE">
-          scala.Predef.$conforms[whatson.db.ImageTable]
+          slick.jdbc.PostgresProfile.api.anyToShapedValue[(slick.lifted.Rep[Int], slick.lifted.Rep[Int], slick.lifted.Rep[whatson.model.EntityType.Value], slick.lifted.Rep[Option[String]]), (Int, Int, whatson.model.EntityType.Value, Option[String])](scala.Tuple4.apply[slick.lifted.Rep[Int], slick.lifted.Rep[Int], slick.lifted.Rep[whatson.model.EntityType.Value], slick.lifted.Rep[Option[String]]](ImageEntityTable.this.imageId, ImageEntityTable.this.entityId, ImageEntityTable.this.entityType, ImageEntityTable.this.imageTag))(lifted.this.Shape.tuple4Shape[slick.jdbc.PostgresProfile.api.FlatShapeLevel, slick.lifted.Rep[Int], slick.lifted.Rep[Int], slick.lifted.Rep[whatson.model.EntityType.Value], slick.lifted.Rep[Option[String]], Int, Int, whatson.model.EntityType.Value, Option[String], slick.lifted.Rep[Int], slick.lifted.Rep[Int], slick.lifted.Rep[whatson.model.EntityType.Value], slick.lifted.Rep[Option[String]]](lifted.this.Shape.repColumnShape[Int, Nothing](slick.jdbc.PostgresProfile.api.intColumnType), lifted.this.Shape.repColumnShape[Int, Nothing](slick.jdbc.PostgresProfile.api.intColumnType), lifted.this.Shape.repColumnShape[whatson.model.EntityType.Value, Nothing](whatson.model.EntityType.enumMapper), lifted.this.Shape.optionShape[String, String, String, Nothing](lifted.this.Shape.repColumnShape[String, Nothing](slick.jdbc.PostgresProfile.api.stringColumnType)))).&lt;&gt;[whatson.model.ImageEntity](whatson.model.ImageEntity.tupled, {
+  ((x$0: whatson.model.ImageEntity) =&gt; whatson.model.ImageEntity.unapply(x$0))
+})((ClassTag.apply[whatson.model.ImageEntity](classOf[whatson.model.ImageEntity]): scala.reflect.ClassTag[whatson.model.ImageEntity]))
         </td>
       </tr><tr>
         <td>
           15
         </td>
         <td>
-          1663
+          1684
         </td>
         <td>
-          487
+          401
           -
-          487
+          401
         </td>
         <td>
           ApplyToImplicitArgs
@@ -797,12 +674,285 @@
           15
         </td>
         <td>
-          1654
+          1687
         </td>
         <td>
-          454
+          401
           -
-          461
+          401
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.stringColumnType
+        </td>
+        <td style="background: #AEF1AE">
+          slick.jdbc.PostgresProfile.api.stringColumnType
+        </td>
+      </tr><tr>
+        <td>
+          15
+        </td>
+        <td>
+          1678
+        </td>
+        <td>
+          419
+          -
+          429
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.db.ImageEntityTable.entityType
+        </td>
+        <td style="background: #AEF1AE">
+          ImageEntityTable.this.entityType
+        </td>
+      </tr><tr>
+        <td>
+          15
+        </td>
+        <td>
+          1681
+        </td>
+        <td>
+          401
+          -
+          401
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
+        </td>
+        <td style="background: #AEF1AE">
+          slick.jdbc.PostgresProfile.api.intColumnType
+        </td>
+      </tr><tr>
+        <td>
+          15
+        </td>
+        <td>
+          1690
+        </td>
+        <td>
+          401
+          -
+          401
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.TupleShapeImplicits.tuple4Shape
+        </td>
+        <td style="background: #AEF1AE">
+          lifted.this.Shape.tuple4Shape[slick.jdbc.PostgresProfile.api.FlatShapeLevel, slick.lifted.Rep[Int], slick.lifted.Rep[Int], slick.lifted.Rep[whatson.model.EntityType.Value], slick.lifted.Rep[Option[String]], Int, Int, whatson.model.EntityType.Value, Option[String], slick.lifted.Rep[Int], slick.lifted.Rep[Int], slick.lifted.Rep[whatson.model.EntityType.Value], slick.lifted.Rep[Option[String]]](lifted.this.Shape.repColumnShape[Int, Nothing](slick.jdbc.PostgresProfile.api.intColumnType), lifted.this.Shape.repColumnShape[Int, Nothing](slick.jdbc.PostgresProfile.api.intColumnType), lifted.this.Shape.repColumnShape[whatson.model.EntityType.Value, Nothing](whatson.model.EntityType.enumMapper), lifted.this.Shape.optionShape[String, String, String, Nothing](lifted.this.Shape.repColumnShape[String, Nothing](slick.jdbc.PostgresProfile.api.stringColumnType)))
+        </td>
+      </tr><tr>
+        <td>
+          17
+        </td>
+        <td>
+          1698
+        </td>
+        <td>
+          527
+          -
+          543
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.db.ImageTable.image
+        </td>
+        <td style="background: #AEF1AE">
+          ImageTable.image
+        </td>
+      </tr><tr>
+        <td>
+          17
+        </td>
+        <td>
+          1701
+        </td>
+        <td>
+          510
+          -
+          510
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          slick.lifted.AbstractTable.foreignKey$default$6
+        </td>
+        <td style="background: #AEF1AE">
+          ImageEntityTable.this.foreignKey$default$6[slick.lifted.Rep[Int], Int, whatson.db.ImageTable, whatson.model.Image](x$3, x$4, x$5)
+        </td>
+      </tr><tr>
+        <td>
+          17
+        </td>
+        <td>
+          1704
+        </td>
+        <td>
+          544
+          -
+          544
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
+        </td>
+        <td style="background: #AEF1AE">
+          slick.jdbc.PostgresProfile.api.intColumnType
+        </td>
+      </tr><tr>
+        <td>
+          17
+        </td>
+        <td>
+          1703
+        </td>
+        <td>
+          544
+          -
+          544
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.AbstractTableShapeImplicits.tableShape
+        </td>
+        <td style="background: #AEF1AE">
+          lifted.this.Shape.tableShape[slick.lifted.FlatShapeLevel, whatson.model.Image, whatson.db.ImageTable](scala.Predef.$conforms[whatson.db.ImageTable])
+        </td>
+      </tr><tr>
+        <td>
+          17
+        </td>
+        <td>
+          1697
+        </td>
+        <td>
+          519
+          -
+          526
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.db.ImageEntityTable.imageId
+        </td>
+        <td style="background: #AEF1AE">
+          ImageEntityTable.this.imageId
+        </td>
+      </tr><tr>
+        <td>
+          17
+        </td>
+        <td>
+          1706
+        </td>
+        <td>
+          500
+          -
+          550
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          slick.lifted.AbstractTable.foreignKey
+        </td>
+        <td style="background: #AEF1AE">
+          ImageEntityTable.this.foreignKey[slick.lifted.Rep[Int], Int, whatson.db.ImageTable, whatson.model.Image](x$3, x$4, x$5)(x$6, x$7, x$8)(lifted.this.Shape.tableShape[slick.lifted.FlatShapeLevel, whatson.model.Image, whatson.db.ImageTable](scala.Predef.$conforms[whatson.db.ImageTable]), lifted.this.Shape.repColumnShape[Int, Nothing](slick.jdbc.PostgresProfile.api.intColumnType))
+        </td>
+      </tr><tr>
+        <td>
+          17
+        </td>
+        <td>
+          1700
+        </td>
+        <td>
+          510
+          -
+          510
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          slick.lifted.AbstractTable.foreignKey$default$5
+        </td>
+        <td style="background: #AEF1AE">
+          ImageEntityTable.this.foreignKey$default$5[slick.lifted.Rep[Int], Int, whatson.db.ImageTable, whatson.model.Image](x$3, x$4, x$5)
+        </td>
+      </tr><tr>
+        <td>
+          17
+        </td>
+        <td>
+          1702
+        </td>
+        <td>
+          544
+          -
+          544
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Predef.$conforms
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Predef.$conforms[whatson.db.ImageTable]
+        </td>
+      </tr><tr>
+        <td>
+          17
+        </td>
+        <td>
+          1705
+        </td>
+        <td>
+          544
+          -
+          544
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.RepShapeImplicits.repColumnShape
+        </td>
+        <td style="background: #AEF1AE">
+          lifted.this.Shape.repColumnShape[Int, Nothing](slick.jdbc.PostgresProfile.api.intColumnType)
+        </td>
+      </tr><tr>
+        <td>
+          17
+        </td>
+        <td>
+          1696
+        </td>
+        <td>
+          511
+          -
+          518
         </td>
         <td>
           Literal
@@ -812,6 +962,455 @@
         </td>
         <td style="background: #AEF1AE">
           &quot;image&quot;
+        </td>
+      </tr><tr>
+        <td>
+          17
+        </td>
+        <td>
+          1699
+        </td>
+        <td>
+          545
+          -
+          549
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.db.ImageTable.id
+        </td>
+        <td style="background: #AEF1AE">
+          x$1.id
+        </td>
+      </tr><tr>
+        <td>
+          18
+        </td>
+        <td>
+          1707
+        </td>
+        <td>
+          582
+          -
+          589
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;image&quot;
+        </td>
+      </tr><tr>
+        <td>
+          18
+        </td>
+        <td>
+          1716
+        </td>
+        <td>
+          615
+          -
+          615
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.RepShapeImplicits.repColumnShape
+        </td>
+        <td style="background: #AEF1AE">
+          lifted.this.Shape.repColumnShape[Int, Nothing](slick.jdbc.PostgresProfile.api.intColumnType)
+        </td>
+      </tr><tr>
+        <td>
+          18
+        </td>
+        <td>
+          1725
+        </td>
+        <td>
+          625
+          -
+          625
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.TupleShapeImplicits.tuple2Shape
+        </td>
+        <td style="background: #AEF1AE">
+          lifted.this.Shape.tuple2Shape[slick.lifted.FlatShapeLevel, slick.lifted.Rep[Option[String]], whatson.db.ImageTable, Option[String], whatson.model.Image, slick.lifted.Rep[Option[String]], whatson.db.ImageTable](lifted.this.Shape.optionShape[String, String, String, Nothing](lifted.this.Shape.repColumnShape[String, Nothing](slick.jdbc.PostgresProfile.api.stringColumnType)), lifted.this.Shape.tableShape[slick.lifted.FlatShapeLevel, whatson.model.Image, whatson.db.ImageTable](scala.Predef.$conforms[whatson.db.ImageTable]))
+        </td>
+      </tr><tr>
+        <td>
+          18
+        </td>
+        <td>
+          1710
+        </td>
+        <td>
+          616
+          -
+          620
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.db.ImageTable.id
+        </td>
+        <td style="background: #AEF1AE">
+          x$2.id
+        </td>
+      </tr><tr>
+        <td>
+          18
+        </td>
+        <td>
+          1719
+        </td>
+        <td>
+          631
+          -
+          643
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Tuple2.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Tuple2.apply[slick.lifted.Rep[Option[String]], whatson.db.ImageTable](ImageEntityTable.this.imageTag, i)
+        </td>
+      </tr><tr>
+        <td>
+          18
+        </td>
+        <td>
+          1713
+        </td>
+        <td>
+          615
+          -
+          615
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Predef.$conforms
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Predef.$conforms[whatson.db.ImageTable]
+        </td>
+      </tr><tr>
+        <td>
+          18
+        </td>
+        <td>
+          1722
+        </td>
+        <td>
+          625
+          -
+          625
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.RepShapeImplicits.optionShape
+        </td>
+        <td style="background: #AEF1AE">
+          lifted.this.Shape.optionShape[String, String, String, Nothing](lifted.this.Shape.repColumnShape[String, Nothing](slick.jdbc.PostgresProfile.api.stringColumnType))
+        </td>
+      </tr><tr>
+        <td>
+          18
+        </td>
+        <td>
+          1712
+        </td>
+        <td>
+          581
+          -
+          581
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          slick.lifted.AbstractTable.foreignKey$default$6
+        </td>
+        <td style="background: #AEF1AE">
+          ImageEntityTable.this.foreignKey$default$6[slick.lifted.Rep[Int], Int, whatson.db.ImageTable, whatson.model.Image](x$9, x$10, x$11)
+        </td>
+      </tr><tr>
+        <td>
+          18
+        </td>
+        <td>
+          1721
+        </td>
+        <td>
+          625
+          -
+          625
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.RepShapeImplicits.repColumnShape
+        </td>
+        <td style="background: #AEF1AE">
+          lifted.this.Shape.repColumnShape[String, Nothing](slick.jdbc.PostgresProfile.api.stringColumnType)
+        </td>
+      </tr><tr>
+        <td>
+          18
+        </td>
+        <td>
+          1715
+        </td>
+        <td>
+          615
+          -
+          615
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
+        </td>
+        <td style="background: #AEF1AE">
+          slick.jdbc.PostgresProfile.api.intColumnType
+        </td>
+      </tr><tr>
+        <td>
+          18
+        </td>
+        <td>
+          1724
+        </td>
+        <td>
+          625
+          -
+          625
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.AbstractTableShapeImplicits.tableShape
+        </td>
+        <td style="background: #AEF1AE">
+          lifted.this.Shape.tableShape[slick.lifted.FlatShapeLevel, whatson.model.Image, whatson.db.ImageTable](scala.Predef.$conforms[whatson.db.ImageTable])
+        </td>
+      </tr><tr>
+        <td>
+          18
+        </td>
+        <td>
+          1709
+        </td>
+        <td>
+          598
+          -
+          614
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.db.ImageTable.image
+        </td>
+        <td style="background: #AEF1AE">
+          ImageTable.image
+        </td>
+      </tr><tr>
+        <td>
+          18
+        </td>
+        <td>
+          1718
+        </td>
+        <td>
+          632
+          -
+          640
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.db.ImageEntityTable.imageTag
+        </td>
+        <td style="background: #AEF1AE">
+          ImageEntityTable.this.imageTag
+        </td>
+      </tr><tr>
+        <td>
+          18
+        </td>
+        <td>
+          1717
+        </td>
+        <td>
+          571
+          -
+          621
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          slick.lifted.AbstractTable.foreignKey
+        </td>
+        <td style="background: #AEF1AE">
+          ImageEntityTable.this.foreignKey[slick.lifted.Rep[Int], Int, whatson.db.ImageTable, whatson.model.Image](x$9, x$10, x$11)(x$12, x$13, x$14)(lifted.this.Shape.tableShape[slick.lifted.FlatShapeLevel, whatson.model.Image, whatson.db.ImageTable](scala.Predef.$conforms[whatson.db.ImageTable]), lifted.this.Shape.repColumnShape[Int, Nothing](slick.jdbc.PostgresProfile.api.intColumnType))
+        </td>
+      </tr><tr>
+        <td>
+          18
+        </td>
+        <td>
+          1726
+        </td>
+        <td>
+          571
+          -
+          644
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.Query.map
+        </td>
+        <td style="background: #AEF1AE">
+          {
+  &lt;artifact&gt; val x$9: String = &quot;image&quot;;
+  &lt;artifact&gt; val x$10: slick.lifted.Rep[Int] @scala.reflect.internal.annotations.uncheckedBounds = ImageEntityTable.this.imageId;
+  &lt;artifact&gt; val x$11: slick.lifted.TableQuery[whatson.db.ImageTable] @scala.reflect.internal.annotations.uncheckedBounds = ImageTable.image;
+  &lt;artifact&gt; val x$12: whatson.db.ImageTable =&gt; slick.lifted.Rep[Int] @scala.reflect.internal.annotations.uncheckedBounds = ((x$2: whatson.db.ImageTable) =&gt; x$2.id);
+  &lt;artifact&gt; val x$13: slick.model.ForeignKeyAction = ImageEntityTable.this.foreignKey$default$5[slick.lifted.Rep[Int], Int, whatson.db.ImageTable, whatson.model.Image](x$9, x$10, x$11);
+  &lt;artifact&gt; val x$14: slick.model.ForeignKeyAction = ImageEntityTable.this.foreignKey$default$6[slick.lifted.Rep[Int], Int, whatson.db.ImageTable, whatson.model.Image](x$9, x$10, x$11);
+  ImageEntityTable.this.foreignKey[slick.lifted.Rep[Int], Int, whatson.db.ImageTable, whatson.model.Image](x$9, x$10, x$11)(x$12, x$13, x$14)(lifted.this.Shape.tableShape[slick.lifted.FlatShapeLevel, whatson.model.Image, whatson.db.ImageTable](scala.Predef.$conforms[whatson.db.ImageTable]), lifted.this.Shape.repColumnShape[Int, Nothing](slick.jdbc.PostgresProfile.api.intColumnType))
+}.map[(slick.lifted.Rep[Option[String]], whatson.db.ImageTable), (slick.lifted.Rep[Option[String]], whatson.db.ImageTable), (Option[String], whatson.model.Image)](((i: whatson.db.ImageTable) =&gt; scala.Tuple2.apply[slick.lifted.Rep[Option[String]], whatson.db.ImageTable](ImageEntityTable.this.imageTag, i)))(lifted.this.Shape.tuple2Shape[slick.lifted.FlatShapeLevel, slick.lifted.Rep[Option[String]], whatson.db.ImageTable, Option[String], whatson.model.Image, slick.lifted.Rep[Option[String]], whatson.db.ImageTable](lifted.this.Shape.optionShape[String, String, String, Nothing](lifted.this.Shape.repColumnShape[String, Nothing](slick.jdbc.PostgresProfile.api.stringColumnType)), lifted.this.Shape.tableShape[slick.lifted.FlatShapeLevel, whatson.model.Image, whatson.db.ImageTable](scala.Predef.$conforms[whatson.db.ImageTable])))
+        </td>
+      </tr><tr>
+        <td>
+          18
+        </td>
+        <td>
+          1711
+        </td>
+        <td>
+          581
+          -
+          581
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          slick.lifted.AbstractTable.foreignKey$default$5
+        </td>
+        <td style="background: #AEF1AE">
+          ImageEntityTable.this.foreignKey$default$5[slick.lifted.Rep[Int], Int, whatson.db.ImageTable, whatson.model.Image](x$9, x$10, x$11)
+        </td>
+      </tr><tr>
+        <td>
+          18
+        </td>
+        <td>
+          1720
+        </td>
+        <td>
+          625
+          -
+          625
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.stringColumnType
+        </td>
+        <td style="background: #AEF1AE">
+          slick.jdbc.PostgresProfile.api.stringColumnType
+        </td>
+      </tr><tr>
+        <td>
+          18
+        </td>
+        <td>
+          1714
+        </td>
+        <td>
+          615
+          -
+          615
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.AbstractTableShapeImplicits.tableShape
+        </td>
+        <td style="background: #AEF1AE">
+          lifted.this.Shape.tableShape[slick.lifted.FlatShapeLevel, whatson.model.Image, whatson.db.ImageTable](scala.Predef.$conforms[whatson.db.ImageTable])
+        </td>
+      </tr><tr>
+        <td>
+          18
+        </td>
+        <td>
+          1723
+        </td>
+        <td>
+          625
+          -
+          625
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Predef.$conforms
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Predef.$conforms[whatson.db.ImageTable]
+        </td>
+      </tr><tr>
+        <td>
+          18
+        </td>
+        <td>
+          1708
+        </td>
+        <td>
+          590
+          -
+          597
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.db.ImageEntityTable.imageId
+        </td>
+        <td style="background: #AEF1AE">
+          ImageEntityTable.this.imageId
         </td>
       </tr>
     </table>

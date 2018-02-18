@@ -2,7 +2,7 @@
       <head>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
         <title id="title">
-          whatson/model/forms/LoginUpdateForm.scala.html
+          whatson/model/forms/TaggedImageForm.scala.html
         </title>
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
         $(document).ready(function() {$(".tablesorter").tablesorter();});
@@ -31,18 +31,20 @@
 </span>7 <span style=''>import whatson.util.DateTime._
 </span>8 <span style=''>import whatson.model._
 </span>9 <span style=''>
-</span>10 <span style=''>object LoginUpdateForm {
+</span>10 <span style=''>object TaggedImageForm {
 </span>11 <span style=''>  val map = </span><span style='background: #AEF1AE'>mapping(
-</span>12 <span style=''></span><span style='background: #AEF1AE'>    &quot;password&quot; -&gt; nonEmptyText.verifying(&quot;too short&quot;, x =&gt; x.length&gt;7)
-</span>13 <span style=''></span><span style='background: #AEF1AE'>    )(Data.apply)(</span><span style='background: #F0ADAD'>Data.unapply</span><span style='background: #AEF1AE'>)</span><span style=''>
-</span>14 <span style=''>  val form = </span><span style='background: #AEF1AE'>Form(map)</span><span style=''>
+</span>12 <span style=''></span><span style='background: #AEF1AE'>    &quot;id&quot; -&gt; number(min=1),
+</span>13 <span style=''></span><span style='background: #AEF1AE'>    &quot;tag&quot; -&gt; optional(nonEmptyText)
+</span>14 <span style=''></span><span style='background: #AEF1AE'>  )(Data.apply)(</span><span style='background: #F0ADAD'>Data.unapply</span><span style='background: #AEF1AE'>)</span><span style=''>
 </span>15 <span style=''>
-</span>16 <span style=''>  case class Data(password: String)
+</span>16 <span style=''>  case class Data(id: Int, tag: Option[String])
 </span>17 <span style=''>
-</span>18 <span style=''>  object Data {
-</span>19 <span style=''>    implicit val jsonFormat = Json.format[Data]
-</span>20 <span style=''>  }
-</span>21 <span style=''>}
+</span>18 <span style=''>  val form = </span><span style='background: #AEF1AE'>Form(map)</span><span style=''>
+</span>19 <span style=''>
+</span>20 <span style=''>  object Data {
+</span>21 <span style=''>    implicit val jsonFormat = Json.format[Data]
+</span>22 <span style=''>  }
+</span>23 <span style=''>}
 </span></pre>
           </div>
           <div class="tab-pane" id="statementlist">
@@ -59,33 +61,12 @@
           12
         </td>
         <td>
-          2341
+          2392
         </td>
         <td>
-          301
+          265
           -
-          311
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          scala.Int.&gt;
-        </td>
-        <td style="background: #AEF1AE">
-          x.length().&gt;(7)
-        </td>
-      </tr><tr>
-        <td>
-          12
-        </td>
-        <td>
-          2340
-        </td>
-        <td>
-          283
-          -
-          294
+          266
         </td>
         <td>
           Literal
@@ -94,19 +75,82 @@
           &lt;nosymbol&gt;
         </td>
         <td style="background: #AEF1AE">
-          &quot;too short&quot;
+          1
         </td>
       </tr><tr>
         <td>
           12
         </td>
         <td>
-          2343
+          2391
         </td>
         <td>
           246
           -
-          312
+          250
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;id&quot;
+        </td>
+      </tr><tr>
+        <td>
+          12
+        </td>
+        <td>
+          2394
+        </td>
+        <td>
+          254
+          -
+          254
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.data.Forms.number$default$3
+        </td>
+        <td style="background: #AEF1AE">
+          play.api.data.Forms.number$default$3
+        </td>
+      </tr><tr>
+        <td>
+          12
+        </td>
+        <td>
+          2393
+        </td>
+        <td>
+          254
+          -
+          254
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.data.Forms.number$default$2
+        </td>
+        <td style="background: #AEF1AE">
+          play.api.data.Forms.number$default$2
+        </td>
+      </tr><tr>
+        <td>
+          12
+        </td>
+        <td>
+          2396
+        </td>
+        <td>
+          246
+          -
+          267
         </td>
         <td>
           Apply
@@ -115,19 +159,82 @@
           scala.Predef.ArrowAssoc.-&gt;
         </td>
         <td style="background: #AEF1AE">
-          scala.Predef.ArrowAssoc[String](&quot;password&quot;).-&gt;[play.api.data.Mapping[String]](play.api.data.Forms.nonEmptyText.verifying(&quot;too short&quot;, ((x: String) =&gt; x.length().&gt;(7))))
+          scala.Predef.ArrowAssoc[String](&quot;id&quot;).-&gt;[play.api.data.Mapping[Int]](play.api.data.Forms.number(1, play.api.data.Forms.number$default$2, play.api.data.Forms.number$default$3))
         </td>
       </tr><tr>
         <td>
           12
         </td>
         <td>
-          2339
+          2395
         </td>
         <td>
-          246
+          254
           -
-          256
+          267
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          play.api.data.Forms.number
+        </td>
+        <td style="background: #AEF1AE">
+          play.api.data.Forms.number(1, play.api.data.Forms.number$default$2, play.api.data.Forms.number$default$3)
+        </td>
+      </tr><tr>
+        <td>
+          13
+        </td>
+        <td>
+          2398
+        </td>
+        <td>
+          291
+          -
+          303
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.data.Forms.nonEmptyText
+        </td>
+        <td style="background: #AEF1AE">
+          play.api.data.Forms.nonEmptyText
+        </td>
+      </tr><tr>
+        <td>
+          13
+        </td>
+        <td>
+          2400
+        </td>
+        <td>
+          273
+          -
+          304
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Predef.ArrowAssoc.-&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Predef.ArrowAssoc[String](&quot;tag&quot;).-&gt;[play.api.data.Mapping[Option[String]]](play.api.data.Forms.optional[String](play.api.data.Forms.nonEmptyText))
+        </td>
+      </tr><tr>
+        <td>
+          13
+        </td>
+        <td>
+          2397
+        </td>
+        <td>
+          273
+          -
+          278
         </td>
         <td>
           Literal
@@ -136,61 +243,61 @@
           &lt;nosymbol&gt;
         </td>
         <td style="background: #AEF1AE">
-          &quot;password&quot;
-        </td>
-      </tr><tr>
-        <td>
-          12
-        </td>
-        <td>
-          2342
-        </td>
-        <td>
-          260
-          -
-          312
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          play.api.data.Mapping.verifying
-        </td>
-        <td style="background: #AEF1AE">
-          play.api.data.Forms.nonEmptyText.verifying(&quot;too short&quot;, ((x: String) =&gt; x.length().&gt;(7)))
+          &quot;tag&quot;
         </td>
       </tr><tr>
         <td>
           13
         </td>
         <td>
-          2344
+          2399
         </td>
         <td>
+          282
+          -
+          304
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          play.api.data.Forms.optional
+        </td>
+        <td style="background: #AEF1AE">
+          play.api.data.Forms.optional[String](play.api.data.Forms.nonEmptyText)
+        </td>
+      </tr><tr>
+        <td>
+          14
+        </td>
+        <td>
+          2401
+        </td>
+        <td>
+          309
+          -
           319
-          -
-          329
         </td>
         <td>
           Apply
         </td>
         <td>
-          whatson.model.forms.LoginUpdateForm.Data.apply
+          whatson.model.forms.TaggedImageForm.Data.apply
         </td>
         <td style="background: #AEF1AE">
-          LoginUpdateForm.this.Data.apply(password)
+          TaggedImageForm.this.Data.apply(id, tag)
         </td>
       </tr><tr>
         <td>
-          13
+          14
         </td>
         <td>
-          2346
+          2403
         </td>
         <td>
           233
           -
-          344
+          334
         </td>
         <td>
           Apply
@@ -199,65 +306,44 @@
           play.api.data.Forms.mapping
         </td>
         <td style="background: #AEF1AE">
-          play.api.data.Forms.mapping[whatson.model.forms.LoginUpdateForm.Data, String](scala.Predef.ArrowAssoc[String](&quot;password&quot;).-&gt;[play.api.data.Mapping[String]](play.api.data.Forms.nonEmptyText.verifying(&quot;too short&quot;, ((x: String) =&gt; x.length().&gt;(7)))))({
-  ((password: String) =&gt; LoginUpdateForm.this.Data.apply(password))
+          play.api.data.Forms.mapping[whatson.model.forms.TaggedImageForm.Data, Int, Option[String]](scala.Predef.ArrowAssoc[String](&quot;id&quot;).-&gt;[play.api.data.Mapping[Int]](play.api.data.Forms.number(1, play.api.data.Forms.number$default$2, play.api.data.Forms.number$default$3)), scala.Predef.ArrowAssoc[String](&quot;tag&quot;).-&gt;[play.api.data.Mapping[Option[String]]](play.api.data.Forms.optional[String](play.api.data.Forms.nonEmptyText)))({
+  ((id: Int, tag: Option[String]) =&gt; TaggedImageForm.this.Data.apply(id, tag))
 })({
-  ((x$0: whatson.model.forms.LoginUpdateForm.Data) =&gt; LoginUpdateForm.this.Data.unapply(x$0))
+  ((x$0: whatson.model.forms.TaggedImageForm.Data) =&gt; TaggedImageForm.this.Data.unapply(x$0))
 })
         </td>
       </tr><tr>
         <td>
-          13
+          14
         </td>
         <td>
-          2345
+          2402
         </td>
         <td>
-          331
+          321
           -
-          343
+          333
         </td>
         <td>
           Apply
         </td>
         <td>
-          whatson.model.forms.LoginUpdateForm.Data.unapply
+          whatson.model.forms.TaggedImageForm.Data.unapply
         </td>
         <td style="background: #F0ADAD">
-          LoginUpdateForm.this.Data.unapply(x$0)
+          TaggedImageForm.this.Data.unapply(x$0)
         </td>
       </tr><tr>
         <td>
-          14
+          18
         </td>
         <td>
-          2347
+          2405
         </td>
         <td>
-          363
+          398
           -
-          366
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          whatson.model.forms.LoginUpdateForm.map
-        </td>
-        <td style="background: #AEF1AE">
-          LoginUpdateForm.this.map
-        </td>
-      </tr><tr>
-        <td>
-          14
-        </td>
-        <td>
-          2348
-        </td>
-        <td>
-          358
-          -
-          367
+          407
         </td>
         <td>
           Apply
@@ -266,7 +352,28 @@
           play.api.data.Form.apply
         </td>
         <td style="background: #AEF1AE">
-          play.api.data.Form.apply[whatson.model.forms.LoginUpdateForm.Data](LoginUpdateForm.this.map)
+          play.api.data.Form.apply[whatson.model.forms.TaggedImageForm.Data](TaggedImageForm.this.map)
+        </td>
+      </tr><tr>
+        <td>
+          18
+        </td>
+        <td>
+          2404
+        </td>
+        <td>
+          403
+          -
+          406
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.model.forms.TaggedImageForm.map
+        </td>
+        <td style="background: #AEF1AE">
+          TaggedImageForm.this.map
         </td>
       </tr>
     </table>
