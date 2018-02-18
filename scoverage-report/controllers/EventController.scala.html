@@ -181,50 +181,39 @@
 </span>157 <span style=''></span><span style='background: #AEF1AE'>          case None =&gt; Future.successful(None)
 </span>158 <span style=''></span><span style='background: #AEF1AE'>        }.map {
 </span>159 <span style=''></span><span style='background: #AEF1AE'>          case Some(e) =&gt; Ok(Json.toJson(e))
-</span>160 <span style=''></span><span style='background: #AEF1AE'>          case None =&gt; {log.debug(&quot;noo&quot;);BadRequest}
+</span>160 <span style=''></span><span style='background: #AEF1AE'>          case None =&gt; BadRequest
 </span>161 <span style=''></span><span style='background: #AEF1AE'>        }
 </span>162 <span style=''></span><span style='background: #AEF1AE'>      })
 </span>163 <span style=''></span><span style='background: #AEF1AE'>  }</span><span style=''>
 </span>164 <span style=''>
-</span>165 <span style=''>  /*organizerRequest(parse.json(eventReads)) { (request,organizer) =&gt;
-</span>166 <span style=''>    log.debug(&quot;Rest request to update event&quot;)
-</span>167 <span style=''>
-</span>168 <span style=''>    val q = event.filter(x =&gt; x.id === id.bind &amp;&amp; x.creatorId === organizer.id).update(request.body)
-</span>169 <span style=''>
-</span>170 <span style=''>    db.run(q).map {
-</span>171 <span style=''>      case 0 =&gt; NotFound
-</span>172 <span style=''>      case x =&gt; Ok(Json.toJson(x))
-</span>173 <span style=''>    }
-</span>174 <span style=''>  }*/
-</span>175 <span style=''>
-</span>176 <span style=''>  def participate(id: Int) = </span><span style='background: #AEF1AE'>userRequest(parse.default) { case (request,user) =&gt;
-</span>177 <span style=''></span><span style='background: #AEF1AE'>    log.debug(&quot;Rest request to participate in event&quot;)
-</span>178 <span style=''></span><span style='background: #AEF1AE'>
-</span>179 <span style=''></span><span style='background: #AEF1AE'>    val q = (event.filter(x =&gt; x.id === id.bind).result)
-</span>180 <span style=''></span><span style='background: #AEF1AE'>      .zip(ParticipantTable.participant.filter(x =&gt; x.eventID === id.bind &amp;&amp; x.userID === user.id.getOrElse(-1).bind).result)
-</span>181 <span style=''></span><span style='background: #AEF1AE'>
-</span>182 <span style=''></span><span style='background: #AEF1AE'>    db.run(q).map(x =&gt; (x._1.headOption,x._2.headOption)).flatMap {
-</span>183 <span style=''></span><span style='background: #AEF1AE'>      case (Some(e),None) =&gt; {
-</span>184 <span style=''></span><span style='background: #AEF1AE'>        db.run(ParticipantTable.participant += ((user.id.getOrElse(-1),id)))
-</span>185 <span style=''></span><span style='background: #AEF1AE'>        Future.successful(Ok)
-</span>186 <span style=''></span><span style='background: #AEF1AE'>      }
-</span>187 <span style=''></span><span style='background: #AEF1AE'>      case (Some(e),Some(p)) =&gt; Future.successful(Conflict)
-</span>188 <span style=''></span><span style='background: #AEF1AE'>      case (None,_) =&gt; Future.successful(BadRequest)
-</span>189 <span style=''></span><span style='background: #AEF1AE'>    }
-</span>190 <span style=''></span><span style='background: #AEF1AE'>  }</span><span style=''>
-</span>191 <span style=''>
-</span>192 <span style=''>  def unparticipate(id: Int) = </span><span style='background: #AEF1AE'>userRequest(parse.default) { case (request,user) =&gt;
-</span>193 <span style=''></span><span style='background: #AEF1AE'>    log.debug(&quot;Rest request to unparticipate in event&quot;)
-</span>194 <span style=''></span><span style='background: #AEF1AE'>
-</span>195 <span style=''></span><span style='background: #AEF1AE'>    db.run(ParticipantTable.participant.filter(x =&gt; x.eventID === id.bind &amp;&amp; x.userID === user.id.getOrElse(-1).bind).delete)
-</span>196 <span style=''></span><span style='background: #AEF1AE'>      .flatMap {
-</span>197 <span style=''></span><span style='background: #AEF1AE'>      case 1 =&gt; {
-</span>198 <span style=''></span><span style='background: #AEF1AE'>        Future.successful(Ok)
-</span>199 <span style=''></span><span style='background: #AEF1AE'>      }
-</span>200 <span style=''></span><span style='background: #AEF1AE'>      case _ =&gt; Future.successful(BadRequest)
-</span>201 <span style=''></span><span style='background: #AEF1AE'>    }
-</span>202 <span style=''></span><span style='background: #AEF1AE'>  }</span><span style=''>
-</span>203 <span style=''>}
+</span>165 <span style=''>  def participate(id: Int) = </span><span style='background: #AEF1AE'>userRequest(parse.default) { case (request,user) =&gt;
+</span>166 <span style=''></span><span style='background: #AEF1AE'>    log.debug(&quot;Rest request to participate in event&quot;)
+</span>167 <span style=''></span><span style='background: #AEF1AE'>
+</span>168 <span style=''></span><span style='background: #AEF1AE'>    val q = (event.filter(x =&gt; x.id === id.bind).result)
+</span>169 <span style=''></span><span style='background: #AEF1AE'>      .zip(ParticipantTable.participant.filter(x =&gt; x.eventID === id.bind &amp;&amp; x.userID === user.id.getOrElse(-1).bind).result)
+</span>170 <span style=''></span><span style='background: #AEF1AE'>
+</span>171 <span style=''></span><span style='background: #AEF1AE'>    db.run(q).map(x =&gt; (x._1.headOption,x._2.headOption)).flatMap {
+</span>172 <span style=''></span><span style='background: #AEF1AE'>      case (Some(e),None) =&gt; {
+</span>173 <span style=''></span><span style='background: #AEF1AE'>        db.run(ParticipantTable.participant += ((user.id.getOrElse(-1),id)))
+</span>174 <span style=''></span><span style='background: #AEF1AE'>        Future.successful(Ok)
+</span>175 <span style=''></span><span style='background: #AEF1AE'>      }
+</span>176 <span style=''></span><span style='background: #AEF1AE'>      case (Some(e),Some(p)) =&gt; Future.successful(Conflict)
+</span>177 <span style=''></span><span style='background: #AEF1AE'>      case (None,_) =&gt; Future.successful(BadRequest)
+</span>178 <span style=''></span><span style='background: #AEF1AE'>    }
+</span>179 <span style=''></span><span style='background: #AEF1AE'>  }</span><span style=''>
+</span>180 <span style=''>
+</span>181 <span style=''>  def unparticipate(id: Int) = </span><span style='background: #AEF1AE'>userRequest(parse.default) { case (request,user) =&gt;
+</span>182 <span style=''></span><span style='background: #AEF1AE'>    log.debug(&quot;Rest request to unparticipate in event&quot;)
+</span>183 <span style=''></span><span style='background: #AEF1AE'>
+</span>184 <span style=''></span><span style='background: #AEF1AE'>    db.run(ParticipantTable.participant.filter(x =&gt; x.eventID === id.bind &amp;&amp; x.userID === user.id.getOrElse(-1).bind).delete)
+</span>185 <span style=''></span><span style='background: #AEF1AE'>      .flatMap {
+</span>186 <span style=''></span><span style='background: #AEF1AE'>      case 1 =&gt; {
+</span>187 <span style=''></span><span style='background: #AEF1AE'>        Future.successful(Ok)
+</span>188 <span style=''></span><span style='background: #AEF1AE'>      }
+</span>189 <span style=''></span><span style='background: #AEF1AE'>      case _ =&gt; Future.successful(BadRequest)
+</span>190 <span style=''></span><span style='background: #AEF1AE'>    }
+</span>191 <span style=''></span><span style='background: #AEF1AE'>  }</span><span style=''>
+</span>192 <span style=''>}
 </span></pre>
           </div>
           <div class="tab-pane" id="statementlist">
@@ -5949,7 +5938,7 @@
           110
         </td>
         <td>
-          585
+          582
         </td>
         <td>
           4534
@@ -5991,12 +5980,12 @@
           110
         </td>
         <td>
-          586
+          583
         </td>
         <td>
           4505
           -
-          7314
+          7295
         </td>
         <td>
           ApplyToImplicitArgs
@@ -6040,10 +6029,7 @@
   case scala.None =&gt; scala.concurrent.Future.successful[None.type](scala.None)
 }))(EventController.this.context).map[play.api.mvc.Result](((x0$10: Option[Seq[whatson.model.detail.EventDetail]]) =&gt; x0$10 match {
       case (value: Seq[whatson.model.detail.EventDetail])Some[Seq[whatson.model.detail.EventDetail]]((e @ _)) =&gt; EventController.this.Ok.apply[play.api.libs.json.JsValue](play.api.libs.json.Json.toJson[Seq[whatson.model.detail.EventDetail]](e)(json.this.Writes.traversableWrites[whatson.model.detail.EventDetail](whatson.model.detail.EventDetail.eventDetailWrites)))(http.this.Writeable.writeableOf_JsValue)
-      case scala.None =&gt; {
-        EventController.this.log.debug(&quot;noo&quot;)(api.this.MarkerContext.NoMarker);
-        EventController.this.BadRequest
-      }
+      case scala.None =&gt; EventController.this.BadRequest
     }))(EventController.this.context)
   }))
 }))(EventController.this.context)
@@ -6053,12 +6039,12 @@
           111
         </td>
         <td>
-          584
+          581
         </td>
         <td>
           4568
           -
-          7310
+          7291
         </td>
         <td>
           Apply
@@ -6101,10 +6087,7 @@
   case scala.None =&gt; scala.concurrent.Future.successful[None.type](scala.None)
 }))(EventController.this.context).map[play.api.mvc.Result](((x0$10: Option[Seq[whatson.model.detail.EventDetail]]) =&gt; x0$10 match {
     case (value: Seq[whatson.model.detail.EventDetail])Some[Seq[whatson.model.detail.EventDetail]]((e @ _)) =&gt; EventController.this.Ok.apply[play.api.libs.json.JsValue](play.api.libs.json.Json.toJson[Seq[whatson.model.detail.EventDetail]](e)(json.this.Writes.traversableWrites[whatson.model.detail.EventDetail](whatson.model.detail.EventDetail.eventDetailWrites)))(http.this.Writeable.writeableOf_JsValue)
-    case scala.None =&gt; {
-      EventController.this.log.debug(&quot;noo&quot;)(api.this.MarkerContext.NoMarker);
-      EventController.this.BadRequest
-    }
+    case scala.None =&gt; EventController.this.BadRequest
   }))(EventController.this.context)
 }))
         </td>
@@ -10218,7 +10201,7 @@
           158
         </td>
         <td>
-          582
+          579
         </td>
         <td>
           7192
@@ -10239,12 +10222,12 @@
           158
         </td>
         <td>
-          583
+          580
         </td>
         <td>
           5677
           -
-          7301
+          7282
         </td>
         <td>
           ApplyToImplicitArgs
@@ -10273,10 +10256,7 @@
   case scala.None =&gt; scala.concurrent.Future.successful[None.type](scala.None)
 }))(EventController.this.context).map[play.api.mvc.Result](((x0$10: Option[Seq[whatson.model.detail.EventDetail]]) =&gt; x0$10 match {
   case (value: Seq[whatson.model.detail.EventDetail])Some[Seq[whatson.model.detail.EventDetail]]((e @ _)) =&gt; EventController.this.Ok.apply[play.api.libs.json.JsValue](play.api.libs.json.Json.toJson[Seq[whatson.model.detail.EventDetail]](e)(json.this.Writes.traversableWrites[whatson.model.detail.EventDetail](whatson.model.detail.EventDetail.eventDetailWrites)))(http.this.Writeable.writeableOf_JsValue)
-  case scala.None =&gt; {
-    EventController.this.log.debug(&quot;noo&quot;)(api.this.MarkerContext.NoMarker);
-    EventController.this.BadRequest
-  }
+  case scala.None =&gt; EventController.this.BadRequest
 }))(EventController.this.context)
         </td>
       </tr><tr>
@@ -10389,33 +10369,12 @@
           160
         </td>
         <td>
-          579
+          578
         </td>
         <td>
-          7272
+          7262
           -
           7272
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          play.api.LowPriorityMarkerContextImplicits.NoMarker
-        </td>
-        <td style="background: #AEF1AE">
-          api.this.MarkerContext.NoMarker
-        </td>
-      </tr><tr>
-        <td>
-          160
-        </td>
-        <td>
-          581
-        </td>
-        <td>
-          7280
-          -
-          7290
         </td>
         <td>
           Select
@@ -10428,57 +10387,15 @@
         </td>
       </tr><tr>
         <td>
-          160
+          165
         </td>
         <td>
-          578
+          636
         </td>
         <td>
-          7273
+          7353
           -
-          7278
-        </td>
-        <td>
-          Literal
-        </td>
-        <td>
-          &lt;nosymbol&gt;
-        </td>
-        <td style="background: #AEF1AE">
-          &quot;noo&quot;
-        </td>
-      </tr><tr>
-        <td>
-          160
-        </td>
-        <td>
-          580
-        </td>
-        <td>
-          7263
-          -
-          7279
-        </td>
-        <td>
-          ApplyToImplicitArgs
-        </td>
-        <td>
-          play.api.LoggerLike.debug
-        </td>
-        <td style="background: #AEF1AE">
-          EventController.this.log.debug(&quot;noo&quot;)(api.this.MarkerContext.NoMarker)
-        </td>
-      </tr><tr>
-        <td>
-          176
-        </td>
-        <td>
-          639
-        </td>
-        <td>
-          7684
-          -
-          7684
+          7353
         </td>
         <td>
           Select
@@ -10491,15 +10408,15 @@
         </td>
       </tr><tr>
         <td>
-          176
+          165
         </td>
         <td>
-          587
+          584
         </td>
         <td>
-          7669
+          7338
           -
-          7682
+          7351
         </td>
         <td>
           Select
@@ -10512,15 +10429,15 @@
         </td>
       </tr><tr>
         <td>
-          176
+          165
         </td>
         <td>
-          640
+          637
         </td>
         <td>
-          7657
+          7326
           -
-          8284
+          7953
         </td>
         <td>
           ApplyToImplicitArgs
@@ -10546,15 +10463,15 @@
         </td>
       </tr><tr>
         <td>
-          177
+          166
         </td>
         <td>
-          588
+          585
         </td>
         <td>
-          7723
+          7392
           -
-          7761
+          7430
         </td>
         <td>
           Literal
@@ -10567,15 +10484,15 @@
         </td>
       </tr><tr>
         <td>
-          177
+          166
         </td>
         <td>
-          590
+          587
         </td>
         <td>
-          7713
+          7382
           -
-          7762
+          7431
         </td>
         <td>
           ApplyToImplicitArgs
@@ -10588,15 +10505,15 @@
         </td>
       </tr><tr>
         <td>
-          177
+          166
         </td>
         <td>
-          589
+          586
         </td>
         <td>
-          7722
+          7391
           -
-          7722
+          7391
         </td>
         <td>
           Select
@@ -10609,36 +10526,15 @@
         </td>
       </tr><tr>
         <td>
-          179
+          168
         </td>
         <td>
           594
         </td>
         <td>
-          7804
+          7464
           -
-          7811
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          slick.lifted.LiteralColumn.bind
-        </td>
-        <td style="background: #AEF1AE">
-          slick.jdbc.PostgresProfile.api.valueToConstColumn[Int](id)(slick.jdbc.PostgresProfile.api.intColumnType).bind
-        </td>
-      </tr><tr>
-        <td>
-          179
-        </td>
-        <td>
-          597
-        </td>
-        <td>
-          7795
-          -
-          7811
+          7480
         </td>
         <td>
           ApplyToImplicitArgs
@@ -10651,15 +10547,15 @@
         </td>
       </tr><tr>
         <td>
-          179
+          168
         </td>
         <td>
-          591
+          588
         </td>
         <td>
-          7795
+          7464
           -
-          7799
+          7468
         </td>
         <td>
           Select
@@ -10672,204 +10568,15 @@
         </td>
       </tr><tr>
         <td>
-          179
+          168
         </td>
         <td>
-          599
+          591
         </td>
         <td>
-          7777
+          7473
           -
-          7812
-        </td>
-        <td>
-          ApplyToImplicitArgs
-        </td>
-        <td>
-          slick.lifted.Query.filter
-        </td>
-        <td style="background: #AEF1AE">
-          whatson.db.EventTable.event.filter[slick.lifted.Rep[Boolean]](((x: whatson.db.EventTable) =&gt; slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](x.id)(slick.jdbc.PostgresProfile.api.intColumnType).===[Int, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[Int](id)(slick.jdbc.PostgresProfile.api.intColumnType).bind)(lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType))))(lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition)
-        </td>
-      </tr><tr>
-        <td>
-          179
-        </td>
-        <td>
-          593
-        </td>
-        <td>
-          7804
-          -
-          7804
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
-        </td>
-        <td style="background: #AEF1AE">
-          slick.jdbc.PostgresProfile.api.intColumnType
-        </td>
-      </tr><tr>
-        <td>
-          179
-        </td>
-        <td>
-          596
-        </td>
-        <td>
-          7800
-          -
-          7800
-        </td>
-        <td>
-          ApplyToImplicitArgs
-        </td>
-        <td>
-          slick.lifted.OptionMapper2.getOptionMapper2TT
-        </td>
-        <td style="background: #AEF1AE">
-          lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType)
-        </td>
-      </tr><tr>
-        <td>
-          179
-        </td>
-        <td>
-          595
-        </td>
-        <td>
-          7800
-          -
-          7800
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
-        </td>
-        <td style="background: #AEF1AE">
-          slick.jdbc.PostgresProfile.api.intColumnType
-        </td>
-      </tr><tr>
-        <td>
-          179
-        </td>
-        <td>
-          598
-        </td>
-        <td>
-          7789
-          -
-          7789
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          slick.lifted.CanBeQueryCondition.BooleanColumnCanBeQueryCondition
-        </td>
-        <td style="background: #AEF1AE">
-          lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition
-        </td>
-      </tr><tr>
-        <td>
-          179
-        </td>
-        <td>
-          592
-        </td>
-        <td>
-          7797
-          -
-          7797
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
-        </td>
-        <td style="background: #AEF1AE">
-          slick.jdbc.PostgresProfile.api.intColumnType
-        </td>
-      </tr><tr>
-        <td>
-          180
-        </td>
-        <td>
-          600
-        </td>
-        <td>
-          7873
-          -
-          7882
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          whatson.db.ParticipantTable.eventID
-        </td>
-        <td style="background: #AEF1AE">
-          x.eventID
-        </td>
-      </tr><tr>
-        <td>
-          180
-        </td>
-        <td>
-          609
-        </td>
-        <td>
-          7911
-          -
-          7932
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          scala.Option.getOrElse
-        </td>
-        <td style="background: #AEF1AE">
-          user.id.getOrElse[Int](-1)
-        </td>
-      </tr><tr>
-        <td>
-          180
-        </td>
-        <td>
-          618
-        </td>
-        <td>
-          7867
-          -
-          7867
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          slick.lifted.CanBeQueryCondition.BooleanColumnCanBeQueryCondition
-        </td>
-        <td style="background: #AEF1AE">
-          lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition
-        </td>
-      </tr><tr>
-        <td>
-          180
-        </td>
-        <td>
-          603
-        </td>
-        <td>
-          7887
-          -
-          7894
+          7480
         </td>
         <td>
           Select
@@ -10882,15 +10589,183 @@
         </td>
       </tr><tr>
         <td>
-          180
+          168
         </td>
         <td>
-          621
+          590
         </td>
         <td>
-          7777
+          7473
           -
-          7946
+          7473
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
+        </td>
+        <td style="background: #AEF1AE">
+          slick.jdbc.PostgresProfile.api.intColumnType
+        </td>
+      </tr><tr>
+        <td>
+          168
+        </td>
+        <td>
+          593
+        </td>
+        <td>
+          7469
+          -
+          7469
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.OptionMapper2.getOptionMapper2TT
+        </td>
+        <td style="background: #AEF1AE">
+          lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType)
+        </td>
+      </tr><tr>
+        <td>
+          168
+        </td>
+        <td>
+          596
+        </td>
+        <td>
+          7446
+          -
+          7481
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.Query.filter
+        </td>
+        <td style="background: #AEF1AE">
+          whatson.db.EventTable.event.filter[slick.lifted.Rep[Boolean]](((x: whatson.db.EventTable) =&gt; slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](x.id)(slick.jdbc.PostgresProfile.api.intColumnType).===[Int, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[Int](id)(slick.jdbc.PostgresProfile.api.intColumnType).bind)(lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType))))(lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition)
+        </td>
+      </tr><tr>
+        <td>
+          168
+        </td>
+        <td>
+          595
+        </td>
+        <td>
+          7458
+          -
+          7458
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.lifted.CanBeQueryCondition.BooleanColumnCanBeQueryCondition
+        </td>
+        <td style="background: #AEF1AE">
+          lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition
+        </td>
+      </tr><tr>
+        <td>
+          168
+        </td>
+        <td>
+          589
+        </td>
+        <td>
+          7466
+          -
+          7466
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
+        </td>
+        <td style="background: #AEF1AE">
+          slick.jdbc.PostgresProfile.api.intColumnType
+        </td>
+      </tr><tr>
+        <td>
+          168
+        </td>
+        <td>
+          592
+        </td>
+        <td>
+          7469
+          -
+          7469
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
+        </td>
+        <td style="background: #AEF1AE">
+          slick.jdbc.PostgresProfile.api.intColumnType
+        </td>
+      </tr><tr>
+        <td>
+          169
+        </td>
+        <td>
+          600
+        </td>
+        <td>
+          7556
+          -
+          7563
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.lifted.LiteralColumn.bind
+        </td>
+        <td style="background: #AEF1AE">
+          slick.jdbc.PostgresProfile.api.valueToConstColumn[Int](id)(slick.jdbc.PostgresProfile.api.intColumnType).bind
+        </td>
+      </tr><tr>
+        <td>
+          169
+        </td>
+        <td>
+          609
+        </td>
+        <td>
+          7576
+          -
+          7576
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
+        </td>
+        <td style="background: #AEF1AE">
+          slick.jdbc.PostgresProfile.api.intColumnType
+        </td>
+      </tr><tr>
+        <td>
+          169
+        </td>
+        <td>
+          618
+        </td>
+        <td>
+          7446
+          -
+          7615
         </td>
         <td>
           Apply
@@ -10903,36 +10778,15 @@
         </td>
       </tr><tr>
         <td>
-          180
+          169
         </td>
         <td>
-          612
+          603
         </td>
         <td>
-          7907
+          7542
           -
-          7907
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
-        </td>
-        <td style="background: #AEF1AE">
-          slick.jdbc.PostgresProfile.api.intColumnType
-        </td>
-      </tr><tr>
-        <td>
-          180
-        </td>
-        <td>
-          606
-        </td>
-        <td>
-          7873
-          -
-          7894
+          7563
         </td>
         <td>
           ApplyToImplicitArgs
@@ -10945,15 +10799,15 @@
         </td>
       </tr><tr>
         <td>
-          180
+          169
         </td>
         <td>
-          615
+          612
         </td>
         <td>
-          7895
+          7564
           -
-          7895
+          7564
         </td>
         <td>
           Select
@@ -10966,57 +10820,78 @@
         </td>
       </tr><tr>
         <td>
-          180
+          169
         </td>
         <td>
-          608
+          597
         </td>
         <td>
-          7900
+          7542
           -
-          7900
+          7551
         </td>
         <td>
           Select
         </td>
         <td>
-          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
+          whatson.db.ParticipantTable.eventID
         </td>
         <td style="background: #AEF1AE">
-          slick.jdbc.PostgresProfile.api.intColumnType
+          x.eventID
         </td>
       </tr><tr>
         <td>
-          180
+          169
         </td>
         <td>
-          617
+          606
         </td>
         <td>
-          7873
+          7580
           -
-          7937
+          7601
         </td>
         <td>
-          ApplyToImplicitArgs
+          Apply
         </td>
         <td>
-          slick.lifted.BooleanColumnExtensionMethods.&amp;&amp;
+          scala.Option.getOrElse
         </td>
         <td style="background: #AEF1AE">
-          slick.jdbc.PostgresProfile.api.booleanColumnExtensionMethods(slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](x.eventID)(slick.jdbc.PostgresProfile.api.intColumnType).===[Int, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[Int](id)(slick.jdbc.PostgresProfile.api.intColumnType).bind)(lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType))).&amp;&amp;[Boolean, Boolean](slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](x.userID)(slick.jdbc.PostgresProfile.api.intColumnType).===[Int, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[Int](user.id.getOrElse[Int](-1))(slick.jdbc.PostgresProfile.api.intColumnType).bind)(lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType)))(lifted.this.OptionMapper2.getOptionMapper2TT[Boolean, Boolean, Boolean](slick.jdbc.PostgresProfile.api.booleanColumnType))
+          user.id.getOrElse[Int](-1)
         </td>
       </tr><tr>
         <td>
-          180
+          169
         </td>
         <td>
-          611
+          615
         </td>
         <td>
-          7911
+          7536
           -
-          7937
+          7536
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.lifted.CanBeQueryCondition.BooleanColumnCanBeQueryCondition
+        </td>
+        <td style="background: #AEF1AE">
+          lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition
+        </td>
+      </tr><tr>
+        <td>
+          169
+        </td>
+        <td>
+          608
+        </td>
+        <td>
+          7580
+          -
+          7606
         </td>
         <td>
           Select
@@ -11029,15 +10904,36 @@
         </td>
       </tr><tr>
         <td>
-          180
+          169
         </td>
         <td>
-          620
+          599
         </td>
         <td>
-          7832
+          7556
           -
-          7945
+          7556
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
+        </td>
+        <td style="background: #AEF1AE">
+          slick.jdbc.PostgresProfile.api.intColumnType
+        </td>
+      </tr><tr>
+        <td>
+          169
+        </td>
+        <td>
+          617
+        </td>
+        <td>
+          7501
+          -
+          7614
         </td>
         <td>
           Select
@@ -11050,57 +10946,15 @@
         </td>
       </tr><tr>
         <td>
-          180
+          169
         </td>
         <td>
-          602
+          611
         </td>
         <td>
-          7887
+          7567
           -
-          7887
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
-        </td>
-        <td style="background: #AEF1AE">
-          slick.jdbc.PostgresProfile.api.intColumnType
-        </td>
-      </tr><tr>
-        <td>
-          180
-        </td>
-        <td>
-          605
-        </td>
-        <td>
-          7883
-          -
-          7883
-        </td>
-        <td>
-          ApplyToImplicitArgs
-        </td>
-        <td>
-          slick.lifted.OptionMapper2.getOptionMapper2TT
-        </td>
-        <td style="background: #AEF1AE">
-          lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType)
-        </td>
-      </tr><tr>
-        <td>
-          180
-        </td>
-        <td>
-          614
-        </td>
-        <td>
-          7898
-          -
-          7937
+          7606
         </td>
         <td>
           ApplyToImplicitArgs
@@ -11113,36 +10967,15 @@
         </td>
       </tr><tr>
         <td>
-          180
+          169
         </td>
         <td>
-          604
+          602
         </td>
         <td>
-          7883
+          7552
           -
-          7883
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
-        </td>
-        <td style="background: #AEF1AE">
-          slick.jdbc.PostgresProfile.api.intColumnType
-        </td>
-      </tr><tr>
-        <td>
-          180
-        </td>
-        <td>
-          613
-        </td>
-        <td>
-          7907
-          -
-          7907
+          7552
         </td>
         <td>
           ApplyToImplicitArgs
@@ -11155,36 +10988,57 @@
         </td>
       </tr><tr>
         <td>
-          180
+          169
         </td>
         <td>
-          616
+          605
         </td>
         <td>
-          7895
+          7569
           -
-          7895
+          7569
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
+        </td>
+        <td style="background: #AEF1AE">
+          slick.jdbc.PostgresProfile.api.intColumnType
+        </td>
+      </tr><tr>
+        <td>
+          169
+        </td>
+        <td>
+          614
+        </td>
+        <td>
+          7542
+          -
+          7606
         </td>
         <td>
           ApplyToImplicitArgs
         </td>
         <td>
-          slick.lifted.OptionMapper2.getOptionMapper2TT
+          slick.lifted.BooleanColumnExtensionMethods.&amp;&amp;
         </td>
         <td style="background: #AEF1AE">
-          lifted.this.OptionMapper2.getOptionMapper2TT[Boolean, Boolean, Boolean](slick.jdbc.PostgresProfile.api.booleanColumnType)
+          slick.jdbc.PostgresProfile.api.booleanColumnExtensionMethods(slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](x.eventID)(slick.jdbc.PostgresProfile.api.intColumnType).===[Int, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[Int](id)(slick.jdbc.PostgresProfile.api.intColumnType).bind)(lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType))).&amp;&amp;[Boolean, Boolean](slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](x.userID)(slick.jdbc.PostgresProfile.api.intColumnType).===[Int, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[Int](user.id.getOrElse[Int](-1))(slick.jdbc.PostgresProfile.api.intColumnType).bind)(lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType)))(lifted.this.OptionMapper2.getOptionMapper2TT[Boolean, Boolean, Boolean](slick.jdbc.PostgresProfile.api.booleanColumnType))
         </td>
       </tr><tr>
         <td>
-          180
+          169
         </td>
         <td>
-          607
+          604
         </td>
         <td>
-          7898
+          7567
           -
-          7906
+          7575
         </td>
         <td>
           Select
@@ -11197,15 +11051,36 @@
         </td>
       </tr><tr>
         <td>
-          180
+          169
         </td>
         <td>
-          601
+          613
         </td>
         <td>
-          7875
+          7564
           -
-          7875
+          7564
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.OptionMapper2.getOptionMapper2TT
+        </td>
+        <td style="background: #AEF1AE">
+          lifted.this.OptionMapper2.getOptionMapper2TT[Boolean, Boolean, Boolean](slick.jdbc.PostgresProfile.api.booleanColumnType)
+        </td>
+      </tr><tr>
+        <td>
+          169
+        </td>
+        <td>
+          598
+        </td>
+        <td>
+          7544
+          -
+          7544
         </td>
         <td>
           Select
@@ -11218,36 +11093,15 @@
         </td>
       </tr><tr>
         <td>
-          180
+          169
         </td>
         <td>
-          610
+          616
         </td>
         <td>
-          7928
+          7501
           -
-          7928
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
-        </td>
-        <td style="background: #AEF1AE">
-          slick.jdbc.PostgresProfile.api.intColumnType
-        </td>
-      </tr><tr>
-        <td>
-          180
-        </td>
-        <td>
-          619
-        </td>
-        <td>
-          7832
-          -
-          7938
+          7607
         </td>
         <td>
           ApplyToImplicitArgs
@@ -11260,15 +11114,78 @@
         </td>
       </tr><tr>
         <td>
-          182
+          169
         </td>
         <td>
-          624
+          607
         </td>
         <td>
-          7971
+          7597
           -
-          8004
+          7597
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
+        </td>
+        <td style="background: #AEF1AE">
+          slick.jdbc.PostgresProfile.api.intColumnType
+        </td>
+      </tr><tr>
+        <td>
+          169
+        </td>
+        <td>
+          601
+        </td>
+        <td>
+          7552
+          -
+          7552
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
+        </td>
+        <td style="background: #AEF1AE">
+          slick.jdbc.PostgresProfile.api.intColumnType
+        </td>
+      </tr><tr>
+        <td>
+          169
+        </td>
+        <td>
+          610
+        </td>
+        <td>
+          7576
+          -
+          7576
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.OptionMapper2.getOptionMapper2TT
+        </td>
+        <td style="background: #AEF1AE">
+          lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType)
+        </td>
+      </tr><tr>
+        <td>
+          171
+        </td>
+        <td>
+          621
+        </td>
+        <td>
+          7640
+          -
+          7673
         </td>
         <td>
           Apply
@@ -11281,36 +11198,15 @@
         </td>
       </tr><tr>
         <td>
-          182
+          171
         </td>
         <td>
-          623
+          635
         </td>
         <td>
-          7988
+          7621
           -
-          8003
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          scala.collection.TraversableLike.headOption
-        </td>
-        <td style="background: #AEF1AE">
-          x._2.headOption
-        </td>
-      </tr><tr>
-        <td>
-          182
-        </td>
-        <td>
-          638
-        </td>
-        <td>
-          7952
-          -
-          8280
+          7949
         </td>
         <td>
           ApplyToImplicitArgs
@@ -11330,15 +11226,78 @@
         </td>
       </tr><tr>
         <td>
-          182
+          171
+        </td>
+        <td>
+          620
+        </td>
+        <td>
+          7657
+          -
+          7672
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.TraversableLike.headOption
+        </td>
+        <td style="background: #AEF1AE">
+          x._2.headOption
+        </td>
+      </tr><tr>
+        <td>
+          171
         </td>
         <td>
           622
         </td>
         <td>
-          7972
+          7634
           -
-          7987
+          7634
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          controllers.EventController.context
+        </td>
+        <td style="background: #AEF1AE">
+          EventController.this.context
+        </td>
+      </tr><tr>
+        <td>
+          171
+        </td>
+        <td>
+          634
+        </td>
+        <td>
+          7683
+          -
+          7683
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          controllers.EventController.context
+        </td>
+        <td style="background: #AEF1AE">
+          EventController.this.context
+        </td>
+      </tr><tr>
+        <td>
+          171
+        </td>
+        <td>
+          619
+        </td>
+        <td>
+          7641
+          -
+          7656
         </td>
         <td>
           Select
@@ -11351,78 +11310,15 @@
         </td>
       </tr><tr>
         <td>
-          182
-        </td>
-        <td>
-          625
-        </td>
-        <td>
-          7965
-          -
-          7965
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          controllers.EventController.context
-        </td>
-        <td style="background: #AEF1AE">
-          EventController.this.context
-        </td>
-      </tr><tr>
-        <td>
-          182
-        </td>
-        <td>
-          637
-        </td>
-        <td>
-          8014
-          -
-          8014
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          controllers.EventController.context
-        </td>
-        <td style="background: #AEF1AE">
-          EventController.this.context
-        </td>
-      </tr><tr>
-        <td>
-          184
+          173
         </td>
         <td>
           627
         </td>
         <td>
-          8096
+          7724
           -
-          8117
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          scala.Option.getOrElse
-        </td>
-        <td style="background: #AEF1AE">
-          user.id.getOrElse[Int](-1)
-        </td>
-      </tr><tr>
-        <td>
-          184
-        </td>
-        <td>
-          630
-        </td>
-        <td>
-          8055
-          -
-          8123
+          7792
         </td>
         <td>
           Apply
@@ -11435,15 +11331,36 @@
         </td>
       </tr><tr>
         <td>
-          184
+          173
         </td>
         <td>
-          626
+          624
         </td>
         <td>
-          8062
+          7765
           -
-          8090
+          7786
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Option.getOrElse
+        </td>
+        <td style="background: #AEF1AE">
+          user.id.getOrElse[Int](-1)
+        </td>
+      </tr><tr>
+        <td>
+          173
+        </td>
+        <td>
+          623
+        </td>
+        <td>
+          7731
+          -
+          7759
         </td>
         <td>
           Select
@@ -11456,15 +11373,15 @@
         </td>
       </tr><tr>
         <td>
-          184
+          173
         </td>
         <td>
-          629
+          626
         </td>
         <td>
-          8062
+          7731
           -
-          8122
+          7791
         </td>
         <td>
           Apply
@@ -11477,15 +11394,15 @@
         </td>
       </tr><tr>
         <td>
-          184
+          173
         </td>
         <td>
-          628
+          625
         </td>
         <td>
-          8095
+          7764
           -
-          8121
+          7790
         </td>
         <td>
           Apply
@@ -11498,15 +11415,15 @@
         </td>
       </tr><tr>
         <td>
-          185
+          174
         </td>
         <td>
-          632
+          629
         </td>
         <td>
-          8132
+          7801
           -
-          8153
+          7822
         </td>
         <td>
           Apply
@@ -11519,15 +11436,15 @@
         </td>
       </tr><tr>
         <td>
-          185
+          174
         </td>
         <td>
-          631
+          628
         </td>
         <td>
-          8150
+          7819
           -
-          8152
+          7821
         </td>
         <td>
           Select
@@ -11540,15 +11457,15 @@
         </td>
       </tr><tr>
         <td>
-          187
+          176
         </td>
         <td>
-          633
+          630
         </td>
         <td>
-          8212
+          7881
           -
-          8220
+          7889
         </td>
         <td>
           Select
@@ -11561,15 +11478,15 @@
         </td>
       </tr><tr>
         <td>
-          187
+          176
         </td>
         <td>
-          634
+          631
         </td>
         <td>
-          8194
+          7863
           -
-          8221
+          7890
         </td>
         <td>
           Apply
@@ -11582,15 +11499,15 @@
         </td>
       </tr><tr>
         <td>
-          188
+          177
         </td>
         <td>
-          636
+          633
         </td>
         <td>
-          8245
+          7914
           -
-          8274
+          7943
         </td>
         <td>
           Apply
@@ -11603,15 +11520,15 @@
         </td>
       </tr><tr>
         <td>
-          188
+          177
         </td>
         <td>
-          635
+          632
         </td>
         <td>
-          8263
+          7932
           -
-          8273
+          7942
         </td>
         <td>
           Select
@@ -11624,15 +11541,15 @@
         </td>
       </tr><tr>
         <td>
-          192
+          181
         </td>
         <td>
-          672
+          669
         </td>
         <td>
-          8344
+          8013
           -
-          8344
+          8013
         </td>
         <td>
           Select
@@ -11645,15 +11562,15 @@
         </td>
       </tr><tr>
         <td>
-          192
+          181
         </td>
         <td>
-          641
+          638
         </td>
         <td>
-          8329
+          7998
           -
-          8342
+          8011
         </td>
         <td>
           Select
@@ -11666,15 +11583,15 @@
         </td>
       </tr><tr>
         <td>
-          192
+          181
         </td>
         <td>
-          673
+          670
         </td>
         <td>
-          8317
+          7986
           -
-          8680
+          8349
         </td>
         <td>
           ApplyToImplicitArgs
@@ -11695,15 +11612,15 @@
         </td>
       </tr><tr>
         <td>
-          193
+          182
         </td>
         <td>
-          642
+          639
         </td>
         <td>
-          8383
+          8052
           -
-          8423
+          8092
         </td>
         <td>
           Literal
@@ -11716,15 +11633,15 @@
         </td>
       </tr><tr>
         <td>
-          193
+          182
         </td>
         <td>
-          644
+          641
         </td>
         <td>
-          8373
+          8042
           -
-          8424
+          8093
         </td>
         <td>
           ApplyToImplicitArgs
@@ -11737,15 +11654,15 @@
         </td>
       </tr><tr>
         <td>
-          193
+          182
         </td>
         <td>
-          643
+          640
         </td>
         <td>
-          8382
+          8051
           -
-          8382
+          8051
         </td>
         <td>
           Select
@@ -11758,78 +11675,15 @@
         </td>
       </tr><tr>
         <td>
-          195
+          184
         </td>
         <td>
           660
         </td>
         <td>
-          8500
+          8141
           -
-          8500
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.booleanColumnType
-        </td>
-        <td style="background: #AEF1AE">
-          slick.jdbc.PostgresProfile.api.booleanColumnType
-        </td>
-      </tr><tr>
-        <td>
-          195
-        </td>
-        <td>
-          645
-        </td>
-        <td>
-          8478
-          -
-          8487
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          whatson.db.ParticipantTable.eventID
-        </td>
-        <td style="background: #AEF1AE">
-          x.eventID
-        </td>
-      </tr><tr>
-        <td>
-          195
-        </td>
-        <td>
-          654
-        </td>
-        <td>
-          8516
-          -
-          8537
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          scala.Option.getOrElse
-        </td>
-        <td style="background: #AEF1AE">
-          user.id.getOrElse[Int](-1)
-        </td>
-      </tr><tr>
-        <td>
-          195
-        </td>
-        <td>
-          663
-        </td>
-        <td>
-          8472
-          -
-          8472
+          8141
         </td>
         <td>
           Select
@@ -11842,15 +11696,15 @@
         </td>
       </tr><tr>
         <td>
-          195
+          184
         </td>
         <td>
-          648
+          645
         </td>
         <td>
-          8492
+          8161
           -
-          8499
+          8168
         </td>
         <td>
           Select
@@ -11863,15 +11717,15 @@
         </td>
       </tr><tr>
         <td>
-          195
+          184
         </td>
         <td>
-          657
+          654
         </td>
         <td>
-          8512
+          8181
           -
-          8512
+          8181
         </td>
         <td>
           Select
@@ -11884,15 +11738,15 @@
         </td>
       </tr><tr>
         <td>
-          195
+          184
         </td>
         <td>
-          651
+          648
         </td>
         <td>
-          8478
+          8147
           -
-          8499
+          8168
         </td>
         <td>
           ApplyToImplicitArgs
@@ -11905,57 +11759,78 @@
         </td>
       </tr><tr>
         <td>
-          195
+          184
+        </td>
+        <td>
+          657
+        </td>
+        <td>
+          8169
+          -
+          8169
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.booleanColumnType
+        </td>
+        <td style="background: #AEF1AE">
+          slick.jdbc.PostgresProfile.api.booleanColumnType
+        </td>
+      </tr><tr>
+        <td>
+          184
+        </td>
+        <td>
+          642
+        </td>
+        <td>
+          8147
+          -
+          8156
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.db.ParticipantTable.eventID
+        </td>
+        <td style="background: #AEF1AE">
+          x.eventID
+        </td>
+      </tr><tr>
+        <td>
+          184
+        </td>
+        <td>
+          651
+        </td>
+        <td>
+          8185
+          -
+          8206
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Option.getOrElse
+        </td>
+        <td style="background: #AEF1AE">
+          user.id.getOrElse[Int](-1)
+        </td>
+      </tr><tr>
+        <td>
+          184
         </td>
         <td>
           650
         </td>
         <td>
-          8488
+          8174
           -
-          8488
-        </td>
-        <td>
-          ApplyToImplicitArgs
-        </td>
-        <td>
-          slick.lifted.OptionMapper2.getOptionMapper2TT
-        </td>
-        <td style="background: #AEF1AE">
-          lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType)
-        </td>
-      </tr><tr>
-        <td>
-          195
-        </td>
-        <td>
-          659
-        </td>
-        <td>
-          8503
-          -
-          8542
-        </td>
-        <td>
-          ApplyToImplicitArgs
-        </td>
-        <td>
-          slick.lifted.ColumnExtensionMethods.===
-        </td>
-        <td style="background: #AEF1AE">
-          slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](x.userID)(slick.jdbc.PostgresProfile.api.intColumnType).===[Int, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[Int](user.id.getOrElse[Int](-1))(slick.jdbc.PostgresProfile.api.intColumnType).bind)(lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType))
-        </td>
-      </tr><tr>
-        <td>
-          195
-        </td>
-        <td>
-          653
-        </td>
-        <td>
-          8505
-          -
-          8505
+          8174
         </td>
         <td>
           Select
@@ -11968,15 +11843,15 @@
         </td>
       </tr><tr>
         <td>
-          195
+          184
         </td>
         <td>
-          662
+          659
         </td>
         <td>
-          8478
+          8147
           -
-          8542
+          8211
         </td>
         <td>
           ApplyToImplicitArgs
@@ -11989,57 +11864,15 @@
         </td>
       </tr><tr>
         <td>
-          195
+          184
         </td>
         <td>
-          665
+          653
         </td>
         <td>
-          8437
+          8185
           -
-          8550
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          slick.jdbc.JdbcActionComponent.DeleteActionExtensionMethodsImpl.delete
-        </td>
-        <td style="background: #AEF1AE">
-          slick.jdbc.PostgresProfile.api.queryDeleteActionExtensionMethods[Seq](whatson.db.ParticipantTable.participant.filter[slick.lifted.Rep[Boolean]](((x: whatson.db.ParticipantTable) =&gt; slick.jdbc.PostgresProfile.api.booleanColumnExtensionMethods(slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](x.eventID)(slick.jdbc.PostgresProfile.api.intColumnType).===[Int, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[Int](id)(slick.jdbc.PostgresProfile.api.intColumnType).bind)(lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType))).&amp;&amp;[Boolean, Boolean](slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](x.userID)(slick.jdbc.PostgresProfile.api.intColumnType).===[Int, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[Int](user.id.getOrElse[Int](-1))(slick.jdbc.PostgresProfile.api.intColumnType).bind)(lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType)))(lifted.this.OptionMapper2.getOptionMapper2TT[Boolean, Boolean, Boolean](slick.jdbc.PostgresProfile.api.booleanColumnType))))(lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition)).delete
-        </td>
-      </tr><tr>
-        <td>
-          195
-        </td>
-        <td>
-          647
-        </td>
-        <td>
-          8492
-          -
-          8492
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
-        </td>
-        <td style="background: #AEF1AE">
-          slick.jdbc.PostgresProfile.api.intColumnType
-        </td>
-      </tr><tr>
-        <td>
-          195
-        </td>
-        <td>
-          656
-        </td>
-        <td>
-          8516
-          -
-          8542
+          8211
         </td>
         <td>
           Select
@@ -12052,15 +11885,15 @@
         </td>
       </tr><tr>
         <td>
-          195
+          184
         </td>
         <td>
-          646
+          644
         </td>
         <td>
-          8480
+          8161
           -
-          8480
+          8161
         </td>
         <td>
           Select
@@ -12073,57 +11906,36 @@
         </td>
       </tr><tr>
         <td>
-          195
+          184
         </td>
         <td>
-          655
+          662
         </td>
         <td>
-          8533
+          8106
           -
-          8533
+          8219
         </td>
         <td>
           Select
         </td>
         <td>
-          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
+          slick.jdbc.JdbcActionComponent.DeleteActionExtensionMethodsImpl.delete
         </td>
         <td style="background: #AEF1AE">
-          slick.jdbc.PostgresProfile.api.intColumnType
+          slick.jdbc.PostgresProfile.api.queryDeleteActionExtensionMethods[Seq](whatson.db.ParticipantTable.participant.filter[slick.lifted.Rep[Boolean]](((x: whatson.db.ParticipantTable) =&gt; slick.jdbc.PostgresProfile.api.booleanColumnExtensionMethods(slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](x.eventID)(slick.jdbc.PostgresProfile.api.intColumnType).===[Int, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[Int](id)(slick.jdbc.PostgresProfile.api.intColumnType).bind)(lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType))).&amp;&amp;[Boolean, Boolean](slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](x.userID)(slick.jdbc.PostgresProfile.api.intColumnType).===[Int, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[Int](user.id.getOrElse[Int](-1))(slick.jdbc.PostgresProfile.api.intColumnType).bind)(lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType)))(lifted.this.OptionMapper2.getOptionMapper2TT[Boolean, Boolean, Boolean](slick.jdbc.PostgresProfile.api.booleanColumnType))))(lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition)).delete
         </td>
       </tr><tr>
         <td>
-          195
+          184
         </td>
         <td>
-          664
+          647
         </td>
         <td>
-          8437
+          8157
           -
-          8543
-        </td>
-        <td>
-          ApplyToImplicitArgs
-        </td>
-        <td>
-          slick.lifted.Query.filter
-        </td>
-        <td style="background: #AEF1AE">
-          whatson.db.ParticipantTable.participant.filter[slick.lifted.Rep[Boolean]](((x: whatson.db.ParticipantTable) =&gt; slick.jdbc.PostgresProfile.api.booleanColumnExtensionMethods(slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](x.eventID)(slick.jdbc.PostgresProfile.api.intColumnType).===[Int, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[Int](id)(slick.jdbc.PostgresProfile.api.intColumnType).bind)(lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType))).&amp;&amp;[Boolean, Boolean](slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](x.userID)(slick.jdbc.PostgresProfile.api.intColumnType).===[Int, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[Int](user.id.getOrElse[Int](-1))(slick.jdbc.PostgresProfile.api.intColumnType).bind)(lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType)))(lifted.this.OptionMapper2.getOptionMapper2TT[Boolean, Boolean, Boolean](slick.jdbc.PostgresProfile.api.booleanColumnType))))(lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition)
-        </td>
-      </tr><tr>
-        <td>
-          195
-        </td>
-        <td>
-          658
-        </td>
-        <td>
-          8512
-          -
-          8512
+          8157
         </td>
         <td>
           ApplyToImplicitArgs
@@ -12136,15 +11948,36 @@
         </td>
       </tr><tr>
         <td>
-          195
+          184
         </td>
         <td>
-          649
+          656
         </td>
         <td>
-          8488
+          8172
           -
-          8488
+          8211
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.ColumnExtensionMethods.===
+        </td>
+        <td style="background: #AEF1AE">
+          slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](x.userID)(slick.jdbc.PostgresProfile.api.intColumnType).===[Int, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[Int](user.id.getOrElse[Int](-1))(slick.jdbc.PostgresProfile.api.intColumnType).bind)(lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType))
+        </td>
+      </tr><tr>
+        <td>
+          184
+        </td>
+        <td>
+          646
+        </td>
+        <td>
+          8157
+          -
+          8157
         </td>
         <td>
           Select
@@ -12157,36 +11990,36 @@
         </td>
       </tr><tr>
         <td>
-          195
+          184
         </td>
         <td>
-          652
+          655
         </td>
         <td>
-          8503
+          8181
           -
-          8511
+          8181
         </td>
         <td>
-          Select
+          ApplyToImplicitArgs
         </td>
         <td>
-          whatson.db.ParticipantTable.userID
+          slick.lifted.OptionMapper2.getOptionMapper2TT
         </td>
         <td style="background: #AEF1AE">
-          x.userID
+          lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType)
         </td>
       </tr><tr>
         <td>
-          195
+          184
         </td>
         <td>
-          661
+          658
         </td>
         <td>
-          8500
+          8169
           -
-          8500
+          8169
         </td>
         <td>
           ApplyToImplicitArgs
@@ -12199,15 +12032,99 @@
         </td>
       </tr><tr>
         <td>
-          196
+          184
         </td>
         <td>
-          671
+          649
         </td>
         <td>
-          8430
+          8172
           -
-          8676
+          8180
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.db.ParticipantTable.userID
+        </td>
+        <td style="background: #AEF1AE">
+          x.userID
+        </td>
+      </tr><tr>
+        <td>
+          184
+        </td>
+        <td>
+          652
+        </td>
+        <td>
+          8202
+          -
+          8202
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
+        </td>
+        <td style="background: #AEF1AE">
+          slick.jdbc.PostgresProfile.api.intColumnType
+        </td>
+      </tr><tr>
+        <td>
+          184
+        </td>
+        <td>
+          661
+        </td>
+        <td>
+          8106
+          -
+          8212
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.Query.filter
+        </td>
+        <td style="background: #AEF1AE">
+          whatson.db.ParticipantTable.participant.filter[slick.lifted.Rep[Boolean]](((x: whatson.db.ParticipantTable) =&gt; slick.jdbc.PostgresProfile.api.booleanColumnExtensionMethods(slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](x.eventID)(slick.jdbc.PostgresProfile.api.intColumnType).===[Int, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[Int](id)(slick.jdbc.PostgresProfile.api.intColumnType).bind)(lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType))).&amp;&amp;[Boolean, Boolean](slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](x.userID)(slick.jdbc.PostgresProfile.api.intColumnType).===[Int, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[Int](user.id.getOrElse[Int](-1))(slick.jdbc.PostgresProfile.api.intColumnType).bind)(lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType)))(lifted.this.OptionMapper2.getOptionMapper2TT[Boolean, Boolean, Boolean](slick.jdbc.PostgresProfile.api.booleanColumnType))))(lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition)
+        </td>
+      </tr><tr>
+        <td>
+          184
+        </td>
+        <td>
+          643
+        </td>
+        <td>
+          8149
+          -
+          8149
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
+        </td>
+        <td style="background: #AEF1AE">
+          slick.jdbc.PostgresProfile.api.intColumnType
+        </td>
+      </tr><tr>
+        <td>
+          185
+        </td>
+        <td>
+          668
+        </td>
+        <td>
+          8099
+          -
+          8345
         </td>
         <td>
           ApplyToImplicitArgs
@@ -12223,15 +12140,15 @@
         </td>
       </tr><tr>
         <td>
-          196
+          185
         </td>
         <td>
-          670
+          667
         </td>
         <td>
-          8567
+          8236
           -
-          8567
+          8236
         </td>
         <td>
           Select
@@ -12244,15 +12161,15 @@
         </td>
       </tr><tr>
         <td>
-          198
+          187
         </td>
         <td>
-          666
+          663
         </td>
         <td>
-          8613
+          8282
           -
-          8615
+          8284
         </td>
         <td>
           Select
@@ -12265,15 +12182,15 @@
         </td>
       </tr><tr>
         <td>
-          198
+          187
         </td>
         <td>
-          667
+          664
         </td>
         <td>
-          8595
+          8264
           -
-          8616
+          8285
         </td>
         <td>
           Apply
@@ -12286,15 +12203,15 @@
         </td>
       </tr><tr>
         <td>
-          200
+          189
         </td>
         <td>
-          669
+          666
         </td>
         <td>
-          8641
+          8310
           -
-          8670
+          8339
         </td>
         <td>
           Apply
@@ -12307,15 +12224,15 @@
         </td>
       </tr><tr>
         <td>
-          200
+          189
         </td>
         <td>
-          668
+          665
         </td>
         <td>
-          8659
+          8328
           -
-          8669
+          8338
         </td>
         <td>
           Select
