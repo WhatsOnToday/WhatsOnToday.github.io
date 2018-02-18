@@ -30,34 +30,37 @@
 </span>6 <span style=''>import slick.jdbc.PostgresProfile.api._
 </span>7 <span style=''>import whatson.db._
 </span>8 <span style=''>import whatson.model._
-</span>9 <span style=''>
-</span>10 <span style=''>case class LocationDetail(id: Option[Int], name: String, latitude: Float, longitude: Float,
-</span>11 <span style=''>                       avgRating: Option[Float], images: List[Int]) extends Rateable with WithImages
-</span>12 <span style=''>
-</span>13 <span style=''>object LocationDetail {
-</span>14 <span style=''>  implicit val locationDetailReads = Json.reads[LocationDetail]
-</span>15 <span style=''>  implicit val locationDetailWrites = Json.writes[LocationDetail]
-</span>16 <span style=''>
-</span>17 <span style=''>  val tupled = (</span><span style='background: #F0ADAD'>this.apply</span><span style='background: #AEF1AE'> _).tupled</span><span style=''>
-</span>18 <span style=''>
-</span>19 <span style=''>  implicit class LocationDetailQuery(q: Query[LocationTable, Location, Seq]) {
-</span>20 <span style=''>    def detailed(implicit ec: ExecutionContext) = {
-</span>21 <span style=''>      val t = </span><span style='background: #AEF1AE'>q.result.flatMap(y =&gt; {
-</span>22 <span style=''></span><span style='background: #AEF1AE'>        DBIO.sequence(y.map {
-</span>23 <span style=''></span><span style='background: #AEF1AE'>          case location =&gt; {
-</span>24 <span style=''></span><span style='background: #AEF1AE'>            val s = LocationTable.location.filter(_.id === location.id).map(_.avgRating)
-</span>25 <span style=''></span><span style='background: #AEF1AE'>            val imgs = LocationTable.location.filter(_.id === location.id).flatMap(_.images).map(_.id)
-</span>26 <span style=''></span><span style='background: #AEF1AE'>
-</span>27 <span style=''></span><span style='background: #AEF1AE'>            s.result.zip(imgs.result).map(o =&gt; {
-</span>28 <span style=''></span><span style='background: #AEF1AE'>              LocationDetail(location.id, location.name, location.latitude, location.longitude, o._1.headOption.flatten, o._2.toList)
-</span>29 <span style=''></span><span style='background: #AEF1AE'>            })
-</span>30 <span style=''></span><span style='background: #AEF1AE'>          }
-</span>31 <span style=''></span><span style='background: #AEF1AE'>        })
-</span>32 <span style=''></span><span style='background: #AEF1AE'>      })</span><span style=''>
-</span>33 <span style=''>      t
-</span>34 <span style=''>    }
-</span>35 <span style=''>  }
-</span>36 <span style=''>}
+</span>9 <span style=''>import whatson.model.detail._
+</span>10 <span style=''>
+</span>11 <span style=''>case class LocationDetail(id: Option[Int], name: String, latitude: Float, longitude: Float,
+</span>12 <span style=''>                       avgRating: Option[Float], images: List[TaggedImage]) extends Rateable with WithTaggedImages
+</span>13 <span style=''>
+</span>14 <span style=''>object LocationDetail {
+</span>15 <span style=''>  implicit val locationDetailReads = Json.reads[LocationDetail]
+</span>16 <span style=''>  implicit val locationDetailWrites = Json.writes[LocationDetail]
+</span>17 <span style=''>
+</span>18 <span style=''>  val tupled = (</span><span style='background: #F0ADAD'>this.apply</span><span style='background: #AEF1AE'> _).tupled</span><span style=''>
+</span>19 <span style=''>
+</span>20 <span style=''>  implicit class LocationDetailQuery(q: Query[LocationTable, Location, Seq]) {
+</span>21 <span style=''>    def detailed(implicit ec: ExecutionContext) = {
+</span>22 <span style=''>      val t = </span><span style='background: #AEF1AE'>q.result.flatMap(y =&gt; {
+</span>23 <span style=''></span><span style='background: #AEF1AE'>        DBIO.sequence(y.map {
+</span>24 <span style=''></span><span style='background: #AEF1AE'>          case location =&gt; {
+</span>25 <span style=''></span><span style='background: #AEF1AE'>            val s = LocationTable.location.filter(_.id === location.id).map(_.avgRating)
+</span>26 <span style=''></span><span style='background: #AEF1AE'>            val imgs = LocationTable.location.filter(_.id === location.id).flatMap(_.images).map(_.id)
+</span>27 <span style=''></span><span style='background: #AEF1AE'>            val imgTagged = LocationTable.location.filter(_.id === location.id).flatMap(_.taggedImages)
+</span>28 <span style=''></span><span style='background: #AEF1AE'>              .result.map(l =&gt; l.map(x =&gt; TaggedImage(x._2.id,x._2.name,x._1)))
+</span>29 <span style=''></span><span style='background: #AEF1AE'>
+</span>30 <span style=''></span><span style='background: #AEF1AE'>            s.result.zip(imgTagged).map(o =&gt; {
+</span>31 <span style=''></span><span style='background: #AEF1AE'>              LocationDetail(location.id, location.name, location.latitude, location.longitude, o._1.headOption.flatten, o._2.toList)
+</span>32 <span style=''></span><span style='background: #AEF1AE'>            })
+</span>33 <span style=''></span><span style='background: #AEF1AE'>          }
+</span>34 <span style=''></span><span style='background: #AEF1AE'>        })
+</span>35 <span style=''></span><span style='background: #AEF1AE'>      })</span><span style=''>
+</span>36 <span style=''>      t
+</span>37 <span style=''>    }
+</span>38 <span style=''>  }
+</span>39 <span style=''>}
 </span></pre>
           </div>
           <div class="tab-pane" id="statementlist">
@@ -71,15 +74,15 @@
         <th>Code</th>
       </tr><tr>
         <td>
-          17
+          18
         </td>
         <td>
           2242
         </td>
         <td>
-          549
+          593
           -
-          559
+          603
         </td>
         <td>
           Apply
@@ -92,15 +95,15 @@
         </td>
       </tr><tr>
         <td>
-          17
+          18
         </td>
         <td>
           2243
         </td>
         <td>
-          549
+          593
           -
-          569
+          613
         </td>
         <td>
           Select
@@ -110,20 +113,20 @@
         </td>
         <td style="background: #AEF1AE">
           {
-  ((id: Option[Int], name: String, latitude: Float, longitude: Float, avgRating: Option[Float], images: List[Int]) =&gt; this.apply(id, name, latitude, longitude, avgRating, images))
+  ((id: Option[Int], name: String, latitude: Float, longitude: Float, avgRating: Option[Float], images: List[whatson.model.detail.TaggedImage]) =&gt; this.apply(id, name, latitude, longitude, avgRating, images))
 }.tupled
         </td>
       </tr><tr>
         <td>
-          21
+          22
         </td>
         <td>
           2244
         </td>
         <td>
-          716
+          760
           -
-          1221
+          1447
         </td>
         <td>
           ApplyToImplicitArgs
@@ -136,7 +139,8 @@
   case (location @ _) =&gt; {
     val s: slick.lifted.Query[slick.lifted.Rep[Option[Float]],Option[Float],Seq] = whatson.db.LocationTable.location.filter[slick.lifted.Rep[Option[Boolean]]](((x$1: whatson.db.LocationTable) =&gt; slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](x$1.id)(slick.jdbc.PostgresProfile.api.intColumnType).===[Option[Int], Option[Boolean]](slick.jdbc.PostgresProfile.api.valueToConstColumn[Option[Int]](location.id)(ast.this.TypedType.typedTypeToOptionTypedType[Int](slick.jdbc.PostgresProfile.api.intColumnType)))(lifted.this.OptionMapper2.getOptionMapper2TO[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType))))(lifted.this.CanBeQueryCondition.BooleanOptionColumnCanBeQueryCondition).map[slick.lifted.Rep[Option[Float]], slick.lifted.Rep[Option[Float]], Option[Float]](((x$2: whatson.db.LocationTable) =&gt; x$2.avgRating))(lifted.this.Shape.optionShape[Float, Float, Float, Nothing](lifted.this.Shape.repColumnShape[Float, Nothing](slick.jdbc.PostgresProfile.api.floatColumnType)));
     val imgs: slick.lifted.Query[slick.lifted.Rep[Int],Int,Seq] = whatson.db.LocationTable.location.filter[slick.lifted.Rep[Option[Boolean]]](((x$3: whatson.db.LocationTable) =&gt; slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](x$3.id)(slick.jdbc.PostgresProfile.api.intColumnType).===[Option[Int], Option[Boolean]](slick.jdbc.PostgresProfile.api.valueToConstColumn[Option[Int]](location.id)(ast.this.TypedType.typedTypeToOptionTypedType[Int](slick.jdbc.PostgresProfile.api.intColumnType)))(lifted.this.OptionMapper2.getOptionMapper2TO[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType))))(lifted.this.CanBeQueryCondition.BooleanOptionColumnCanBeQueryCondition).flatMap[whatson.db.ImageTable, whatson.model.Image, Seq](((x$4: whatson.db.LocationTable) =&gt; x$4.images)).map[slick.lifted.Rep[Int], slick.lifted.Rep[Int], Int](((x$5: whatson.db.ImageTable) =&gt; x$5.id))(lifted.this.Shape.repColumnShape[Int, Nothing](slick.jdbc.PostgresProfile.api.intColumnType));
-    slick.jdbc.PostgresProfile.api.streamableQueryActionExtensionMethods[Option[Float], Seq](s).result.zip[Seq[Int], slick.dbio.Effect.Read](slick.jdbc.PostgresProfile.api.streamableQueryActionExtensionMethods[Int, Seq](imgs).result).map[whatson.model.detail.LocationDetail](((o: (Seq[Option[Float]], Seq[Int])) =&gt; LocationDetail.apply(location.id, location.name, location.latitude, location.longitude, o._1.headOption.flatten[Float](scala.Predef.$conforms[Option[Float]]), o._2.toList)))(ec)
+    val imgTagged: slick.dbio.DBIOAction[Seq[whatson.model.detail.TaggedImage],slick.dbio.NoStream,slick.dbio.Effect.Read] = slick.jdbc.PostgresProfile.api.streamableQueryActionExtensionMethods[(Option[String], whatson.model.Image), Seq](whatson.db.LocationTable.location.filter[slick.lifted.Rep[Option[Boolean]]](((x$6: whatson.db.LocationTable) =&gt; slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](x$6.id)(slick.jdbc.PostgresProfile.api.intColumnType).===[Option[Int], Option[Boolean]](slick.jdbc.PostgresProfile.api.valueToConstColumn[Option[Int]](location.id)(ast.this.TypedType.typedTypeToOptionTypedType[Int](slick.jdbc.PostgresProfile.api.intColumnType)))(lifted.this.OptionMapper2.getOptionMapper2TO[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType))))(lifted.this.CanBeQueryCondition.BooleanOptionColumnCanBeQueryCondition).flatMap[(slick.lifted.Rep[Option[String]], whatson.db.ImageTable), (Option[String], whatson.model.Image), Seq](((x$7: whatson.db.LocationTable) =&gt; x$7.taggedImages))).result.map[Seq[whatson.model.detail.TaggedImage]](((l: Seq[(Option[String], whatson.model.Image)]) =&gt; l.map[whatson.model.detail.TaggedImage, Seq[whatson.model.detail.TaggedImage]](((x: (Option[String], whatson.model.Image)) =&gt; TaggedImage.apply(x._2.id, x._2.name, x._1)))(collection.this.Seq.canBuildFrom[whatson.model.detail.TaggedImage])))(ec);
+    slick.jdbc.PostgresProfile.api.streamableQueryActionExtensionMethods[Option[Float], Seq](s).result.zip[Seq[whatson.model.detail.TaggedImage], slick.dbio.Effect.Read](imgTagged).map[whatson.model.detail.LocationDetail](((o: (Seq[Option[Float]], Seq[whatson.model.detail.TaggedImage])) =&gt; LocationDetail.apply(location.id, location.name, location.latitude, location.longitude, o._1.headOption.flatten[Float](scala.Predef.$conforms[Option[Float]]), o._2.toList)))(ec)
   }
 }))(collection.this.Seq.canBuildFrom[slick.dbio.DBIOAction[whatson.model.detail.LocationDetail,slick.dbio.NoStream,slick.dbio.Effect.Read with slick.dbio.Effect.Read]]))(collection.this.Seq.canBuildFrom[whatson.model.detail.LocationDetail])))(ec)
         </td>

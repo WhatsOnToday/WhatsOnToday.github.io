@@ -34,7 +34,7 @@
 </span>10 <span style=''>import scala.concurrent.ExecutionContext
 </span>11 <span style=''>
 </span>12 <span style=''>case class OrganizerPublic(id: Option[Int], name: String,
-</span>13 <span style=''>                           avgRating: Option[Float], images: List[Int], avatar: Option[String]) extends Rateable with WithImages
+</span>13 <span style=''>                           avgRating: Option[Float], images: List[TaggedImage], avatar: Option[String]) extends Rateable with WithTaggedImages
 </span>14 <span style=''>
 </span>15 <span style=''>object OrganizerPublic {
 </span>16 <span style=''>  implicit val organizerPublicReads = Json.reads[OrganizerPublic]
@@ -49,17 +49,19 @@
 </span>25 <span style=''></span><span style='background: #AEF1AE'>          case organizer =&gt; {
 </span>26 <span style=''></span><span style='background: #AEF1AE'>            val s = OrganizerTable.organizer.filter(_.id === organizer.id).map(_.avgRating)
 </span>27 <span style=''></span><span style='background: #AEF1AE'>            val imgs = OrganizerTable.organizer.filter(_.id === organizer.id).flatMap(_.images).map(_.id)
-</span>28 <span style=''></span><span style='background: #AEF1AE'>
-</span>29 <span style=''></span><span style='background: #AEF1AE'>            s.result.zip(imgs.result).map(o =&gt; {
-</span>30 <span style=''></span><span style='background: #AEF1AE'>              OrganizerPublic(organizer.id, organizer.name, o._1.headOption.flatten, o._2.toList, organizer.avatar)
-</span>31 <span style=''></span><span style='background: #AEF1AE'>            })
-</span>32 <span style=''></span><span style='background: #AEF1AE'>          }
-</span>33 <span style=''></span><span style='background: #AEF1AE'>        })
-</span>34 <span style=''></span><span style='background: #AEF1AE'>      })</span><span style=''>
-</span>35 <span style=''>      t
-</span>36 <span style=''>    }
-</span>37 <span style=''>  }
-</span>38 <span style=''>}
+</span>28 <span style=''></span><span style='background: #AEF1AE'>            val imgTagged = OrganizerTable.organizer.filter(_.id === organizer.id).flatMap(_.taggedImages)
+</span>29 <span style=''></span><span style='background: #AEF1AE'>              .result.map(l =&gt; l.map(x =&gt; TaggedImage(x._2.id,x._2.name,x._1)))
+</span>30 <span style=''></span><span style='background: #AEF1AE'>
+</span>31 <span style=''></span><span style='background: #AEF1AE'>            s.result.zip(imgTagged).map(o =&gt; {
+</span>32 <span style=''></span><span style='background: #AEF1AE'>              OrganizerPublic(organizer.id, organizer.name, o._1.headOption.flatten, o._2.toList, organizer.avatar)
+</span>33 <span style=''></span><span style='background: #AEF1AE'>            })
+</span>34 <span style=''></span><span style='background: #AEF1AE'>          }
+</span>35 <span style=''></span><span style='background: #AEF1AE'>        })
+</span>36 <span style=''></span><span style='background: #AEF1AE'>      })</span><span style=''>
+</span>37 <span style=''>      t
+</span>38 <span style=''>    }
+</span>39 <span style=''>  }
+</span>40 <span style=''>}
 </span></pre>
           </div>
           <div class="tab-pane" id="statementlist">
@@ -79,9 +81,9 @@
           2245
         </td>
         <td>
-          633
+          647
           -
-          643
+          657
         </td>
         <td>
           Apply
@@ -100,9 +102,9 @@
           2246
         </td>
         <td>
-          633
+          647
           -
-          653
+          667
         </td>
         <td>
           Select
@@ -112,7 +114,7 @@
         </td>
         <td style="background: #AEF1AE">
           {
-  ((id: Option[Int], name: String, avgRating: Option[Float], images: List[Int], avatar: Option[String]) =&gt; this.apply(id, name, avgRating, images, avatar))
+  ((id: Option[Int], name: String, avgRating: Option[Float], images: List[whatson.model.detail.TaggedImage], avatar: Option[String]) =&gt; this.apply(id, name, avgRating, images, avatar))
 }.tupled
         </td>
       </tr><tr>
@@ -123,9 +125,9 @@
           2247
         </td>
         <td>
-          801
+          815
           -
-          1295
+          1494
         </td>
         <td>
           ApplyToImplicitArgs
@@ -138,7 +140,8 @@
   case (organizer @ _) =&gt; {
     val s: slick.lifted.Query[slick.lifted.Rep[Option[Float]],Option[Float],Seq] = whatson.db.OrganizerTable.organizer.filter[slick.lifted.Rep[Option[Boolean]]](((x$1: whatson.db.OrganizerTable) =&gt; slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](x$1.id)(slick.jdbc.PostgresProfile.api.intColumnType).===[Option[Int], Option[Boolean]](slick.jdbc.PostgresProfile.api.valueToConstColumn[Option[Int]](organizer.id)(ast.this.TypedType.typedTypeToOptionTypedType[Int](slick.jdbc.PostgresProfile.api.intColumnType)))(lifted.this.OptionMapper2.getOptionMapper2TO[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType))))(lifted.this.CanBeQueryCondition.BooleanOptionColumnCanBeQueryCondition).map[slick.lifted.Rep[Option[Float]], slick.lifted.Rep[Option[Float]], Option[Float]](((x$2: whatson.db.OrganizerTable) =&gt; x$2.avgRating))(lifted.this.Shape.optionShape[Float, Float, Float, Nothing](lifted.this.Shape.repColumnShape[Float, Nothing](slick.jdbc.PostgresProfile.api.floatColumnType)));
     val imgs: slick.lifted.Query[slick.lifted.Rep[Int],Int,Seq] = whatson.db.OrganizerTable.organizer.filter[slick.lifted.Rep[Option[Boolean]]](((x$3: whatson.db.OrganizerTable) =&gt; slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](x$3.id)(slick.jdbc.PostgresProfile.api.intColumnType).===[Option[Int], Option[Boolean]](slick.jdbc.PostgresProfile.api.valueToConstColumn[Option[Int]](organizer.id)(ast.this.TypedType.typedTypeToOptionTypedType[Int](slick.jdbc.PostgresProfile.api.intColumnType)))(lifted.this.OptionMapper2.getOptionMapper2TO[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType))))(lifted.this.CanBeQueryCondition.BooleanOptionColumnCanBeQueryCondition).flatMap[whatson.db.ImageTable, whatson.model.Image, Seq](((x$4: whatson.db.OrganizerTable) =&gt; x$4.images)).map[slick.lifted.Rep[Int], slick.lifted.Rep[Int], Int](((x$5: whatson.db.ImageTable) =&gt; x$5.id))(lifted.this.Shape.repColumnShape[Int, Nothing](slick.jdbc.PostgresProfile.api.intColumnType));
-    slick.jdbc.PostgresProfile.api.streamableQueryActionExtensionMethods[Option[Float], Seq](s).result.zip[Seq[Int], slick.dbio.Effect.Read](slick.jdbc.PostgresProfile.api.streamableQueryActionExtensionMethods[Int, Seq](imgs).result).map[whatson.model.detail.OrganizerPublic](((o: (Seq[Option[Float]], Seq[Int])) =&gt; OrganizerPublic.apply(organizer.id, organizer.name, o._1.headOption.flatten[Float](scala.Predef.$conforms[Option[Float]]), o._2.toList, organizer.avatar)))(ec)
+    val imgTagged: slick.dbio.DBIOAction[Seq[whatson.model.detail.TaggedImage],slick.dbio.NoStream,slick.dbio.Effect.Read] = slick.jdbc.PostgresProfile.api.streamableQueryActionExtensionMethods[(Option[String], whatson.model.Image), Seq](whatson.db.OrganizerTable.organizer.filter[slick.lifted.Rep[Option[Boolean]]](((x$6: whatson.db.OrganizerTable) =&gt; slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](x$6.id)(slick.jdbc.PostgresProfile.api.intColumnType).===[Option[Int], Option[Boolean]](slick.jdbc.PostgresProfile.api.valueToConstColumn[Option[Int]](organizer.id)(ast.this.TypedType.typedTypeToOptionTypedType[Int](slick.jdbc.PostgresProfile.api.intColumnType)))(lifted.this.OptionMapper2.getOptionMapper2TO[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType))))(lifted.this.CanBeQueryCondition.BooleanOptionColumnCanBeQueryCondition).flatMap[(slick.lifted.Rep[Option[String]], whatson.db.ImageTable), (Option[String], whatson.model.Image), Seq](((x$7: whatson.db.OrganizerTable) =&gt; x$7.taggedImages))).result.map[Seq[whatson.model.detail.TaggedImage]](((l: Seq[(Option[String], whatson.model.Image)]) =&gt; l.map[whatson.model.detail.TaggedImage, Seq[whatson.model.detail.TaggedImage]](((x: (Option[String], whatson.model.Image)) =&gt; TaggedImage.apply(x._2.id, x._2.name, x._1)))(collection.this.Seq.canBuildFrom[whatson.model.detail.TaggedImage])))(ec);
+    slick.jdbc.PostgresProfile.api.streamableQueryActionExtensionMethods[Option[Float], Seq](s).result.zip[Seq[whatson.model.detail.TaggedImage], slick.dbio.Effect.Read](imgTagged).map[whatson.model.detail.OrganizerPublic](((o: (Seq[Option[Float]], Seq[whatson.model.detail.TaggedImage])) =&gt; OrganizerPublic.apply(organizer.id, organizer.name, o._1.headOption.flatten[Float](scala.Predef.$conforms[Option[Float]]), o._2.toList, organizer.avatar)))(ec)
   }
 }))(collection.this.Seq.canBuildFrom[slick.dbio.DBIOAction[whatson.model.detail.OrganizerPublic,slick.dbio.NoStream,slick.dbio.Effect.Read with slick.dbio.Effect.Read]]))(collection.this.Seq.canBuildFrom[whatson.model.detail.OrganizerPublic])))(ec)
         </td>
