@@ -46,87 +46,88 @@
 </span>22 <span style=''>import whatson.service._
 </span>23 <span style=''>import com.mohiva.play.silhouette.api._
 </span>24 <span style=''>import whatson.auth._
-</span>25 <span style=''>
+</span>25 <span style=''>import whatson.model.forms._
 </span>26 <span style=''>
-</span>27 <span style=''>class ImageController @Inject()(cc: ControllerComponents,
-</span>28 <span style=''>                                protected val dbConfigProvider: DatabaseConfigProvider,
-</span>29 <span style=''>                                val silhouette: Silhouette[AuthEnv],
-</span>30 <span style=''>                                val organizerService: OrganizerService,
-</span>31 <span style=''>                                val userService: UserService)
-</span>32 <span style=''>    (implicit context: ExecutionContext)
-</span>33 <span style=''>    extends AbstractController(cc)
-</span>34 <span style=''>    with HasDatabaseConfigProvider[JdbcProfile] with Util {
-</span>35 <span style=''>
-</span>36 <span style=''>  val log = </span><span style='background: #AEF1AE'>Logger(&quot;api.image&quot;)</span><span style=''>
-</span>37 <span style=''>
-</span>38 <span style=''>  def get(id: Int) = </span><span style='background: #AEF1AE'>Action.async { implicit request: Request[AnyContent] =&gt;
-</span>39 <span style=''></span><span style='background: #AEF1AE'>    log.debug(&quot;Rest request to get image&quot;)
-</span>40 <span style=''></span><span style='background: #AEF1AE'>
-</span>41 <span style=''></span><span style='background: #AEF1AE'>    val q = for(l &lt;- image if l.id === id.bind) yield l;
-</span>42 <span style=''></span><span style='background: #AEF1AE'>
-</span>43 <span style=''></span><span style='background: #AEF1AE'>    db.run(q.result).map(x =&gt; x.headOption match {
-</span>44 <span style=''></span><span style='background: #AEF1AE'>      case Some(r) =&gt; Ok(Json.toJson(r))
-</span>45 <span style=''></span><span style='background: #AEF1AE'>      case _ =&gt; NotFound
-</span>46 <span style=''></span><span style='background: #AEF1AE'>    })
-</span>47 <span style=''></span><span style='background: #AEF1AE'>  }</span><span style=''>
-</span>48 <span style=''>
-</span>49 <span style=''>  def getBytes(id: Int) = </span><span style='background: #AEF1AE'>Action.async { implicit request: Request[AnyContent] =&gt;
-</span>50 <span style=''></span><span style='background: #AEF1AE'>    log.debug(&quot;Rest request to get image bytes&quot;)
-</span>51 <span style=''></span><span style='background: #AEF1AE'>
-</span>52 <span style=''></span><span style='background: #AEF1AE'>    val q = for(l &lt;- image if l.id === id.bind) yield l;
-</span>53 <span style=''></span><span style='background: #AEF1AE'>
-</span>54 <span style=''></span><span style='background: #AEF1AE'>    db.run(q.result).map(x =&gt; x.headOption match {
-</span>55 <span style=''></span><span style='background: #AEF1AE'>      case Some(r) =&gt; Ok(r.data).as(r.contentType)
-</span>56 <span style=''></span><span style='background: #AEF1AE'>      case _ =&gt; NotFound
-</span>57 <span style=''></span><span style='background: #AEF1AE'>    })
-</span>58 <span style=''></span><span style='background: #AEF1AE'>  }</span><span style=''>
-</span>59 <span style=''>
-</span>60 <span style=''>  def createImage(name: String) = </span><span style='background: #F0ADAD'>Action(parse.multipartFormData).async { request =&gt;
-</span>61 <span style=''></span><span style='background: #F0ADAD'>    log.debug(&quot;Rest request to create image&quot;)
-</span>62 <span style=''></span><span style='background: #F0ADAD'>
-</span>63 <span style=''></span><span style='background: #F0ADAD'>    request.body.file(&quot;image&quot;).flatMap { x =&gt;
-</span>64 <span style=''></span><span style='background: #F0ADAD'>      x.contentType.map { contentType =&gt;
-</span>65 <span style=''></span><span style='background: #F0ADAD'>        val file = x.ref.path.toFile()
-</span>66 <span style=''></span><span style='background: #F0ADAD'>        val str = new FileInputStream(file)
-</span>67 <span style=''></span><span style='background: #F0ADAD'>        val bytes = IOUtils.toByteArray(str)
-</span>68 <span style=''></span><span style='background: #F0ADAD'>
-</span>69 <span style=''></span><span style='background: #F0ADAD'>        val img = Image(None,name,bytes,contentType)
-</span>70 <span style=''></span><span style='background: #F0ADAD'>
-</span>71 <span style=''></span><span style='background: #F0ADAD'>        db.run(insertAndReturn[Image,ImageTable](image,img))
-</span>72 <span style=''></span><span style='background: #F0ADAD'>      }
-</span>73 <span style=''></span><span style='background: #F0ADAD'>    }.map(_.map(x =&gt; Ok(Json.toJson(x)))).getOrElse(Future.successful(BadRequest))
-</span>74 <span style=''></span><span style='background: #F0ADAD'>  }</span><span style=''>
-</span>75 <span style=''>
-</span>76 <span style=''>  def attachImage(id: Int, entityType: String, entityId: Int) = </span><span style='background: #AEF1AE'>userOrganizerRequest(parse.default) { case (request,login) =&gt;
-</span>77 <span style=''></span><span style='background: #AEF1AE'>    log.debug(&quot;Rest request to attach image&quot;)
-</span>78 <span style=''></span><span style='background: #AEF1AE'>
-</span>79 <span style=''></span><span style='background: #AEF1AE'>    val authorized = (EntityType.withName(entityType), login) match {
-</span>80 <span style=''></span><span style='background: #AEF1AE'>      case (EntityType.Event,Right(Organizer(idOrg,_,_,_))) =&gt; {
-</span>81 <span style=''></span><span style='background: #AEF1AE'>        val q = for(e &lt;- EventTable.event if e.id === id.bind &amp;&amp; e.creatorId === idOrg) yield e;
-</span>82 <span style=''></span><span style='background: #AEF1AE'>        db.run(q.result).map(_.headOption).map {
-</span>83 <span style=''></span><span style='background: #AEF1AE'>          case Some(e) =&gt; true
-</span>84 <span style=''></span><span style='background: #AEF1AE'>          case None =&gt; false
-</span>85 <span style=''></span><span style='background: #AEF1AE'>        }
-</span>86 <span style=''></span><span style='background: #AEF1AE'>      }
-</span>87 <span style=''></span><span style='background: #AEF1AE'>      case (EntityType.Organizer,Right(Organizer(idOrg,_,_,_))) =&gt; Future.successful(entityId == idOrg.getOrElse(-1))
-</span>88 <span style=''></span><span style='background: #AEF1AE'>      case (EntityType.Location,_) =&gt; Future.successful(true)
-</span>89 <span style=''></span><span style='background: #AEF1AE'>      case _ =&gt; Future.successful(false)
-</span>90 <span style=''></span><span style='background: #AEF1AE'>    }
-</span>91 <span style=''></span><span style='background: #AEF1AE'>
-</span>92 <span style=''></span><span style='background: #AEF1AE'>    authorized.flatMap {
-</span>93 <span style=''></span><span style='background: #AEF1AE'>      case true =&gt; {
-</span>94 <span style=''></span><span style='background: #AEF1AE'>        val imgEnt = ImageEntity(id, entityId, EntityType.withName(entityType))
-</span>95 <span style=''></span><span style='background: #AEF1AE'>        val inserted = db.run(ImageEntityTable.imageEntity += imgEnt)
-</span>96 <span style=''></span><span style='background: #AEF1AE'>
-</span>97 <span style=''></span><span style='background: #AEF1AE'>        inserted.map {
-</span>98 <span style=''></span><span style='background: #AEF1AE'>          case 0 =&gt; </span><span style='background: #F0ADAD'>NotFound</span><span style='background: #AEF1AE'>
-</span>99 <span style=''></span><span style='background: #AEF1AE'>          case _ =&gt; Ok(Json.toJson(imgEnt))
-</span>100 <span style=''></span><span style='background: #AEF1AE'>        }
-</span>101 <span style=''></span><span style='background: #AEF1AE'>      }
-</span>102 <span style=''></span><span style='background: #AEF1AE'>      case false =&gt; Future.successful(Unauthorized)
-</span>103 <span style=''></span><span style='background: #AEF1AE'>    }
-</span>104 <span style=''></span><span style='background: #AEF1AE'>  }</span><span style=''>
-</span>105 <span style=''>}
+</span>27 <span style=''>
+</span>28 <span style=''>class ImageController @Inject()(cc: ControllerComponents,
+</span>29 <span style=''>                                protected val dbConfigProvider: DatabaseConfigProvider,
+</span>30 <span style=''>                                val silhouette: Silhouette[AuthEnv],
+</span>31 <span style=''>                                val organizerService: OrganizerService,
+</span>32 <span style=''>                                val userService: UserService)
+</span>33 <span style=''>    (implicit context: ExecutionContext)
+</span>34 <span style=''>    extends AbstractController(cc)
+</span>35 <span style=''>    with HasDatabaseConfigProvider[JdbcProfile] with Util {
+</span>36 <span style=''>
+</span>37 <span style=''>  val log = </span><span style='background: #AEF1AE'>Logger(&quot;api.image&quot;)</span><span style=''>
+</span>38 <span style=''>
+</span>39 <span style=''>  def get(id: Int) = </span><span style='background: #AEF1AE'>Action.async { implicit request: Request[AnyContent] =&gt;
+</span>40 <span style=''></span><span style='background: #AEF1AE'>    log.debug(&quot;Rest request to get image&quot;)
+</span>41 <span style=''></span><span style='background: #AEF1AE'>
+</span>42 <span style=''></span><span style='background: #AEF1AE'>    val q = for(l &lt;- image if l.id === id.bind) yield l;
+</span>43 <span style=''></span><span style='background: #AEF1AE'>
+</span>44 <span style=''></span><span style='background: #AEF1AE'>    db.run(q.result).map(x =&gt; x.headOption match {
+</span>45 <span style=''></span><span style='background: #AEF1AE'>      case Some(r) =&gt; Ok(Json.toJson(r))
+</span>46 <span style=''></span><span style='background: #AEF1AE'>      case _ =&gt; NotFound
+</span>47 <span style=''></span><span style='background: #AEF1AE'>    })
+</span>48 <span style=''></span><span style='background: #AEF1AE'>  }</span><span style=''>
+</span>49 <span style=''>
+</span>50 <span style=''>  def getBytes(id: Int) = </span><span style='background: #AEF1AE'>Action.async { implicit request: Request[AnyContent] =&gt;
+</span>51 <span style=''></span><span style='background: #AEF1AE'>    log.debug(&quot;Rest request to get image bytes&quot;)
+</span>52 <span style=''></span><span style='background: #AEF1AE'>
+</span>53 <span style=''></span><span style='background: #AEF1AE'>    val q = for(l &lt;- image if l.id === id.bind) yield l;
+</span>54 <span style=''></span><span style='background: #AEF1AE'>
+</span>55 <span style=''></span><span style='background: #AEF1AE'>    db.run(q.result).map(x =&gt; x.headOption match {
+</span>56 <span style=''></span><span style='background: #AEF1AE'>      case Some(r) =&gt; Ok(r.data).as(r.contentType)
+</span>57 <span style=''></span><span style='background: #AEF1AE'>      case _ =&gt; NotFound
+</span>58 <span style=''></span><span style='background: #AEF1AE'>    })
+</span>59 <span style=''></span><span style='background: #AEF1AE'>  }</span><span style=''>
+</span>60 <span style=''>
+</span>61 <span style=''>  def createImage = </span><span style='background: #F0ADAD'>Action(parse.multipartFormData).async { request =&gt;
+</span>62 <span style=''></span><span style='background: #F0ADAD'>    log.debug(&quot;Rest request to create image&quot;)
+</span>63 <span style=''></span><span style='background: #F0ADAD'>
+</span>64 <span style=''></span><span style='background: #F0ADAD'>    request.body.file(&quot;image&quot;).zip(request.body.dataParts(&quot;data&quot;)).flatMap { case (x,data) =&gt;
+</span>65 <span style=''></span><span style='background: #F0ADAD'>      x.contentType.map { contentType =&gt;
+</span>66 <span style=''></span><span style='background: #F0ADAD'>        val file = x.ref.path.toFile()
+</span>67 <span style=''></span><span style='background: #F0ADAD'>        val str = new FileInputStream(file)
+</span>68 <span style=''></span><span style='background: #F0ADAD'>        val bytes = IOUtils.toByteArray(str)
+</span>69 <span style=''></span><span style='background: #F0ADAD'>
+</span>70 <span style=''></span><span style='background: #F0ADAD'>        val img = Image(None,Json.parse(data).as[ImageForm.Data].name,bytes,contentType)
+</span>71 <span style=''></span><span style='background: #F0ADAD'>
+</span>72 <span style=''></span><span style='background: #F0ADAD'>        db.run(insertAndReturn[Image,ImageTable](image,img))
+</span>73 <span style=''></span><span style='background: #F0ADAD'>      }
+</span>74 <span style=''></span><span style='background: #F0ADAD'>    }.map(_.map(x =&gt; Ok(Json.toJson(x)))).headOption.getOrElse(Future.successful(BadRequest))
+</span>75 <span style=''></span><span style='background: #F0ADAD'>  }</span><span style=''>
+</span>76 <span style=''>
+</span>77 <span style=''>  def attachImage(id: Int, entityType: String, entityId: Int) = </span><span style='background: #AEF1AE'>userOrganizerRequest(parse.default) { case (request,login) =&gt;
+</span>78 <span style=''></span><span style='background: #AEF1AE'>    log.debug(&quot;Rest request to attach image&quot;)
+</span>79 <span style=''></span><span style='background: #AEF1AE'>
+</span>80 <span style=''></span><span style='background: #AEF1AE'>    val authorized = (EntityType.withName(entityType), login) match {
+</span>81 <span style=''></span><span style='background: #AEF1AE'>      case (EntityType.Event,Right(Organizer(idOrg,_,_,_))) =&gt; {
+</span>82 <span style=''></span><span style='background: #AEF1AE'>        val q = for(e &lt;- EventTable.event if e.id === id.bind &amp;&amp; e.creatorId === idOrg) yield e;
+</span>83 <span style=''></span><span style='background: #AEF1AE'>        db.run(q.result).map(_.headOption).map {
+</span>84 <span style=''></span><span style='background: #AEF1AE'>          case Some(e) =&gt; true
+</span>85 <span style=''></span><span style='background: #AEF1AE'>          case None =&gt; false
+</span>86 <span style=''></span><span style='background: #AEF1AE'>        }
+</span>87 <span style=''></span><span style='background: #AEF1AE'>      }
+</span>88 <span style=''></span><span style='background: #AEF1AE'>      case (EntityType.Organizer,Right(Organizer(idOrg,_,_,_))) =&gt; Future.successful(entityId == idOrg.getOrElse(-1))
+</span>89 <span style=''></span><span style='background: #AEF1AE'>      case (EntityType.Location,_) =&gt; Future.successful(true)
+</span>90 <span style=''></span><span style='background: #AEF1AE'>      case _ =&gt; Future.successful(false)
+</span>91 <span style=''></span><span style='background: #AEF1AE'>    }
+</span>92 <span style=''></span><span style='background: #AEF1AE'>
+</span>93 <span style=''></span><span style='background: #AEF1AE'>    authorized.flatMap {
+</span>94 <span style=''></span><span style='background: #AEF1AE'>      case true =&gt; {
+</span>95 <span style=''></span><span style='background: #AEF1AE'>        val imgEnt = ImageEntity(id, entityId, EntityType.withName(entityType))
+</span>96 <span style=''></span><span style='background: #AEF1AE'>        val inserted = db.run(ImageEntityTable.imageEntity += imgEnt)
+</span>97 <span style=''></span><span style='background: #AEF1AE'>
+</span>98 <span style=''></span><span style='background: #AEF1AE'>        inserted.map {
+</span>99 <span style=''></span><span style='background: #AEF1AE'>          case 0 =&gt; </span><span style='background: #F0ADAD'>NotFound</span><span style='background: #AEF1AE'>
+</span>100 <span style=''></span><span style='background: #AEF1AE'>          case _ =&gt; Ok(Json.toJson(imgEnt))
+</span>101 <span style=''></span><span style='background: #AEF1AE'>        }
+</span>102 <span style=''></span><span style='background: #AEF1AE'>      }
+</span>103 <span style=''></span><span style='background: #AEF1AE'>      case false =&gt; Future.successful(Unauthorized)
+</span>104 <span style=''></span><span style='background: #AEF1AE'>    }
+</span>105 <span style=''></span><span style='background: #AEF1AE'>  }</span><span style=''>
+</span>106 <span style=''>}
 </span></pre>
           </div>
           <div class="tab-pane" id="statementlist">
@@ -140,15 +141,15 @@
         <th>Code</th>
       </tr><tr>
         <td>
-          36
+          37
         </td>
         <td>
           683
         </td>
         <td>
-          1133
+          1162
           -
-          1152
+          1181
         </td>
         <td>
           Apply
@@ -161,15 +162,15 @@
         </td>
       </tr><tr>
         <td>
-          38
+          39
         </td>
         <td>
           707
         </td>
         <td>
-          1175
+          1204
           -
-          1460
+          1489
         </td>
         <td>
           Apply
@@ -189,15 +190,15 @@
         </td>
       </tr><tr>
         <td>
-          39
+          40
         </td>
         <td>
           684
         </td>
         <td>
-          1245
+          1274
           -
-          1272
+          1301
         </td>
         <td>
           Literal
@@ -210,15 +211,15 @@
         </td>
       </tr><tr>
         <td>
-          39
+          40
         </td>
         <td>
           686
         </td>
         <td>
-          1235
+          1264
           -
-          1273
+          1302
         </td>
         <td>
           ApplyToImplicitArgs
@@ -231,15 +232,15 @@
         </td>
       </tr><tr>
         <td>
-          39
+          40
         </td>
         <td>
           685
         </td>
         <td>
-          1244
+          1273
           -
-          1244
+          1273
         </td>
         <td>
           Select
@@ -252,15 +253,15 @@
         </td>
       </tr><tr>
         <td>
-          41
+          42
         </td>
         <td>
           687
         </td>
         <td>
-          1305
+          1334
           -
-          1309
+          1338
         </td>
         <td>
           Select
@@ -273,15 +274,15 @@
         </td>
       </tr><tr>
         <td>
-          41
+          42
         </td>
         <td>
           696
         </td>
         <td>
-          1293
+          1322
           -
-          1293
+          1322
         </td>
         <td>
           ApplyToImplicitArgs
@@ -294,15 +295,15 @@
         </td>
       </tr><tr>
         <td>
-          41
+          42
         </td>
         <td>
           690
         </td>
         <td>
-          1314
+          1343
           -
-          1321
+          1350
         </td>
         <td>
           Select
@@ -315,15 +316,15 @@
         </td>
       </tr><tr>
         <td>
-          41
+          42
         </td>
         <td>
           693
         </td>
         <td>
-          1305
+          1334
           -
-          1321
+          1350
         </td>
         <td>
           ApplyToImplicitArgs
@@ -336,15 +337,15 @@
         </td>
       </tr><tr>
         <td>
-          41
+          42
         </td>
         <td>
           692
         </td>
         <td>
-          1310
+          1339
           -
-          1310
+          1339
         </td>
         <td>
           ApplyToImplicitArgs
@@ -357,15 +358,15 @@
         </td>
       </tr><tr>
         <td>
-          41
+          42
         </td>
         <td>
           695
         </td>
         <td>
-          1293
+          1322
           -
-          1293
+          1322
         </td>
         <td>
           TypeApply
@@ -378,15 +379,15 @@
         </td>
       </tr><tr>
         <td>
-          41
+          42
         </td>
         <td>
           689
         </td>
         <td>
-          1314
+          1343
           -
-          1314
+          1343
         </td>
         <td>
           Select
@@ -399,15 +400,15 @@
         </td>
       </tr><tr>
         <td>
-          41
+          42
         </td>
         <td>
           697
         </td>
         <td>
-          1287
+          1316
           -
-          1330
+          1359
         </td>
         <td>
           ApplyToImplicitArgs
@@ -420,15 +421,15 @@
         </td>
       </tr><tr>
         <td>
-          41
+          42
         </td>
         <td>
           691
         </td>
         <td>
-          1310
+          1339
           -
-          1310
+          1339
         </td>
         <td>
           Select
@@ -441,15 +442,15 @@
         </td>
       </tr><tr>
         <td>
-          41
+          42
         </td>
         <td>
           694
         </td>
         <td>
-          1296
+          1325
           -
-          1296
+          1325
         </td>
         <td>
           Select
@@ -462,15 +463,15 @@
         </td>
       </tr><tr>
         <td>
-          41
+          42
         </td>
         <td>
           688
         </td>
         <td>
-          1307
+          1336
           -
-          1307
+          1336
         </td>
         <td>
           Select
@@ -483,15 +484,15 @@
         </td>
       </tr><tr>
         <td>
-          43
+          44
         </td>
         <td>
           705
         </td>
         <td>
-          1357
+          1386
           -
-          1357
+          1386
         </td>
         <td>
           Select
@@ -504,15 +505,15 @@
         </td>
       </tr><tr>
         <td>
-          43
+          44
         </td>
         <td>
           699
         </td>
         <td>
-          1363
+          1392
           -
-          1375
+          1404
         </td>
         <td>
           Select
@@ -525,15 +526,15 @@
         </td>
       </tr><tr>
         <td>
-          43
+          44
         </td>
         <td>
           698
         </td>
         <td>
-          1344
+          1373
           -
-          1352
+          1381
         </td>
         <td>
           Select
@@ -546,15 +547,15 @@
         </td>
       </tr><tr>
         <td>
-          43
+          44
         </td>
         <td>
           706
         </td>
         <td>
-          1337
+          1366
           -
-          1456
+          1485
         </td>
         <td>
           ApplyToImplicitArgs
@@ -570,15 +571,15 @@
         </td>
       </tr><tr>
         <td>
-          44
+          45
         </td>
         <td>
           702
         </td>
         <td>
-          1408
+          1437
           -
-          1408
+          1437
         </td>
         <td>
           Select
@@ -591,15 +592,15 @@
         </td>
       </tr><tr>
         <td>
-          44
+          45
         </td>
         <td>
           701
         </td>
         <td>
-          1409
+          1438
           -
-          1423
+          1452
         </td>
         <td>
           ApplyToImplicitArgs
@@ -612,15 +613,15 @@
         </td>
       </tr><tr>
         <td>
-          44
+          45
         </td>
         <td>
           700
         </td>
         <td>
-          1420
+          1449
           -
-          1420
+          1449
         </td>
         <td>
           Select
@@ -633,15 +634,15 @@
         </td>
       </tr><tr>
         <td>
-          44
+          45
         </td>
         <td>
           703
         </td>
         <td>
-          1406
+          1435
           -
-          1424
+          1453
         </td>
         <td>
           ApplyToImplicitArgs
@@ -654,15 +655,15 @@
         </td>
       </tr><tr>
         <td>
-          45
+          46
         </td>
         <td>
           704
         </td>
         <td>
-          1441
+          1470
           -
-          1449
+          1478
         </td>
         <td>
           Select
@@ -675,15 +676,15 @@
         </td>
       </tr><tr>
         <td>
-          49
+          50
         </td>
         <td>
           731
         </td>
         <td>
-          1488
+          1517
           -
-          1789
+          1818
         </td>
         <td>
           Apply
@@ -703,15 +704,15 @@
         </td>
       </tr><tr>
         <td>
-          50
+          51
         </td>
         <td>
           708
         </td>
         <td>
-          1558
+          1587
           -
-          1591
+          1620
         </td>
         <td>
           Literal
@@ -724,15 +725,15 @@
         </td>
       </tr><tr>
         <td>
-          50
+          51
         </td>
         <td>
           710
         </td>
         <td>
-          1548
+          1577
           -
-          1592
+          1621
         </td>
         <td>
           ApplyToImplicitArgs
@@ -745,15 +746,15 @@
         </td>
       </tr><tr>
         <td>
-          50
+          51
         </td>
         <td>
           709
         </td>
         <td>
-          1557
+          1586
           -
-          1557
+          1586
         </td>
         <td>
           Select
@@ -766,15 +767,15 @@
         </td>
       </tr><tr>
         <td>
-          52
+          53
         </td>
         <td>
           720
         </td>
         <td>
-          1612
+          1641
           -
-          1612
+          1641
         </td>
         <td>
           ApplyToImplicitArgs
@@ -787,15 +788,15 @@
         </td>
       </tr><tr>
         <td>
-          52
+          53
         </td>
         <td>
           714
         </td>
         <td>
-          1633
+          1662
           -
-          1640
+          1669
         </td>
         <td>
           Select
@@ -808,15 +809,15 @@
         </td>
       </tr><tr>
         <td>
-          52
+          53
         </td>
         <td>
           717
         </td>
         <td>
-          1624
+          1653
           -
-          1640
+          1669
         </td>
         <td>
           ApplyToImplicitArgs
@@ -829,15 +830,15 @@
         </td>
       </tr><tr>
         <td>
-          52
+          53
         </td>
         <td>
           711
         </td>
         <td>
-          1624
+          1653
           -
-          1628
+          1657
         </td>
         <td>
           Select
@@ -850,15 +851,15 @@
         </td>
       </tr><tr>
         <td>
-          52
+          53
         </td>
         <td>
           719
         </td>
         <td>
-          1612
+          1641
           -
-          1612
+          1641
         </td>
         <td>
           TypeApply
@@ -871,15 +872,15 @@
         </td>
       </tr><tr>
         <td>
-          52
+          53
         </td>
         <td>
           713
         </td>
         <td>
-          1633
+          1662
           -
-          1633
+          1662
         </td>
         <td>
           Select
@@ -892,15 +893,15 @@
         </td>
       </tr><tr>
         <td>
-          52
+          53
         </td>
         <td>
           716
         </td>
         <td>
-          1629
+          1658
           -
-          1629
+          1658
         </td>
         <td>
           ApplyToImplicitArgs
@@ -913,15 +914,15 @@
         </td>
       </tr><tr>
         <td>
-          52
+          53
         </td>
         <td>
           715
         </td>
         <td>
-          1629
+          1658
           -
-          1629
+          1658
         </td>
         <td>
           Select
@@ -934,15 +935,15 @@
         </td>
       </tr><tr>
         <td>
-          52
+          53
         </td>
         <td>
           718
         </td>
         <td>
-          1615
+          1644
           -
-          1615
+          1644
         </td>
         <td>
           Select
@@ -955,15 +956,15 @@
         </td>
       </tr><tr>
         <td>
-          52
+          53
         </td>
         <td>
           721
         </td>
         <td>
-          1606
+          1635
           -
-          1649
+          1678
         </td>
         <td>
           ApplyToImplicitArgs
@@ -976,15 +977,15 @@
         </td>
       </tr><tr>
         <td>
-          52
+          53
         </td>
         <td>
           712
         </td>
         <td>
-          1626
+          1655
           -
-          1626
+          1655
         </td>
         <td>
           Select
@@ -997,15 +998,15 @@
         </td>
       </tr><tr>
         <td>
-          54
+          55
         </td>
         <td>
           729
         </td>
         <td>
-          1676
+          1705
           -
-          1676
+          1705
         </td>
         <td>
           Select
@@ -1018,15 +1019,15 @@
         </td>
       </tr><tr>
         <td>
-          54
+          55
         </td>
         <td>
           723
         </td>
         <td>
-          1682
+          1711
           -
-          1694
+          1723
         </td>
         <td>
           Select
@@ -1039,15 +1040,15 @@
         </td>
       </tr><tr>
         <td>
-          54
+          55
         </td>
         <td>
           722
         </td>
         <td>
-          1663
+          1692
           -
-          1671
+          1700
         </td>
         <td>
           Select
@@ -1060,15 +1061,15 @@
         </td>
       </tr><tr>
         <td>
-          54
+          55
         </td>
         <td>
           730
         </td>
         <td>
-          1656
+          1685
           -
-          1785
+          1814
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1084,15 +1085,15 @@
         </td>
       </tr><tr>
         <td>
-          55
+          56
         </td>
         <td>
           726
         </td>
         <td>
-          1739
+          1768
           -
-          1752
+          1781
         </td>
         <td>
           Select
@@ -1105,15 +1106,15 @@
         </td>
       </tr><tr>
         <td>
-          55
+          56
         </td>
         <td>
           725
         </td>
         <td>
-          1727
+          1756
           -
-          1727
+          1756
         </td>
         <td>
           Select
@@ -1126,15 +1127,15 @@
         </td>
       </tr><tr>
         <td>
-          55
+          56
         </td>
         <td>
           724
         </td>
         <td>
-          1728
+          1757
           -
-          1734
+          1763
         </td>
         <td>
           Select
@@ -1147,15 +1148,15 @@
         </td>
       </tr><tr>
         <td>
-          55
+          56
         </td>
         <td>
           727
         </td>
         <td>
-          1725
+          1754
           -
-          1753
+          1782
         </td>
         <td>
           Apply
@@ -1168,15 +1169,15 @@
         </td>
       </tr><tr>
         <td>
-          56
+          57
         </td>
         <td>
           728
         </td>
         <td>
-          1770
+          1799
           -
-          1778
+          1807
         </td>
         <td>
           Select
@@ -1189,15 +1190,15 @@
         </td>
       </tr><tr>
         <td>
-          60
+          61
         </td>
         <td>
           732
         </td>
         <td>
-          1832
+          1847
           -
-          1855
+          1870
         </td>
         <td>
           Select
@@ -1210,15 +1211,15 @@
         </td>
       </tr><tr>
         <td>
-          60
+          61
         </td>
         <td>
-          755
+          762
         </td>
         <td>
-          1825
+          1840
           -
-          2348
+          2458
         </td>
         <td>
           Apply
@@ -1229,26 +1230,28 @@
         <td style="background: #F0ADAD">
           ImageController.this.Action.apply[play.api.mvc.MultipartFormData[play.api.libs.Files.TemporaryFile]](ImageController.this.parse.multipartFormData).async(((request: play.api.mvc.Request[play.api.mvc.MultipartFormData[play.api.libs.Files.TemporaryFile]]) =&gt; {
   ImageController.this.log.debug(&quot;Rest request to create image&quot;)(api.this.MarkerContext.NoMarker);
-  request.body.file(&quot;image&quot;).flatMap[scala.concurrent.Future[whatson.model.Image]](((x: play.api.mvc.MultipartFormData.FilePart[play.api.libs.Files.TemporaryFile]) =&gt; x.contentType.map[scala.concurrent.Future[whatson.model.Image]](((contentType: String) =&gt; {
-  val file: java.io.File = x.ref.path.toFile();
-  val str: java.io.FileInputStream = new java.io.FileInputStream(file);
-  val bytes: Array[Byte] = org.apache.commons.io.IOUtils.toByteArray(str);
-  val img: whatson.model.Image = whatson.model.Image.apply(scala.None, name, bytes, contentType);
-  ImageController.this.db.run[whatson.model.Image](whatson.db.Util.insertAndReturn[whatson.model.Image, whatson.db.ImageTable](whatson.db.ImageTable.image, img))
-})))).map[scala.concurrent.Future[play.api.mvc.Result]](((x$1: scala.concurrent.Future[whatson.model.Image]) =&gt; x$1.map[play.api.mvc.Result](((x: whatson.model.Image) =&gt; ImageController.this.Ok.apply[play.api.libs.json.JsValue](play.api.libs.json.Json.toJson[whatson.model.Image](x)(whatson.model.Image.imageWrites))(http.this.Writeable.writeableOf_JsValue)))(ImageController.this.context))).getOrElse[scala.concurrent.Future[play.api.mvc.Result]](scala.concurrent.Future.successful[ImageController.this.Status](ImageController.this.BadRequest))
+  scala.this.Option.option2Iterable[play.api.mvc.MultipartFormData.FilePart[play.api.libs.Files.TemporaryFile]](request.body.file(&quot;image&quot;)).zip[play.api.mvc.MultipartFormData.FilePart[play.api.libs.Files.TemporaryFile], String, Iterable[(play.api.mvc.MultipartFormData.FilePart[play.api.libs.Files.TemporaryFile], String)]](request.body.dataParts.apply(&quot;data&quot;))(collection.this.Iterable.canBuildFrom[(play.api.mvc.MultipartFormData.FilePart[play.api.libs.Files.TemporaryFile], String)]).flatMap[scala.concurrent.Future[whatson.model.Image], Iterable[scala.concurrent.Future[whatson.model.Image]]](((x0$1: (play.api.mvc.MultipartFormData.FilePart[play.api.libs.Files.TemporaryFile], String)) =&gt; x0$1 match {
+  case (_1: play.api.mvc.MultipartFormData.FilePart[play.api.libs.Files.TemporaryFile], _2: String)(play.api.mvc.MultipartFormData.FilePart[play.api.libs.Files.TemporaryFile], String)((x @ _), (data @ _)) =&gt; scala.this.Option.option2Iterable[scala.concurrent.Future[whatson.model.Image]](x.contentType.map[scala.concurrent.Future[whatson.model.Image]](((contentType: String) =&gt; {
+    val file: java.io.File = x.ref.path.toFile();
+    val str: java.io.FileInputStream = new java.io.FileInputStream(file);
+    val bytes: Array[Byte] = org.apache.commons.io.IOUtils.toByteArray(str);
+    val img: whatson.model.Image = whatson.model.Image.apply(scala.None, play.api.libs.json.Json.parse(data).as[whatson.model.forms.ImageForm.Data](ImageForm.this.Data.jsonFormat).name, bytes, contentType);
+    ImageController.this.db.run[whatson.model.Image](whatson.db.Util.insertAndReturn[whatson.model.Image, whatson.db.ImageTable](whatson.db.ImageTable.image, img))
+  })))
+}))(collection.this.Iterable.canBuildFrom[scala.concurrent.Future[whatson.model.Image]]).map[scala.concurrent.Future[play.api.mvc.Result], Iterable[scala.concurrent.Future[play.api.mvc.Result]]](((x$1: scala.concurrent.Future[whatson.model.Image]) =&gt; x$1.map[play.api.mvc.Result](((x: whatson.model.Image) =&gt; ImageController.this.Ok.apply[play.api.libs.json.JsValue](play.api.libs.json.Json.toJson[whatson.model.Image](x)(whatson.model.Image.imageWrites))(http.this.Writeable.writeableOf_JsValue)))(ImageController.this.context)))(collection.this.Iterable.canBuildFrom[scala.concurrent.Future[play.api.mvc.Result]]).headOption.getOrElse[scala.concurrent.Future[play.api.mvc.Result]](scala.concurrent.Future.successful[ImageController.this.Status](ImageController.this.BadRequest))
 }))
         </td>
       </tr><tr>
         <td>
-          61
+          62
         </td>
         <td>
           735
         </td>
         <td>
-          1880
+          1895
           -
-          1921
+          1936
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1261,15 +1264,15 @@
         </td>
       </tr><tr>
         <td>
-          61
+          62
         </td>
         <td>
           734
         </td>
         <td>
-          1889
+          1904
           -
-          1889
+          1904
         </td>
         <td>
           Select
@@ -1282,15 +1285,15 @@
         </td>
       </tr><tr>
         <td>
-          61
+          62
         </td>
         <td>
           733
         </td>
         <td>
-          1890
+          1905
           -
-          1920
+          1935
         </td>
         <td>
           Literal
@@ -1303,36 +1306,126 @@
         </td>
       </tr><tr>
         <td>
-          63
+          64
         </td>
         <td>
-          736
+          738
         </td>
         <td>
-          1945
+          1972
           -
-          1952
+          1972
         </td>
         <td>
-          Literal
+          TypeApply
         </td>
         <td>
-          &lt;nosymbol&gt;
+          scala.collection.Iterable.canBuildFrom
         </td>
         <td style="background: #F0ADAD">
-          &quot;image&quot;
+          collection.this.Iterable.canBuildFrom[(play.api.mvc.MultipartFormData.FilePart[play.api.libs.Files.TemporaryFile], String)]
         </td>
       </tr><tr>
         <td>
           64
         </td>
         <td>
-          745
+          737
         </td>
         <td>
-          1975
+          1973
           -
-          2261
+          2003
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.MapLike.apply
+        </td>
+        <td style="background: #F0ADAD">
+          request.body.dataParts.apply(&quot;data&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          64
+        </td>
+        <td>
+          751
+        </td>
+        <td>
+          2013
+          -
+          2013
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Iterable.canBuildFrom
+        </td>
+        <td style="background: #F0ADAD">
+          collection.this.Iterable.canBuildFrom[scala.concurrent.Future[whatson.model.Image]]
+        </td>
+      </tr><tr>
+        <td>
+          64
+        </td>
+        <td>
+          736
+        </td>
+        <td>
+          1942
+          -
+          1968
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          play.api.mvc.MultipartFormData.file
+        </td>
+        <td style="background: #F0ADAD">
+          request.body.file(&quot;image&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          65
+        </td>
+        <td>
+          750
+        </td>
+        <td>
+          2038
+          -
+          2360
+        </td>
+        <td>
+          ApplyImplicitView
+        </td>
+        <td>
+          scala.Option.option2Iterable
+        </td>
+        <td style="background: #F0ADAD">
+          scala.this.Option.option2Iterable[scala.concurrent.Future[whatson.model.Image]](x.contentType.map[scala.concurrent.Future[whatson.model.Image]](((contentType: String) =&gt; {
+  val file: java.io.File = x.ref.path.toFile();
+  val str: java.io.FileInputStream = new java.io.FileInputStream(file);
+  val bytes: Array[Byte] = org.apache.commons.io.IOUtils.toByteArray(str);
+  val img: whatson.model.Image = whatson.model.Image.apply(scala.None, play.api.libs.json.Json.parse(data).as[whatson.model.forms.ImageForm.Data](ImageForm.this.Data.jsonFormat).name, bytes, contentType);
+  ImageController.this.db.run[whatson.model.Image](whatson.db.Util.insertAndReturn[whatson.model.Image, whatson.db.ImageTable](whatson.db.ImageTable.image, img))
+})))
+        </td>
+      </tr><tr>
+        <td>
+          65
+        </td>
+        <td>
+          749
+        </td>
+        <td>
+          2038
+          -
+          2360
         </td>
         <td>
           Apply
@@ -1345,21 +1438,21 @@
   val file: java.io.File = x.ref.path.toFile();
   val str: java.io.FileInputStream = new java.io.FileInputStream(file);
   val bytes: Array[Byte] = org.apache.commons.io.IOUtils.toByteArray(str);
-  val img: whatson.model.Image = whatson.model.Image.apply(scala.None, name, bytes, contentType);
+  val img: whatson.model.Image = whatson.model.Image.apply(scala.None, play.api.libs.json.Json.parse(data).as[whatson.model.forms.ImageForm.Data](ImageForm.this.Data.jsonFormat).name, bytes, contentType);
   ImageController.this.db.run[whatson.model.Image](whatson.db.Util.insertAndReturn[whatson.model.Image, whatson.db.ImageTable](whatson.db.ImageTable.image, img))
 }))
         </td>
       </tr><tr>
         <td>
-          65
+          66
         </td>
         <td>
-          737
+          739
         </td>
         <td>
-          2029
+          2092
           -
-          2048
+          2111
         </td>
         <td>
           Apply
@@ -1372,15 +1465,15 @@
         </td>
       </tr><tr>
         <td>
-          66
+          67
         </td>
         <td>
-          738
+          740
         </td>
         <td>
-          2067
+          2130
           -
-          2092
+          2155
         </td>
         <td>
           Apply
@@ -1393,15 +1486,15 @@
         </td>
       </tr><tr>
         <td>
-          67
+          68
         </td>
         <td>
-          739
+          741
         </td>
         <td>
-          2113
+          2176
           -
-          2137
+          2200
         </td>
         <td>
           Apply
@@ -1414,36 +1507,57 @@
         </td>
       </tr><tr>
         <td>
-          69
+          70
         </td>
         <td>
-          741
+          744
         </td>
         <td>
-          2157
+          2231
           -
-          2191
+          2271
         </td>
         <td>
-          Apply
+          Select
         </td>
         <td>
-          whatson.model.Image.apply
+          whatson.model.forms.ImageForm.Data.name
         </td>
         <td style="background: #F0ADAD">
-          whatson.model.Image.apply(scala.None, name, bytes, contentType)
+          play.api.libs.json.Json.parse(data).as[whatson.model.forms.ImageForm.Data](ImageForm.this.Data.jsonFormat).name
         </td>
       </tr><tr>
         <td>
-          69
+          70
         </td>
         <td>
-          740
+          743
         </td>
         <td>
-          2163
+          2250
           -
-          2167
+          2250
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.model.forms.ImageForm.Data.jsonFormat
+        </td>
+        <td style="background: #F0ADAD">
+          ImageForm.this.Data.jsonFormat
+        </td>
+      </tr><tr>
+        <td>
+          70
+        </td>
+        <td>
+          742
+        </td>
+        <td>
+          2226
+          -
+          2230
         </td>
         <td>
           Select
@@ -1456,36 +1570,36 @@
         </td>
       </tr><tr>
         <td>
-          71
+          70
         </td>
         <td>
-          744
+          745
         </td>
         <td>
-          2201
+          2220
           -
-          2253
+          2290
         </td>
         <td>
           Apply
         </td>
         <td>
-          slick.basic.BasicBackend.DatabaseDef.run
+          whatson.model.Image.apply
         </td>
         <td style="background: #F0ADAD">
-          ImageController.this.db.run[whatson.model.Image](whatson.db.Util.insertAndReturn[whatson.model.Image, whatson.db.ImageTable](whatson.db.ImageTable.image, img))
+          whatson.model.Image.apply(scala.None, play.api.libs.json.Json.parse(data).as[whatson.model.forms.ImageForm.Data](ImageForm.this.Data.jsonFormat).name, bytes, contentType)
         </td>
       </tr><tr>
         <td>
-          71
+          72
         </td>
         <td>
-          743
+          747
         </td>
         <td>
-          2208
+          2307
           -
-          2252
+          2351
         </td>
         <td>
           Apply
@@ -1498,15 +1612,15 @@
         </td>
       </tr><tr>
         <td>
-          71
+          72
         </td>
         <td>
-          742
+          746
         </td>
         <td>
-          2242
+          2341
           -
-          2247
+          2346
         </td>
         <td>
           Select
@@ -1519,36 +1633,36 @@
         </td>
       </tr><tr>
         <td>
-          73
+          72
         </td>
         <td>
-          747
+          748
         </td>
         <td>
-          2286
-          -
           2300
+          -
+          2352
         </td>
         <td>
-          ApplyToImplicitArgs
+          Apply
         </td>
         <td>
-          play.api.libs.json.Json.toJson
+          slick.basic.BasicBackend.DatabaseDef.run
         </td>
         <td style="background: #F0ADAD">
-          play.api.libs.json.Json.toJson[whatson.model.Image](x)(whatson.model.Image.imageWrites)
+          ImageController.this.db.run[whatson.model.Image](whatson.db.Util.insertAndReturn[whatson.model.Image, whatson.db.ImageTable](whatson.db.ImageTable.image, img))
         </td>
       </tr><tr>
         <td>
-          73
+          74
         </td>
         <td>
-          750
+          756
         </td>
         <td>
-          2277
+          2376
           -
-          2277
+          2376
         </td>
         <td>
           Select
@@ -1561,36 +1675,15 @@
         </td>
       </tr><tr>
         <td>
-          73
+          74
         </td>
         <td>
-          753
+          759
         </td>
         <td>
-          2314
+          2442
           -
-          2343
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          scala.concurrent.Future.successful
-        </td>
-        <td style="background: #F0ADAD">
-          scala.concurrent.Future.successful[ImageController.this.Status](ImageController.this.BadRequest)
-        </td>
-      </tr><tr>
-        <td>
-          73
-        </td>
-        <td>
-          752
-        </td>
-        <td>
-          2332
-          -
-          2342
+          2452
         </td>
         <td>
           Select
@@ -1603,15 +1696,36 @@
         </td>
       </tr><tr>
         <td>
-          73
+          74
         </td>
         <td>
-          746
+          753
         </td>
         <td>
-          2297
+          2385
           -
-          2297
+          2399
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          play.api.libs.json.Json.toJson
+        </td>
+        <td style="background: #F0ADAD">
+          play.api.libs.json.Json.toJson[whatson.model.Image](x)(whatson.model.Image.imageWrites)
+        </td>
+      </tr><tr>
+        <td>
+          74
+        </td>
+        <td>
+          752
+        </td>
+        <td>
+          2396
+          -
+          2396
         </td>
         <td>
           Select
@@ -1624,15 +1738,44 @@
         </td>
       </tr><tr>
         <td>
-          73
+          74
         </td>
         <td>
-          749
+          761
         </td>
         <td>
-          2283
+          1942
           -
-          2301
+          2454
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Option.getOrElse
+        </td>
+        <td style="background: #F0ADAD">
+          scala.this.Option.option2Iterable[play.api.mvc.MultipartFormData.FilePart[play.api.libs.Files.TemporaryFile]](request.body.file(&quot;image&quot;)).zip[play.api.mvc.MultipartFormData.FilePart[play.api.libs.Files.TemporaryFile], String, Iterable[(play.api.mvc.MultipartFormData.FilePart[play.api.libs.Files.TemporaryFile], String)]](request.body.dataParts.apply(&quot;data&quot;))(collection.this.Iterable.canBuildFrom[(play.api.mvc.MultipartFormData.FilePart[play.api.libs.Files.TemporaryFile], String)]).flatMap[scala.concurrent.Future[whatson.model.Image], Iterable[scala.concurrent.Future[whatson.model.Image]]](((x0$1: (play.api.mvc.MultipartFormData.FilePart[play.api.libs.Files.TemporaryFile], String)) =&gt; x0$1 match {
+  case (_1: play.api.mvc.MultipartFormData.FilePart[play.api.libs.Files.TemporaryFile], _2: String)(play.api.mvc.MultipartFormData.FilePart[play.api.libs.Files.TemporaryFile], String)((x @ _), (data @ _)) =&gt; scala.this.Option.option2Iterable[scala.concurrent.Future[whatson.model.Image]](x.contentType.map[scala.concurrent.Future[whatson.model.Image]](((contentType: String) =&gt; {
+    val file: java.io.File = x.ref.path.toFile();
+    val str: java.io.FileInputStream = new java.io.FileInputStream(file);
+    val bytes: Array[Byte] = org.apache.commons.io.IOUtils.toByteArray(str);
+    val img: whatson.model.Image = whatson.model.Image.apply(scala.None, play.api.libs.json.Json.parse(data).as[whatson.model.forms.ImageForm.Data](ImageForm.this.Data.jsonFormat).name, bytes, contentType);
+    ImageController.this.db.run[whatson.model.Image](whatson.db.Util.insertAndReturn[whatson.model.Image, whatson.db.ImageTable](whatson.db.ImageTable.image, img))
+  })))
+}))(collection.this.Iterable.canBuildFrom[scala.concurrent.Future[whatson.model.Image]]).map[scala.concurrent.Future[play.api.mvc.Result], Iterable[scala.concurrent.Future[play.api.mvc.Result]]](((x$1: scala.concurrent.Future[whatson.model.Image]) =&gt; x$1.map[play.api.mvc.Result](((x: whatson.model.Image) =&gt; ImageController.this.Ok.apply[play.api.libs.json.JsValue](play.api.libs.json.Json.toJson[whatson.model.Image](x)(whatson.model.Image.imageWrites))(http.this.Writeable.writeableOf_JsValue)))(ImageController.this.context)))(collection.this.Iterable.canBuildFrom[scala.concurrent.Future[play.api.mvc.Result]]).headOption.getOrElse[scala.concurrent.Future[play.api.mvc.Result]](scala.concurrent.Future.successful[ImageController.this.Status](ImageController.this.BadRequest))
+        </td>
+      </tr><tr>
+        <td>
+          74
+        </td>
+        <td>
+          755
+        </td>
+        <td>
+          2382
+          -
+          2400
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1645,15 +1788,36 @@
         </td>
       </tr><tr>
         <td>
-          73
+          74
         </td>
         <td>
-          751
+          758
         </td>
         <td>
-          2272
+          2370
           -
-          2302
+          2370
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Iterable.canBuildFrom
+        </td>
+        <td style="background: #F0ADAD">
+          collection.this.Iterable.canBuildFrom[scala.concurrent.Future[play.api.mvc.Result]]
+        </td>
+      </tr><tr>
+        <td>
+          74
+        </td>
+        <td>
+          757
+        </td>
+        <td>
+          2371
+          -
+          2401
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1666,42 +1830,36 @@
         </td>
       </tr><tr>
         <td>
-          73
+          74
         </td>
         <td>
-          754
+          760
         </td>
         <td>
-          1927
+          2424
           -
-          2344
+          2453
         </td>
         <td>
           Apply
         </td>
         <td>
-          scala.Option.getOrElse
+          scala.concurrent.Future.successful
         </td>
         <td style="background: #F0ADAD">
-          request.body.file(&quot;image&quot;).flatMap[scala.concurrent.Future[whatson.model.Image]](((x: play.api.mvc.MultipartFormData.FilePart[play.api.libs.Files.TemporaryFile]) =&gt; x.contentType.map[scala.concurrent.Future[whatson.model.Image]](((contentType: String) =&gt; {
-  val file: java.io.File = x.ref.path.toFile();
-  val str: java.io.FileInputStream = new java.io.FileInputStream(file);
-  val bytes: Array[Byte] = org.apache.commons.io.IOUtils.toByteArray(str);
-  val img: whatson.model.Image = whatson.model.Image.apply(scala.None, name, bytes, contentType);
-  ImageController.this.db.run[whatson.model.Image](whatson.db.Util.insertAndReturn[whatson.model.Image, whatson.db.ImageTable](whatson.db.ImageTable.image, img))
-})))).map[scala.concurrent.Future[play.api.mvc.Result]](((x$1: scala.concurrent.Future[whatson.model.Image]) =&gt; x$1.map[play.api.mvc.Result](((x: whatson.model.Image) =&gt; ImageController.this.Ok.apply[play.api.libs.json.JsValue](play.api.libs.json.Json.toJson[whatson.model.Image](x)(whatson.model.Image.imageWrites))(http.this.Writeable.writeableOf_JsValue)))(ImageController.this.context))).getOrElse[scala.concurrent.Future[play.api.mvc.Result]](scala.concurrent.Future.successful[ImageController.this.Status](ImageController.this.BadRequest))
+          scala.concurrent.Future.successful[ImageController.this.Status](ImageController.this.BadRequest)
         </td>
       </tr><tr>
         <td>
-          73
+          74
         </td>
         <td>
-          748
+          754
         </td>
         <td>
-          2285
+          2384
           -
-          2285
+          2384
         </td>
         <td>
           Select
@@ -1714,15 +1872,15 @@
         </td>
       </tr><tr>
         <td>
-          76
+          77
         </td>
         <td>
-          810
+          817
         </td>
         <td>
-          2414
+          2524
           -
-          3482
+          3592
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1731,13 +1889,13 @@
           controllers.Util.userOrganizerRequest
         </td>
         <td style="background: #AEF1AE">
-          ImageController.this.userOrganizerRequest[play.api.mvc.AnyContent](ImageController.this.parse.default)(((x0$1: com.mohiva.play.silhouette.api.actions.SecuredRequest[whatson.auth.AuthEnv,play.api.mvc.AnyContent], x1$1: Either[whatson.model.User,whatson.model.Organizer]) =&gt; scala.Tuple2.apply[com.mohiva.play.silhouette.api.actions.SecuredRequest[whatson.auth.AuthEnv,play.api.mvc.AnyContent], Either[whatson.model.User,whatson.model.Organizer]](x0$1, x1$1) match {
+          ImageController.this.userOrganizerRequest[play.api.mvc.AnyContent](ImageController.this.parse.default)(((x0$2: com.mohiva.play.silhouette.api.actions.SecuredRequest[whatson.auth.AuthEnv,play.api.mvc.AnyContent], x1$1: Either[whatson.model.User,whatson.model.Organizer]) =&gt; scala.Tuple2.apply[com.mohiva.play.silhouette.api.actions.SecuredRequest[whatson.auth.AuthEnv,play.api.mvc.AnyContent], Either[whatson.model.User,whatson.model.Organizer]](x0$2, x1$1) match {
   case (_1: com.mohiva.play.silhouette.api.actions.SecuredRequest[whatson.auth.AuthEnv,play.api.mvc.AnyContent], _2: Either[whatson.model.User,whatson.model.Organizer])(com.mohiva.play.silhouette.api.actions.SecuredRequest[whatson.auth.AuthEnv,play.api.mvc.AnyContent], Either[whatson.model.User,whatson.model.Organizer])((request @ _), (login @ _)) =&gt; {
     ImageController.this.log.debug(&quot;Rest request to attach image&quot;)(api.this.MarkerContext.NoMarker);
     val authorized: scala.concurrent.Future[Boolean] = scala.Tuple2.apply[whatson.model.EntityType.Value, Either[whatson.model.User,whatson.model.Organizer]](whatson.model.EntityType.withName(entityType), login) match {
       case (_1: whatson.model.EntityType.Value, _2: Either[whatson.model.User,whatson.model.Organizer])(whatson.model.EntityType.Value, Either[whatson.model.User,whatson.model.Organizer])(whatson.model.EntityType.Event, (value: whatson.model.Organizer)scala.util.Right[whatson.model.User,whatson.model.Organizer]((id: Option[Int], name: String, loginFk: Int, avatar: Option[String])whatson.model.Organizer((idOrg @ _), _, _, _))) =&gt; {
         val q: slick.lifted.Query[whatson.db.EventTable,whatson.model.Event,Seq] = whatson.db.EventTable.event.withFilter[slick.lifted.Rep[Option[Boolean]]](((e: whatson.db.EventTable) =&gt; slick.jdbc.PostgresProfile.api.booleanColumnExtensionMethods(slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](e.id)(slick.jdbc.PostgresProfile.api.intColumnType).===[Int, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[Int](id)(slick.jdbc.PostgresProfile.api.intColumnType).bind)(lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType))).&amp;&amp;[Option[Boolean], Option[Boolean]](slick.jdbc.PostgresProfile.api.optionColumnExtensionMethods[Int](e.creatorId)(slick.jdbc.PostgresProfile.api.intColumnType).===[Option[Int], Option[Boolean]](slick.jdbc.PostgresProfile.api.valueToConstColumn[Option[Int]](idOrg)(ast.this.TypedType.typedTypeToOptionTypedType[Int](slick.jdbc.PostgresProfile.api.intColumnType)))(lifted.this.OptionMapper2.getOptionMapper2OO[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType)))(lifted.this.OptionMapper2.getOptionMapper2TO[Boolean, Boolean, Boolean](slick.jdbc.PostgresProfile.api.booleanColumnType))))(lifted.this.CanBeQueryCondition.BooleanOptionColumnCanBeQueryCondition).map[whatson.db.EventTable, whatson.db.EventTable, whatson.model.Event](((e: whatson.db.EventTable) =&gt; e))(lifted.this.Shape.tableShape[slick.lifted.FlatShapeLevel, whatson.model.Event, whatson.db.EventTable](scala.Predef.$conforms[whatson.db.EventTable]));
-        ImageController.this.db.run[Seq[whatson.model.Event]](slick.jdbc.PostgresProfile.api.streamableQueryActionExtensionMethods[whatson.model.Event, Seq](q).result).map[Option[whatson.model.Event]](((x$2: Seq[whatson.model.Event]) =&gt; x$2.headOption))(ImageController.this.context).map[Boolean](((x0$2: Option[whatson.model.Event]) =&gt; x0$2 match {
+        ImageController.this.db.run[Seq[whatson.model.Event]](slick.jdbc.PostgresProfile.api.streamableQueryActionExtensionMethods[whatson.model.Event, Seq](q).result).map[Option[whatson.model.Event]](((x$2: Seq[whatson.model.Event]) =&gt; x$2.headOption))(ImageController.this.context).map[Boolean](((x0$3: Option[whatson.model.Event]) =&gt; x0$3 match {
           case (value: whatson.model.Event)Some[whatson.model.Event]((e @ _)) =&gt; true
           case scala.None =&gt; false
         }))(ImageController.this.context)
@@ -1746,11 +1904,11 @@
       case (_1: whatson.model.EntityType.Value, _2: Either[whatson.model.User,whatson.model.Organizer])(whatson.model.EntityType.Value, Either[whatson.model.User,whatson.model.Organizer])(whatson.model.EntityType.Location, _) =&gt; scala.concurrent.Future.successful[Boolean](true)
       case _ =&gt; scala.concurrent.Future.successful[Boolean](false)
     };
-    authorized.flatMap[play.api.mvc.Result](((x0$3: Boolean) =&gt; x0$3 match {
+    authorized.flatMap[play.api.mvc.Result](((x0$4: Boolean) =&gt; x0$4 match {
       case true =&gt; {
         val imgEnt: whatson.model.ImageEntity = whatson.model.ImageEntity.apply(id, entityId, whatson.model.EntityType.withName(entityType));
         val inserted: scala.concurrent.Future[Int] = ImageController.this.db.run[Int](slick.jdbc.PostgresProfile.api.queryInsertActionExtensionMethods[whatson.db.ImageEntityTable#TableElementType, Seq](whatson.db.ImageEntityTable.imageEntity).+=(imgEnt));
-        inserted.map[play.api.mvc.Result](((x0$4: Int) =&gt; x0$4 match {
+        inserted.map[play.api.mvc.Result](((x0$5: Int) =&gt; x0$5 match {
           case 0 =&gt; ImageController.this.NotFound
           case _ =&gt; ImageController.this.Ok.apply[play.api.libs.json.JsValue](play.api.libs.json.Json.toJson[whatson.model.ImageEntity](imgEnt)(model.this.ImageEntity.imageEntityWrites))(http.this.Writeable.writeableOf_JsValue)
         }))(ImageController.this.context)
@@ -1762,15 +1920,15 @@
         </td>
       </tr><tr>
         <td>
-          76
+          77
         </td>
         <td>
-          756
+          763
         </td>
         <td>
-          2435
+          2545
           -
-          2448
+          2558
         </td>
         <td>
           Select
@@ -1783,15 +1941,15 @@
         </td>
       </tr><tr>
         <td>
-          76
+          77
         </td>
         <td>
-          809
+          816
         </td>
         <td>
-          2450
+          2560
           -
-          2450
+          2560
         </td>
         <td>
           Select
@@ -1804,36 +1962,15 @@
         </td>
       </tr><tr>
         <td>
-          77
+          78
         </td>
         <td>
-          759
+          765
         </td>
         <td>
-          2480
+          2599
           -
-          2521
-        </td>
-        <td>
-          ApplyToImplicitArgs
-        </td>
-        <td>
-          play.api.LoggerLike.debug
-        </td>
-        <td style="background: #AEF1AE">
-          ImageController.this.log.debug(&quot;Rest request to attach image&quot;)(api.this.MarkerContext.NoMarker)
-        </td>
-      </tr><tr>
-        <td>
-          77
-        </td>
-        <td>
-          758
-        </td>
-        <td>
-          2489
-          -
-          2489
+          2599
         </td>
         <td>
           Select
@@ -1846,15 +1983,15 @@
         </td>
       </tr><tr>
         <td>
-          77
+          78
         </td>
         <td>
-          757
+          764
         </td>
         <td>
-          2490
+          2600
           -
-          2520
+          2630
         </td>
         <td>
           Literal
@@ -1867,246 +2004,36 @@
         </td>
       </tr><tr>
         <td>
-          81
+          78
         </td>
         <td>
-          765
+          766
         </td>
         <td>
-          2708
+          2590
           -
-          2708
+          2631
         </td>
         <td>
           ApplyToImplicitArgs
         </td>
         <td>
-          slick.lifted.OptionMapper2.getOptionMapper2TT
+          play.api.LoggerLike.debug
         </td>
         <td style="background: #AEF1AE">
-          lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType)
+          ImageController.this.log.debug(&quot;Rest request to attach image&quot;)(api.this.MarkerContext.NoMarker)
         </td>
       </tr><tr>
         <td>
-          81
+          82
         </td>
         <td>
           774
         </td>
         <td>
-          2723
+          2833
           -
-          2744
-        </td>
-        <td>
-          ApplyToImplicitArgs
-        </td>
-        <td>
-          slick.lifted.ColumnExtensionMethods.===
-        </td>
-        <td style="background: #AEF1AE">
-          slick.jdbc.PostgresProfile.api.optionColumnExtensionMethods[Int](e.creatorId)(slick.jdbc.PostgresProfile.api.intColumnType).===[Option[Int], Option[Boolean]](slick.jdbc.PostgresProfile.api.valueToConstColumn[Option[Int]](idOrg)(ast.this.TypedType.typedTypeToOptionTypedType[Int](slick.jdbc.PostgresProfile.api.intColumnType)))(lifted.this.OptionMapper2.getOptionMapper2OO[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType))
-        </td>
-      </tr><tr>
-        <td>
-          81
-        </td>
-        <td>
-          777
-        </td>
-        <td>
-          2703
-          -
-          2744
-        </td>
-        <td>
-          ApplyToImplicitArgs
-        </td>
-        <td>
-          slick.lifted.BooleanColumnExtensionMethods.&amp;&amp;
-        </td>
-        <td style="background: #AEF1AE">
-          slick.jdbc.PostgresProfile.api.booleanColumnExtensionMethods(slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](e.id)(slick.jdbc.PostgresProfile.api.intColumnType).===[Int, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[Int](id)(slick.jdbc.PostgresProfile.api.intColumnType).bind)(lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType))).&amp;&amp;[Option[Boolean], Option[Boolean]](slick.jdbc.PostgresProfile.api.optionColumnExtensionMethods[Int](e.creatorId)(slick.jdbc.PostgresProfile.api.intColumnType).===[Option[Int], Option[Boolean]](slick.jdbc.PostgresProfile.api.valueToConstColumn[Option[Int]](idOrg)(ast.this.TypedType.typedTypeToOptionTypedType[Int](slick.jdbc.PostgresProfile.api.intColumnType)))(lifted.this.OptionMapper2.getOptionMapper2OO[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType)))(lifted.this.OptionMapper2.getOptionMapper2TO[Boolean, Boolean, Boolean](slick.jdbc.PostgresProfile.api.booleanColumnType))
-        </td>
-      </tr><tr>
-        <td>
-          81
-        </td>
-        <td>
-          768
-        </td>
-        <td>
-          2725
-          -
-          2725
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
-        </td>
-        <td style="background: #AEF1AE">
-          slick.jdbc.PostgresProfile.api.intColumnType
-        </td>
-      </tr><tr>
-        <td>
-          81
-        </td>
-        <td>
-          762
-        </td>
-        <td>
-          2712
-          -
-          2712
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
-        </td>
-        <td style="background: #AEF1AE">
-          slick.jdbc.PostgresProfile.api.intColumnType
-        </td>
-      </tr><tr>
-        <td>
-          81
-        </td>
-        <td>
-          771
-        </td>
-        <td>
-          2739
-          -
-          2744
-        </td>
-        <td>
-          ApplyToImplicitArgs
-        </td>
-        <td>
-          slick.relational.RelationalProfile.API.valueToConstColumn
-        </td>
-        <td style="background: #AEF1AE">
-          slick.jdbc.PostgresProfile.api.valueToConstColumn[Option[Int]](idOrg)(ast.this.TypedType.typedTypeToOptionTypedType[Int](slick.jdbc.PostgresProfile.api.intColumnType))
-        </td>
-      </tr><tr>
-        <td>
-          81
-        </td>
-        <td>
-          770
-        </td>
-        <td>
-          2739
-          -
-          2739
-        </td>
-        <td>
-          ApplyToImplicitArgs
-        </td>
-        <td>
-          slick.ast.TypedType.typedTypeToOptionTypedType
-        </td>
-        <td style="background: #AEF1AE">
-          ast.this.TypedType.typedTypeToOptionTypedType[Int](slick.jdbc.PostgresProfile.api.intColumnType)
-        </td>
-      </tr><tr>
-        <td>
-          81
-        </td>
-        <td>
-          779
-        </td>
-        <td>
-          2680
-          -
-          2680
-        </td>
-        <td>
-          TypeApply
-        </td>
-        <td>
-          scala.Predef.$conforms
-        </td>
-        <td style="background: #AEF1AE">
-          scala.Predef.$conforms[whatson.db.EventTable]
-        </td>
-      </tr><tr>
-        <td>
-          81
-        </td>
-        <td>
-          761
-        </td>
-        <td>
-          2705
-          -
-          2705
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
-        </td>
-        <td style="background: #AEF1AE">
-          slick.jdbc.PostgresProfile.api.intColumnType
-        </td>
-      </tr><tr>
-        <td>
-          81
-        </td>
-        <td>
-          764
-        </td>
-        <td>
-          2708
-          -
-          2708
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
-        </td>
-        <td style="background: #AEF1AE">
-          slick.jdbc.PostgresProfile.api.intColumnType
-        </td>
-      </tr><tr>
-        <td>
-          81
-        </td>
-        <td>
-          773
-        </td>
-        <td>
-          2735
-          -
-          2735
-        </td>
-        <td>
-          ApplyToImplicitArgs
-        </td>
-        <td>
-          slick.lifted.OptionMapper2.getOptionMapper2OO
-        </td>
-        <td style="background: #AEF1AE">
-          lifted.this.OptionMapper2.getOptionMapper2OO[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType)
-        </td>
-      </tr><tr>
-        <td>
-          81
-        </td>
-        <td>
-          767
-        </td>
-        <td>
-          2723
-          -
-          2734
+          2844
         </td>
         <td>
           Select
@@ -2119,15 +2046,15 @@
         </td>
       </tr><tr>
         <td>
-          81
+          82
         </td>
         <td>
-          776
+          783
         </td>
         <td>
-          2720
+          2830
           -
-          2720
+          2830
         </td>
         <td>
           ApplyToImplicitArgs
@@ -2140,99 +2067,57 @@
         </td>
       </tr><tr>
         <td>
-          81
+          82
         </td>
         <td>
-          775
+          777
         </td>
         <td>
-          2720
+          2849
           -
-          2720
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.booleanColumnType
-        </td>
-        <td style="background: #AEF1AE">
-          slick.jdbc.PostgresProfile.api.booleanColumnType
-        </td>
-      </tr><tr>
-        <td>
-          81
-        </td>
-        <td>
-          766
-        </td>
-        <td>
-          2703
-          -
-          2719
+          2849
         </td>
         <td>
           ApplyToImplicitArgs
         </td>
         <td>
-          slick.lifted.ColumnExtensionMethods.===
+          slick.ast.TypedType.typedTypeToOptionTypedType
         </td>
         <td style="background: #AEF1AE">
-          slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](e.id)(slick.jdbc.PostgresProfile.api.intColumnType).===[Int, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[Int](id)(slick.jdbc.PostgresProfile.api.intColumnType).bind)(lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType))
+          ast.this.TypedType.typedTypeToOptionTypedType[Int](slick.jdbc.PostgresProfile.api.intColumnType)
         </td>
       </tr><tr>
         <td>
-          81
+          82
         </td>
         <td>
-          778
+          786
         </td>
         <td>
-          2694
+          2790
           -
-          2694
+          2790
         </td>
         <td>
-          Select
+          TypeApply
         </td>
         <td>
-          slick.lifted.CanBeQueryCondition.BooleanOptionColumnCanBeQueryCondition
+          scala.Predef.$conforms
         </td>
         <td style="background: #AEF1AE">
-          lifted.this.CanBeQueryCondition.BooleanOptionColumnCanBeQueryCondition
+          scala.Predef.$conforms[whatson.db.EventTable]
         </td>
       </tr><tr>
         <td>
-          81
+          82
         </td>
         <td>
-          760
+          768
         </td>
         <td>
-          2703
+          2815
           -
-          2707
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          whatson.db.EventTable.id
-        </td>
-        <td style="background: #AEF1AE">
-          e.id
-        </td>
-      </tr><tr>
-        <td>
-          81
-        </td>
-        <td>
-          769
-        </td>
-        <td>
-          2739
-          -
-          2739
+          2815
         </td>
         <td>
           Select
@@ -2245,15 +2130,15 @@
         </td>
       </tr><tr>
         <td>
-          81
+          82
         </td>
         <td>
-          772
+          771
         </td>
         <td>
-          2735
+          2818
           -
-          2735
+          2818
         </td>
         <td>
           Select
@@ -2266,15 +2151,15 @@
         </td>
       </tr><tr>
         <td>
-          81
+          82
         </td>
         <td>
-          763
+          770
         </td>
         <td>
-          2712
+          2822
           -
-          2719
+          2829
         </td>
         <td>
           Select
@@ -2287,15 +2172,36 @@
         </td>
       </tr><tr>
         <td>
-          81
+          82
         </td>
         <td>
-          781
+          779
         </td>
         <td>
-          2674
+          2845
           -
-          2753
+          2845
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
+        </td>
+        <td style="background: #AEF1AE">
+          slick.jdbc.PostgresProfile.api.intColumnType
+        </td>
+      </tr><tr>
+        <td>
+          82
+        </td>
+        <td>
+          788
+        </td>
+        <td>
+          2784
+          -
+          2863
         </td>
         <td>
           ApplyToImplicitArgs
@@ -2308,15 +2214,183 @@
         </td>
       </tr><tr>
         <td>
-          81
+          82
         </td>
         <td>
-          780
+          782
         </td>
         <td>
-          2680
+          2830
           -
-          2680
+          2830
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.booleanColumnType
+        </td>
+        <td style="background: #AEF1AE">
+          slick.jdbc.PostgresProfile.api.booleanColumnType
+        </td>
+      </tr><tr>
+        <td>
+          82
+        </td>
+        <td>
+          773
+        </td>
+        <td>
+          2813
+          -
+          2829
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.ColumnExtensionMethods.===
+        </td>
+        <td style="background: #AEF1AE">
+          slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](e.id)(slick.jdbc.PostgresProfile.api.intColumnType).===[Int, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[Int](id)(slick.jdbc.PostgresProfile.api.intColumnType).bind)(lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType))
+        </td>
+      </tr><tr>
+        <td>
+          82
+        </td>
+        <td>
+          767
+        </td>
+        <td>
+          2813
+          -
+          2817
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.db.EventTable.id
+        </td>
+        <td style="background: #AEF1AE">
+          e.id
+        </td>
+      </tr><tr>
+        <td>
+          82
+        </td>
+        <td>
+          776
+        </td>
+        <td>
+          2849
+          -
+          2849
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
+        </td>
+        <td style="background: #AEF1AE">
+          slick.jdbc.PostgresProfile.api.intColumnType
+        </td>
+      </tr><tr>
+        <td>
+          82
+        </td>
+        <td>
+          785
+        </td>
+        <td>
+          2804
+          -
+          2804
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.lifted.CanBeQueryCondition.BooleanOptionColumnCanBeQueryCondition
+        </td>
+        <td style="background: #AEF1AE">
+          lifted.this.CanBeQueryCondition.BooleanOptionColumnCanBeQueryCondition
+        </td>
+      </tr><tr>
+        <td>
+          82
+        </td>
+        <td>
+          775
+        </td>
+        <td>
+          2835
+          -
+          2835
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
+        </td>
+        <td style="background: #AEF1AE">
+          slick.jdbc.PostgresProfile.api.intColumnType
+        </td>
+      </tr><tr>
+        <td>
+          82
+        </td>
+        <td>
+          784
+        </td>
+        <td>
+          2813
+          -
+          2854
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.BooleanColumnExtensionMethods.&amp;&amp;
+        </td>
+        <td style="background: #AEF1AE">
+          slick.jdbc.PostgresProfile.api.booleanColumnExtensionMethods(slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](e.id)(slick.jdbc.PostgresProfile.api.intColumnType).===[Int, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[Int](id)(slick.jdbc.PostgresProfile.api.intColumnType).bind)(lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType))).&amp;&amp;[Option[Boolean], Option[Boolean]](slick.jdbc.PostgresProfile.api.optionColumnExtensionMethods[Int](e.creatorId)(slick.jdbc.PostgresProfile.api.intColumnType).===[Option[Int], Option[Boolean]](slick.jdbc.PostgresProfile.api.valueToConstColumn[Option[Int]](idOrg)(ast.this.TypedType.typedTypeToOptionTypedType[Int](slick.jdbc.PostgresProfile.api.intColumnType)))(lifted.this.OptionMapper2.getOptionMapper2OO[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType)))(lifted.this.OptionMapper2.getOptionMapper2TO[Boolean, Boolean, Boolean](slick.jdbc.PostgresProfile.api.booleanColumnType))
+        </td>
+      </tr><tr>
+        <td>
+          82
+        </td>
+        <td>
+          778
+        </td>
+        <td>
+          2849
+          -
+          2854
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.relational.RelationalProfile.API.valueToConstColumn
+        </td>
+        <td style="background: #AEF1AE">
+          slick.jdbc.PostgresProfile.api.valueToConstColumn[Option[Int]](idOrg)(ast.this.TypedType.typedTypeToOptionTypedType[Int](slick.jdbc.PostgresProfile.api.intColumnType))
+        </td>
+      </tr><tr>
+        <td>
+          82
+        </td>
+        <td>
+          787
+        </td>
+        <td>
+          2790
+          -
+          2790
         </td>
         <td>
           ApplyToImplicitArgs
@@ -2332,33 +2406,96 @@
           82
         </td>
         <td>
-          783
+          769
         </td>
         <td>
-          2784
+          2822
           -
-          2796
+          2822
         </td>
         <td>
           Select
         </td>
         <td>
-          scala.collection.TraversableLike.headOption
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
         </td>
         <td style="background: #AEF1AE">
-          x$2.headOption
+          slick.jdbc.PostgresProfile.api.intColumnType
         </td>
       </tr><tr>
         <td>
           82
         </td>
         <td>
-          788
+          772
         </td>
         <td>
-          2763
+          2818
           -
+          2818
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.OptionMapper2.getOptionMapper2TT
+        </td>
+        <td style="background: #AEF1AE">
+          lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType)
+        </td>
+      </tr><tr>
+        <td>
+          82
+        </td>
+        <td>
+          781
+        </td>
+        <td>
+          2833
+          -
+          2854
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.ColumnExtensionMethods.===
+        </td>
+        <td style="background: #AEF1AE">
+          slick.jdbc.PostgresProfile.api.optionColumnExtensionMethods[Int](e.creatorId)(slick.jdbc.PostgresProfile.api.intColumnType).===[Option[Int], Option[Boolean]](slick.jdbc.PostgresProfile.api.valueToConstColumn[Option[Int]](idOrg)(ast.this.TypedType.typedTypeToOptionTypedType[Int](slick.jdbc.PostgresProfile.api.intColumnType)))(lifted.this.OptionMapper2.getOptionMapper2OO[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType))
+        </td>
+      </tr><tr>
+        <td>
+          82
+        </td>
+        <td>
+          780
+        </td>
+        <td>
+          2845
+          -
+          2845
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.OptionMapper2.getOptionMapper2OO
+        </td>
+        <td style="background: #AEF1AE">
+          lifted.this.OptionMapper2.getOptionMapper2OO[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType)
+        </td>
+      </tr><tr>
+        <td>
+          83
+        </td>
+        <td>
+          795
+        </td>
+        <td>
           2873
+          -
+          2983
         </td>
         <td>
           ApplyToImplicitArgs
@@ -2367,64 +2504,22 @@
           scala.concurrent.Future.map
         </td>
         <td style="background: #AEF1AE">
-          ImageController.this.db.run[Seq[whatson.model.Event]](slick.jdbc.PostgresProfile.api.streamableQueryActionExtensionMethods[whatson.model.Event, Seq](q).result).map[Option[whatson.model.Event]](((x$2: Seq[whatson.model.Event]) =&gt; x$2.headOption))(ImageController.this.context).map[Boolean](((x0$2: Option[whatson.model.Event]) =&gt; x0$2 match {
+          ImageController.this.db.run[Seq[whatson.model.Event]](slick.jdbc.PostgresProfile.api.streamableQueryActionExtensionMethods[whatson.model.Event, Seq](q).result).map[Option[whatson.model.Event]](((x$2: Seq[whatson.model.Event]) =&gt; x$2.headOption))(ImageController.this.context).map[Boolean](((x0$3: Option[whatson.model.Event]) =&gt; x0$3 match {
   case (value: whatson.model.Event)Some[whatson.model.Event]((e @ _)) =&gt; true
   case scala.None =&gt; false
 }))(ImageController.this.context)
         </td>
       </tr><tr>
         <td>
-          82
+          83
         </td>
         <td>
-          782
+          791
         </td>
         <td>
-          2770
+          2893
           -
-          2778
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          slick.jdbc.JdbcActionComponent.StreamingQueryActionExtensionMethodsImpl.result
-        </td>
-        <td style="background: #AEF1AE">
-          slick.jdbc.PostgresProfile.api.streamableQueryActionExtensionMethods[whatson.model.Event, Seq](q).result
-        </td>
-      </tr><tr>
-        <td>
-          82
-        </td>
-        <td>
-          784
-        </td>
-        <td>
-          2783
-          -
-          2783
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          controllers.ImageController.context
-        </td>
-        <td style="background: #AEF1AE">
-          ImageController.this.context
-        </td>
-      </tr><tr>
-        <td>
-          82
-        </td>
-        <td>
-          787
-        </td>
-        <td>
-          2802
-          -
-          2802
+          2893
         </td>
         <td>
           Select
@@ -2440,12 +2535,75 @@
           83
         </td>
         <td>
-          785
+          794
         </td>
         <td>
-          2830
+          2912
           -
-          2834
+          2912
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          controllers.ImageController.context
+        </td>
+        <td style="background: #AEF1AE">
+          ImageController.this.context
+        </td>
+      </tr><tr>
+        <td>
+          83
+        </td>
+        <td>
+          790
+        </td>
+        <td>
+          2894
+          -
+          2906
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.TraversableLike.headOption
+        </td>
+        <td style="background: #AEF1AE">
+          x$2.headOption
+        </td>
+      </tr><tr>
+        <td>
+          83
+        </td>
+        <td>
+          789
+        </td>
+        <td>
+          2880
+          -
+          2888
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcActionComponent.StreamingQueryActionExtensionMethodsImpl.result
+        </td>
+        <td style="background: #AEF1AE">
+          slick.jdbc.PostgresProfile.api.streamableQueryActionExtensionMethods[whatson.model.Event, Seq](q).result
+        </td>
+      </tr><tr>
+        <td>
+          84
+        </td>
+        <td>
+          792
+        </td>
+        <td>
+          2940
+          -
+          2944
         </td>
         <td>
           Literal
@@ -2458,15 +2616,15 @@
         </td>
       </tr><tr>
         <td>
-          84
+          85
         </td>
         <td>
-          786
+          793
         </td>
         <td>
-          2858
+          2968
           -
-          2863
+          2973
         </td>
         <td>
           Literal
@@ -2479,36 +2637,15 @@
         </td>
       </tr><tr>
         <td>
-          87
+          88
         </td>
         <td>
-          791
+          797
         </td>
         <td>
-          2949
+          3077
           -
-          2999
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          scala.concurrent.Future.successful
-        </td>
-        <td style="background: #AEF1AE">
-          scala.concurrent.Future.successful[Boolean](entityId.==(idOrg.getOrElse[Int](-1)))
-        </td>
-      </tr><tr>
-        <td>
-          87
-        </td>
-        <td>
-          790
-        </td>
-        <td>
-          2967
-          -
-          2998
+          3108
         </td>
         <td>
           Apply
@@ -2521,15 +2658,15 @@
         </td>
       </tr><tr>
         <td>
-          87
+          88
         </td>
         <td>
-          789
+          796
         </td>
         <td>
-          2979
+          3089
           -
-          2998
+          3108
         </td>
         <td>
           Apply
@@ -2545,12 +2682,33 @@
           88
         </td>
         <td>
-          792
+          798
         </td>
         <td>
-          3038
+          3059
           -
-          3061
+          3109
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.concurrent.Future.successful
+        </td>
+        <td style="background: #AEF1AE">
+          scala.concurrent.Future.successful[Boolean](entityId.==(idOrg.getOrElse[Int](-1)))
+        </td>
+      </tr><tr>
+        <td>
+          89
+        </td>
+        <td>
+          799
+        </td>
+        <td>
+          3148
+          -
+          3171
         </td>
         <td>
           Apply
@@ -2563,15 +2721,15 @@
         </td>
       </tr><tr>
         <td>
-          89
+          90
         </td>
         <td>
-          793
+          800
         </td>
         <td>
-          3078
+          3188
           -
-          3102
+          3212
         </td>
         <td>
           Apply
@@ -2584,15 +2742,15 @@
         </td>
       </tr><tr>
         <td>
-          92
+          93
         </td>
         <td>
-          808
+          815
         </td>
         <td>
-          3114
+          3224
           -
-          3478
+          3588
         </td>
         <td>
           ApplyToImplicitArgs
@@ -2601,11 +2759,11 @@
           scala.concurrent.Future.flatMap
         </td>
         <td style="background: #AEF1AE">
-          authorized.flatMap[play.api.mvc.Result](((x0$3: Boolean) =&gt; x0$3 match {
+          authorized.flatMap[play.api.mvc.Result](((x0$4: Boolean) =&gt; x0$4 match {
   case true =&gt; {
     val imgEnt: whatson.model.ImageEntity = whatson.model.ImageEntity.apply(id, entityId, whatson.model.EntityType.withName(entityType));
     val inserted: scala.concurrent.Future[Int] = ImageController.this.db.run[Int](slick.jdbc.PostgresProfile.api.queryInsertActionExtensionMethods[whatson.db.ImageEntityTable#TableElementType, Seq](whatson.db.ImageEntityTable.imageEntity).+=(imgEnt));
-    inserted.map[play.api.mvc.Result](((x0$4: Int) =&gt; x0$4 match {
+    inserted.map[play.api.mvc.Result](((x0$5: Int) =&gt; x0$5 match {
       case 0 =&gt; ImageController.this.NotFound
       case _ =&gt; ImageController.this.Ok.apply[play.api.libs.json.JsValue](play.api.libs.json.Json.toJson[whatson.model.ImageEntity](imgEnt)(model.this.ImageEntity.imageEntityWrites))(http.this.Writeable.writeableOf_JsValue)
     }))(ImageController.this.context)
@@ -2615,15 +2773,15 @@
         </td>
       </tr><tr>
         <td>
-          92
+          93
         </td>
         <td>
-          807
+          814
         </td>
         <td>
-          3133
+          3243
           -
-          3133
+          3243
         </td>
         <td>
           Select
@@ -2636,36 +2794,15 @@
         </td>
       </tr><tr>
         <td>
-          94
+          95
         </td>
         <td>
-          795
+          801
         </td>
         <td>
-          3177
+          3313
           -
-          3235
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          whatson.model.ImageEntity.apply
-        </td>
-        <td style="background: #AEF1AE">
-          whatson.model.ImageEntity.apply(id, entityId, whatson.model.EntityType.withName(entityType))
-        </td>
-      </tr><tr>
-        <td>
-          94
-        </td>
-        <td>
-          794
-        </td>
-        <td>
-          3203
-          -
-          3234
+          3344
         </td>
         <td>
           Apply
@@ -2681,12 +2818,33 @@
           95
         </td>
         <td>
-          797
+          802
         </td>
         <td>
-          3259
+          3287
           -
-          3305
+          3345
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          whatson.model.ImageEntity.apply
+        </td>
+        <td style="background: #AEF1AE">
+          whatson.model.ImageEntity.apply(id, entityId, whatson.model.EntityType.withName(entityType))
+        </td>
+      </tr><tr>
+        <td>
+          96
+        </td>
+        <td>
+          804
+        </td>
+        <td>
+          3369
+          -
+          3415
         </td>
         <td>
           Apply
@@ -2699,15 +2857,15 @@
         </td>
       </tr><tr>
         <td>
-          95
+          96
         </td>
         <td>
-          796
+          803
         </td>
         <td>
-          3266
+          3376
           -
-          3304
+          3414
         </td>
         <td>
           Apply
@@ -2720,39 +2878,15 @@
         </td>
       </tr><tr>
         <td>
-          97
+          98
         </td>
         <td>
-          804
+          810
         </td>
         <td>
-          3315
+          3438
           -
-          3412
-        </td>
-        <td>
-          ApplyToImplicitArgs
-        </td>
-        <td>
-          scala.concurrent.Future.map
-        </td>
-        <td style="background: #AEF1AE">
-          inserted.map[play.api.mvc.Result](((x0$4: Int) =&gt; x0$4 match {
-  case 0 =&gt; ImageController.this.NotFound
-  case _ =&gt; ImageController.this.Ok.apply[play.api.libs.json.JsValue](play.api.libs.json.Json.toJson[whatson.model.ImageEntity](imgEnt)(model.this.ImageEntity.imageEntityWrites))(http.this.Writeable.writeableOf_JsValue)
-}))(ImageController.this.context)
-        </td>
-      </tr><tr>
-        <td>
-          97
-        </td>
-        <td>
-          803
-        </td>
-        <td>
-          3328
-          -
-          3328
+          3438
         </td>
         <td>
           Select
@@ -2768,12 +2902,36 @@
           98
         </td>
         <td>
-          798
+          811
         </td>
         <td>
-          3350
+          3425
           -
-          3358
+          3522
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.concurrent.Future.map
+        </td>
+        <td style="background: #AEF1AE">
+          inserted.map[play.api.mvc.Result](((x0$5: Int) =&gt; x0$5 match {
+  case 0 =&gt; ImageController.this.NotFound
+  case _ =&gt; ImageController.this.Ok.apply[play.api.libs.json.JsValue](play.api.libs.json.Json.toJson[whatson.model.ImageEntity](imgEnt)(model.this.ImageEntity.imageEntityWrites))(http.this.Writeable.writeableOf_JsValue)
+}))(ImageController.this.context)
+        </td>
+      </tr><tr>
+        <td>
+          99
+        </td>
+        <td>
+          805
+        </td>
+        <td>
+          3460
+          -
+          3468
         </td>
         <td>
           Select
@@ -2786,78 +2944,15 @@
         </td>
       </tr><tr>
         <td>
-          99
+          100
         </td>
         <td>
-          801
+          806
         </td>
         <td>
-          3381
+          3503
           -
-          3381
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          play.api.http.DefaultWriteables.writeableOf_JsValue
-        </td>
-        <td style="background: #AEF1AE">
-          http.this.Writeable.writeableOf_JsValue
-        </td>
-      </tr><tr>
-        <td>
-          99
-        </td>
-        <td>
-          800
-        </td>
-        <td>
-          3382
-          -
-          3401
-        </td>
-        <td>
-          ApplyToImplicitArgs
-        </td>
-        <td>
-          play.api.libs.json.Json.toJson
-        </td>
-        <td style="background: #AEF1AE">
-          play.api.libs.json.Json.toJson[whatson.model.ImageEntity](imgEnt)(model.this.ImageEntity.imageEntityWrites)
-        </td>
-      </tr><tr>
-        <td>
-          99
-        </td>
-        <td>
-          802
-        </td>
-        <td>
-          3379
-          -
-          3402
-        </td>
-        <td>
-          ApplyToImplicitArgs
-        </td>
-        <td>
-          play.api.mvc.Results.Status.apply
-        </td>
-        <td style="background: #AEF1AE">
-          ImageController.this.Ok.apply[play.api.libs.json.JsValue](play.api.libs.json.Json.toJson[whatson.model.ImageEntity](imgEnt)(model.this.ImageEntity.imageEntityWrites))(http.this.Writeable.writeableOf_JsValue)
-        </td>
-      </tr><tr>
-        <td>
-          99
-        </td>
-        <td>
-          799
-        </td>
-        <td>
-          3393
-          -
-          3393
+          3503
         </td>
         <td>
           Select
@@ -2870,15 +2965,78 @@
         </td>
       </tr><tr>
         <td>
-          102
+          100
         </td>
         <td>
-          806
+          809
         </td>
         <td>
-          3441
+          3489
           -
-          3472
+          3512
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          play.api.mvc.Results.Status.apply
+        </td>
+        <td style="background: #AEF1AE">
+          ImageController.this.Ok.apply[play.api.libs.json.JsValue](play.api.libs.json.Json.toJson[whatson.model.ImageEntity](imgEnt)(model.this.ImageEntity.imageEntityWrites))(http.this.Writeable.writeableOf_JsValue)
+        </td>
+      </tr><tr>
+        <td>
+          100
+        </td>
+        <td>
+          808
+        </td>
+        <td>
+          3491
+          -
+          3491
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.http.DefaultWriteables.writeableOf_JsValue
+        </td>
+        <td style="background: #AEF1AE">
+          http.this.Writeable.writeableOf_JsValue
+        </td>
+      </tr><tr>
+        <td>
+          100
+        </td>
+        <td>
+          807
+        </td>
+        <td>
+          3492
+          -
+          3511
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          play.api.libs.json.Json.toJson
+        </td>
+        <td style="background: #AEF1AE">
+          play.api.libs.json.Json.toJson[whatson.model.ImageEntity](imgEnt)(model.this.ImageEntity.imageEntityWrites)
+        </td>
+      </tr><tr>
+        <td>
+          103
+        </td>
+        <td>
+          813
+        </td>
+        <td>
+          3551
+          -
+          3582
         </td>
         <td>
           Apply
@@ -2891,15 +3049,15 @@
         </td>
       </tr><tr>
         <td>
-          102
+          103
         </td>
         <td>
-          805
+          812
         </td>
         <td>
-          3459
+          3569
           -
-          3471
+          3581
         </td>
         <td>
           Select

@@ -2,7 +2,7 @@
       <head>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
         <title id="title">
-          whatson/db/Sortable.scala.html
+          whatson/model/forms/ImageForm.scala.html
         </title>
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
         $(document).ready(function() {$(".tablesorter").tablesorter();});
@@ -22,19 +22,30 @@
         </ul>
         <div class="tab-content">
           <div class="tab-pane active" id="codegrid">
-            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package whatson.db
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package whatson.model.forms
 </span>2 <span style=''>
-</span>3 <span style=''>import scala.language.higherKinds
-</span>4 <span style=''>
-</span>5 <span style=''>trait Sortable[R,O] {
-</span>6 <span style=''>  def sortColumn[U,C[D]](name: String, dir: Boolean): R
-</span>7 <span style=''>  def sortColumn[U,C[D]](name: String, dir: Boolean, param: O): R = </span><span style='background: #F0ADAD'>sortColumn(name, dir)</span><span style=''>
-</span>8 <span style=''>  
-</span>9 <span style=''>  def sortColumn[U,C[D]](name: Option[String], dir: Boolean): R = </span><span style='background: #AEF1AE'>sortColumn(name.getOrElse(defaultSort),dir)</span><span style=''>
-</span>10 <span style=''>  def sortColumn[U,C[D]](name: Option[String], dir: Boolean, param: O): R = </span><span style='background: #F0ADAD'>sortColumn(name.getOrElse(defaultSort),dir,param)</span><span style=''>
-</span>11 <span style=''>  
-</span>12 <span style=''>  val defaultSort: String
-</span>13 <span style=''>}
+</span>3 <span style=''>import play.api.data.Form
+</span>4 <span style=''>import play.api.data.Forms._
+</span>5 <span style=''>import play.api.libs.json.Json
+</span>6 <span style=''>import java.sql.Timestamp
+</span>7 <span style=''>import whatson.util.DateTime._
+</span>8 <span style=''>import whatson.model._
+</span>9 <span style=''>
+</span>10 <span style=''>/**
+</span>11 <span style=''>  * The form which handles creating/updating Events.
+</span>12 <span style=''>  */
+</span>13 <span style=''>object ImageForm {
+</span>14 <span style=''>  val map = </span><span style='background: #F0ADAD'>mapping(
+</span>15 <span style=''></span><span style='background: #F0ADAD'>    &quot;name&quot; -&gt; nonEmptyText
+</span>16 <span style=''></span><span style='background: #F0ADAD'>  )(Data.apply)(Data.unapply)</span><span style=''>
+</span>17 <span style=''>  val form = </span><span style='background: #F0ADAD'>Form(map)</span><span style=''>
+</span>18 <span style=''>
+</span>19 <span style=''>  case class Data(name: String)
+</span>20 <span style=''>
+</span>21 <span style=''>  object Data {
+</span>22 <span style=''>    implicit val jsonFormat = Json.format[Data]
+</span>23 <span style=''>  }
+</span>24 <span style=''>}
 </span></pre>
           </div>
           <div class="tab-pane" id="statementlist">
@@ -48,150 +59,175 @@
         <th>Code</th>
       </tr><tr>
         <td>
-          7
+          15
         </td>
         <td>
-          1951
+          2242
         </td>
         <td>
-          201
+          312
           -
-          222
+          324
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.data.Forms.nonEmptyText
+        </td>
+        <td style="background: #F0ADAD">
+          play.api.data.Forms.nonEmptyText
+        </td>
+      </tr><tr>
+        <td>
+          15
+        </td>
+        <td>
+          2241
+        </td>
+        <td>
+          302
+          -
+          308
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;name&quot;
+        </td>
+      </tr><tr>
+        <td>
+          15
+        </td>
+        <td>
+          2243
+        </td>
+        <td>
+          302
+          -
+          324
         </td>
         <td>
           Apply
         </td>
         <td>
-          whatson.db.Sortable.sortColumn
+          scala.Predef.ArrowAssoc.-&gt;
         </td>
         <td style="background: #F0ADAD">
-          Sortable.this.sortColumn[Nothing, Nothing](name, dir)
+          scala.Predef.ArrowAssoc[String](&quot;name&quot;).-&gt;[play.api.data.Mapping[String]](play.api.data.Forms.nonEmptyText)
         </td>
       </tr><tr>
         <td>
-          9
+          16
         </td>
         <td>
-          1952
+          2245
         </td>
         <td>
-          318
+          341
           -
+          353
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          whatson.model.forms.ImageForm.Data.unapply
+        </td>
+        <td style="background: #F0ADAD">
+          ImageForm.this.Data.unapply(x$0)
+        </td>
+      </tr><tr>
+        <td>
+          16
+        </td>
+        <td>
+          2244
+        </td>
+        <td>
           329
+          -
+          339
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          whatson.model.forms.ImageForm.Data.apply
+        </td>
+        <td style="background: #F0ADAD">
+          ImageForm.this.Data.apply(name)
+        </td>
+      </tr><tr>
+        <td>
+          16
+        </td>
+        <td>
+          2246
+        </td>
+        <td>
+          289
+          -
+          354
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          play.api.data.Forms.mapping
+        </td>
+        <td style="background: #F0ADAD">
+          play.api.data.Forms.mapping[whatson.model.forms.ImageForm.Data, String](scala.Predef.ArrowAssoc[String](&quot;name&quot;).-&gt;[play.api.data.Mapping[String]](play.api.data.Forms.nonEmptyText))({
+  ((name: String) =&gt; ImageForm.this.Data.apply(name))
+})({
+  ((x$0: whatson.model.forms.ImageForm.Data) =&gt; ImageForm.this.Data.unapply(x$0))
+})
+        </td>
+      </tr><tr>
+        <td>
+          17
+        </td>
+        <td>
+          2248
+        </td>
+        <td>
+          368
+          -
+          377
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          play.api.data.Form.apply
+        </td>
+        <td style="background: #F0ADAD">
+          play.api.data.Form.apply[whatson.model.forms.ImageForm.Data](ImageForm.this.map)
+        </td>
+      </tr><tr>
+        <td>
+          17
+        </td>
+        <td>
+          2247
+        </td>
+        <td>
+          373
+          -
+          376
         </td>
         <td>
           Select
         </td>
         <td>
-          whatson.db.Sortable.defaultSort
-        </td>
-        <td style="background: #AEF1AE">
-          Sortable.this.defaultSort
-        </td>
-      </tr><tr>
-        <td>
-          9
-        </td>
-        <td>
-          1954
-        </td>
-        <td>
-          292
-          -
-          335
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          whatson.db.Sortable.sortColumn
-        </td>
-        <td style="background: #AEF1AE">
-          Sortable.this.sortColumn[Nothing, Nothing](name.getOrElse[String](Sortable.this.defaultSort), dir)
-        </td>
-      </tr><tr>
-        <td>
-          9
-        </td>
-        <td>
-          1953
-        </td>
-        <td>
-          303
-          -
-          330
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          scala.Option.getOrElse
-        </td>
-        <td style="background: #AEF1AE">
-          name.getOrElse[String](Sortable.this.defaultSort)
-        </td>
-      </tr><tr>
-        <td>
-          10
-        </td>
-        <td>
-          1955
-        </td>
-        <td>
-          438
-          -
-          449
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          whatson.db.Sortable.defaultSort
+          whatson.model.forms.ImageForm.map
         </td>
         <td style="background: #F0ADAD">
-          Sortable.this.defaultSort
-        </td>
-      </tr><tr>
-        <td>
-          10
-        </td>
-        <td>
-          1957
-        </td>
-        <td>
-          412
-          -
-          461
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          whatson.db.Sortable.sortColumn
-        </td>
-        <td style="background: #F0ADAD">
-          Sortable.this.sortColumn[Nothing, Nothing](name.getOrElse[String](Sortable.this.defaultSort), dir, param)
-        </td>
-      </tr><tr>
-        <td>
-          10
-        </td>
-        <td>
-          1956
-        </td>
-        <td>
-          423
-          -
-          450
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          scala.Option.getOrElse
-        </td>
-        <td style="background: #F0ADAD">
-          name.getOrElse[String](Sortable.this.defaultSort)
+          ImageForm.this.map
         </td>
       </tr>
     </table>
