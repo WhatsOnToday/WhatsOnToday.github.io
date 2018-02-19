@@ -45,20 +45,19 @@
 </span>21 <span style=''>      val t = </span><span style='background: #AEF1AE'>q.result.flatMap(y =&gt; {
 </span>22 <span style=''></span><span style='background: #AEF1AE'>        DBIO.sequence(y.map {
 </span>23 <span style=''></span><span style='background: #AEF1AE'>          case category =&gt; {
-</span>24 <span style=''></span><span style='background: #AEF1AE'>            val imgs = CategoryTable.category.filter(_.id === category.id).flatMap(_.images).map(_.id)
-</span>25 <span style=''></span><span style='background: #AEF1AE'>            val imgTagged = CategoryTable.category.filter(_.id === category.id).flatMap(_.taggedImages)
-</span>26 <span style=''></span><span style='background: #AEF1AE'>              .result.map(l =&gt; l.map(x =&gt; TaggedImage(x._2.id,x._2.name,x._1)))
-</span>27 <span style=''></span><span style='background: #AEF1AE'>
-</span>28 <span style=''></span><span style='background: #AEF1AE'>            imgTagged.map(o =&gt; {
-</span>29 <span style=''></span><span style='background: #AEF1AE'>              CategoryDetail(category.id, category.name, category.parentId, o.toList)
-</span>30 <span style=''></span><span style='background: #AEF1AE'>            })
-</span>31 <span style=''></span><span style='background: #AEF1AE'>          }
-</span>32 <span style=''></span><span style='background: #AEF1AE'>        })
-</span>33 <span style=''></span><span style='background: #AEF1AE'>      })</span><span style=''>
-</span>34 <span style=''>      t
-</span>35 <span style=''>    }
-</span>36 <span style=''>  }
-</span>37 <span style=''>}
+</span>24 <span style=''></span><span style='background: #AEF1AE'>            val imgTagged = CategoryTable.category.filter(_.id === category.id).flatMap(_.taggedImages)
+</span>25 <span style=''></span><span style='background: #AEF1AE'>              .result.map(l =&gt; l.map(x =&gt; TaggedImage(x._2.id,x._2.name,x._1)))
+</span>26 <span style=''></span><span style='background: #AEF1AE'>
+</span>27 <span style=''></span><span style='background: #AEF1AE'>            imgTagged.map(o =&gt; {
+</span>28 <span style=''></span><span style='background: #AEF1AE'>              CategoryDetail(category.id, category.name, category.parentId, o.toList)
+</span>29 <span style=''></span><span style='background: #AEF1AE'>            })
+</span>30 <span style=''></span><span style='background: #AEF1AE'>          }
+</span>31 <span style=''></span><span style='background: #AEF1AE'>        })
+</span>32 <span style=''></span><span style='background: #AEF1AE'>      })</span><span style=''>
+</span>33 <span style=''>      t
+</span>34 <span style=''>    }
+</span>35 <span style=''>  }
+</span>36 <span style=''>}
 </span></pre>
           </div>
           <div class="tab-pane" id="statementlist">
@@ -124,7 +123,7 @@
         <td>
           677
           -
-          1213
+          1110
         </td>
         <td>
           ApplyToImplicitArgs
@@ -135,8 +134,7 @@
         <td style="background: #AEF1AE">
           slick.jdbc.PostgresProfile.api.streamableQueryActionExtensionMethods[whatson.model.Category, Seq](CategoryDetailQuery.this.q).result.flatMap[Seq[whatson.model.detail.CategoryDetail], slick.dbio.NoStream, slick.dbio.Effect.Read](((y: Seq[whatson.model.Category]) =&gt; slick.jdbc.PostgresProfile.api.DBIO.sequence[whatson.model.detail.CategoryDetail, Seq, slick.dbio.Effect.Read](y.map[slick.dbio.DBIOAction[whatson.model.detail.CategoryDetail,slick.dbio.NoStream,slick.dbio.Effect.Read], Seq[slick.dbio.DBIOAction[whatson.model.detail.CategoryDetail,slick.dbio.NoStream,slick.dbio.Effect.Read]]](((x0$2: whatson.model.Category) =&gt; x0$2 match {
   case (category @ _) =&gt; {
-    val imgs: slick.lifted.Query[slick.lifted.Rep[Int],Int,Seq] = whatson.db.CategoryTable.category.filter[slick.lifted.Rep[Option[Boolean]]](((x$1: whatson.db.CategoryTable) =&gt; slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](x$1.id)(slick.jdbc.PostgresProfile.api.intColumnType).===[Option[Int], Option[Boolean]](slick.jdbc.PostgresProfile.api.valueToConstColumn[Option[Int]](category.id)(ast.this.TypedType.typedTypeToOptionTypedType[Int](slick.jdbc.PostgresProfile.api.intColumnType)))(lifted.this.OptionMapper2.getOptionMapper2TO[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType))))(lifted.this.CanBeQueryCondition.BooleanOptionColumnCanBeQueryCondition).flatMap[whatson.db.ImageTable, whatson.model.Image, Seq](((x$2: whatson.db.CategoryTable) =&gt; x$2.images)).map[slick.lifted.Rep[Int], slick.lifted.Rep[Int], Int](((x$3: whatson.db.ImageTable) =&gt; x$3.id))(lifted.this.Shape.repColumnShape[Int, Nothing](slick.jdbc.PostgresProfile.api.intColumnType));
-    val imgTagged: slick.dbio.DBIOAction[Seq[whatson.model.detail.TaggedImage],slick.dbio.NoStream,slick.dbio.Effect.Read] = slick.jdbc.PostgresProfile.api.streamableQueryActionExtensionMethods[(Option[String], whatson.model.Image), Seq](whatson.db.CategoryTable.category.filter[slick.lifted.Rep[Option[Boolean]]](((x$4: whatson.db.CategoryTable) =&gt; slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](x$4.id)(slick.jdbc.PostgresProfile.api.intColumnType).===[Option[Int], Option[Boolean]](slick.jdbc.PostgresProfile.api.valueToConstColumn[Option[Int]](category.id)(ast.this.TypedType.typedTypeToOptionTypedType[Int](slick.jdbc.PostgresProfile.api.intColumnType)))(lifted.this.OptionMapper2.getOptionMapper2TO[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType))))(lifted.this.CanBeQueryCondition.BooleanOptionColumnCanBeQueryCondition).flatMap[(slick.lifted.Rep[Option[String]], whatson.db.ImageTable), (Option[String], whatson.model.Image), Seq](((x$5: whatson.db.CategoryTable) =&gt; x$5.taggedImages))).result.map[Seq[whatson.model.detail.TaggedImage]](((l: Seq[(Option[String], whatson.model.Image)]) =&gt; l.map[whatson.model.detail.TaggedImage, Seq[whatson.model.detail.TaggedImage]](((x: (Option[String], whatson.model.Image)) =&gt; TaggedImage.apply(x._2.id, x._2.name, x._1)))(collection.this.Seq.canBuildFrom[whatson.model.detail.TaggedImage])))(ec);
+    val imgTagged: slick.dbio.DBIOAction[Seq[whatson.model.detail.TaggedImage],slick.dbio.NoStream,slick.dbio.Effect.Read] = slick.jdbc.PostgresProfile.api.streamableQueryActionExtensionMethods[(Option[String], whatson.model.Image), Seq](whatson.db.CategoryTable.category.filter[slick.lifted.Rep[Option[Boolean]]](((x$1: whatson.db.CategoryTable) =&gt; slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](x$1.id)(slick.jdbc.PostgresProfile.api.intColumnType).===[Option[Int], Option[Boolean]](slick.jdbc.PostgresProfile.api.valueToConstColumn[Option[Int]](category.id)(ast.this.TypedType.typedTypeToOptionTypedType[Int](slick.jdbc.PostgresProfile.api.intColumnType)))(lifted.this.OptionMapper2.getOptionMapper2TO[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType))))(lifted.this.CanBeQueryCondition.BooleanOptionColumnCanBeQueryCondition).flatMap[(slick.lifted.Rep[Option[String]], whatson.db.ImageTable), (Option[String], whatson.model.Image), Seq](((x$2: whatson.db.CategoryTable) =&gt; x$2.taggedImages))).result.map[Seq[whatson.model.detail.TaggedImage]](((l: Seq[(Option[String], whatson.model.Image)]) =&gt; l.map[whatson.model.detail.TaggedImage, Seq[whatson.model.detail.TaggedImage]](((x: (Option[String], whatson.model.Image)) =&gt; TaggedImage.apply(x._2.id, x._2.name, x._1)))(collection.this.Seq.canBuildFrom[whatson.model.detail.TaggedImage])))(ec);
     imgTagged.map[whatson.model.detail.CategoryDetail](((o: Seq[whatson.model.detail.TaggedImage]) =&gt; CategoryDetail.apply(category.id, category.name, category.parentId, o.toList)))(ec)
   }
 }))(collection.this.Seq.canBuildFrom[slick.dbio.DBIOAction[whatson.model.detail.CategoryDetail,slick.dbio.NoStream,slick.dbio.Effect.Read]]))(collection.this.Seq.canBuildFrom[whatson.model.detail.CategoryDetail])))(ec)
