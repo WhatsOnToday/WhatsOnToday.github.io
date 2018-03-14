@@ -98,7 +98,7 @@
 </span>74 <span style=''>   * @param profile The social profile to save.
 </span>75 <span style=''>   * @return The user for whom the profile was saved.
 </span>76 <span style=''>   */
-</span>77 <span style=''>  def save(profile: CommonSocialProfile) = {
+</span>77 <span style=''>  def save(profile: CommonSocialProfile, userType: String) = {
 </span>78 <span style=''>    val q = </span><span style='background: #F0ADAD'>for {
 </span>79 <span style=''></span><span style='background: #F0ADAD'>      l &lt;- login if l.providerId === profile.loginInfo.providerID &amp;&amp; lower(l.providerKey) === lower(profile.loginInfo.providerKey)
 </span>80 <span style=''></span><span style='background: #F0ADAD'>    } yield l</span><span style=''>
@@ -106,14 +106,16 @@
 </span>82 <span style=''>
 </span>83 <span style=''>    val l = </span><span style='background: #F0ADAD'>profile.email.getOrElse(&quot;&quot;)</span><span style=''>
 </span>84 <span style=''>    val loginInsert = </span><span style='background: #F0ADAD'>Login(None,profile.email.getOrElse(&quot;&quot;),None,None,None,
-</span>85 <span style=''></span><span style='background: #F0ADAD'>                 profile.loginInfo.providerID,profile.loginInfo.providerKey,true)</span><span style=''>
+</span>85 <span style=''></span><span style='background: #F0ADAD'>                 profile.loginInfo.providerID,profile.loginInfo.providerKey,true, userType)</span><span style=''>
 </span>86 <span style=''>
 </span>87 <span style=''>    </span><span style='background: #F0ADAD'>db.run(qa.update(l)).flatMap {
 </span>88 <span style=''></span><span style='background: #F0ADAD'>      case 0 =&gt; db.run(login += loginInsert)
 </span>89 <span style=''></span><span style='background: #F0ADAD'>      case i =&gt; Future(i)
 </span>90 <span style=''></span><span style='background: #F0ADAD'>    }.flatMap(_ =&gt; db.run(q.result)).map(_.head)</span><span style=''>
 </span>91 <span style=''>  }
-</span>92 <span style=''>}
+</span>92 <span style=''>
+</span>93 <span style=''>  def save(profile: CommonSocialProfile) = </span><span style='background: #F0ADAD'>this.save(profile, &quot;user&quot;)</span><span style=''>
+</span>94 <span style=''>}
 </span></pre>
           </div>
           <div class="tab-pane" id="statementlist">
@@ -130,91 +132,7 @@
           29
         </td>
         <td>
-          2730
-        </td>
-        <td>
-          1068
-          -
-          1068
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.stringColumnType
-        </td>
-        <td style="background: #AEF1AE">
-          slick.jdbc.PostgresProfile.api.stringColumnType
-        </td>
-      </tr><tr>
-        <td>
-          29
-        </td>
-        <td>
-          2732
-        </td>
-        <td>
-          1055
-          -
-          1092
-        </td>
-        <td>
-          ApplyToImplicitArgs
-        </td>
-        <td>
-          slick.lifted.ColumnExtensionMethods.===
-        </td>
-        <td style="background: #AEF1AE">
-          slick.jdbc.PostgresProfile.api.columnExtensionMethods[String](x.providerId)(slick.jdbc.PostgresProfile.api.stringColumnType).===[String, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[String](loginInfo.providerID)(slick.jdbc.PostgresProfile.api.stringColumnType))(lifted.this.OptionMapper2.getOptionMapper2TT[String, String, Boolean](slick.jdbc.PostgresProfile.api.stringColumnType))
-        </td>
-      </tr><tr>
-        <td>
-          29
-        </td>
-        <td>
-          2750
-        </td>
-        <td>
-          1049
-          -
-          1049
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          slick.lifted.CanBeQueryCondition.BooleanColumnCanBeQueryCondition
-        </td>
-        <td style="background: #AEF1AE">
-          lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition
-        </td>
-      </tr><tr>
-        <td>
-          29
-        </td>
-        <td>
-          2726
-        </td>
-        <td>
-          1057
-          -
-          1057
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.stringColumnType
-        </td>
-        <td style="background: #AEF1AE">
-          slick.jdbc.PostgresProfile.api.stringColumnType
-        </td>
-      </tr><tr>
-        <td>
-          29
-        </td>
-        <td>
-          2729
+          2748
         </td>
         <td>
           1072
@@ -235,28 +153,7 @@
           29
         </td>
         <td>
-          2728
-        </td>
-        <td>
-          1082
-          -
-          1082
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.stringColumnType
-        </td>
-        <td style="background: #AEF1AE">
-          slick.jdbc.PostgresProfile.api.stringColumnType
-        </td>
-      </tr><tr>
-        <td>
-          29
-        </td>
-        <td>
-          2731
+          2750
         </td>
         <td>
           1068
@@ -277,7 +174,7 @@
           29
         </td>
         <td>
-          2725
+          2744
         </td>
         <td>
           1055
@@ -298,7 +195,70 @@
           29
         </td>
         <td>
-          2751
+          2747
+        </td>
+        <td>
+          1082
+          -
+          1082
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.stringColumnType
+        </td>
+        <td style="background: #AEF1AE">
+          slick.jdbc.PostgresProfile.api.stringColumnType
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          2746
+        </td>
+        <td>
+          1072
+          -
+          1092
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.mohiva.play.silhouette.api.LoginInfo.providerID
+        </td>
+        <td style="background: #AEF1AE">
+          loginInfo.providerID
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          2749
+        </td>
+        <td>
+          1068
+          -
+          1068
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.stringColumnType
+        </td>
+        <td style="background: #AEF1AE">
+          slick.jdbc.PostgresProfile.api.stringColumnType
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          2770
         </td>
         <td>
           1037
@@ -319,75 +279,33 @@
           29
         </td>
         <td>
-          2727
+          2769
         </td>
         <td>
-          1072
+          1049
+          -
+          1049
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.lifted.CanBeQueryCondition.BooleanColumnCanBeQueryCondition
+        </td>
+        <td style="background: #AEF1AE">
+          lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          2751
+        </td>
+        <td>
+          1055
           -
           1092
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          com.mohiva.play.silhouette.api.LoginInfo.providerID
-        </td>
-        <td style="background: #AEF1AE">
-          loginInfo.providerID
-        </td>
-      </tr><tr>
-        <td>
-          30
-        </td>
-        <td>
-          2739
-        </td>
-        <td>
-          1148
-          -
-          1176
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          whatson.db.Util.lower
-        </td>
-        <td style="background: #AEF1AE">
-          whatson.db.Util.lower(slick.jdbc.PostgresProfile.api.valueToConstColumn[String](loginInfo.providerKey)(slick.jdbc.PostgresProfile.api.stringColumnType))
-        </td>
-      </tr><tr>
-        <td>
-          30
-        </td>
-        <td>
-          2733
-        </td>
-        <td>
-          1129
-          -
-          1142
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          whatson.db.LoginTable.providerKey
-        </td>
-        <td style="background: #AEF1AE">
-          x.providerKey
-        </td>
-      </tr><tr>
-        <td>
-          30
-        </td>
-        <td>
-          2742
-        </td>
-        <td>
-          1123
-          -
-          1176
         </td>
         <td>
           ApplyToImplicitArgs
@@ -396,61 +314,19 @@
           slick.lifted.ColumnExtensionMethods.===
         </td>
         <td style="background: #AEF1AE">
-          slick.jdbc.PostgresProfile.api.columnExtensionMethods[String](whatson.db.Util.lower(x.providerKey))(slick.jdbc.PostgresProfile.api.stringColumnType).===[String, Boolean](whatson.db.Util.lower(slick.jdbc.PostgresProfile.api.valueToConstColumn[String](loginInfo.providerKey)(slick.jdbc.PostgresProfile.api.stringColumnType)))(lifted.this.OptionMapper2.getOptionMapper2TT[String, String, Boolean](slick.jdbc.PostgresProfile.api.stringColumnType))
+          slick.jdbc.PostgresProfile.api.columnExtensionMethods[String](x.providerId)(slick.jdbc.PostgresProfile.api.stringColumnType).===[String, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[String](loginInfo.providerID)(slick.jdbc.PostgresProfile.api.stringColumnType))(lifted.this.OptionMapper2.getOptionMapper2TT[String, String, Boolean](slick.jdbc.PostgresProfile.api.stringColumnType))
         </td>
       </tr><tr>
         <td>
-          30
+          29
         </td>
         <td>
-          2741
+          2745
         </td>
         <td>
-          1144
+          1057
           -
-          1144
-        </td>
-        <td>
-          ApplyToImplicitArgs
-        </td>
-        <td>
-          slick.lifted.OptionMapper2.getOptionMapper2TT
-        </td>
-        <td style="background: #AEF1AE">
-          lifted.this.OptionMapper2.getOptionMapper2TT[String, String, Boolean](slick.jdbc.PostgresProfile.api.stringColumnType)
-        </td>
-      </tr><tr>
-        <td>
-          30
-        </td>
-        <td>
-          2744
-        </td>
-        <td>
-          1120
-          -
-          1120
-        </td>
-        <td>
-          ApplyToImplicitArgs
-        </td>
-        <td>
-          slick.lifted.OptionMapper2.getOptionMapper2TT
-        </td>
-        <td style="background: #AEF1AE">
-          lifted.this.OptionMapper2.getOptionMapper2TT[Boolean, Boolean, Boolean](slick.jdbc.PostgresProfile.api.booleanColumnType)
-        </td>
-      </tr><tr>
-        <td>
-          30
-        </td>
-        <td>
-          2735
-        </td>
-        <td>
-          1128
-          -
-          1128
+          1057
         </td>
         <td>
           Select
@@ -466,7 +342,7 @@
           30
         </td>
         <td>
-          2738
+          2757
         </td>
         <td>
           1154
@@ -487,28 +363,7 @@
           30
         </td>
         <td>
-          2737
-        </td>
-        <td>
-          1164
-          -
-          1164
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.stringColumnType
-        </td>
-        <td style="background: #AEF1AE">
-          slick.jdbc.PostgresProfile.api.stringColumnType
-        </td>
-      </tr><tr>
-        <td>
-          30
-        </td>
-        <td>
-          2740
+          2759
         </td>
         <td>
           1144
@@ -529,7 +384,7 @@
           30
         </td>
         <td>
-          2734
+          2753
         </td>
         <td>
           1123
@@ -550,7 +405,7 @@
           30
         </td>
         <td>
-          2743
+          2762
         </td>
         <td>
           1120
@@ -571,7 +426,28 @@
           30
         </td>
         <td>
-          2736
+          2756
+        </td>
+        <td>
+          1164
+          -
+          1164
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.stringColumnType
+        </td>
+        <td style="background: #AEF1AE">
+          slick.jdbc.PostgresProfile.api.stringColumnType
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          2755
         </td>
         <td>
           1154
@@ -592,7 +468,7 @@
           30
         </td>
         <td>
-          2745
+          2764
         </td>
         <td>
           1055
@@ -610,15 +486,99 @@
         </td>
       </tr><tr>
         <td>
-          31
+          30
         </td>
         <td>
-          2748
+          2758
         </td>
         <td>
-          1204
+          1148
           -
-          1204
+          1176
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          whatson.db.Util.lower
+        </td>
+        <td style="background: #AEF1AE">
+          whatson.db.Util.lower(slick.jdbc.PostgresProfile.api.valueToConstColumn[String](loginInfo.providerKey)(slick.jdbc.PostgresProfile.api.stringColumnType))
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          2752
+        </td>
+        <td>
+          1129
+          -
+          1142
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.db.LoginTable.providerKey
+        </td>
+        <td style="background: #AEF1AE">
+          x.providerKey
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          2761
+        </td>
+        <td>
+          1123
+          -
+          1176
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.ColumnExtensionMethods.===
+        </td>
+        <td style="background: #AEF1AE">
+          slick.jdbc.PostgresProfile.api.columnExtensionMethods[String](whatson.db.Util.lower(x.providerKey))(slick.jdbc.PostgresProfile.api.stringColumnType).===[String, Boolean](whatson.db.Util.lower(slick.jdbc.PostgresProfile.api.valueToConstColumn[String](loginInfo.providerKey)(slick.jdbc.PostgresProfile.api.stringColumnType)))(lifted.this.OptionMapper2.getOptionMapper2TT[String, String, Boolean](slick.jdbc.PostgresProfile.api.stringColumnType))
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          2760
+        </td>
+        <td>
+          1144
+          -
+          1144
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.OptionMapper2.getOptionMapper2TT
+        </td>
+        <td style="background: #AEF1AE">
+          lifted.this.OptionMapper2.getOptionMapper2TT[String, String, Boolean](slick.jdbc.PostgresProfile.api.stringColumnType)
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          2763
+        </td>
+        <td>
+          1120
+          -
+          1120
         </td>
         <td>
           ApplyToImplicitArgs
@@ -631,10 +591,31 @@
         </td>
       </tr><tr>
         <td>
+          30
+        </td>
+        <td>
+          2754
+        </td>
+        <td>
+          1128
+          -
+          1128
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.stringColumnType
+        </td>
+        <td style="background: #AEF1AE">
+          slick.jdbc.PostgresProfile.api.stringColumnType
+        </td>
+      </tr><tr>
+        <td>
           31
         </td>
         <td>
-          2747
+          2766
         </td>
         <td>
           1204
@@ -655,7 +636,28 @@
           31
         </td>
         <td>
-          2746
+          2768
+        </td>
+        <td>
+          1055
+          -
+          1218
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.BooleanColumnExtensionMethods.&amp;&amp;
+        </td>
+        <td style="background: #AEF1AE">
+          slick.jdbc.PostgresProfile.api.booleanColumnExtensionMethods(slick.jdbc.PostgresProfile.api.booleanColumnExtensionMethods(slick.jdbc.PostgresProfile.api.columnExtensionMethods[String](x.providerId)(slick.jdbc.PostgresProfile.api.stringColumnType).===[String, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[String](loginInfo.providerID)(slick.jdbc.PostgresProfile.api.stringColumnType))(lifted.this.OptionMapper2.getOptionMapper2TT[String, String, Boolean](slick.jdbc.PostgresProfile.api.stringColumnType))).&amp;&amp;[Boolean, Boolean](slick.jdbc.PostgresProfile.api.columnExtensionMethods[String](whatson.db.Util.lower(x.providerKey))(slick.jdbc.PostgresProfile.api.stringColumnType).===[String, Boolean](whatson.db.Util.lower(slick.jdbc.PostgresProfile.api.valueToConstColumn[String](loginInfo.providerKey)(slick.jdbc.PostgresProfile.api.stringColumnType)))(lifted.this.OptionMapper2.getOptionMapper2TT[String, String, Boolean](slick.jdbc.PostgresProfile.api.stringColumnType)))(lifted.this.OptionMapper2.getOptionMapper2TT[Boolean, Boolean, Boolean](slick.jdbc.PostgresProfile.api.booleanColumnType))).&amp;&amp;[Boolean, Boolean](x.confirmed)(lifted.this.OptionMapper2.getOptionMapper2TT[Boolean, Boolean, Boolean](slick.jdbc.PostgresProfile.api.booleanColumnType))
+        </td>
+      </tr><tr>
+        <td>
+          31
+        </td>
+        <td>
+          2765
         </td>
         <td>
           1207
@@ -676,49 +678,28 @@
           31
         </td>
         <td>
-          2749
+          2767
         </td>
         <td>
-          1055
+          1204
           -
-          1218
+          1204
         </td>
         <td>
           ApplyToImplicitArgs
         </td>
         <td>
-          slick.lifted.BooleanColumnExtensionMethods.&amp;&amp;
+          slick.lifted.OptionMapper2.getOptionMapper2TT
         </td>
         <td style="background: #AEF1AE">
-          slick.jdbc.PostgresProfile.api.booleanColumnExtensionMethods(slick.jdbc.PostgresProfile.api.booleanColumnExtensionMethods(slick.jdbc.PostgresProfile.api.columnExtensionMethods[String](x.providerId)(slick.jdbc.PostgresProfile.api.stringColumnType).===[String, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[String](loginInfo.providerID)(slick.jdbc.PostgresProfile.api.stringColumnType))(lifted.this.OptionMapper2.getOptionMapper2TT[String, String, Boolean](slick.jdbc.PostgresProfile.api.stringColumnType))).&amp;&amp;[Boolean, Boolean](slick.jdbc.PostgresProfile.api.columnExtensionMethods[String](whatson.db.Util.lower(x.providerKey))(slick.jdbc.PostgresProfile.api.stringColumnType).===[String, Boolean](whatson.db.Util.lower(slick.jdbc.PostgresProfile.api.valueToConstColumn[String](loginInfo.providerKey)(slick.jdbc.PostgresProfile.api.stringColumnType)))(lifted.this.OptionMapper2.getOptionMapper2TT[String, String, Boolean](slick.jdbc.PostgresProfile.api.stringColumnType)))(lifted.this.OptionMapper2.getOptionMapper2TT[Boolean, Boolean, Boolean](slick.jdbc.PostgresProfile.api.booleanColumnType))).&amp;&amp;[Boolean, Boolean](x.confirmed)(lifted.this.OptionMapper2.getOptionMapper2TT[Boolean, Boolean, Boolean](slick.jdbc.PostgresProfile.api.booleanColumnType))
+          lifted.this.OptionMapper2.getOptionMapper2TT[Boolean, Boolean, Boolean](slick.jdbc.PostgresProfile.api.booleanColumnType)
         </td>
       </tr><tr>
         <td>
           32
         </td>
         <td>
-          2753
-        </td>
-        <td>
-          1245
-          -
-          1257
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          scala.collection.TraversableLike.headOption
-        </td>
-        <td style="background: #AEF1AE">
-          x$1.headOption
-        </td>
-      </tr><tr>
-        <td>
-          32
-        </td>
-        <td>
-          2755
+          2774
         </td>
         <td>
           1224
@@ -739,7 +720,7 @@
           32
         </td>
         <td>
-          2752
+          2771
         </td>
         <td>
           1231
@@ -760,7 +741,7 @@
           32
         </td>
         <td>
-          2754
+          2773
         </td>
         <td>
           1244
@@ -778,94 +759,31 @@
         </td>
       </tr><tr>
         <td>
-          42
+          32
         </td>
         <td>
-          2757
+          2772
         </td>
         <td>
-          1599
+          1245
           -
-          1599
+          1257
         </td>
         <td>
           Select
         </td>
         <td>
-          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.stringColumnType
+          scala.collection.TraversableLike.headOption
         </td>
         <td style="background: #AEF1AE">
-          slick.jdbc.PostgresProfile.api.stringColumnType
+          x$1.headOption
         </td>
       </tr><tr>
         <td>
           42
         </td>
         <td>
-          2777
-        </td>
-        <td>
-          1591
-          -
-          1591
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          slick.lifted.CanBeQueryCondition.BooleanColumnCanBeQueryCondition
-        </td>
-        <td style="background: #AEF1AE">
-          lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition
-        </td>
-      </tr><tr>
-        <td>
-          42
-        </td>
-        <td>
-          2759
-        </td>
-        <td>
-          1624
-          -
-          1624
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.stringColumnType
-        </td>
-        <td style="background: #AEF1AE">
-          slick.jdbc.PostgresProfile.api.stringColumnType
-        </td>
-      </tr><tr>
-        <td>
-          42
-        </td>
-        <td>
-          2762
-        </td>
-        <td>
-          1610
-          -
-          1610
-        </td>
-        <td>
-          ApplyToImplicitArgs
-        </td>
-        <td>
-          slick.lifted.OptionMapper2.getOptionMapper2TT
-        </td>
-        <td style="background: #AEF1AE">
-          lifted.this.OptionMapper2.getOptionMapper2TT[String, String, Boolean](slick.jdbc.PostgresProfile.api.stringColumnType)
-        </td>
-      </tr><tr>
-        <td>
-          42
-        </td>
-        <td>
-          2756
+          2775
         </td>
         <td>
           1597
@@ -886,7 +804,7 @@
           42
         </td>
         <td>
-          2758
+          2777
         </td>
         <td>
           1614
@@ -907,7 +825,7 @@
           42
         </td>
         <td>
-          2761
+          2780
         </td>
         <td>
           1610
@@ -928,7 +846,70 @@
           42
         </td>
         <td>
-          2760
+          2797
+        </td>
+        <td>
+          1579
+          -
+          1719
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.Query.filter
+        </td>
+        <td style="background: #AEF1AE">
+          whatson.db.LoginTable.login.filter[slick.lifted.Rep[Boolean]](((x: whatson.db.LoginTable) =&gt; slick.jdbc.PostgresProfile.api.booleanColumnExtensionMethods(slick.jdbc.PostgresProfile.api.columnExtensionMethods[String](x.providerId)(slick.jdbc.PostgresProfile.api.stringColumnType).===[String, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[String](loginInfo.providerID)(slick.jdbc.PostgresProfile.api.stringColumnType))(lifted.this.OptionMapper2.getOptionMapper2TT[String, String, Boolean](slick.jdbc.PostgresProfile.api.stringColumnType))).&amp;&amp;[Boolean, Boolean](slick.jdbc.PostgresProfile.api.columnExtensionMethods[String](whatson.db.Util.lower(x.providerKey))(slick.jdbc.PostgresProfile.api.stringColumnType).===[String, Boolean](whatson.db.Util.lower(slick.jdbc.PostgresProfile.api.valueToConstColumn[String](loginInfo.providerKey)(slick.jdbc.PostgresProfile.api.stringColumnType)))(lifted.this.OptionMapper2.getOptionMapper2TT[String, String, Boolean](slick.jdbc.PostgresProfile.api.stringColumnType)))(lifted.this.OptionMapper2.getOptionMapper2TT[Boolean, Boolean, Boolean](slick.jdbc.PostgresProfile.api.booleanColumnType))))(lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition)
+        </td>
+      </tr><tr>
+        <td>
+          42
+        </td>
+        <td>
+          2782
+        </td>
+        <td>
+          1597
+          -
+          1634
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.ColumnExtensionMethods.===
+        </td>
+        <td style="background: #AEF1AE">
+          slick.jdbc.PostgresProfile.api.columnExtensionMethods[String](x.providerId)(slick.jdbc.PostgresProfile.api.stringColumnType).===[String, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[String](loginInfo.providerID)(slick.jdbc.PostgresProfile.api.stringColumnType))(lifted.this.OptionMapper2.getOptionMapper2TT[String, String, Boolean](slick.jdbc.PostgresProfile.api.stringColumnType))
+        </td>
+      </tr><tr>
+        <td>
+          42
+        </td>
+        <td>
+          2776
+        </td>
+        <td>
+          1599
+          -
+          1599
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.stringColumnType
+        </td>
+        <td style="background: #AEF1AE">
+          slick.jdbc.PostgresProfile.api.stringColumnType
+        </td>
+      </tr><tr>
+        <td>
+          42
+        </td>
+        <td>
+          2779
         </td>
         <td>
           1614
@@ -952,51 +933,51 @@
           2778
         </td>
         <td>
-          1579
+          1624
           -
-          1719
+          1624
         </td>
         <td>
-          ApplyToImplicitArgs
+          Select
         </td>
         <td>
-          slick.lifted.Query.filter
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.stringColumnType
         </td>
         <td style="background: #AEF1AE">
-          whatson.db.LoginTable.login.filter[slick.lifted.Rep[Boolean]](((x: whatson.db.LoginTable) =&gt; slick.jdbc.PostgresProfile.api.booleanColumnExtensionMethods(slick.jdbc.PostgresProfile.api.columnExtensionMethods[String](x.providerId)(slick.jdbc.PostgresProfile.api.stringColumnType).===[String, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[String](loginInfo.providerID)(slick.jdbc.PostgresProfile.api.stringColumnType))(lifted.this.OptionMapper2.getOptionMapper2TT[String, String, Boolean](slick.jdbc.PostgresProfile.api.stringColumnType))).&amp;&amp;[Boolean, Boolean](slick.jdbc.PostgresProfile.api.columnExtensionMethods[String](whatson.db.Util.lower(x.providerKey))(slick.jdbc.PostgresProfile.api.stringColumnType).===[String, Boolean](whatson.db.Util.lower(slick.jdbc.PostgresProfile.api.valueToConstColumn[String](loginInfo.providerKey)(slick.jdbc.PostgresProfile.api.stringColumnType)))(lifted.this.OptionMapper2.getOptionMapper2TT[String, String, Boolean](slick.jdbc.PostgresProfile.api.stringColumnType)))(lifted.this.OptionMapper2.getOptionMapper2TT[Boolean, Boolean, Boolean](slick.jdbc.PostgresProfile.api.booleanColumnType))))(lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition)
+          slick.jdbc.PostgresProfile.api.stringColumnType
         </td>
       </tr><tr>
         <td>
           42
         </td>
         <td>
-          2763
+          2796
         </td>
         <td>
-          1597
+          1591
           -
-          1634
+          1591
         </td>
         <td>
-          ApplyToImplicitArgs
+          Select
         </td>
         <td>
-          slick.lifted.ColumnExtensionMethods.===
+          slick.lifted.CanBeQueryCondition.BooleanColumnCanBeQueryCondition
         </td>
         <td style="background: #AEF1AE">
-          slick.jdbc.PostgresProfile.api.columnExtensionMethods[String](x.providerId)(slick.jdbc.PostgresProfile.api.stringColumnType).===[String, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[String](loginInfo.providerID)(slick.jdbc.PostgresProfile.api.stringColumnType))(lifted.this.OptionMapper2.getOptionMapper2TT[String, String, Boolean](slick.jdbc.PostgresProfile.api.stringColumnType))
+          lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition
         </td>
       </tr><tr>
         <td>
-          43
+          42
         </td>
         <td>
-          2775
+          2781
         </td>
         <td>
-          1662
+          1610
           -
-          1662
+          1610
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1005,98 +986,14 @@
           slick.lifted.OptionMapper2.getOptionMapper2TT
         </td>
         <td style="background: #AEF1AE">
-          lifted.this.OptionMapper2.getOptionMapper2TT[Boolean, Boolean, Boolean](slick.jdbc.PostgresProfile.api.booleanColumnType)
+          lifted.this.OptionMapper2.getOptionMapper2TT[String, String, Boolean](slick.jdbc.PostgresProfile.api.stringColumnType)
         </td>
       </tr><tr>
         <td>
           43
         </td>
         <td>
-          2766
-        </td>
-        <td>
-          1670
-          -
-          1670
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.stringColumnType
-        </td>
-        <td style="background: #AEF1AE">
-          slick.jdbc.PostgresProfile.api.stringColumnType
-        </td>
-      </tr><tr>
-        <td>
-          43
-        </td>
-        <td>
-          2774
-        </td>
-        <td>
-          1662
-          -
-          1662
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.booleanColumnType
-        </td>
-        <td style="background: #AEF1AE">
-          slick.jdbc.PostgresProfile.api.booleanColumnType
-        </td>
-      </tr><tr>
-        <td>
-          43
-        </td>
-        <td>
-          2768
-        </td>
-        <td>
-          1706
-          -
-          1706
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.stringColumnType
-        </td>
-        <td style="background: #AEF1AE">
-          slick.jdbc.PostgresProfile.api.stringColumnType
-        </td>
-      </tr><tr>
-        <td>
-          43
-        </td>
-        <td>
-          2771
-        </td>
-        <td>
-          1686
-          -
-          1686
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.stringColumnType
-        </td>
-        <td style="background: #AEF1AE">
-          slick.jdbc.PostgresProfile.api.stringColumnType
-        </td>
-      </tr><tr>
-        <td>
-          43
-        </td>
-        <td>
-          2765
+          2784
         </td>
         <td>
           1665
@@ -1117,7 +1014,28 @@
           43
         </td>
         <td>
-          2764
+          2793
+        </td>
+        <td>
+          1662
+          -
+          1662
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.booleanColumnType
+        </td>
+        <td style="background: #AEF1AE">
+          slick.jdbc.PostgresProfile.api.booleanColumnType
+        </td>
+      </tr><tr>
+        <td>
+          43
+        </td>
+        <td>
+          2783
         </td>
         <td>
           1671
@@ -1138,7 +1056,7 @@
           43
         </td>
         <td>
-          2773
+          2792
         </td>
         <td>
           1665
@@ -1159,7 +1077,7 @@
           43
         </td>
         <td>
-          2776
+          2795
         </td>
         <td>
           1597
@@ -1180,7 +1098,7 @@
           43
         </td>
         <td>
-          2767
+          2786
         </td>
         <td>
           1696
@@ -1201,7 +1119,7 @@
           43
         </td>
         <td>
-          2770
+          2789
         </td>
         <td>
           1690
@@ -1222,7 +1140,7 @@
           43
         </td>
         <td>
-          2769
+          2788
         </td>
         <td>
           1696
@@ -1243,7 +1161,7 @@
           43
         </td>
         <td>
-          2772
+          2791
         </td>
         <td>
           1686
@@ -1261,31 +1179,94 @@
         </td>
       </tr><tr>
         <td>
-          44
+          43
         </td>
         <td>
-          2780
+          2794
         </td>
         <td>
-          1745
+          1662
           -
-          1757
+          1662
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.OptionMapper2.getOptionMapper2TT
+        </td>
+        <td style="background: #AEF1AE">
+          lifted.this.OptionMapper2.getOptionMapper2TT[Boolean, Boolean, Boolean](slick.jdbc.PostgresProfile.api.booleanColumnType)
+        </td>
+      </tr><tr>
+        <td>
+          43
+        </td>
+        <td>
+          2785
+        </td>
+        <td>
+          1670
+          -
+          1670
         </td>
         <td>
           Select
         </td>
         <td>
-          scala.collection.TraversableLike.headOption
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.stringColumnType
         </td>
         <td style="background: #AEF1AE">
-          x$2.headOption
+          slick.jdbc.PostgresProfile.api.stringColumnType
+        </td>
+      </tr><tr>
+        <td>
+          43
+        </td>
+        <td>
+          2787
+        </td>
+        <td>
+          1706
+          -
+          1706
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.stringColumnType
+        </td>
+        <td style="background: #AEF1AE">
+          slick.jdbc.PostgresProfile.api.stringColumnType
+        </td>
+      </tr><tr>
+        <td>
+          43
+        </td>
+        <td>
+          2790
+        </td>
+        <td>
+          1686
+          -
+          1686
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.stringColumnType
+        </td>
+        <td style="background: #AEF1AE">
+          slick.jdbc.PostgresProfile.api.stringColumnType
         </td>
       </tr><tr>
         <td>
           44
         </td>
         <td>
-          2782
+          2801
         </td>
         <td>
           1724
@@ -1306,7 +1287,7 @@
           44
         </td>
         <td>
-          2779
+          2798
         </td>
         <td>
           1731
@@ -1327,7 +1308,7 @@
           44
         </td>
         <td>
-          2781
+          2800
         </td>
         <td>
           1744
@@ -1345,73 +1326,31 @@
         </td>
       </tr><tr>
         <td>
+          44
+        </td>
+        <td>
+          2799
+        </td>
+        <td>
+          1745
+          -
+          1757
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.TraversableLike.headOption
+        </td>
+        <td style="background: #AEF1AE">
+          x$2.headOption
+        </td>
+      </tr><tr>
+        <td>
           50
         </td>
         <td>
           2802
-        </td>
-        <td>
-          1904
-          -
-          1904
-        </td>
-        <td>
-          ApplyToImplicitArgs
-        </td>
-        <td>
-          slick.lifted.OptionMapper2.getOptionMapper2TT
-        </td>
-        <td style="background: #AEF1AE">
-          lifted.this.OptionMapper2.getOptionMapper2TT[Boolean, Boolean, Boolean](slick.jdbc.PostgresProfile.api.booleanColumnType)
-        </td>
-      </tr><tr>
-        <td>
-          50
-        </td>
-        <td>
-          2784
-        </td>
-        <td>
-          1868
-          -
-          1868
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.stringColumnType
-        </td>
-        <td style="background: #AEF1AE">
-          slick.jdbc.PostgresProfile.api.stringColumnType
-        </td>
-      </tr><tr>
-        <td>
-          50
-        </td>
-        <td>
-          2793
-        </td>
-        <td>
-          1912
-          -
-          1912
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.stringColumnType
-        </td>
-        <td style="background: #AEF1AE">
-          slick.jdbc.PostgresProfile.api.stringColumnType
-        </td>
-      </tr><tr>
-        <td>
-          50
-        </td>
-        <td>
-          2783
         </td>
         <td>
           1866
@@ -1432,42 +1371,42 @@
           50
         </td>
         <td>
-          2792
+          2810
         </td>
         <td>
-          1907
+          1913
           -
-          1927
+          1926
         </td>
         <td>
-          Apply
+          Select
         </td>
         <td>
-          whatson.db.Util.lower
+          whatson.db.LoginTable.providerKey
         </td>
         <td style="background: #AEF1AE">
-          whatson.db.Util.lower(l.providerKey)
+          l.providerKey
         </td>
       </tr><tr>
         <td>
           50
         </td>
         <td>
-          2801
+          2819
         </td>
         <td>
-          1904
+          1907
           -
-          1904
+          1960
         </td>
         <td>
-          Select
+          ApplyToImplicitArgs
         </td>
         <td>
-          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.booleanColumnType
+          slick.lifted.ColumnExtensionMethods.===
         </td>
         <td style="background: #AEF1AE">
-          slick.jdbc.PostgresProfile.api.booleanColumnType
+          slick.jdbc.PostgresProfile.api.columnExtensionMethods[String](whatson.db.Util.lower(l.providerKey))(slick.jdbc.PostgresProfile.api.stringColumnType).===[String, Boolean](whatson.db.Util.lower(slick.jdbc.PostgresProfile.api.valueToConstColumn[String](loginInfo.providerKey)(slick.jdbc.PostgresProfile.api.stringColumnType)))(lifted.this.OptionMapper2.getOptionMapper2TT[String, String, Boolean](slick.jdbc.PostgresProfile.api.stringColumnType))
         </td>
       </tr><tr>
         <td>
@@ -1477,60 +1416,60 @@
           2804
         </td>
         <td>
-          1857
+          1883
           -
-          1857
+          1903
         </td>
         <td>
           Select
         </td>
         <td>
-          slick.lifted.CanBeQueryCondition.BooleanColumnCanBeQueryCondition
+          com.mohiva.play.silhouette.api.LoginInfo.providerID
         </td>
         <td style="background: #AEF1AE">
-          lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition
+          loginInfo.providerID
         </td>
       </tr><tr>
         <td>
           50
         </td>
         <td>
-          2795
+          2813
         </td>
         <td>
-          1948
+          1938
           -
-          1948
+          1959
         </td>
         <td>
           Select
         </td>
         <td>
-          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.stringColumnType
+          com.mohiva.play.silhouette.api.LoginInfo.providerKey
         </td>
         <td style="background: #AEF1AE">
-          slick.jdbc.PostgresProfile.api.stringColumnType
+          loginInfo.providerKey
         </td>
       </tr><tr>
         <td>
           50
         </td>
         <td>
-          2786
+          2822
         </td>
         <td>
-          1893
+          1866
           -
-          1893
+          1960
         </td>
         <td>
-          Select
+          ApplyToImplicitArgs
         </td>
         <td>
-          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.stringColumnType
+          slick.lifted.BooleanColumnExtensionMethods.&amp;&amp;
         </td>
         <td style="background: #AEF1AE">
-          slick.jdbc.PostgresProfile.api.stringColumnType
+          slick.jdbc.PostgresProfile.api.booleanColumnExtensionMethods(slick.jdbc.PostgresProfile.api.columnExtensionMethods[String](l.providerId)(slick.jdbc.PostgresProfile.api.stringColumnType).===[String, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[String](loginInfo.providerID)(slick.jdbc.PostgresProfile.api.stringColumnType))(lifted.this.OptionMapper2.getOptionMapper2TT[String, String, Boolean](slick.jdbc.PostgresProfile.api.stringColumnType))).&amp;&amp;[Boolean, Boolean](slick.jdbc.PostgresProfile.api.columnExtensionMethods[String](whatson.db.Util.lower(l.providerKey))(slick.jdbc.PostgresProfile.api.stringColumnType).===[String, Boolean](whatson.db.Util.lower(slick.jdbc.PostgresProfile.api.valueToConstColumn[String](loginInfo.providerKey)(slick.jdbc.PostgresProfile.api.stringColumnType)))(lifted.this.OptionMapper2.getOptionMapper2TT[String, String, Boolean](slick.jdbc.PostgresProfile.api.stringColumnType)))(lifted.this.OptionMapper2.getOptionMapper2TT[Boolean, Boolean, Boolean](slick.jdbc.PostgresProfile.api.booleanColumnType))
         </td>
       </tr><tr>
         <td>
@@ -1540,69 +1479,6 @@
           2807
         </td>
         <td>
-          1840
-          -
-          1974
-        </td>
-        <td>
-          ApplyToImplicitArgs
-        </td>
-        <td>
-          slick.lifted.Query.map
-        </td>
-        <td style="background: #AEF1AE">
-          whatson.db.LoginTable.login.withFilter[slick.lifted.Rep[Boolean]](((l: whatson.db.LoginTable) =&gt; slick.jdbc.PostgresProfile.api.booleanColumnExtensionMethods(slick.jdbc.PostgresProfile.api.columnExtensionMethods[String](l.providerId)(slick.jdbc.PostgresProfile.api.stringColumnType).===[String, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[String](loginInfo.providerID)(slick.jdbc.PostgresProfile.api.stringColumnType))(lifted.this.OptionMapper2.getOptionMapper2TT[String, String, Boolean](slick.jdbc.PostgresProfile.api.stringColumnType))).&amp;&amp;[Boolean, Boolean](slick.jdbc.PostgresProfile.api.columnExtensionMethods[String](whatson.db.Util.lower(l.providerKey))(slick.jdbc.PostgresProfile.api.stringColumnType).===[String, Boolean](whatson.db.Util.lower(slick.jdbc.PostgresProfile.api.valueToConstColumn[String](loginInfo.providerKey)(slick.jdbc.PostgresProfile.api.stringColumnType)))(lifted.this.OptionMapper2.getOptionMapper2TT[String, String, Boolean](slick.jdbc.PostgresProfile.api.stringColumnType)))(lifted.this.OptionMapper2.getOptionMapper2TT[Boolean, Boolean, Boolean](slick.jdbc.PostgresProfile.api.booleanColumnType))))(lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition).map[whatson.db.LoginTable, whatson.db.LoginTable, whatson.model.Login](((l: whatson.db.LoginTable) =&gt; l))(lifted.this.Shape.tableShape[slick.lifted.FlatShapeLevel, whatson.model.Login, whatson.db.LoginTable](scala.Predef.$conforms[whatson.db.LoginTable]))
-        </td>
-      </tr><tr>
-        <td>
-          50
-        </td>
-        <td>
-          2789
-        </td>
-        <td>
-          1879
-          -
-          1879
-        </td>
-        <td>
-          ApplyToImplicitArgs
-        </td>
-        <td>
-          slick.lifted.OptionMapper2.getOptionMapper2TT
-        </td>
-        <td style="background: #AEF1AE">
-          lifted.this.OptionMapper2.getOptionMapper2TT[String, String, Boolean](slick.jdbc.PostgresProfile.api.stringColumnType)
-        </td>
-      </tr><tr>
-        <td>
-          50
-        </td>
-        <td>
-          2798
-        </td>
-        <td>
-          1928
-          -
-          1928
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.stringColumnType
-        </td>
-        <td style="background: #AEF1AE">
-          slick.jdbc.PostgresProfile.api.stringColumnType
-        </td>
-      </tr><tr>
-        <td>
-          50
-        </td>
-        <td>
-          2788
-        </td>
-        <td>
           1879
           -
           1879
@@ -1621,7 +1497,28 @@
           50
         </td>
         <td>
-          2797
+          2825
+        </td>
+        <td>
+          1854
+          -
+          1854
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.AbstractTableShapeImplicits.tableShape
+        </td>
+        <td style="background: #AEF1AE">
+          lifted.this.Shape.tableShape[slick.lifted.FlatShapeLevel, whatson.model.Login, whatson.db.LoginTable](scala.Predef.$conforms[whatson.db.LoginTable])
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          2816
         </td>
         <td>
           1932
@@ -1645,153 +1542,6 @@
           2806
         </td>
         <td>
-          1854
-          -
-          1854
-        </td>
-        <td>
-          ApplyToImplicitArgs
-        </td>
-        <td>
-          slick.lifted.AbstractTableShapeImplicits.tableShape
-        </td>
-        <td style="background: #AEF1AE">
-          lifted.this.Shape.tableShape[slick.lifted.FlatShapeLevel, whatson.model.Login, whatson.db.LoginTable](scala.Predef.$conforms[whatson.db.LoginTable])
-        </td>
-      </tr><tr>
-        <td>
-          50
-        </td>
-        <td>
-          2800
-        </td>
-        <td>
-          1907
-          -
-          1960
-        </td>
-        <td>
-          ApplyToImplicitArgs
-        </td>
-        <td>
-          slick.lifted.ColumnExtensionMethods.===
-        </td>
-        <td style="background: #AEF1AE">
-          slick.jdbc.PostgresProfile.api.columnExtensionMethods[String](whatson.db.Util.lower(l.providerKey))(slick.jdbc.PostgresProfile.api.stringColumnType).===[String, Boolean](whatson.db.Util.lower(slick.jdbc.PostgresProfile.api.valueToConstColumn[String](loginInfo.providerKey)(slick.jdbc.PostgresProfile.api.stringColumnType)))(lifted.this.OptionMapper2.getOptionMapper2TT[String, String, Boolean](slick.jdbc.PostgresProfile.api.stringColumnType))
-        </td>
-      </tr><tr>
-        <td>
-          50
-        </td>
-        <td>
-          2791
-        </td>
-        <td>
-          1913
-          -
-          1926
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          whatson.db.LoginTable.providerKey
-        </td>
-        <td style="background: #AEF1AE">
-          l.providerKey
-        </td>
-      </tr><tr>
-        <td>
-          50
-        </td>
-        <td>
-          2794
-        </td>
-        <td>
-          1938
-          -
-          1959
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          com.mohiva.play.silhouette.api.LoginInfo.providerKey
-        </td>
-        <td style="background: #AEF1AE">
-          loginInfo.providerKey
-        </td>
-      </tr><tr>
-        <td>
-          50
-        </td>
-        <td>
-          2803
-        </td>
-        <td>
-          1866
-          -
-          1960
-        </td>
-        <td>
-          ApplyToImplicitArgs
-        </td>
-        <td>
-          slick.lifted.BooleanColumnExtensionMethods.&amp;&amp;
-        </td>
-        <td style="background: #AEF1AE">
-          slick.jdbc.PostgresProfile.api.booleanColumnExtensionMethods(slick.jdbc.PostgresProfile.api.columnExtensionMethods[String](l.providerId)(slick.jdbc.PostgresProfile.api.stringColumnType).===[String, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[String](loginInfo.providerID)(slick.jdbc.PostgresProfile.api.stringColumnType))(lifted.this.OptionMapper2.getOptionMapper2TT[String, String, Boolean](slick.jdbc.PostgresProfile.api.stringColumnType))).&amp;&amp;[Boolean, Boolean](slick.jdbc.PostgresProfile.api.columnExtensionMethods[String](whatson.db.Util.lower(l.providerKey))(slick.jdbc.PostgresProfile.api.stringColumnType).===[String, Boolean](whatson.db.Util.lower(slick.jdbc.PostgresProfile.api.valueToConstColumn[String](loginInfo.providerKey)(slick.jdbc.PostgresProfile.api.stringColumnType)))(lifted.this.OptionMapper2.getOptionMapper2TT[String, String, Boolean](slick.jdbc.PostgresProfile.api.stringColumnType)))(lifted.this.OptionMapper2.getOptionMapper2TT[Boolean, Boolean, Boolean](slick.jdbc.PostgresProfile.api.booleanColumnType))
-        </td>
-      </tr><tr>
-        <td>
-          50
-        </td>
-        <td>
-          2785
-        </td>
-        <td>
-          1883
-          -
-          1903
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          com.mohiva.play.silhouette.api.LoginInfo.providerID
-        </td>
-        <td style="background: #AEF1AE">
-          loginInfo.providerID
-        </td>
-      </tr><tr>
-        <td>
-          50
-        </td>
-        <td>
-          2805
-        </td>
-        <td>
-          1854
-          -
-          1854
-        </td>
-        <td>
-          TypeApply
-        </td>
-        <td>
-          scala.Predef.$conforms
-        </td>
-        <td style="background: #AEF1AE">
-          scala.Predef.$conforms[whatson.db.LoginTable]
-        </td>
-      </tr><tr>
-        <td>
-          50
-        </td>
-        <td>
-          2787
-        </td>
-        <td>
           1883
           -
           1903
@@ -1810,7 +1560,7 @@
           50
         </td>
         <td>
-          2796
+          2815
         </td>
         <td>
           1938
@@ -1831,7 +1581,28 @@
           50
         </td>
         <td>
-          2799
+          2824
+        </td>
+        <td>
+          1854
+          -
+          1854
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Predef.$conforms
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Predef.$conforms[whatson.db.LoginTable]
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          2818
         </td>
         <td>
           1928
@@ -1852,7 +1623,7 @@
           50
         </td>
         <td>
-          2790
+          2809
         </td>
         <td>
           1866
@@ -1870,31 +1641,241 @@
         </td>
       </tr><tr>
         <td>
-          52
+          50
         </td>
         <td>
-          2810
+          2812
         </td>
         <td>
-          1993
+          1912
           -
-          1993
+          1912
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.stringColumnType
+        </td>
+        <td style="background: #AEF1AE">
+          slick.jdbc.PostgresProfile.api.stringColumnType
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          2821
+        </td>
+        <td>
+          1904
+          -
+          1904
         </td>
         <td>
           ApplyToImplicitArgs
         </td>
         <td>
-          slick.lifted.RepShapeImplicits.repColumnShape
+          slick.lifted.OptionMapper2.getOptionMapper2TT
         </td>
         <td style="background: #AEF1AE">
-          lifted.this.Shape.repColumnShape[Boolean, Nothing](slick.jdbc.PostgresProfile.api.booleanColumnType)
+          lifted.this.OptionMapper2.getOptionMapper2TT[Boolean, Boolean, Boolean](slick.jdbc.PostgresProfile.api.booleanColumnType)
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          2803
+        </td>
+        <td>
+          1868
+          -
+          1868
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.stringColumnType
+        </td>
+        <td style="background: #AEF1AE">
+          slick.jdbc.PostgresProfile.api.stringColumnType
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          2811
+        </td>
+        <td>
+          1907
+          -
+          1927
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          whatson.db.Util.lower
+        </td>
+        <td style="background: #AEF1AE">
+          whatson.db.Util.lower(l.providerKey)
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          2820
+        </td>
+        <td>
+          1904
+          -
+          1904
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.booleanColumnType
+        </td>
+        <td style="background: #AEF1AE">
+          slick.jdbc.PostgresProfile.api.booleanColumnType
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          2805
+        </td>
+        <td>
+          1893
+          -
+          1893
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.stringColumnType
+        </td>
+        <td style="background: #AEF1AE">
+          slick.jdbc.PostgresProfile.api.stringColumnType
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          2814
+        </td>
+        <td>
+          1948
+          -
+          1948
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.stringColumnType
+        </td>
+        <td style="background: #AEF1AE">
+          slick.jdbc.PostgresProfile.api.stringColumnType
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          2823
+        </td>
+        <td>
+          1857
+          -
+          1857
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.lifted.CanBeQueryCondition.BooleanColumnCanBeQueryCondition
+        </td>
+        <td style="background: #AEF1AE">
+          lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          2808
+        </td>
+        <td>
+          1879
+          -
+          1879
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.OptionMapper2.getOptionMapper2TT
+        </td>
+        <td style="background: #AEF1AE">
+          lifted.this.OptionMapper2.getOptionMapper2TT[String, String, Boolean](slick.jdbc.PostgresProfile.api.stringColumnType)
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          2817
+        </td>
+        <td>
+          1928
+          -
+          1928
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.stringColumnType
+        </td>
+        <td style="background: #AEF1AE">
+          slick.jdbc.PostgresProfile.api.stringColumnType
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          2826
+        </td>
+        <td>
+          1840
+          -
+          1974
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.Query.map
+        </td>
+        <td style="background: #AEF1AE">
+          whatson.db.LoginTable.login.withFilter[slick.lifted.Rep[Boolean]](((l: whatson.db.LoginTable) =&gt; slick.jdbc.PostgresProfile.api.booleanColumnExtensionMethods(slick.jdbc.PostgresProfile.api.columnExtensionMethods[String](l.providerId)(slick.jdbc.PostgresProfile.api.stringColumnType).===[String, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[String](loginInfo.providerID)(slick.jdbc.PostgresProfile.api.stringColumnType))(lifted.this.OptionMapper2.getOptionMapper2TT[String, String, Boolean](slick.jdbc.PostgresProfile.api.stringColumnType))).&amp;&amp;[Boolean, Boolean](slick.jdbc.PostgresProfile.api.columnExtensionMethods[String](whatson.db.Util.lower(l.providerKey))(slick.jdbc.PostgresProfile.api.stringColumnType).===[String, Boolean](whatson.db.Util.lower(slick.jdbc.PostgresProfile.api.valueToConstColumn[String](loginInfo.providerKey)(slick.jdbc.PostgresProfile.api.stringColumnType)))(lifted.this.OptionMapper2.getOptionMapper2TT[String, String, Boolean](slick.jdbc.PostgresProfile.api.stringColumnType)))(lifted.this.OptionMapper2.getOptionMapper2TT[Boolean, Boolean, Boolean](slick.jdbc.PostgresProfile.api.booleanColumnType))))(lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition).map[whatson.db.LoginTable, whatson.db.LoginTable, whatson.model.Login](((l: whatson.db.LoginTable) =&gt; l))(lifted.this.Shape.tableShape[slick.lifted.FlatShapeLevel, whatson.model.Login, whatson.db.LoginTable](scala.Predef.$conforms[whatson.db.LoginTable]))
         </td>
       </tr><tr>
         <td>
           52
         </td>
         <td>
-          2809
+          2828
         </td>
         <td>
           1993
@@ -1915,7 +1896,28 @@
           52
         </td>
         <td>
-          2811
+          2827
+        </td>
+        <td>
+          1999
+          -
+          2010
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.db.LoginTable.confirmed
+        </td>
+        <td style="background: #AEF1AE">
+          x.confirmed
+        </td>
+      </tr><tr>
+        <td>
+          52
+        </td>
+        <td>
+          2830
         </td>
         <td>
           1988
@@ -1936,52 +1938,28 @@
           52
         </td>
         <td>
-          2808
+          2829
         </td>
         <td>
-          1999
+          1993
           -
-          2010
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          whatson.db.LoginTable.confirmed
-        </td>
-        <td style="background: #AEF1AE">
-          x.confirmed
-        </td>
-      </tr><tr>
-        <td>
-          54
-        </td>
-        <td>
-          2822
-        </td>
-        <td>
-          2017
-          -
-          2141
+          1993
         </td>
         <td>
           ApplyToImplicitArgs
         </td>
         <td>
-          scala.concurrent.Future.flatMap
+          slick.lifted.RepShapeImplicits.repColumnShape
         </td>
         <td style="background: #AEF1AE">
-          LoginServiceImpl.this.db.run[Int](slick.jdbc.PostgresProfile.api.queryUpdateActionExtensionMethods[Boolean, Seq](qa).update(true)).flatMap[Option[whatson.model.Login]](((x0$1: Int) =&gt; x0$1 match {
-  case 0 =&gt; scala.concurrent.Future.apply[None.type](scala.None)(LoginServiceImpl.this.context)
-  case (i @ _) =&gt; LoginServiceImpl.this.db.run[Seq[whatson.model.Login]](slick.jdbc.PostgresProfile.api.streamableQueryActionExtensionMethods[whatson.model.Login, Seq](q).result).map[Some[whatson.model.Login]](((x: Seq[whatson.model.Login]) =&gt; scala.Some.apply[whatson.model.Login](x.head)))(LoginServiceImpl.this.context)
-}))(LoginServiceImpl.this.context)
+          lifted.this.Shape.repColumnShape[Boolean, Nothing](slick.jdbc.PostgresProfile.api.booleanColumnType)
         </td>
       </tr><tr>
         <td>
           54
         </td>
         <td>
-          2812
+          2831
         </td>
         <td>
           2024
@@ -2002,7 +1980,7 @@
           54
         </td>
         <td>
-          2821
+          2840
         </td>
         <td>
           2049
@@ -2020,31 +1998,34 @@
         </td>
       </tr><tr>
         <td>
-          55
+          54
         </td>
         <td>
-          2813
+          2841
         </td>
         <td>
-          2074
+          2017
           -
-          2078
+          2141
         </td>
         <td>
-          Select
+          ApplyToImplicitArgs
         </td>
         <td>
-          scala.None
+          scala.concurrent.Future.flatMap
         </td>
-        <td style="background: #F0ADAD">
-          scala.None
+        <td style="background: #AEF1AE">
+          LoginServiceImpl.this.db.run[Int](slick.jdbc.PostgresProfile.api.queryUpdateActionExtensionMethods[Boolean, Seq](qa).update(true)).flatMap[Option[whatson.model.Login]](((x0$1: Int) =&gt; x0$1 match {
+  case 0 =&gt; scala.concurrent.Future.apply[None.type](scala.None)(LoginServiceImpl.this.context)
+  case (i @ _) =&gt; LoginServiceImpl.this.db.run[Seq[whatson.model.Login]](slick.jdbc.PostgresProfile.api.streamableQueryActionExtensionMethods[whatson.model.Login, Seq](q).result).map[Some[whatson.model.Login]](((x: Seq[whatson.model.Login]) =&gt; scala.Some.apply[whatson.model.Login](x.head)))(LoginServiceImpl.this.context)
+}))(LoginServiceImpl.this.context)
         </td>
       </tr><tr>
         <td>
           55
         </td>
         <td>
-          2815
+          2834
         </td>
         <td>
           2067
@@ -2065,7 +2046,7 @@
           55
         </td>
         <td>
-          2814
+          2833
         </td>
         <td>
           2073
@@ -2083,52 +2064,31 @@
         </td>
       </tr><tr>
         <td>
-          56
+          55
         </td>
         <td>
-          2819
+          2832
         </td>
         <td>
-          2116
+          2074
           -
-          2116
+          2078
         </td>
         <td>
           Select
         </td>
         <td>
-          whatson.service.LoginServiceImpl.context
+          scala.None
         </td>
-        <td style="background: #AEF1AE">
-          LoginServiceImpl.this.context
+        <td style="background: #F0ADAD">
+          scala.None
         </td>
       </tr><tr>
         <td>
           56
         </td>
         <td>
-          2816
-        </td>
-        <td>
-          2103
-          -
-          2111
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          slick.jdbc.JdbcActionComponent.StreamingQueryActionExtensionMethodsImpl.result
-        </td>
-        <td style="background: #AEF1AE">
-          slick.jdbc.PostgresProfile.api.streamableQueryActionExtensionMethods[whatson.model.Login, Seq](q).result
-        </td>
-      </tr><tr>
-        <td>
-          56
-        </td>
-        <td>
-          2818
+          2837
         </td>
         <td>
           2122
@@ -2149,7 +2109,28 @@
           56
         </td>
         <td>
-          2820
+          2836
+        </td>
+        <td>
+          2127
+          -
+          2133
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.IterableLike.head
+        </td>
+        <td style="background: #AEF1AE">
+          x.head
+        </td>
+      </tr><tr>
+        <td>
+          56
+        </td>
+        <td>
+          2839
         </td>
         <td>
           2096
@@ -2170,59 +2151,49 @@
           56
         </td>
         <td>
-          2817
+          2838
         </td>
         <td>
-          2127
+          2116
           -
-          2133
+          2116
         </td>
         <td>
           Select
         </td>
         <td>
-          scala.collection.IterableLike.head
+          whatson.service.LoginServiceImpl.context
         </td>
         <td style="background: #AEF1AE">
-          x.head
+          LoginServiceImpl.this.context
         </td>
       </tr><tr>
         <td>
-          67
+          56
         </td>
         <td>
-          2834
+          2835
         </td>
         <td>
-          2278
+          2103
           -
-          2401
+          2111
         </td>
         <td>
-          Apply
+          Select
         </td>
         <td>
-          whatson.db.Util.insertAndReturn
+          slick.jdbc.JdbcActionComponent.StreamingQueryActionExtensionMethodsImpl.result
         </td>
         <td style="background: #AEF1AE">
-          whatson.db.Util.insertAndReturn[whatson.model.Login, whatson.db.LoginTable](whatson.db.LoginTable.login, {
-  &lt;artifact&gt; val x$5: Boolean = l.confirmed.||(LoginServiceImpl.this.applicationConfig.confirmationMails.unary_!);
-  &lt;artifact&gt; val x$6: Option[Int] @scala.reflect.internal.annotations.uncheckedBounds = l.copy$default$1;
-  &lt;artifact&gt; val x$7: String = l.copy$default$2;
-  &lt;artifact&gt; val x$8: Option[String] @scala.reflect.internal.annotations.uncheckedBounds = l.copy$default$3;
-  &lt;artifact&gt; val x$9: Option[String] @scala.reflect.internal.annotations.uncheckedBounds = l.copy$default$4;
-  &lt;artifact&gt; val x$10: Option[String] @scala.reflect.internal.annotations.uncheckedBounds = l.copy$default$5;
-  &lt;artifact&gt; val x$11: String = l.copy$default$6;
-  &lt;artifact&gt; val x$12: String = l.copy$default$7;
-  l.copy(x$6, x$7, x$8, x$9, x$10, x$11, x$12, x$5)
-})
+          slick.jdbc.PostgresProfile.api.streamableQueryActionExtensionMethods[whatson.model.Login, Seq](q).result
         </td>
       </tr><tr>
         <td>
           67
         </td>
         <td>
-          2828
+          2852
         </td>
         <td>
           2331
@@ -2233,80 +2204,17 @@
           Select
         </td>
         <td>
-          whatson.model.Login.copy$default$3
+          whatson.model.Login.copy$default$9
         </td>
         <td style="background: #AEF1AE">
-          l.copy$default$3
+          l.copy$default$9
         </td>
       </tr><tr>
         <td>
           67
         </td>
         <td>
-          2831
-        </td>
-        <td>
-          2331
-          -
-          2331
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          whatson.model.Login.copy$default$6
-        </td>
-        <td style="background: #AEF1AE">
-          l.copy$default$6
-        </td>
-      </tr><tr>
-        <td>
-          67
-        </td>
-        <td>
-          2825
-        </td>
-        <td>
-          2348
-          -
-          2399
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          scala.Boolean.||
-        </td>
-        <td style="background: #AEF1AE">
-          l.confirmed.||(LoginServiceImpl.this.applicationConfig.confirmationMails.unary_!)
-        </td>
-      </tr><tr>
-        <td>
-          67
-        </td>
-        <td>
-          2833
-        </td>
-        <td>
-          2329
-          -
-          2400
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          whatson.model.Login.copy
-        </td>
-        <td style="background: #AEF1AE">
-          l.copy(x$6, x$7, x$8, x$9, x$10, x$11, x$12, x$5)
-        </td>
-      </tr><tr>
-        <td>
-          67
-        </td>
-        <td>
-          2824
+          2843
         </td>
         <td>
           2363
@@ -2327,7 +2235,7 @@
           67
         </td>
         <td>
-          2827
+          2846
         </td>
         <td>
           2331
@@ -2348,112 +2256,7 @@
           67
         </td>
         <td>
-          2830
-        </td>
-        <td>
-          2331
-          -
-          2331
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          whatson.model.Login.copy$default$5
-        </td>
-        <td style="background: #AEF1AE">
-          l.copy$default$5
-        </td>
-      </tr><tr>
-        <td>
-          67
-        </td>
-        <td>
-          2829
-        </td>
-        <td>
-          2331
-          -
-          2331
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          whatson.model.Login.copy$default$4
-        </td>
-        <td style="background: #AEF1AE">
-          l.copy$default$4
-        </td>
-      </tr><tr>
-        <td>
-          67
-        </td>
-        <td>
-          2823
-        </td>
-        <td>
-          2312
-          -
-          2328
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          whatson.db.LoginTable.login
-        </td>
-        <td style="background: #AEF1AE">
-          whatson.db.LoginTable.login
-        </td>
-      </tr><tr>
-        <td>
-          67
-        </td>
-        <td>
-          2832
-        </td>
-        <td>
-          2331
-          -
-          2331
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          whatson.model.Login.copy$default$7
-        </td>
-        <td style="background: #AEF1AE">
-          l.copy$default$7
-        </td>
-      </tr><tr>
-        <td>
-          67
-        </td>
-        <td>
-          2826
-        </td>
-        <td>
-          2331
-          -
-          2331
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          whatson.model.Login.copy$default$1
-        </td>
-        <td style="background: #AEF1AE">
-          l.copy$default$1
-        </td>
-      </tr><tr>
-        <td>
-          67
-        </td>
-        <td>
-          2835
+          2855
         </td>
         <td>
           2271
@@ -2476,461 +2279,242 @@
   &lt;artifact&gt; val x$10: Option[String] @scala.reflect.internal.annotations.uncheckedBounds = l.copy$default$5;
   &lt;artifact&gt; val x$11: String = l.copy$default$6;
   &lt;artifact&gt; val x$12: String = l.copy$default$7;
-  l.copy(x$6, x$7, x$8, x$9, x$10, x$11, x$12, x$5)
+  &lt;artifact&gt; val x$13: String = l.copy$default$9;
+  l.copy(x$6, x$7, x$8, x$9, x$10, x$11, x$12, x$5, x$13)
 }))
         </td>
       </tr><tr>
         <td>
-          79
-        </td>
-        <td>
-          2852
-        </td>
-        <td>
-          2836
-          -
-          2836
-        </td>
-        <td>
-          ApplyToImplicitArgs
-        </td>
-        <td>
-          slick.lifted.OptionMapper2.getOptionMapper2TT
-        </td>
-        <td style="background: #F0ADAD">
-          lifted.this.OptionMapper2.getOptionMapper2TT[String, String, Boolean](slick.jdbc.PostgresProfile.api.stringColumnType)
-        </td>
-      </tr><tr>
-        <td>
-          79
-        </td>
-        <td>
-          2843
-        </td>
-        <td>
-          2766
-          -
-          2811
-        </td>
-        <td>
-          ApplyToImplicitArgs
-        </td>
-        <td>
-          slick.lifted.ColumnExtensionMethods.===
-        </td>
-        <td style="background: #F0ADAD">
-          slick.jdbc.PostgresProfile.api.columnExtensionMethods[String](l.providerId)(slick.jdbc.PostgresProfile.api.stringColumnType).===[String, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[String](profile.loginInfo.providerID)(slick.jdbc.PostgresProfile.api.stringColumnType))(lifted.this.OptionMapper2.getOptionMapper2TT[String, String, Boolean](slick.jdbc.PostgresProfile.api.stringColumnType))
-        </td>
-      </tr><tr>
-        <td>
-          79
-        </td>
-        <td>
-          2846
-        </td>
-        <td>
-          2820
-          -
-          2820
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.stringColumnType
-        </td>
-        <td style="background: #F0ADAD">
-          slick.jdbc.PostgresProfile.api.stringColumnType
-        </td>
-      </tr><tr>
-        <td>
-          79
-        </td>
-        <td>
-          2855
-        </td>
-        <td>
-          2812
-          -
-          2812
-        </td>
-        <td>
-          ApplyToImplicitArgs
-        </td>
-        <td>
-          slick.lifted.OptionMapper2.getOptionMapper2TT
-        </td>
-        <td style="background: #F0ADAD">
-          lifted.this.OptionMapper2.getOptionMapper2TT[Boolean, Boolean, Boolean](slick.jdbc.PostgresProfile.api.booleanColumnType)
-        </td>
-      </tr><tr>
-        <td>
-          79
-        </td>
-        <td>
-          2837
-        </td>
-        <td>
-          2768
-          -
-          2768
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.stringColumnType
-        </td>
-        <td style="background: #F0ADAD">
-          slick.jdbc.PostgresProfile.api.stringColumnType
-        </td>
-      </tr><tr>
-        <td>
-          79
+          67
         </td>
         <td>
           2849
         </td>
         <td>
-          2846
+          2331
           -
-          2875
-        </td>
-        <td>
-          ApplyToImplicitArgs
-        </td>
-        <td>
-          slick.relational.RelationalProfile.API.valueToConstColumn
-        </td>
-        <td style="background: #F0ADAD">
-          slick.jdbc.PostgresProfile.api.valueToConstColumn[String](profile.loginInfo.providerKey)(slick.jdbc.PostgresProfile.api.stringColumnType)
-        </td>
-      </tr><tr>
-        <td>
-          79
-        </td>
-        <td>
-          2840
-        </td>
-        <td>
-          2783
-          -
-          2811
-        </td>
-        <td>
-          ApplyToImplicitArgs
-        </td>
-        <td>
-          slick.relational.RelationalProfile.API.valueToConstColumn
-        </td>
-        <td style="background: #F0ADAD">
-          slick.jdbc.PostgresProfile.api.valueToConstColumn[String](profile.loginInfo.providerID)(slick.jdbc.PostgresProfile.api.stringColumnType)
-        </td>
-      </tr><tr>
-        <td>
-          79
-        </td>
-        <td>
-          2858
-        </td>
-        <td>
-          2754
-          -
-          2754
-        </td>
-        <td>
-          TypeApply
-        </td>
-        <td>
-          scala.Predef.$conforms
-        </td>
-        <td style="background: #F0ADAD">
-          scala.Predef.$conforms[whatson.db.LoginTable]
-        </td>
-      </tr><tr>
-        <td>
-          79
-        </td>
-        <td>
-          2857
-        </td>
-        <td>
-          2757
-          -
-          2757
+          2331
         </td>
         <td>
           Select
         </td>
         <td>
-          slick.lifted.CanBeQueryCondition.BooleanColumnCanBeQueryCondition
+          whatson.model.Login.copy$default$5
         </td>
-        <td style="background: #F0ADAD">
-          lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition
+        <td style="background: #AEF1AE">
+          l.copy$default$5
         </td>
       </tr><tr>
         <td>
-          79
+          67
         </td>
         <td>
           2848
         </td>
         <td>
-          2864
+          2331
           -
-          2864
+          2331
         </td>
         <td>
           Select
         </td>
         <td>
-          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.stringColumnType
+          whatson.model.Login.copy$default$4
         </td>
-        <td style="background: #F0ADAD">
-          slick.jdbc.PostgresProfile.api.stringColumnType
+        <td style="background: #AEF1AE">
+          l.copy$default$4
         </td>
       </tr><tr>
         <td>
-          79
+          67
         </td>
         <td>
           2851
         </td>
         <td>
-          2836
+          2331
           -
-          2836
+          2331
         </td>
         <td>
           Select
         </td>
         <td>
-          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.stringColumnType
+          whatson.model.Login.copy$default$7
         </td>
-        <td style="background: #F0ADAD">
-          slick.jdbc.PostgresProfile.api.stringColumnType
-        </td>
-      </tr><tr>
-        <td>
-          79
-        </td>
-        <td>
-          2860
-        </td>
-        <td>
-          2740
-          -
-          2890
-        </td>
-        <td>
-          ApplyToImplicitArgs
-        </td>
-        <td>
-          slick.lifted.Query.map
-        </td>
-        <td style="background: #F0ADAD">
-          whatson.db.LoginTable.login.withFilter[slick.lifted.Rep[Boolean]](((l: whatson.db.LoginTable) =&gt; slick.jdbc.PostgresProfile.api.booleanColumnExtensionMethods(slick.jdbc.PostgresProfile.api.columnExtensionMethods[String](l.providerId)(slick.jdbc.PostgresProfile.api.stringColumnType).===[String, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[String](profile.loginInfo.providerID)(slick.jdbc.PostgresProfile.api.stringColumnType))(lifted.this.OptionMapper2.getOptionMapper2TT[String, String, Boolean](slick.jdbc.PostgresProfile.api.stringColumnType))).&amp;&amp;[Boolean, Boolean](slick.jdbc.PostgresProfile.api.columnExtensionMethods[String](whatson.db.Util.lower(l.providerKey))(slick.jdbc.PostgresProfile.api.stringColumnType).===[String, Boolean](whatson.db.Util.lower(slick.jdbc.PostgresProfile.api.valueToConstColumn[String](profile.loginInfo.providerKey)(slick.jdbc.PostgresProfile.api.stringColumnType)))(lifted.this.OptionMapper2.getOptionMapper2TT[String, String, Boolean](slick.jdbc.PostgresProfile.api.stringColumnType)))(lifted.this.OptionMapper2.getOptionMapper2TT[Boolean, Boolean, Boolean](slick.jdbc.PostgresProfile.api.booleanColumnType))))(lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition).map[whatson.db.LoginTable, whatson.db.LoginTable, whatson.model.Login](((l: whatson.db.LoginTable) =&gt; l))(lifted.this.Shape.tableShape[slick.lifted.FlatShapeLevel, whatson.model.Login, whatson.db.LoginTable](scala.Predef.$conforms[whatson.db.LoginTable]))
+        <td style="background: #AEF1AE">
+          l.copy$default$7
         </td>
       </tr><tr>
         <td>
-          79
+          67
         </td>
         <td>
           2842
         </td>
         <td>
-          2779
+          2312
           -
-          2779
-        </td>
-        <td>
-          ApplyToImplicitArgs
-        </td>
-        <td>
-          slick.lifted.OptionMapper2.getOptionMapper2TT
-        </td>
-        <td style="background: #F0ADAD">
-          lifted.this.OptionMapper2.getOptionMapper2TT[String, String, Boolean](slick.jdbc.PostgresProfile.api.stringColumnType)
-        </td>
-      </tr><tr>
-        <td>
-          79
-        </td>
-        <td>
-          2836
-        </td>
-        <td>
-          2766
-          -
-          2778
+          2328
         </td>
         <td>
           Select
         </td>
         <td>
-          whatson.db.LoginTable.providerId
+          whatson.db.LoginTable.login
         </td>
-        <td style="background: #F0ADAD">
-          l.providerId
+        <td style="background: #AEF1AE">
+          whatson.db.LoginTable.login
         </td>
       </tr><tr>
         <td>
-          79
+          67
         </td>
         <td>
           2845
         </td>
         <td>
-          2815
+          2331
           -
-          2835
+          2331
         </td>
         <td>
-          Apply
+          Select
         </td>
         <td>
-          whatson.db.Util.lower
+          whatson.model.Login.copy$default$1
         </td>
-        <td style="background: #F0ADAD">
-          whatson.db.Util.lower(l.providerKey)
+        <td style="background: #AEF1AE">
+          l.copy$default$1
         </td>
       </tr><tr>
         <td>
-          79
+          67
         </td>
         <td>
           2854
         </td>
         <td>
-          2812
+          2278
           -
-          2812
+          2401
         </td>
         <td>
-          Select
+          Apply
         </td>
         <td>
-          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.booleanColumnType
+          whatson.db.Util.insertAndReturn
         </td>
-        <td style="background: #F0ADAD">
-          slick.jdbc.PostgresProfile.api.booleanColumnType
+        <td style="background: #AEF1AE">
+          whatson.db.Util.insertAndReturn[whatson.model.Login, whatson.db.LoginTable](whatson.db.LoginTable.login, {
+  &lt;artifact&gt; val x$5: Boolean = l.confirmed.||(LoginServiceImpl.this.applicationConfig.confirmationMails.unary_!);
+  &lt;artifact&gt; val x$6: Option[Int] @scala.reflect.internal.annotations.uncheckedBounds = l.copy$default$1;
+  &lt;artifact&gt; val x$7: String = l.copy$default$2;
+  &lt;artifact&gt; val x$8: Option[String] @scala.reflect.internal.annotations.uncheckedBounds = l.copy$default$3;
+  &lt;artifact&gt; val x$9: Option[String] @scala.reflect.internal.annotations.uncheckedBounds = l.copy$default$4;
+  &lt;artifact&gt; val x$10: Option[String] @scala.reflect.internal.annotations.uncheckedBounds = l.copy$default$5;
+  &lt;artifact&gt; val x$11: String = l.copy$default$6;
+  &lt;artifact&gt; val x$12: String = l.copy$default$7;
+  &lt;artifact&gt; val x$13: String = l.copy$default$9;
+  l.copy(x$6, x$7, x$8, x$9, x$10, x$11, x$12, x$5, x$13)
+})
         </td>
       </tr><tr>
         <td>
-          79
-        </td>
-        <td>
-          2839
-        </td>
-        <td>
-          2801
-          -
-          2801
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.stringColumnType
-        </td>
-        <td style="background: #F0ADAD">
-          slick.jdbc.PostgresProfile.api.stringColumnType
-        </td>
-      </tr><tr>
-        <td>
-          79
+          67
         </td>
         <td>
           2847
         </td>
         <td>
-          2846
+          2331
           -
-          2875
+          2331
         </td>
         <td>
           Select
         </td>
         <td>
-          com.mohiva.play.silhouette.api.LoginInfo.providerKey
+          whatson.model.Login.copy$default$3
         </td>
-        <td style="background: #F0ADAD">
-          profile.loginInfo.providerKey
-        </td>
-      </tr><tr>
-        <td>
-          79
-        </td>
-        <td>
-          2838
-        </td>
-        <td>
-          2783
-          -
-          2811
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          com.mohiva.play.silhouette.api.LoginInfo.providerID
-        </td>
-        <td style="background: #F0ADAD">
-          profile.loginInfo.providerID
+        <td style="background: #AEF1AE">
+          l.copy$default$3
         </td>
       </tr><tr>
         <td>
-          79
-        </td>
-        <td>
-          2856
-        </td>
-        <td>
-          2766
-          -
-          2876
-        </td>
-        <td>
-          ApplyToImplicitArgs
-        </td>
-        <td>
-          slick.lifted.BooleanColumnExtensionMethods.&amp;&amp;
-        </td>
-        <td style="background: #F0ADAD">
-          slick.jdbc.PostgresProfile.api.booleanColumnExtensionMethods(slick.jdbc.PostgresProfile.api.columnExtensionMethods[String](l.providerId)(slick.jdbc.PostgresProfile.api.stringColumnType).===[String, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[String](profile.loginInfo.providerID)(slick.jdbc.PostgresProfile.api.stringColumnType))(lifted.this.OptionMapper2.getOptionMapper2TT[String, String, Boolean](slick.jdbc.PostgresProfile.api.stringColumnType))).&amp;&amp;[Boolean, Boolean](slick.jdbc.PostgresProfile.api.columnExtensionMethods[String](whatson.db.Util.lower(l.providerKey))(slick.jdbc.PostgresProfile.api.stringColumnType).===[String, Boolean](whatson.db.Util.lower(slick.jdbc.PostgresProfile.api.valueToConstColumn[String](profile.loginInfo.providerKey)(slick.jdbc.PostgresProfile.api.stringColumnType)))(lifted.this.OptionMapper2.getOptionMapper2TT[String, String, Boolean](slick.jdbc.PostgresProfile.api.stringColumnType)))(lifted.this.OptionMapper2.getOptionMapper2TT[Boolean, Boolean, Boolean](slick.jdbc.PostgresProfile.api.booleanColumnType))
-        </td>
-      </tr><tr>
-        <td>
-          79
-        </td>
-        <td>
-          2841
-        </td>
-        <td>
-          2779
-          -
-          2779
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.stringColumnType
-        </td>
-        <td style="background: #F0ADAD">
-          slick.jdbc.PostgresProfile.api.stringColumnType
-        </td>
-      </tr><tr>
-        <td>
-          79
+          67
         </td>
         <td>
           2850
         </td>
         <td>
-          2840
+          2331
           -
-          2876
+          2331
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.model.Login.copy$default$6
+        </td>
+        <td style="background: #AEF1AE">
+          l.copy$default$6
+        </td>
+      </tr><tr>
+        <td>
+          67
+        </td>
+        <td>
+          2844
+        </td>
+        <td>
+          2348
+          -
+          2399
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Boolean.||
+        </td>
+        <td style="background: #AEF1AE">
+          l.confirmed.||(LoginServiceImpl.this.applicationConfig.confirmationMails.unary_!)
+        </td>
+      </tr><tr>
+        <td>
+          67
+        </td>
+        <td>
+          2853
+        </td>
+        <td>
+          2329
+          -
+          2400
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          whatson.model.Login.copy
+        </td>
+        <td style="background: #AEF1AE">
+          l.copy(x$6, x$7, x$8, x$9, x$10, x$11, x$12, x$5, x$13)
+        </td>
+      </tr><tr>
+        <td>
+          79
+        </td>
+        <td>
+          2870
+        </td>
+        <td>
+          2858
+          -
+          2894
         </td>
         <td>
           Apply
@@ -2946,12 +2530,12 @@
           79
         </td>
         <td>
-          2859
+          2879
         </td>
         <td>
-          2754
+          2772
           -
-          2754
+          2772
         </td>
         <td>
           ApplyToImplicitArgs
@@ -2967,12 +2551,33 @@
           79
         </td>
         <td>
-          2844
+          2861
         </td>
         <td>
-          2821
+          2797
           -
-          2834
+          2797
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.stringColumnType
+        </td>
+        <td style="background: #F0ADAD">
+          slick.jdbc.PostgresProfile.api.stringColumnType
+        </td>
+      </tr><tr>
+        <td>
+          79
+        </td>
+        <td>
+          2864
+        </td>
+        <td>
+          2839
+          -
+          2852
         </td>
         <td>
           Select
@@ -2988,12 +2593,12 @@
           79
         </td>
         <td>
-          2853
+          2873
         </td>
         <td>
-          2815
+          2833
           -
-          2876
+          2894
         </td>
         <td>
           ApplyToImplicitArgs
@@ -3006,36 +2611,456 @@
         </td>
       </tr><tr>
         <td>
-          81
+          79
         </td>
         <td>
-          2861
+          2876
         </td>
         <td>
-          2915
+          2784
           -
-          2922
+          2894
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.BooleanColumnExtensionMethods.&amp;&amp;
+        </td>
+        <td style="background: #F0ADAD">
+          slick.jdbc.PostgresProfile.api.booleanColumnExtensionMethods(slick.jdbc.PostgresProfile.api.columnExtensionMethods[String](l.providerId)(slick.jdbc.PostgresProfile.api.stringColumnType).===[String, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[String](profile.loginInfo.providerID)(slick.jdbc.PostgresProfile.api.stringColumnType))(lifted.this.OptionMapper2.getOptionMapper2TT[String, String, Boolean](slick.jdbc.PostgresProfile.api.stringColumnType))).&amp;&amp;[Boolean, Boolean](slick.jdbc.PostgresProfile.api.columnExtensionMethods[String](whatson.db.Util.lower(l.providerKey))(slick.jdbc.PostgresProfile.api.stringColumnType).===[String, Boolean](whatson.db.Util.lower(slick.jdbc.PostgresProfile.api.valueToConstColumn[String](profile.loginInfo.providerKey)(slick.jdbc.PostgresProfile.api.stringColumnType)))(lifted.this.OptionMapper2.getOptionMapper2TT[String, String, Boolean](slick.jdbc.PostgresProfile.api.stringColumnType)))(lifted.this.OptionMapper2.getOptionMapper2TT[Boolean, Boolean, Boolean](slick.jdbc.PostgresProfile.api.booleanColumnType))
+        </td>
+      </tr><tr>
+        <td>
+          79
+        </td>
+        <td>
+          2867
+        </td>
+        <td>
+          2864
+          -
+          2893
         </td>
         <td>
           Select
         </td>
         <td>
-          whatson.db.LoginTable.email
+          com.mohiva.play.silhouette.api.LoginInfo.providerKey
         </td>
         <td style="background: #F0ADAD">
-          x.email
+          profile.loginInfo.providerKey
+        </td>
+      </tr><tr>
+        <td>
+          79
+        </td>
+        <td>
+          2858
+        </td>
+        <td>
+          2801
+          -
+          2829
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.mohiva.play.silhouette.api.LoginInfo.providerID
+        </td>
+        <td style="background: #F0ADAD">
+          profile.loginInfo.providerID
+        </td>
+      </tr><tr>
+        <td>
+          79
+        </td>
+        <td>
+          2857
+        </td>
+        <td>
+          2786
+          -
+          2786
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.stringColumnType
+        </td>
+        <td style="background: #F0ADAD">
+          slick.jdbc.PostgresProfile.api.stringColumnType
+        </td>
+      </tr><tr>
+        <td>
+          79
+        </td>
+        <td>
+          2875
+        </td>
+        <td>
+          2830
+          -
+          2830
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.OptionMapper2.getOptionMapper2TT
+        </td>
+        <td style="background: #F0ADAD">
+          lifted.this.OptionMapper2.getOptionMapper2TT[Boolean, Boolean, Boolean](slick.jdbc.PostgresProfile.api.booleanColumnType)
+        </td>
+      </tr><tr>
+        <td>
+          79
+        </td>
+        <td>
+          2866
+        </td>
+        <td>
+          2838
+          -
+          2838
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.stringColumnType
+        </td>
+        <td style="background: #F0ADAD">
+          slick.jdbc.PostgresProfile.api.stringColumnType
+        </td>
+      </tr><tr>
+        <td>
+          79
+        </td>
+        <td>
+          2878
+        </td>
+        <td>
+          2772
+          -
+          2772
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Predef.$conforms
+        </td>
+        <td style="background: #F0ADAD">
+          scala.Predef.$conforms[whatson.db.LoginTable]
+        </td>
+      </tr><tr>
+        <td>
+          79
+        </td>
+        <td>
+          2860
+        </td>
+        <td>
+          2801
+          -
+          2829
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.relational.RelationalProfile.API.valueToConstColumn
+        </td>
+        <td style="background: #F0ADAD">
+          slick.jdbc.PostgresProfile.api.valueToConstColumn[String](profile.loginInfo.providerID)(slick.jdbc.PostgresProfile.api.stringColumnType)
+        </td>
+      </tr><tr>
+        <td>
+          79
+        </td>
+        <td>
+          2869
+        </td>
+        <td>
+          2864
+          -
+          2893
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.relational.RelationalProfile.API.valueToConstColumn
+        </td>
+        <td style="background: #F0ADAD">
+          slick.jdbc.PostgresProfile.api.valueToConstColumn[String](profile.loginInfo.providerKey)(slick.jdbc.PostgresProfile.api.stringColumnType)
+        </td>
+      </tr><tr>
+        <td>
+          79
+        </td>
+        <td>
+          2872
+        </td>
+        <td>
+          2854
+          -
+          2854
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.OptionMapper2.getOptionMapper2TT
+        </td>
+        <td style="background: #F0ADAD">
+          lifted.this.OptionMapper2.getOptionMapper2TT[String, String, Boolean](slick.jdbc.PostgresProfile.api.stringColumnType)
+        </td>
+      </tr><tr>
+        <td>
+          79
+        </td>
+        <td>
+          2863
+        </td>
+        <td>
+          2784
+          -
+          2829
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.ColumnExtensionMethods.===
+        </td>
+        <td style="background: #F0ADAD">
+          slick.jdbc.PostgresProfile.api.columnExtensionMethods[String](l.providerId)(slick.jdbc.PostgresProfile.api.stringColumnType).===[String, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[String](profile.loginInfo.providerID)(slick.jdbc.PostgresProfile.api.stringColumnType))(lifted.this.OptionMapper2.getOptionMapper2TT[String, String, Boolean](slick.jdbc.PostgresProfile.api.stringColumnType))
+        </td>
+      </tr><tr>
+        <td>
+          79
+        </td>
+        <td>
+          2880
+        </td>
+        <td>
+          2758
+          -
+          2908
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.Query.map
+        </td>
+        <td style="background: #F0ADAD">
+          whatson.db.LoginTable.login.withFilter[slick.lifted.Rep[Boolean]](((l: whatson.db.LoginTable) =&gt; slick.jdbc.PostgresProfile.api.booleanColumnExtensionMethods(slick.jdbc.PostgresProfile.api.columnExtensionMethods[String](l.providerId)(slick.jdbc.PostgresProfile.api.stringColumnType).===[String, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[String](profile.loginInfo.providerID)(slick.jdbc.PostgresProfile.api.stringColumnType))(lifted.this.OptionMapper2.getOptionMapper2TT[String, String, Boolean](slick.jdbc.PostgresProfile.api.stringColumnType))).&amp;&amp;[Boolean, Boolean](slick.jdbc.PostgresProfile.api.columnExtensionMethods[String](whatson.db.Util.lower(l.providerKey))(slick.jdbc.PostgresProfile.api.stringColumnType).===[String, Boolean](whatson.db.Util.lower(slick.jdbc.PostgresProfile.api.valueToConstColumn[String](profile.loginInfo.providerKey)(slick.jdbc.PostgresProfile.api.stringColumnType)))(lifted.this.OptionMapper2.getOptionMapper2TT[String, String, Boolean](slick.jdbc.PostgresProfile.api.stringColumnType)))(lifted.this.OptionMapper2.getOptionMapper2TT[Boolean, Boolean, Boolean](slick.jdbc.PostgresProfile.api.booleanColumnType))))(lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition).map[whatson.db.LoginTable, whatson.db.LoginTable, whatson.model.Login](((l: whatson.db.LoginTable) =&gt; l))(lifted.this.Shape.tableShape[slick.lifted.FlatShapeLevel, whatson.model.Login, whatson.db.LoginTable](scala.Predef.$conforms[whatson.db.LoginTable]))
+        </td>
+      </tr><tr>
+        <td>
+          79
+        </td>
+        <td>
+          2871
+        </td>
+        <td>
+          2854
+          -
+          2854
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.stringColumnType
+        </td>
+        <td style="background: #F0ADAD">
+          slick.jdbc.PostgresProfile.api.stringColumnType
+        </td>
+      </tr><tr>
+        <td>
+          79
+        </td>
+        <td>
+          2865
+        </td>
+        <td>
+          2833
+          -
+          2853
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          whatson.db.Util.lower
+        </td>
+        <td style="background: #F0ADAD">
+          whatson.db.Util.lower(l.providerKey)
+        </td>
+      </tr><tr>
+        <td>
+          79
+        </td>
+        <td>
+          2874
+        </td>
+        <td>
+          2830
+          -
+          2830
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.booleanColumnType
+        </td>
+        <td style="background: #F0ADAD">
+          slick.jdbc.PostgresProfile.api.booleanColumnType
+        </td>
+      </tr><tr>
+        <td>
+          79
+        </td>
+        <td>
+          2856
+        </td>
+        <td>
+          2784
+          -
+          2796
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.db.LoginTable.providerId
+        </td>
+        <td style="background: #F0ADAD">
+          l.providerId
+        </td>
+      </tr><tr>
+        <td>
+          79
+        </td>
+        <td>
+          2877
+        </td>
+        <td>
+          2775
+          -
+          2775
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.lifted.CanBeQueryCondition.BooleanColumnCanBeQueryCondition
+        </td>
+        <td style="background: #F0ADAD">
+          lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition
+        </td>
+      </tr><tr>
+        <td>
+          79
+        </td>
+        <td>
+          2859
+        </td>
+        <td>
+          2819
+          -
+          2819
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.stringColumnType
+        </td>
+        <td style="background: #F0ADAD">
+          slick.jdbc.PostgresProfile.api.stringColumnType
+        </td>
+      </tr><tr>
+        <td>
+          79
+        </td>
+        <td>
+          2868
+        </td>
+        <td>
+          2882
+          -
+          2882
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.stringColumnType
+        </td>
+        <td style="background: #F0ADAD">
+          slick.jdbc.PostgresProfile.api.stringColumnType
+        </td>
+      </tr><tr>
+        <td>
+          79
+        </td>
+        <td>
+          2862
+        </td>
+        <td>
+          2797
+          -
+          2797
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.OptionMapper2.getOptionMapper2TT
+        </td>
+        <td style="background: #F0ADAD">
+          lifted.this.OptionMapper2.getOptionMapper2TT[String, String, Boolean](slick.jdbc.PostgresProfile.api.stringColumnType)
         </td>
       </tr><tr>
         <td>
           81
         </td>
         <td>
-          2864
+          2882
         </td>
         <td>
-          2904
+          2927
           -
-          2923
+          2927
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.stringColumnType
+        </td>
+        <td style="background: #F0ADAD">
+          slick.jdbc.PostgresProfile.api.stringColumnType
+        </td>
+      </tr><tr>
+        <td>
+          81
+        </td>
+        <td>
+          2884
+        </td>
+        <td>
+          2922
+          -
+          2941
         </td>
         <td>
           ApplyToImplicitArgs
@@ -3051,12 +3076,33 @@
           81
         </td>
         <td>
-          2863
+          2881
         </td>
         <td>
-          2909
+          2933
           -
-          2909
+          2940
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.db.LoginTable.email
+        </td>
+        <td style="background: #F0ADAD">
+          x.email
+        </td>
+      </tr><tr>
+        <td>
+          81
+        </td>
+        <td>
+          2883
+        </td>
+        <td>
+          2927
+          -
+          2927
         </td>
         <td>
           ApplyToImplicitArgs
@@ -3069,36 +3115,15 @@
         </td>
       </tr><tr>
         <td>
-          81
-        </td>
-        <td>
-          2862
-        </td>
-        <td>
-          2909
-          -
-          2909
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.stringColumnType
-        </td>
-        <td style="background: #F0ADAD">
-          slick.jdbc.PostgresProfile.api.stringColumnType
-        </td>
-      </tr><tr>
-        <td>
           83
         </td>
         <td>
-          2865
+          2885
         </td>
         <td>
-          2937
+          2955
           -
-          2964
+          2982
         </td>
         <td>
           Apply
@@ -3114,96 +3139,12 @@
           84
         </td>
         <td>
-          2870
+          2894
         </td>
         <td>
-          3036
+          3005
           -
-          3040
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          scala.None
-        </td>
-        <td style="background: #F0ADAD">
-          scala.None
-        </td>
-      </tr><tr>
-        <td>
-          84
-        </td>
-        <td>
-          2867
-        </td>
-        <td>
-          2998
-          -
-          3025
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          scala.Option.getOrElse
-        </td>
-        <td style="background: #F0ADAD">
-          profile.email.getOrElse[String](&quot;&quot;)
-        </td>
-      </tr><tr>
-        <td>
-          84
-        </td>
-        <td>
-          2866
-        </td>
-        <td>
-          2993
-          -
-          2997
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          scala.None
-        </td>
-        <td style="background: #F0ADAD">
-          scala.None
-        </td>
-      </tr><tr>
-        <td>
-          84
-        </td>
-        <td>
-          2869
-        </td>
-        <td>
-          3031
-          -
-          3035
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          scala.None
-        </td>
-        <td style="background: #F0ADAD">
-          scala.None
-        </td>
-      </tr><tr>
-        <td>
-          84
-        </td>
-        <td>
-          2874
-        </td>
-        <td>
-          2987
-          -
-          3123
+          3151
         </td>
         <td>
           Apply
@@ -3212,19 +3153,103 @@
           whatson.model.Login.apply
         </td>
         <td style="background: #F0ADAD">
-          whatson.model.Login.apply(scala.None, profile.email.getOrElse[String](&quot;&quot;), scala.None, scala.None, scala.None, profile.loginInfo.providerID, profile.loginInfo.providerKey, true)
+          whatson.model.Login.apply(scala.None, profile.email.getOrElse[String](&quot;&quot;), scala.None, scala.None, scala.None, profile.loginInfo.providerID, profile.loginInfo.providerKey, true, userType)
         </td>
       </tr><tr>
         <td>
           84
         </td>
         <td>
-          2868
+          2888
         </td>
         <td>
-          3026
+          3044
           -
-          3030
+          3048
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #F0ADAD">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          84
+        </td>
+        <td>
+          2887
+        </td>
+        <td>
+          3016
+          -
+          3043
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Option.getOrElse
+        </td>
+        <td style="background: #F0ADAD">
+          profile.email.getOrElse[String](&quot;&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          84
+        </td>
+        <td>
+          2890
+        </td>
+        <td>
+          3054
+          -
+          3058
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #F0ADAD">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          84
+        </td>
+        <td>
+          2889
+        </td>
+        <td>
+          3049
+          -
+          3053
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #F0ADAD">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          84
+        </td>
+        <td>
+          2886
+        </td>
+        <td>
+          3011
+          -
+          3015
         </td>
         <td>
           Select
@@ -3240,12 +3265,33 @@
           85
         </td>
         <td>
-          2873
+          2891
         </td>
         <td>
-          3118
+          3077
           -
-          3122
+          3105
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.mohiva.play.silhouette.api.LoginInfo.providerID
+        </td>
+        <td style="background: #F0ADAD">
+          profile.loginInfo.providerID
+        </td>
+      </tr><tr>
+        <td>
+          85
+        </td>
+        <td>
+          2893
+        </td>
+        <td>
+          3136
+          -
+          3140
         </td>
         <td>
           Literal
@@ -3261,12 +3307,12 @@
           85
         </td>
         <td>
-          2872
+          2892
         </td>
         <td>
-          3088
+          3106
           -
-          3117
+          3135
         </td>
         <td>
           Select
@@ -3279,57 +3325,15 @@
         </td>
       </tr><tr>
         <td>
-          85
-        </td>
-        <td>
-          2871
-        </td>
-        <td>
-          3059
-          -
-          3087
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          com.mohiva.play.silhouette.api.LoginInfo.providerID
-        </td>
-        <td style="background: #F0ADAD">
-          profile.loginInfo.providerID
-        </td>
-      </tr><tr>
-        <td>
           87
         </td>
         <td>
-          2875
+          2900
         </td>
         <td>
-          3136
+          3186
           -
-          3148
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          slick.jdbc.JdbcActionComponent.UpdateActionExtensionMethodsImpl.update
-        </td>
-        <td style="background: #F0ADAD">
-          slick.jdbc.PostgresProfile.api.queryUpdateActionExtensionMethods[String, Seq](qa).update(l)
-        </td>
-      </tr><tr>
-        <td>
-          87
-        </td>
-        <td>
-          2880
-        </td>
-        <td>
-          3158
-          -
-          3158
+          3186
         </td>
         <td>
           Select
@@ -3342,36 +3346,36 @@
         </td>
       </tr><tr>
         <td>
-          88
+          87
         </td>
         <td>
-          2876
+          2895
         </td>
         <td>
-          3183
+          3164
           -
-          3203
+          3176
         </td>
         <td>
           Apply
         </td>
         <td>
-          slick.jdbc.JdbcActionComponent.SimpleInsertActionComposer.+=
+          slick.jdbc.JdbcActionComponent.UpdateActionExtensionMethodsImpl.update
         </td>
         <td style="background: #F0ADAD">
-          slick.jdbc.PostgresProfile.api.queryInsertActionExtensionMethods[whatson.db.LoginTable#TableElementType, Seq](whatson.db.LoginTable.login).+=(loginInsert)
+          slick.jdbc.PostgresProfile.api.queryUpdateActionExtensionMethods[String, Seq](qa).update(l)
         </td>
       </tr><tr>
         <td>
           88
         </td>
         <td>
-          2877
+          2897
         </td>
         <td>
-          3176
-          -
           3204
+          -
+          3232
         </td>
         <td>
           Apply
@@ -3384,15 +3388,36 @@
         </td>
       </tr><tr>
         <td>
+          88
+        </td>
+        <td>
+          2896
+        </td>
+        <td>
+          3211
+          -
+          3231
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          slick.jdbc.JdbcActionComponent.SimpleInsertActionComposer.+=
+        </td>
+        <td style="background: #F0ADAD">
+          slick.jdbc.PostgresProfile.api.queryInsertActionExtensionMethods[whatson.db.LoginTable#TableElementType, Seq](whatson.db.LoginTable.login).+=(loginInsert)
+        </td>
+      </tr><tr>
+        <td>
           89
         </td>
         <td>
-          2879
+          2899
         </td>
         <td>
-          3221
+          3249
           -
-          3230
+          3258
         </td>
         <td>
           ApplyToImplicitArgs
@@ -3408,12 +3433,12 @@
           89
         </td>
         <td>
-          2878
+          2898
         </td>
         <td>
-          3227
+          3255
           -
-          3227
+          3255
         </td>
         <td>
           Select
@@ -3429,12 +3454,57 @@
           90
         </td>
         <td>
-          2882
+          2903
         </td>
         <td>
-          3250
+          3272
           -
-          3266
+          3272
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.service.LoginServiceImpl.context
+        </td>
+        <td style="background: #F0ADAD">
+          LoginServiceImpl.this.context
+        </td>
+      </tr><tr>
+        <td>
+          90
+        </td>
+        <td>
+          2906
+        </td>
+        <td>
+          3157
+          -
+          3307
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.concurrent.Future.map
+        </td>
+        <td style="background: #F0ADAD">
+          LoginServiceImpl.this.db.run[Int](slick.jdbc.PostgresProfile.api.queryUpdateActionExtensionMethods[String, Seq](qa).update(l)).flatMap[Int](((x0$2: Int) =&gt; x0$2 match {
+  case 0 =&gt; LoginServiceImpl.this.db.run[Int](slick.jdbc.PostgresProfile.api.queryInsertActionExtensionMethods[whatson.db.LoginTable#TableElementType, Seq](whatson.db.LoginTable.login).+=(loginInsert))
+  case (i @ _) =&gt; scala.concurrent.Future.apply[Int](i)(LoginServiceImpl.this.context)
+}))(LoginServiceImpl.this.context).flatMap[Seq[whatson.model.Login]](((x$3: Int) =&gt; LoginServiceImpl.this.db.run[Seq[whatson.model.Login]](slick.jdbc.PostgresProfile.api.streamableQueryActionExtensionMethods[whatson.model.Login, Seq](q).result)))(LoginServiceImpl.this.context).map[whatson.model.Login](((x$4: Seq[whatson.model.Login]) =&gt; x$4.head))(LoginServiceImpl.this.context)
+        </td>
+      </tr><tr>
+        <td>
+          90
+        </td>
+        <td>
+          2902
+        </td>
+        <td>
+          3278
+          -
+          3294
         </td>
         <td>
           Apply
@@ -3450,12 +3520,12 @@
           90
         </td>
         <td>
-          2885
+          2905
         </td>
         <td>
-          3271
+          3299
           -
-          3271
+          3299
         </td>
         <td>
           Select
@@ -3471,33 +3541,12 @@
           90
         </td>
         <td>
-          2884
+          2901
         </td>
         <td>
-          3272
+          3285
           -
-          3278
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          scala.collection.IterableLike.head
-        </td>
-        <td style="background: #F0ADAD">
-          x$4.head
-        </td>
-      </tr><tr>
-        <td>
-          90
-        </td>
-        <td>
-          2881
-        </td>
-        <td>
-          3257
-          -
-          3265
+          3293
         </td>
         <td>
           Select
@@ -3513,45 +3562,42 @@
           90
         </td>
         <td>
-          2883
+          2904
         </td>
         <td>
-          3244
+          3300
           -
-          3244
+          3306
         </td>
         <td>
           Select
         </td>
         <td>
-          whatson.service.LoginServiceImpl.context
+          scala.collection.IterableLike.head
         </td>
         <td style="background: #F0ADAD">
-          LoginServiceImpl.this.context
+          x$4.head
         </td>
       </tr><tr>
         <td>
-          90
+          93
         </td>
         <td>
-          2886
+          2907
         </td>
         <td>
-          3129
+          3356
           -
-          3279
+          3382
         </td>
         <td>
-          ApplyToImplicitArgs
+          Apply
         </td>
         <td>
-          scala.concurrent.Future.map
+          whatson.service.LoginServiceImpl.save
         </td>
         <td style="background: #F0ADAD">
-          LoginServiceImpl.this.db.run[Int](slick.jdbc.PostgresProfile.api.queryUpdateActionExtensionMethods[String, Seq](qa).update(l)).flatMap[Int](((x0$2: Int) =&gt; x0$2 match {
-  case 0 =&gt; LoginServiceImpl.this.db.run[Int](slick.jdbc.PostgresProfile.api.queryInsertActionExtensionMethods[whatson.db.LoginTable#TableElementType, Seq](whatson.db.LoginTable.login).+=(loginInsert))
-  case (i @ _) =&gt; scala.concurrent.Future.apply[Int](i)(LoginServiceImpl.this.context)
-}))(LoginServiceImpl.this.context).flatMap[Seq[whatson.model.Login]](((x$3: Int) =&gt; LoginServiceImpl.this.db.run[Seq[whatson.model.Login]](slick.jdbc.PostgresProfile.api.streamableQueryActionExtensionMethods[whatson.model.Login, Seq](q).result)))(LoginServiceImpl.this.context).map[whatson.model.Login](((x$4: Seq[whatson.model.Login]) =&gt; x$4.head))(LoginServiceImpl.this.context)
+          this.save(profile, &quot;user&quot;)
         </td>
       </tr>
     </table>
