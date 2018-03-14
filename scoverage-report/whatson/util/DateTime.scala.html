@@ -28,17 +28,35 @@
 </span>4 <span style=''>import java.text.SimpleDateFormat
 </span>5 <span style=''>
 </span>6 <span style=''>import play.api.libs.json._
-</span>7 <span style=''>
-</span>8 <span style=''>object DateTime {
-</span>9 <span style=''>  implicit object timestampFormat extends Format[Timestamp] {
-</span>10 <span style=''>    val format = </span><span style='background: #AEF1AE'>new SimpleDateFormat(&quot;yyyy-MM-dd HH:mm:ss&quot;)</span><span style=''>
-</span>11 <span style=''>    def reads(json: JsValue) = {
-</span>12 <span style=''>      val str = </span><span style='background: #AEF1AE'>json.as[String]</span><span style=''>
-</span>13 <span style=''>      </span><span style='background: #AEF1AE'>JsSuccess(new Timestamp(format.parse(str).getTime))</span><span style=''>
-</span>14 <span style=''>    }
-</span>15 <span style=''>    def writes(ts: Timestamp) = </span><span style='background: #AEF1AE'>JsString(format.format(ts))</span><span style=''>
-</span>16 <span style=''>  }
-</span>17 <span style=''>}
+</span>7 <span style=''>import play.api.mvc._
+</span>8 <span style=''>
+</span>9 <span style=''>object DateTime {
+</span>10 <span style=''>  val format = </span><span style='background: #AEF1AE'>new SimpleDateFormat(&quot;yyyy-MM-dd HH:mm:ss&quot;)</span><span style=''>
+</span>11 <span style=''>
+</span>12 <span style=''>  implicit object timestampFormat extends Format[Timestamp] {
+</span>13 <span style=''>    def reads(json: JsValue) = {
+</span>14 <span style=''>      val str = </span><span style='background: #AEF1AE'>json.as[String]</span><span style=''>
+</span>15 <span style=''>      </span><span style='background: #AEF1AE'>JsSuccess(new Timestamp(format.parse(str).getTime))</span><span style=''>
+</span>16 <span style=''>    }
+</span>17 <span style=''>    def writes(ts: Timestamp) = </span><span style='background: #AEF1AE'>JsString(format.format(ts))</span><span style=''>
+</span>18 <span style=''>  }
+</span>19 <span style=''>
+</span>20 <span style=''>  implicit def queryStringBinder(implicit stringBinder: QueryStringBindable[String]) = </span><span style='background: #AEF1AE'>new</span><span style=''> QueryStringBindable[Timestamp] {
+</span>21 <span style=''>    override def bind(key: String, params: Map[String, Seq[String]]): Option[Either[String, Timestamp]] = {
+</span>22 <span style=''>      </span><span style='background: #AEF1AE'>stringBinder.bind(key, params)</span><span style=''> match {
+</span>23 <span style=''>        case Some(Right(str)) =&gt; </span><span style='background: #AEF1AE'>format.parse(str)</span><span style=''> match {
+</span>24 <span style=''>          case null =&gt; </span><span style='background: #F0ADAD'>Some(Left(&quot;Unable to bind a timestamp&quot;))</span><span style=''>
+</span>25 <span style=''>          case x =&gt; </span><span style='background: #AEF1AE'>Some(Right(new Timestamp(x.getTime)))</span><span style=''>
+</span>26 <span style=''>        }
+</span>27 <span style=''>        case Some(Left(e)) =&gt; </span><span style='background: #F0ADAD'>Some(Left(e))</span><span style=''>
+</span>28 <span style=''>        case None =&gt; </span><span style='background: #AEF1AE'>None</span><span style=''>
+</span>29 <span style=''>      }
+</span>30 <span style=''>    }
+</span>31 <span style=''>    override def unbind(key: String, ts: Timestamp): String = {
+</span>32 <span style=''>      </span><span style='background: #F0ADAD'>stringBinder.unbind(key, format.format(ts))</span><span style=''>
+</span>33 <span style=''>    }
+</span>34 <span style=''>  }
+</span>35 <span style=''>}
 </span></pre>
           </div>
           <div class="tab-pane" id="statementlist">
@@ -55,12 +73,12 @@
           10
         </td>
         <td>
-          3036
+          3281
         </td>
         <td>
-          209
+          167
           -
-          252
+          210
         </td>
         <td>
           Apply
@@ -73,15 +91,15 @@
         </td>
       </tr><tr>
         <td>
-          12
+          14
         </td>
         <td>
-          3038
+          3283
         </td>
         <td>
-          302
+          323
           -
-          317
+          338
         </td>
         <td>
           ApplyToImplicitArgs
@@ -94,15 +112,15 @@
         </td>
       </tr><tr>
         <td>
-          12
+          14
         </td>
         <td>
-          3037
+          3282
         </td>
         <td>
-          309
+          330
           -
-          309
+          330
         </td>
         <td>
           Select
@@ -115,78 +133,15 @@
         </td>
       </tr><tr>
         <td>
-          13
+          15
         </td>
         <td>
-          3040
+          3286
         </td>
         <td>
-          334
+          345
           -
-          374
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          java.sql.Timestamp.&lt;init&gt;
-        </td>
-        <td style="background: #AEF1AE">
-          new java.sql.Timestamp(timestampFormat.this.format.parse(str).getTime())
-        </td>
-      </tr><tr>
-        <td>
-          13
-        </td>
-        <td>
-          3039
-        </td>
-        <td>
-          348
-          -
-          373
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          java.util.Date.getTime
-        </td>
-        <td style="background: #AEF1AE">
-          timestampFormat.this.format.parse(str).getTime()
-        </td>
-      </tr><tr>
-        <td>
-          13
-        </td>
-        <td>
-          3042
-        </td>
-        <td>
-          324
-          -
-          375
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          play.api.libs.json.JsSuccess.apply
-        </td>
-        <td style="background: #AEF1AE">
-          play.api.libs.json.JsSuccess.apply[java.sql.Timestamp](new java.sql.Timestamp(timestampFormat.this.format.parse(str).getTime()), play.api.libs.json.JsSuccess.apply$default$2[Nothing])
-        </td>
-      </tr><tr>
-        <td>
-          13
-        </td>
-        <td>
-          3041
-        </td>
-        <td>
-          324
-          -
-          324
+          345
         </td>
         <td>
           TypeApply
@@ -202,12 +157,75 @@
           15
         </td>
         <td>
-          3044
+          3285
         </td>
         <td>
-          414
+          355
           -
-          441
+          395
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.sql.Timestamp.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new java.sql.Timestamp(DateTime.this.format.parse(str).getTime())
+        </td>
+      </tr><tr>
+        <td>
+          15
+        </td>
+        <td>
+          3284
+        </td>
+        <td>
+          369
+          -
+          394
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.Date.getTime
+        </td>
+        <td style="background: #AEF1AE">
+          DateTime.this.format.parse(str).getTime()
+        </td>
+      </tr><tr>
+        <td>
+          15
+        </td>
+        <td>
+          3287
+        </td>
+        <td>
+          345
+          -
+          396
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          play.api.libs.json.JsSuccess.apply
+        </td>
+        <td style="background: #AEF1AE">
+          play.api.libs.json.JsSuccess.apply[java.sql.Timestamp](new java.sql.Timestamp(DateTime.this.format.parse(str).getTime()), play.api.libs.json.JsSuccess.apply$default$2[Nothing])
+        </td>
+      </tr><tr>
+        <td>
+          17
+        </td>
+        <td>
+          3289
+        </td>
+        <td>
+          435
+          -
+          462
         </td>
         <td>
           Apply
@@ -216,19 +234,19 @@
           play.api.libs.json.JsString.apply
         </td>
         <td style="background: #AEF1AE">
-          play.api.libs.json.JsString.apply(timestampFormat.this.format.format(ts))
+          play.api.libs.json.JsString.apply(DateTime.this.format.format(ts))
         </td>
       </tr><tr>
         <td>
-          15
+          17
         </td>
         <td>
-          3043
+          3288
         </td>
         <td>
-          423
+          444
           -
-          440
+          461
         </td>
         <td>
           Apply
@@ -237,7 +255,301 @@
           java.text.DateFormat.format
         </td>
         <td style="background: #AEF1AE">
-          timestampFormat.this.format.format(ts)
+          DateTime.this.format.format(ts)
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          3303
+        </td>
+        <td>
+          555
+          -
+          558
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          whatson.util.DateTime.$anon.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new $anon()
+        </td>
+      </tr><tr>
+        <td>
+          22
+        </td>
+        <td>
+          3290
+        </td>
+        <td>
+          706
+          -
+          736
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          play.api.mvc.QueryStringBindable.bind
+        </td>
+        <td style="background: #AEF1AE">
+          stringBinder.bind(key, params)
+        </td>
+      </tr><tr>
+        <td>
+          23
+        </td>
+        <td>
+          3291
+        </td>
+        <td>
+          778
+          -
+          795
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.text.DateFormat.parse
+        </td>
+        <td style="background: #AEF1AE">
+          DateTime.this.format.parse(str)
+        </td>
+      </tr><tr>
+        <td>
+          24
+        </td>
+        <td>
+          3292
+        </td>
+        <td>
+          832
+          -
+          866
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.util.Left.apply
+        </td>
+        <td style="background: #F0ADAD">
+          scala.`package`.Left.apply[String, Nothing](&quot;Unable to bind a timestamp&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          24
+        </td>
+        <td>
+          3293
+        </td>
+        <td>
+          827
+          -
+          867
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #F0ADAD">
+          scala.Some.apply[scala.util.Left[String,Nothing]](scala.`package`.Left.apply[String, Nothing](&quot;Unable to bind a timestamp&quot;))
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          3295
+        </td>
+        <td>
+          899
+          -
+          923
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.sql.Timestamp.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new java.sql.Timestamp(x.getTime())
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          3294
+        </td>
+        <td>
+          913
+          -
+          922
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.Date.getTime
+        </td>
+        <td style="background: #AEF1AE">
+          x.getTime()
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          3297
+        </td>
+        <td>
+          888
+          -
+          925
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Some.apply[scala.util.Right[Nothing,java.sql.Timestamp]](scala.`package`.Right.apply[Nothing, java.sql.Timestamp](new java.sql.Timestamp(x.getTime())))
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          3296
+        </td>
+        <td>
+          893
+          -
+          924
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.util.Right.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.`package`.Right.apply[Nothing, java.sql.Timestamp](new java.sql.Timestamp(x.getTime()))
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          3298
+        </td>
+        <td>
+          971
+          -
+          978
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.util.Left.apply
+        </td>
+        <td style="background: #F0ADAD">
+          scala.`package`.Left.apply[String, Nothing](e)
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          3299
+        </td>
+        <td>
+          966
+          -
+          979
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #F0ADAD">
+          scala.Some.apply[scala.util.Left[String,Nothing]](scala.`package`.Left.apply[String, Nothing](e))
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          3300
+        </td>
+        <td>
+          1001
+          -
+          1005
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #AEF1AE">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          3301
+        </td>
+        <td>
+          1115
+          -
+          1132
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.text.DateFormat.format
+        </td>
+        <td style="background: #F0ADAD">
+          DateTime.this.format.format(ts)
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          3302
+        </td>
+        <td>
+          1090
+          -
+          1133
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          play.api.mvc.QueryStringBindable.unbind
+        </td>
+        <td style="background: #F0ADAD">
+          stringBinder.unbind(key, DateTime.this.format.format(ts))
         </td>
       </tr>
     </table>

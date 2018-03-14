@@ -49,43 +49,51 @@
 </span>25 <span style=''>  def lower(a: Rep[String]) =
 </span>26 <span style=''>    </span><span style='background: #AEF1AE'>SimpleFunction[String](&quot;lower&quot;).apply(Seq(a))</span><span style=''>
 </span>27 <span style=''>
-</span>28 <span style=''>  def insertAndReturn[T, U &lt;: HasID[T]](a: TableQuery[U], b: U#TableElementType) = {
-</span>29 <span style=''>    (</span><span style='background: #AEF1AE'>a returning a.map(x =&gt; x.id) into ((event,i) =&gt; event.cpy(Some(i))) += b</span><span style=''>)
-</span>30 <span style=''>  }
-</span>31 <span style=''>
-</span>32 <span style=''>  def runTwo[A,B,C](a: (Query[A,B, Seq], Rep[C]), db: Database) =
-</span>33 <span style=''>    </span><span style='background: #F0ADAD'>db.run(a._1.result).zip(db.run(a._2.result))</span><span style=''>
-</span>34 <span style=''>
-</span>35 <span style=''>  def returnPaged[A,B,C](a: DBIOAction[Seq[A],NoStream,Nothing], q: Query[B,C,Seq], db: Database)(implicit request: Request[_], ec: ExecutionContext, tjs: Writes[A]) = {
-</span>36 <span style=''>    </span><span style='background: #AEF1AE'>db.run(a).zip(db.run(q.length.result)).map(x =&gt; {
-</span>37 <span style=''></span><span style='background: #AEF1AE'>      Ok(Json.toJson(x._1)).withHeaders(&quot;X-Number-Items&quot; -&gt; x._2.toString())
-</span>38 <span style=''></span><span style='background: #AEF1AE'>    })</span><span style=''>
-</span>39 <span style=''>  }
-</span>40 <span style=''>
-</span>41 <span style=''>  implicit class QueryUtils[B,C](q: Query[B,C,Seq]) {
-</span>42 <span style=''>    def queryPaged[A,B,C](implicit request: Request[A]) = {
-</span>43 <span style=''>      val page = </span><span style='background: #AEF1AE'>request.headers.get(&quot;X-Page&quot;).map(_.toInt).getOrElse(0)</span><span style=''>
-</span>44 <span style=''>      val pageSize = </span><span style='background: #AEF1AE'>request.headers.get(&quot;X-Page-Size&quot;).map(_.toInt).getOrElse(20)</span><span style=''>
-</span>45 <span style=''>
-</span>46 <span style=''>      </span><span style='background: #AEF1AE'>q.drop(page*pageSize).take(pageSize)</span><span style=''>
-</span>47 <span style=''>    }
+</span>28 <span style=''>  def currentTimestamp = </span><span style='background: #AEF1AE'>SimpleLiteral[java.sql.Timestamp](&quot;current_timestamp&quot;)</span><span style=''>
+</span>29 <span style=''>
+</span>30 <span style=''>  def insertAndReturn[T, U &lt;: HasID[T]](a: TableQuery[U], b: U#TableElementType) = {
+</span>31 <span style=''>    (</span><span style='background: #AEF1AE'>a returning a.map(x =&gt; x.id) into ((event,i) =&gt; event.cpy(Some(i))) += b</span><span style=''>)
+</span>32 <span style=''>  }
+</span>33 <span style=''>
+</span>34 <span style=''>  def runTwo[A,B,C](a: (Query[A,B, Seq], Rep[C]), db: Database) =
+</span>35 <span style=''>    </span><span style='background: #F0ADAD'>db.run(a._1.result).zip(db.run(a._2.result))</span><span style=''>
+</span>36 <span style=''>
+</span>37 <span style=''>  def returnPaged[A,B,C](a: DBIOAction[Seq[A],NoStream,Nothing], q: Query[B,C,Seq], db: Database)(implicit request: Request[_], ec: ExecutionContext, tjs: Writes[A]) = {
+</span>38 <span style=''>    </span><span style='background: #AEF1AE'>db.run(a).zip(db.run(q.length.result)).map(x =&gt; {
+</span>39 <span style=''></span><span style='background: #AEF1AE'>      Ok(Json.toJson(x._1)).withHeaders(&quot;X-Number-Items&quot; -&gt; x._2.toString())
+</span>40 <span style=''></span><span style='background: #AEF1AE'>    })</span><span style=''>
+</span>41 <span style=''>  }
+</span>42 <span style=''>
+</span>43 <span style=''>  def returnPagedNoCount[A](a: DBIOAction[Seq[A],NoStream,Nothing], db: Database)(implicit request: Request[_], ec: ExecutionContext, tjs: Writes[A]) = {
+</span>44 <span style=''>    </span><span style='background: #F0ADAD'>db.run(a).map(x =&gt; {
+</span>45 <span style=''></span><span style='background: #F0ADAD'>      Ok(Json.toJson(x))
+</span>46 <span style=''></span><span style='background: #F0ADAD'>    })</span><span style=''>
+</span>47 <span style=''>  }
 </span>48 <span style=''>
-</span>49 <span style=''>    def returnPaged(db: Database)(implicit request: Request[_], ec: ExecutionContext, tjs: Writes[C]) = {
-</span>50 <span style=''>      </span><span style='background: #F0ADAD'>runTwo(q.paged,db).map(x =&gt; Ok(Json.toJson(x._1)).withHeaders(&quot;X-Number-Items&quot; -&gt; x._2.toString()))</span><span style=''>
-</span>51 <span style=''>    }
-</span>52 <span style=''>
-</span>53 <span style=''>    def paged[A](implicit request: Request[A]) = {
-</span>54 <span style=''>      val page = </span><span style='background: #F0ADAD'>request.headers.get(&quot;X-Page&quot;).map(_.toInt).getOrElse(0)</span><span style=''>
-</span>55 <span style=''>      val pageSize = </span><span style='background: #F0ADAD'>request.headers.get(&quot;X-Page-Size&quot;).map(_.toInt).getOrElse(20)</span><span style=''>
+</span>49 <span style=''>  implicit class QueryUtils[B,C](q: Query[B,C,Seq]) {
+</span>50 <span style=''>    def queryPaged[A,B,C](implicit request: Request[A]) = {
+</span>51 <span style=''>      val page = </span><span style='background: #AEF1AE'>request.headers.get(&quot;X-Page&quot;).map(_.toInt).getOrElse(0)</span><span style=''>
+</span>52 <span style=''>      val pageSize = </span><span style='background: #AEF1AE'>request.headers.get(&quot;X-Page-Size&quot;).map(_.toInt).getOrElse(20)</span><span style=''>
+</span>53 <span style=''>
+</span>54 <span style=''>      </span><span style='background: #AEF1AE'>q.drop(page*pageSize).take(pageSize)</span><span style=''>
+</span>55 <span style=''>    }
 </span>56 <span style=''>
-</span>57 <span style=''>      </span><span style='background: #F0ADAD'>(q.drop(page*pageSize).take(pageSize),q.length)</span><span style=''>
-</span>58 <span style=''>    }
-</span>59 <span style=''>  }
+</span>57 <span style=''>    def returnPaged(db: Database)(implicit request: Request[_], ec: ExecutionContext, tjs: Writes[C]) = {
+</span>58 <span style=''>      </span><span style='background: #F0ADAD'>runTwo(q.paged,db).map(x =&gt; Ok(Json.toJson(x._1)).withHeaders(&quot;X-Number-Items&quot; -&gt; x._2.toString()))</span><span style=''>
+</span>59 <span style=''>    }
 </span>60 <span style=''>
-</span>61 <span style=''>  implicit class RepUtils[A](rep: Rep[A]) {
-</span>62 <span style=''>    def dir(b: Boolean)(implicit t: TypedType[A]) = if(b) </span><span style='background: #AEF1AE'>columnToOrdered(rep).asc</span><span style=''> else </span><span style='background: #AEF1AE'>columnToOrdered(rep).desc</span><span style=''>
-</span>63 <span style=''>  }
-</span>64 <span style=''>}
+</span>61 <span style=''>    def paged[A](implicit request: Request[A]) = {
+</span>62 <span style=''>      val page = </span><span style='background: #F0ADAD'>request.headers.get(&quot;X-Page&quot;).map(_.toInt).getOrElse(0)</span><span style=''>
+</span>63 <span style=''>      val pageSize = </span><span style='background: #F0ADAD'>request.headers.get(&quot;X-Page-Size&quot;).map(_.toInt).getOrElse(20)</span><span style=''>
+</span>64 <span style=''>
+</span>65 <span style=''>      </span><span style='background: #F0ADAD'>(q.drop(page*pageSize).take(pageSize),q.length)</span><span style=''>
+</span>66 <span style=''>    }
+</span>67 <span style=''>  }
+</span>68 <span style=''>
+</span>69 <span style=''>  implicit class RepUtils[A](rep: Rep[A]) {
+</span>70 <span style=''>    def dir(b: Boolean)(implicit t: TypedType[A]) = if(b) </span><span style='background: #AEF1AE'>columnToOrdered(rep).asc</span><span style=''> else </span><span style='background: #AEF1AE'>columnToOrdered(rep).desc</span><span style=''>
+</span>71 <span style=''>  }
+</span>72 <span style=''>}
 </span></pre>
           </div>
           <div class="tab-pane" id="statementlist">
@@ -102,49 +110,7 @@
           15
         </td>
         <td>
-          2105
-        </td>
-        <td>
-          367
-          -
-          378
-        </td>
-        <td>
-          Literal
-        </td>
-        <td>
-          &lt;nosymbol&gt;
-        </td>
-        <td style="background: #AEF1AE">
-          &quot;fromangle&quot;
-        </td>
-      </tr><tr>
-        <td>
-          15
-        </td>
-        <td>
-          2107
-        </td>
-        <td>
-          366
-          -
-          366
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.floatColumnType
-        </td>
-        <td style="background: #AEF1AE">
-          slick.jdbc.PostgresProfile.api.floatColumnType
-        </td>
-      </tr><tr>
-        <td>
-          15
-        </td>
-        <td>
-          2106
+          2293
         </td>
         <td>
           352
@@ -165,7 +131,28 @@
           15
         </td>
         <td>
-          2108
+          2292
+        </td>
+        <td>
+          367
+          -
+          378
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;fromangle&quot;
+        </td>
+      </tr><tr>
+        <td>
+          15
+        </td>
+        <td>
+          2295
         </td>
         <td>
           332
@@ -183,15 +170,15 @@
         </td>
       </tr><tr>
         <td>
-          17
+          15
         </td>
         <td>
-          2111
+          2294
         </td>
         <td>
-          482
+          366
           -
-          482
+          366
         </td>
         <td>
           Select
@@ -207,49 +194,7 @@
           17
         </td>
         <td>
-          2113
-        </td>
-        <td>
-          461
-          -
-          517
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          scala.Function1.apply
-        </td>
-        <td style="background: #AEF1AE">
-          slick.jdbc.PostgresProfile.api.SimpleFunction.apply[Float](&quot;geodistance&quot;, slick.jdbc.PostgresProfile.api.SimpleFunction.apply$default$2[Float])(slick.jdbc.PostgresProfile.api.floatColumnType).apply(scala.collection.Seq.apply[slick.jdbc.PostgresProfile.api.Rep[Float]](a, b, c, d))
-        </td>
-      </tr><tr>
-        <td>
-          17
-        </td>
-        <td>
-          2110
-        </td>
-        <td>
-          475
-          -
-          475
-        </td>
-        <td>
-          TypeApply
-        </td>
-        <td>
-          slick.lifted.SimpleFunction.apply$default$2
-        </td>
-        <td style="background: #AEF1AE">
-          slick.jdbc.PostgresProfile.api.SimpleFunction.apply$default$2[Float]
-        </td>
-      </tr><tr>
-        <td>
-          17
-        </td>
-        <td>
-          2109
+          2296
         </td>
         <td>
           483
@@ -270,7 +215,7 @@
           17
         </td>
         <td>
-          2112
+          2299
         </td>
         <td>
           504
@@ -288,15 +233,15 @@
         </td>
       </tr><tr>
         <td>
-          20
+          17
         </td>
         <td>
-          2116
+          2298
         </td>
         <td>
-          608
+          482
           -
-          608
+          482
         </td>
         <td>
           Select
@@ -304,20 +249,41 @@
         <td>
           slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.floatColumnType
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           slick.jdbc.PostgresProfile.api.floatColumnType
         </td>
       </tr><tr>
         <td>
-          20
+          17
         </td>
         <td>
-          2118
+          2297
         </td>
         <td>
-          587
+          475
           -
-          640
+          475
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          slick.lifted.SimpleFunction.apply$default$2
+        </td>
+        <td style="background: #AEF1AE">
+          slick.jdbc.PostgresProfile.api.SimpleFunction.apply$default$2[Float]
+        </td>
+      </tr><tr>
+        <td>
+          17
+        </td>
+        <td>
+          2300
+        </td>
+        <td>
+          461
+          -
+          517
         </td>
         <td>
           Apply
@@ -325,15 +291,15 @@
         <td>
           scala.Function1.apply
         </td>
-        <td style="background: #F0ADAD">
-          slick.jdbc.PostgresProfile.api.SimpleFunction.apply[Float](&quot;similarity&quot;, slick.jdbc.PostgresProfile.api.SimpleFunction.apply$default$2[Float])(slick.jdbc.PostgresProfile.api.floatColumnType).apply(scala.collection.Seq.apply[slick.lifted.Rep[_ &gt;: Float with String]](a, b, c))
+        <td style="background: #AEF1AE">
+          slick.jdbc.PostgresProfile.api.SimpleFunction.apply[Float](&quot;geodistance&quot;, slick.jdbc.PostgresProfile.api.SimpleFunction.apply$default$2[Float])(slick.jdbc.PostgresProfile.api.floatColumnType).apply(scala.collection.Seq.apply[slick.jdbc.PostgresProfile.api.Rep[Float]](a, b, c, d))
         </td>
       </tr><tr>
         <td>
           20
         </td>
         <td>
-          2115
+          2302
         </td>
         <td>
           601
@@ -354,7 +320,28 @@
           20
         </td>
         <td>
-          2114
+          2305
+        </td>
+        <td>
+          587
+          -
+          640
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Function1.apply
+        </td>
+        <td style="background: #F0ADAD">
+          slick.jdbc.PostgresProfile.api.SimpleFunction.apply[Float](&quot;similarity&quot;, slick.jdbc.PostgresProfile.api.SimpleFunction.apply$default$2[Float])(slick.jdbc.PostgresProfile.api.floatColumnType).apply(scala.collection.Seq.apply[slick.lifted.Rep[_ &gt;: Float with String]](a, b, c))
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          2301
         </td>
         <td>
           609
@@ -375,7 +362,7 @@
           20
         </td>
         <td>
-          2117
+          2304
         </td>
         <td>
           629
@@ -393,10 +380,31 @@
         </td>
       </tr><tr>
         <td>
+          20
+        </td>
+        <td>
+          2303
+        </td>
+        <td>
+          608
+          -
+          608
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.floatColumnType
+        </td>
+        <td style="background: #F0ADAD">
+          slick.jdbc.PostgresProfile.api.floatColumnType
+        </td>
+      </tr><tr>
+        <td>
           23
         </td>
         <td>
-          2119
+          2306
         </td>
         <td>
           693
@@ -417,70 +425,7 @@
           26
         </td>
         <td>
-          2120
-        </td>
-        <td>
-          797
-          -
-          804
-        </td>
-        <td>
-          Literal
-        </td>
-        <td>
-          &lt;nosymbol&gt;
-        </td>
-        <td style="background: #AEF1AE">
-          &quot;lower&quot;
-        </td>
-      </tr><tr>
-        <td>
-          26
-        </td>
-        <td>
-          2122
-        </td>
-        <td>
-          796
-          -
-          796
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.stringColumnType
-        </td>
-        <td style="background: #AEF1AE">
-          slick.jdbc.PostgresProfile.api.stringColumnType
-        </td>
-      </tr><tr>
-        <td>
-          26
-        </td>
-        <td>
-          2121
-        </td>
-        <td>
-          788
-          -
-          788
-        </td>
-        <td>
-          TypeApply
-        </td>
-        <td>
-          slick.lifted.SimpleFunction.apply$default$2
-        </td>
-        <td style="background: #AEF1AE">
-          slick.jdbc.PostgresProfile.api.SimpleFunction.apply$default$2[String]
-        </td>
-      </tr><tr>
-        <td>
-          26
-        </td>
-        <td>
-          2124
+          2311
         </td>
         <td>
           774
@@ -501,7 +446,49 @@
           26
         </td>
         <td>
-          2123
+          2308
+        </td>
+        <td>
+          788
+          -
+          788
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          slick.lifted.SimpleFunction.apply$default$2
+        </td>
+        <td style="background: #AEF1AE">
+          slick.jdbc.PostgresProfile.api.SimpleFunction.apply$default$2[String]
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          2307
+        </td>
+        <td>
+          797
+          -
+          804
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;lower&quot;
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          2310
         </td>
         <td>
           812
@@ -519,15 +506,99 @@
         </td>
       </tr><tr>
         <td>
-          29
+          26
         </td>
         <td>
-          2125
+          2309
         </td>
         <td>
-          911
+          796
           -
-          983
+          796
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.stringColumnType
+        </td>
+        <td style="background: #AEF1AE">
+          slick.jdbc.PostgresProfile.api.stringColumnType
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          2314
+        </td>
+        <td>
+          846
+          -
+          900
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.SimpleLiteral.apply
+        </td>
+        <td style="background: #AEF1AE">
+          slick.jdbc.PostgresProfile.api.SimpleLiteral.apply[java.sql.Timestamp](&quot;current_timestamp&quot;)(slick.jdbc.PostgresProfile.api.timestampColumnType)
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          2313
+        </td>
+        <td>
+          879
+          -
+          879
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.timestampColumnType
+        </td>
+        <td style="background: #AEF1AE">
+          slick.jdbc.PostgresProfile.api.timestampColumnType
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          2312
+        </td>
+        <td>
+          880
+          -
+          899
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;current_timestamp&quot;
+        </td>
+      </tr><tr>
+        <td>
+          31
+        </td>
+        <td>
+          2315
+        </td>
+        <td>
+          992
+          -
+          1064
         </td>
         <td>
           Apply
@@ -540,78 +611,15 @@
         </td>
       </tr><tr>
         <td>
-          33
+          35
         </td>
         <td>
-          2129
+          2317
         </td>
         <td>
-          1091
+          1148
           -
-          1102
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          slick.jdbc.JdbcActionComponent.QueryActionExtensionMethodsImpl.result
-        </td>
-        <td style="background: #F0ADAD">
-          slick.jdbc.PostgresProfile.api.repQueryActionExtensionMethods[C](a._2).result
-        </td>
-      </tr><tr>
-        <td>
-          33
-        </td>
-        <td>
-          2131
-        </td>
-        <td>
-          1060
-          -
-          1104
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          scala.concurrent.Future.zip
-        </td>
-        <td style="background: #F0ADAD">
-          db.run[Seq[B]](slick.jdbc.PostgresProfile.api.streamableQueryActionExtensionMethods[B, Seq](a._1).result).zip[C](db.run[C](slick.jdbc.PostgresProfile.api.repQueryActionExtensionMethods[C](a._2).result))
-        </td>
-      </tr><tr>
-        <td>
-          33
-        </td>
-        <td>
-          2128
-        </td>
-        <td>
-          1091
-          -
-          1095
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          scala.Tuple2._2
-        </td>
-        <td style="background: #F0ADAD">
-          a._2
-        </td>
-      </tr><tr>
-        <td>
-          33
-        </td>
-        <td>
-          2127
-        </td>
-        <td>
-          1067
-          -
-          1078
+          1159
         </td>
         <td>
           Select
@@ -624,15 +632,15 @@
         </td>
       </tr><tr>
         <td>
-          33
+          35
         </td>
         <td>
-          2130
+          2320
         </td>
         <td>
-          1084
+          1165
           -
-          1103
+          1184
         </td>
         <td>
           Apply
@@ -645,15 +653,15 @@
         </td>
       </tr><tr>
         <td>
-          33
+          35
         </td>
         <td>
-          2126
+          2316
         </td>
         <td>
-          1067
+          1148
           -
-          1071
+          1152
         </td>
         <td>
           Select
@@ -666,15 +674,78 @@
         </td>
       </tr><tr>
         <td>
-          36
+          35
         </td>
         <td>
-          2132
+          2319
         </td>
         <td>
-          1280
+          1172
           -
-          1413
+          1183
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcActionComponent.QueryActionExtensionMethodsImpl.result
+        </td>
+        <td style="background: #F0ADAD">
+          slick.jdbc.PostgresProfile.api.repQueryActionExtensionMethods[C](a._2).result
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          2321
+        </td>
+        <td>
+          1141
+          -
+          1185
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.concurrent.Future.zip
+        </td>
+        <td style="background: #F0ADAD">
+          db.run[Seq[B]](slick.jdbc.PostgresProfile.api.streamableQueryActionExtensionMethods[B, Seq](a._1).result).zip[C](db.run[C](slick.jdbc.PostgresProfile.api.repQueryActionExtensionMethods[C](a._2).result))
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          2318
+        </td>
+        <td>
+          1172
+          -
+          1176
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Tuple2._2
+        </td>
+        <td style="background: #F0ADAD">
+          a._2
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          2322
+        </td>
+        <td>
+          1361
+          -
+          1494
         </td>
         <td>
           ApplyToImplicitArgs
@@ -687,15 +758,36 @@
         </td>
       </tr><tr>
         <td>
-          43
+          44
         </td>
         <td>
-          2133
+          2323
         </td>
         <td>
-          1550
+          1658
           -
-          1605
+          1710
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.concurrent.Future.map
+        </td>
+        <td style="background: #F0ADAD">
+          db.run[Seq[A]](a).map[play.api.mvc.Result](((x: Seq[A]) =&gt; Util.this.Ok.apply[play.api.libs.json.JsValue](play.api.libs.json.Json.toJson[Seq[A]](x)(json.this.Writes.traversableWrites[A](tjs)))(http.this.Writeable.writeableOf_JsValue)))(ec)
+        </td>
+      </tr><tr>
+        <td>
+          51
+        </td>
+        <td>
+          2324
+        </td>
+        <td>
+          1847
+          -
+          1902
         </td>
         <td>
           Apply
@@ -708,15 +800,15 @@
         </td>
       </tr><tr>
         <td>
-          44
+          52
         </td>
         <td>
-          2134
+          2325
         </td>
         <td>
-          1627
+          1924
           -
-          1688
+          1985
         </td>
         <td>
           Apply
@@ -729,15 +821,15 @@
         </td>
       </tr><tr>
         <td>
-          46
+          54
         </td>
         <td>
-          2135
+          2326
         </td>
         <td>
-          1696
+          1993
           -
-          1732
+          2029
         </td>
         <td>
           Apply
@@ -750,15 +842,15 @@
         </td>
       </tr><tr>
         <td>
-          50
+          58
         </td>
         <td>
-          2136
+          2327
         </td>
         <td>
-          1852
+          2149
           -
-          1951
+          2248
         </td>
         <td>
           ApplyToImplicitArgs
@@ -771,15 +863,15 @@
         </td>
       </tr><tr>
         <td>
-          54
+          62
         </td>
         <td>
-          2137
+          2328
         </td>
         <td>
-          2027
+          2324
           -
-          2082
+          2379
         </td>
         <td>
           Apply
@@ -792,15 +884,15 @@
         </td>
       </tr><tr>
         <td>
-          55
+          63
         </td>
         <td>
-          2138
+          2329
         </td>
         <td>
-          2104
+          2401
           -
-          2165
+          2462
         </td>
         <td>
           Apply
@@ -813,57 +905,15 @@
         </td>
       </tr><tr>
         <td>
-          57
+          65
         </td>
         <td>
-          2140
+          2332
         </td>
         <td>
-          2211
+          2470
           -
-          2219
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          slick.lifted.Query.length
-        </td>
-        <td style="background: #F0ADAD">
-          QueryUtils.this.q.length
-        </td>
-      </tr><tr>
-        <td>
-          57
-        </td>
-        <td>
-          2139
-        </td>
-        <td>
-          2174
-          -
-          2210
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          slick.lifted.Query.take
-        </td>
-        <td style="background: #F0ADAD">
-          QueryUtils.this.q.drop(page.*(pageSize)).take(pageSize)
-        </td>
-      </tr><tr>
-        <td>
-          57
-        </td>
-        <td>
-          2141
-        </td>
-        <td>
-          2173
-          -
-          2220
+          2517
         </td>
         <td>
           Apply
@@ -876,15 +926,78 @@
         </td>
       </tr><tr>
         <td>
-          62
+          65
         </td>
         <td>
-          2147
+          2331
         </td>
         <td>
-          2364
+          2508
           -
-          2389
+          2516
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.lifted.Query.length
+        </td>
+        <td style="background: #F0ADAD">
+          QueryUtils.this.q.length
+        </td>
+      </tr><tr>
+        <td>
+          65
+        </td>
+        <td>
+          2330
+        </td>
+        <td>
+          2471
+          -
+          2507
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          slick.lifted.Query.take
+        </td>
+        <td style="background: #F0ADAD">
+          QueryUtils.this.q.drop(page.*(pageSize)).take(pageSize)
+        </td>
+      </tr><tr>
+        <td>
+          70
+        </td>
+        <td>
+          2335
+        </td>
+        <td>
+          2631
+          -
+          2655
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          slick.lifted.ColumnOrdered.asc
+        </td>
+        <td style="background: #AEF1AE">
+          slick.jdbc.PostgresProfile.api.columnToOrdered[A](RepUtils.this.rep)(t).asc
+        </td>
+      </tr><tr>
+        <td>
+          70
+        </td>
+        <td>
+          2338
+        </td>
+        <td>
+          2661
+          -
+          2686
         </td>
         <td>
           Block
@@ -897,15 +1010,36 @@
         </td>
       </tr><tr>
         <td>
-          62
+          70
         </td>
         <td>
-          2146
+          2334
         </td>
         <td>
-          2364
+          2631
           -
-          2389
+          2655
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.lifted.ColumnOrdered.asc
+        </td>
+        <td style="background: #AEF1AE">
+          slick.jdbc.PostgresProfile.api.columnToOrdered[A](RepUtils.this.rep)(t).asc
+        </td>
+      </tr><tr>
+        <td>
+          70
+        </td>
+        <td>
+          2337
+        </td>
+        <td>
+          2661
+          -
+          2686
         </td>
         <td>
           Select
@@ -918,36 +1052,15 @@
         </td>
       </tr><tr>
         <td>
-          62
+          70
         </td>
         <td>
-          2143
+          2333
         </td>
         <td>
-          2334
+          2647
           -
-          2358
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          slick.lifted.ColumnOrdered.asc
-        </td>
-        <td style="background: #AEF1AE">
-          slick.jdbc.PostgresProfile.api.columnToOrdered[A](RepUtils.this.rep)(t).asc
-        </td>
-      </tr><tr>
-        <td>
-          62
-        </td>
-        <td>
-          2145
-        </td>
-        <td>
-          2380
-          -
-          2383
+          2650
         </td>
         <td>
           Select
@@ -960,15 +1073,15 @@
         </td>
       </tr><tr>
         <td>
-          62
+          70
         </td>
         <td>
-          2142
+          2336
         </td>
         <td>
-          2350
+          2677
           -
-          2353
+          2680
         </td>
         <td>
           Select
@@ -978,27 +1091,6 @@
         </td>
         <td style="background: #AEF1AE">
           RepUtils.this.rep
-        </td>
-      </tr><tr>
-        <td>
-          62
-        </td>
-        <td>
-          2144
-        </td>
-        <td>
-          2334
-          -
-          2358
-        </td>
-        <td>
-          Block
-        </td>
-        <td>
-          slick.lifted.ColumnOrdered.asc
-        </td>
-        <td style="background: #AEF1AE">
-          slick.jdbc.PostgresProfile.api.columnToOrdered[A](RepUtils.this.rep)(t).asc
         </td>
       </tr>
     </table>

@@ -27,18 +27,22 @@
 </span>3 <span style=''>import java.sql.Timestamp
 </span>4 <span style=''>import play.api.libs.json._
 </span>5 <span style=''>import whatson.util.DateTime._
-</span>6 <span style=''>
-</span>7 <span style=''>case class Event(id: Option[Int], name: String, from: Timestamp, to: Timestamp, description: String,
-</span>8 <span style=''>                 creatorId: Option[Int], locationId: Int) extends HasCopy[Event] {
-</span>9 <span style=''>  def cpy(i: Option[Int]) = </span><span style='background: #AEF1AE'>this.copy(id = i)</span><span style=''>
-</span>10 <span style=''>}
-</span>11 <span style=''>
-</span>12 <span style=''>object Event {
-</span>13 <span style=''>  implicit val eventReads = Json.reads[Event]
-</span>14 <span style=''>  implicit val eventWrites = Json.writes[Event]
-</span>15 <span style=''>
-</span>16 <span style=''>  val tupled = (</span><span style='background: #AEF1AE'>this.apply _).tupled</span><span style=''>
-</span>17 <span style=''>}
+</span>6 <span style=''>import slick.jdbc._
+</span>7 <span style=''>
+</span>8 <span style=''>case class Event(id: Option[Int], name: String, from: Timestamp, to: Timestamp, description: String,
+</span>9 <span style=''>                 creatorId: Option[Int], locationId: Int) extends HasCopy[Event] {
+</span>10 <span style=''>  def cpy(i: Option[Int]) = </span><span style='background: #AEF1AE'>this.copy(id = i)</span><span style=''>
+</span>11 <span style=''>}
+</span>12 <span style=''>
+</span>13 <span style=''>object Event {
+</span>14 <span style=''>  implicit val eventReads = Json.reads[Event]
+</span>15 <span style=''>  implicit val eventWrites = Json.writes[Event]
+</span>16 <span style=''>
+</span>17 <span style=''>  implicit val getEventResult = </span><span style='background: #AEF1AE'>GetResult(r =&gt; </span><span style='background: #F0ADAD'>Event(r.nextIntOption, r.nextString, r.nextTimestamp, r.nextTimestamp,
+</span>18 <span style=''></span><span style='background: #F0ADAD'>                                                           r.nextString, r.nextIntOption, r.nextInt)</span><span style='background: #AEF1AE'>)</span><span style=''>
+</span>19 <span style=''>
+</span>20 <span style=''>  val tupled = (</span><span style='background: #AEF1AE'>this.apply _).tupled</span><span style=''>
+</span>21 <span style=''>}
 </span></pre>
           </div>
           <div class="tab-pane" id="statementlist">
@@ -52,36 +56,15 @@
         <th>Code</th>
       </tr><tr>
         <td>
-          9
+          10
         </td>
         <td>
-          2158
+          2380
         </td>
         <td>
-          326
+          346
           -
-          326
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          whatson.model.Event.copy$default$3
-        </td>
-        <td style="background: #AEF1AE">
-          this.copy$default$3
-        </td>
-      </tr><tr>
-        <td>
-          9
-        </td>
-        <td>
-          2161
-        </td>
-        <td>
-          326
-          -
-          326
+          346
         </td>
         <td>
           Select
@@ -94,57 +77,15 @@
         </td>
       </tr><tr>
         <td>
-          9
+          10
         </td>
         <td>
-          2160
+          2376
         </td>
         <td>
-          326
+          346
           -
-          326
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          whatson.model.Event.copy$default$5
-        </td>
-        <td style="background: #AEF1AE">
-          this.copy$default$5
-        </td>
-      </tr><tr>
-        <td>
-          9
-        </td>
-        <td>
-          2163
-        </td>
-        <td>
-          321
-          -
-          338
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          whatson.model.Event.copy
-        </td>
-        <td style="background: #AEF1AE">
-          this.copy(i, this.copy$default$2, this.copy$default$3, this.copy$default$4, this.copy$default$5, this.copy$default$6, this.copy$default$7)
-        </td>
-      </tr><tr>
-        <td>
-          9
-        </td>
-        <td>
-          2157
-        </td>
-        <td>
-          326
-          -
-          326
+          346
         </td>
         <td>
           Select
@@ -157,36 +98,57 @@
         </td>
       </tr><tr>
         <td>
-          9
+          10
         </td>
         <td>
-          2159
+          2379
         </td>
         <td>
-          326
+          346
           -
-          326
+          346
         </td>
         <td>
           Select
         </td>
         <td>
-          whatson.model.Event.copy$default$4
+          whatson.model.Event.copy$default$5
         </td>
         <td style="background: #AEF1AE">
-          this.copy$default$4
+          this.copy$default$5
         </td>
       </tr><tr>
         <td>
-          9
+          10
         </td>
         <td>
-          2162
+          2382
         </td>
         <td>
-          326
+          341
           -
-          326
+          358
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          whatson.model.Event.copy
+        </td>
+        <td style="background: #AEF1AE">
+          this.copy(i, this.copy$default$2, this.copy$default$3, this.copy$default$4, this.copy$default$5, this.copy$default$6, this.copy$default$7)
+        </td>
+      </tr><tr>
+        <td>
+          10
+        </td>
+        <td>
+          2381
+        </td>
+        <td>
+          346
+          -
+          346
         </td>
         <td>
           Select
@@ -199,15 +161,267 @@
         </td>
       </tr><tr>
         <td>
-          16
+          10
         </td>
         <td>
-          2165
+          2378
         </td>
         <td>
-          468
+          346
           -
-          488
+          346
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.model.Event.copy$default$4
+        </td>
+        <td style="background: #AEF1AE">
+          this.copy$default$4
+        </td>
+      </tr><tr>
+        <td>
+          10
+        </td>
+        <td>
+          2377
+        </td>
+        <td>
+          346
+          -
+          346
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.model.Event.copy$default$3
+        </td>
+        <td style="background: #AEF1AE">
+          this.copy$default$3
+        </td>
+      </tr><tr>
+        <td>
+          17
+        </td>
+        <td>
+          2383
+        </td>
+        <td>
+          525
+          -
+          540
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          slick.jdbc.PositionedResult.nextIntOption
+        </td>
+        <td style="background: #F0ADAD">
+          r.nextIntOption()
+        </td>
+      </tr><tr>
+        <td>
+          17
+        </td>
+        <td>
+          2391
+        </td>
+        <td>
+          504
+          -
+          691
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          slick.jdbc.GetResult.apply
+        </td>
+        <td style="background: #AEF1AE">
+          slick.jdbc.GetResult.apply[whatson.model.Event](((r: slick.jdbc.PositionedResult) =&gt; Event.apply(r.nextIntOption(), r.nextString(), r.nextTimestamp(), r.nextTimestamp(), r.nextString(), r.nextIntOption(), r.nextInt())))
+        </td>
+      </tr><tr>
+        <td>
+          17
+        </td>
+        <td>
+          2385
+        </td>
+        <td>
+          556
+          -
+          571
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          slick.jdbc.PositionedResult.nextTimestamp
+        </td>
+        <td style="background: #F0ADAD">
+          r.nextTimestamp()
+        </td>
+      </tr><tr>
+        <td>
+          17
+        </td>
+        <td>
+          2390
+        </td>
+        <td>
+          519
+          -
+          690
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          whatson.model.Event.apply
+        </td>
+        <td style="background: #F0ADAD">
+          Event.apply(r.nextIntOption(), r.nextString(), r.nextTimestamp(), r.nextTimestamp(), r.nextString(), r.nextIntOption(), r.nextInt())
+        </td>
+      </tr><tr>
+        <td>
+          17
+        </td>
+        <td>
+          2384
+        </td>
+        <td>
+          542
+          -
+          554
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          slick.jdbc.PositionedResult.nextString
+        </td>
+        <td style="background: #F0ADAD">
+          r.nextString()
+        </td>
+      </tr><tr>
+        <td>
+          17
+        </td>
+        <td>
+          2386
+        </td>
+        <td>
+          573
+          -
+          588
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          slick.jdbc.PositionedResult.nextTimestamp
+        </td>
+        <td style="background: #F0ADAD">
+          r.nextTimestamp()
+        </td>
+      </tr><tr>
+        <td>
+          18
+        </td>
+        <td>
+          2389
+        </td>
+        <td>
+          680
+          -
+          689
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          slick.jdbc.PositionedResult.nextInt
+        </td>
+        <td style="background: #F0ADAD">
+          r.nextInt()
+        </td>
+      </tr><tr>
+        <td>
+          18
+        </td>
+        <td>
+          2388
+        </td>
+        <td>
+          663
+          -
+          678
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          slick.jdbc.PositionedResult.nextIntOption
+        </td>
+        <td style="background: #F0ADAD">
+          r.nextIntOption()
+        </td>
+      </tr><tr>
+        <td>
+          18
+        </td>
+        <td>
+          2387
+        </td>
+        <td>
+          649
+          -
+          661
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          slick.jdbc.PositionedResult.nextString
+        </td>
+        <td style="background: #F0ADAD">
+          r.nextString()
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          2392
+        </td>
+        <td>
+          709
+          -
+          719
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          whatson.model.Event.apply
+        </td>
+        <td style="background: #AEF1AE">
+          this.apply(id, name, from, to, description, creatorId, locationId)
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          2393
+        </td>
+        <td>
+          709
+          -
+          729
         </td>
         <td>
           Select
@@ -219,27 +433,6 @@
           {
   ((id: Option[Int], name: String, from: java.sql.Timestamp, to: java.sql.Timestamp, description: String, creatorId: Option[Int], locationId: Int) =&gt; this.apply(id, name, from, to, description, creatorId, locationId))
 }.tupled
-        </td>
-      </tr><tr>
-        <td>
-          16
-        </td>
-        <td>
-          2164
-        </td>
-        <td>
-          468
-          -
-          478
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          whatson.model.Event.apply
-        </td>
-        <td style="background: #AEF1AE">
-          this.apply(id, name, from, to, description, creatorId, locationId)
         </td>
       </tr>
     </table>

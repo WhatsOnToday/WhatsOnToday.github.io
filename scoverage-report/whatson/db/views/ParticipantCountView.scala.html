@@ -2,7 +2,7 @@
       <head>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
         <title id="title">
-          whatson/db/ImageTable.scala.html
+          whatson/db/views/ParticipantCountView.scala.html
         </title>
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
         $(document).ready(function() {$(".tablesorter").tablesorter();});
@@ -30,18 +30,18 @@
 </span>6 <span style=''>import java.sql.Timestamp
 </span>7 <span style=''>import whatson.db.ParticipantTable._
 </span>8 <span style=''>
-</span>9 <span style=''>class ImageTable(tag: Tag) extends Table[Image](tag, &quot;images&quot;) with HasID[Image] {
-</span>10 <span style=''>  def id = </span><span style='background: #AEF1AE'>column[Int](&quot;id&quot;,O.PrimaryKey,O.AutoInc)</span><span style=''>
+</span>9 <span style=''>class ParticipantCountView(tag: Tag) extends Table[ParticipantCount](tag, &quot;participant_counts&quot;) with HasID[ParticipantCount] {
+</span>10 <span style=''>  def id = </span><span style='background: #AEF1AE'>column[Int](&quot;id&quot;)</span><span style=''>
 </span>11 <span style=''>
-</span>12 <span style=''>  def data = </span><span style='background: #AEF1AE'>column[Array[Byte]](&quot;data&quot;)</span><span style=''>
+</span>12 <span style=''>  def event_fk = </span><span style='background: #AEF1AE'>column[Int](&quot;event_fk&quot;)</span><span style=''>
 </span>13 <span style=''>
-</span>14 <span style=''>  def contentType = </span><span style='background: #AEF1AE'>column[String](&quot;content_type&quot;)</span><span style=''>
+</span>14 <span style=''>  def count = </span><span style='background: #AEF1AE'>column[Int](&quot;count&quot;)</span><span style=''>
 </span>15 <span style=''>
-</span>16 <span style=''>  def * = </span><span style='background: #AEF1AE'>(id.?,data,contentType) &lt;&gt; (Image.tupled, Image.unapply)</span><span style=''>
+</span>16 <span style=''>  def * = </span><span style='background: #AEF1AE'>(id.?,event_fk,count) &lt;&gt; (ParticipantCount.tupled, </span><span style='background: #F0ADAD'>ParticipantCount.unapply</span><span style='background: #AEF1AE'>)</span><span style=''>
 </span>17 <span style=''>}
 </span>18 <span style=''>
-</span>19 <span style=''>object ImageTable {
-</span>20 <span style=''>  val image = TableQuery[ImageTable]
+</span>19 <span style=''>object ParticipantCountView {
+</span>20 <span style=''>  val participantCount = TableQuery[ParticipantCountView]
 </span>21 <span style=''>}
 </span></pre>
           </div>
@@ -59,12 +59,12 @@
           10
         </td>
         <td>
-          1934
+          2341
         </td>
         <td>
-          286
+          330
           -
-          326
+          347
         </td>
         <td>
           ApplyToImplicitArgs
@@ -73,40 +73,19 @@
           slick.relational.RelationalTableComponent.Table.column
         </td>
         <td style="background: #AEF1AE">
-          ImageTable.this.column[Int](&quot;id&quot;, ImageTable.this.O.PrimaryKey, ImageTable.this.O.AutoInc)(slick.jdbc.PostgresProfile.api.intColumnType)
+          ParticipantCountView.this.column[Int](&quot;id&quot;)(slick.jdbc.PostgresProfile.api.intColumnType)
         </td>
       </tr><tr>
         <td>
           10
         </td>
         <td>
-          1931
+          2340
         </td>
         <td>
-          303
+          341
           -
-          315
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          slick.relational.RelationalTableComponent.ColumnOptions.PrimaryKey
-        </td>
-        <td style="background: #AEF1AE">
-          ImageTable.this.O.PrimaryKey
-        </td>
-      </tr><tr>
-        <td>
-          10
-        </td>
-        <td>
-          1933
-        </td>
-        <td>
-          297
-          -
-          297
+          341
         </td>
         <td>
           Select
@@ -122,12 +101,12 @@
           10
         </td>
         <td>
-          1930
+          2339
         </td>
         <td>
-          298
+          342
           -
-          302
+          346
         </td>
         <td>
           Literal
@@ -140,36 +119,15 @@
         </td>
       </tr><tr>
         <td>
-          10
-        </td>
-        <td>
-          1932
-        </td>
-        <td>
-          316
-          -
-          325
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          slick.relational.RelationalTableComponent.ColumnOptions.AutoInc
-        </td>
-        <td style="background: #AEF1AE">
-          ImageTable.this.O.AutoInc
-        </td>
-      </tr><tr>
-        <td>
           12
         </td>
         <td>
-          1937
+          2344
         </td>
         <td>
-          341
+          366
           -
-          368
+          389
         </td>
         <td>
           ApplyToImplicitArgs
@@ -178,40 +136,40 @@
           slick.relational.RelationalTableComponent.Table.column
         </td>
         <td style="background: #AEF1AE">
-          ImageTable.this.column[Array[Byte]](&quot;data&quot;)(slick.jdbc.PostgresProfile.api.byteArrayColumnType)
+          ParticipantCountView.this.column[Int](&quot;event_fk&quot;)(slick.jdbc.PostgresProfile.api.intColumnType)
         </td>
       </tr><tr>
         <td>
           12
         </td>
         <td>
-          1936
+          2343
         </td>
         <td>
-          360
+          377
           -
-          360
+          377
         </td>
         <td>
           Select
         </td>
         <td>
-          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.byteArrayColumnType
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
         </td>
         <td style="background: #AEF1AE">
-          slick.jdbc.PostgresProfile.api.byteArrayColumnType
+          slick.jdbc.PostgresProfile.api.intColumnType
         </td>
       </tr><tr>
         <td>
           12
         </td>
         <td>
-          1935
+          2342
         </td>
         <td>
-          361
+          378
           -
-          367
+          388
         </td>
         <td>
           Literal
@@ -220,61 +178,61 @@
           &lt;nosymbol&gt;
         </td>
         <td style="background: #AEF1AE">
-          &quot;data&quot;
+          &quot;event_fk&quot;
         </td>
       </tr><tr>
         <td>
           14
         </td>
         <td>
-          1940
-        </td>
-        <td>
-          390
-          -
-          420
-        </td>
-        <td>
-          ApplyToImplicitArgs
-        </td>
-        <td>
-          slick.relational.RelationalTableComponent.Table.column
-        </td>
-        <td style="background: #AEF1AE">
-          ImageTable.this.column[String](&quot;content_type&quot;)(slick.jdbc.PostgresProfile.api.stringColumnType)
-        </td>
-      </tr><tr>
-        <td>
-          14
-        </td>
-        <td>
-          1939
-        </td>
-        <td>
-          404
-          -
-          404
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.stringColumnType
-        </td>
-        <td style="background: #AEF1AE">
-          slick.jdbc.PostgresProfile.api.stringColumnType
-        </td>
-      </tr><tr>
-        <td>
-          14
-        </td>
-        <td>
-          1938
+          2347
         </td>
         <td>
           405
           -
-          419
+          425
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.relational.RelationalTableComponent.Table.column
+        </td>
+        <td style="background: #AEF1AE">
+          ParticipantCountView.this.column[Int](&quot;count&quot;)(slick.jdbc.PostgresProfile.api.intColumnType)
+        </td>
+      </tr><tr>
+        <td>
+          14
+        </td>
+        <td>
+          2346
+        </td>
+        <td>
+          416
+          -
+          416
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
+        </td>
+        <td style="background: #AEF1AE">
+          slick.jdbc.PostgresProfile.api.intColumnType
+        </td>
+      </tr><tr>
+        <td>
+          14
+        </td>
+        <td>
+          2345
+        </td>
+        <td>
+          417
+          -
+          424
         </td>
         <td>
           Literal
@@ -283,61 +241,19 @@
           &lt;nosymbol&gt;
         </td>
         <td style="background: #AEF1AE">
-          &quot;content_type&quot;
+          &quot;count&quot;
         </td>
       </tr><tr>
         <td>
           16
         </td>
         <td>
-          1952
+          2353
         </td>
         <td>
-          432
-          -
-          432
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.stringColumnType
-        </td>
-        <td style="background: #AEF1AE">
-          slick.jdbc.PostgresProfile.api.stringColumnType
-        </td>
-      </tr><tr>
-        <td>
-          16
-        </td>
-        <td>
-          1943
-        </td>
-        <td>
-          433
-          -
           437
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          slick.lifted.BaseColumnExtensionMethods.?
-        </td>
-        <td style="background: #AEF1AE">
-          slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](ImageTable.this.id)(slick.jdbc.PostgresProfile.api.intColumnType).?
-        </td>
-      </tr><tr>
-        <td>
-          16
-        </td>
-        <td>
-          1946
-        </td>
-        <td>
-          432
           -
-          455
+          458
         </td>
         <td>
           Apply
@@ -346,40 +262,61 @@
           scala.Tuple3.apply
         </td>
         <td style="background: #AEF1AE">
-          scala.Tuple3.apply[slick.lifted.Rep[Option[Int]], slick.lifted.Rep[Array[Byte]], slick.lifted.Rep[String]](slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](ImageTable.this.id)(slick.jdbc.PostgresProfile.api.intColumnType).?, ImageTable.this.data, ImageTable.this.contentType)
+          scala.Tuple3.apply[slick.lifted.Rep[Option[Int]], slick.lifted.Rep[Int], slick.lifted.Rep[Int]](slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](ParticipantCountView.this.id)(slick.jdbc.PostgresProfile.api.intColumnType).?, ParticipantCountView.this.event_fk, ParticipantCountView.this.count)
         </td>
       </tr><tr>
         <td>
           16
         </td>
         <td>
-          1955
+          2362
         </td>
         <td>
-          460
+          463
           -
-          472
+          486
         </td>
         <td>
           Select
         </td>
         <td>
-          whatson.model.Image.tupled
+          whatson.model.ParticipantCount.tupled
         </td>
         <td style="background: #AEF1AE">
-          whatson.model.Image.tupled
+          whatson.model.ParticipantCount.tupled
         </td>
       </tr><tr>
         <td>
           16
         </td>
         <td>
-          1949
+          2365
         </td>
         <td>
-          432
+          459
           -
-          432
+          459
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          slick.lifted.MappedProjection.mappedProjectionShape
+        </td>
+        <td style="background: #AEF1AE">
+          lifted.this.MappedProjection.mappedProjectionShape[slick.lifted.FlatShapeLevel, whatson.model.ParticipantCount, (Option[Int], Int, Int)]
+        </td>
+      </tr><tr>
+        <td>
+          16
+        </td>
+        <td>
+          2356
+        </td>
+        <td>
+          437
+          -
+          437
         </td>
         <td>
           ApplyToImplicitArgs
@@ -395,77 +332,33 @@
           16
         </td>
         <td>
-          1958
+          2350
         </td>
         <td>
-          456
+          438
           -
-          456
+          442
         </td>
         <td>
-          TypeApply
+          Select
         </td>
         <td>
-          slick.lifted.MappedProjection.mappedProjectionShape
+          slick.lifted.BaseColumnExtensionMethods.?
         </td>
         <td style="background: #AEF1AE">
-          lifted.this.MappedProjection.mappedProjectionShape[slick.lifted.FlatShapeLevel, whatson.model.Image, (Option[Int], Array[Byte], String)]
+          slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](ParticipantCountView.this.id)(slick.jdbc.PostgresProfile.api.intColumnType).?
         </td>
       </tr><tr>
         <td>
           16
         </td>
         <td>
-          1957
+          2359
         </td>
         <td>
-          432
+          437
           -
-          488
-        </td>
-        <td>
-          ApplyToImplicitArgs
-        </td>
-        <td>
-          slick.lifted.ShapedValue.&lt;&gt;
-        </td>
-        <td style="background: #AEF1AE">
-          slick.jdbc.PostgresProfile.api.anyToShapedValue[(slick.lifted.Rep[Option[Int]], slick.lifted.Rep[Array[Byte]], slick.lifted.Rep[String]), (Option[Int], Array[Byte], String)](scala.Tuple3.apply[slick.lifted.Rep[Option[Int]], slick.lifted.Rep[Array[Byte]], slick.lifted.Rep[String]](slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](ImageTable.this.id)(slick.jdbc.PostgresProfile.api.intColumnType).?, ImageTable.this.data, ImageTable.this.contentType))(lifted.this.Shape.tuple3Shape[slick.jdbc.PostgresProfile.api.FlatShapeLevel, slick.lifted.Rep[Option[Int]], slick.lifted.Rep[Array[Byte]], slick.lifted.Rep[String], Option[Int], Array[Byte], String, slick.lifted.Rep[Option[Int]], slick.lifted.Rep[Array[Byte]], slick.lifted.Rep[String]](lifted.this.Shape.optionShape[Int, Int, Int, Nothing](lifted.this.Shape.repColumnShape[Int, Nothing](slick.jdbc.PostgresProfile.api.intColumnType)), lifted.this.Shape.repColumnShape[Array[Byte], Nothing](slick.jdbc.PostgresProfile.api.byteArrayColumnType), lifted.this.Shape.repColumnShape[String, Nothing](slick.jdbc.PostgresProfile.api.stringColumnType))).&lt;&gt;[whatson.model.Image](whatson.model.Image.tupled, {
-  ((x$0: whatson.model.Image) =&gt; whatson.model.Image.unapply(x$0))
-})((ClassTag.apply[whatson.model.Image](classOf[whatson.model.Image]): scala.reflect.ClassTag[whatson.model.Image]))
-        </td>
-      </tr><tr>
-        <td>
-          16
-        </td>
-        <td>
-          1951
-        </td>
-        <td>
-          432
-          -
-          432
-        </td>
-        <td>
-          ApplyToImplicitArgs
-        </td>
-        <td>
-          slick.lifted.RepShapeImplicits.repColumnShape
-        </td>
-        <td style="background: #AEF1AE">
-          lifted.this.Shape.repColumnShape[Array[Byte], Nothing](slick.jdbc.PostgresProfile.api.byteArrayColumnType)
-        </td>
-      </tr><tr>
-        <td>
-          16
-        </td>
-        <td>
-          1942
-        </td>
-        <td>
-          433
-          -
-          433
+          437
         </td>
         <td>
           Select
@@ -481,54 +374,33 @@
           16
         </td>
         <td>
-          1954
+          2349
         </td>
         <td>
-          432
+          438
           -
-          432
-        </td>
-        <td>
-          ApplyToImplicitArgs
-        </td>
-        <td>
-          slick.lifted.TupleShapeImplicits.tuple3Shape
-        </td>
-        <td style="background: #AEF1AE">
-          lifted.this.Shape.tuple3Shape[slick.jdbc.PostgresProfile.api.FlatShapeLevel, slick.lifted.Rep[Option[Int]], slick.lifted.Rep[Array[Byte]], slick.lifted.Rep[String], Option[Int], Array[Byte], String, slick.lifted.Rep[Option[Int]], slick.lifted.Rep[Array[Byte]], slick.lifted.Rep[String]](lifted.this.Shape.optionShape[Int, Int, Int, Nothing](lifted.this.Shape.repColumnShape[Int, Nothing](slick.jdbc.PostgresProfile.api.intColumnType)), lifted.this.Shape.repColumnShape[Array[Byte], Nothing](slick.jdbc.PostgresProfile.api.byteArrayColumnType), lifted.this.Shape.repColumnShape[String, Nothing](slick.jdbc.PostgresProfile.api.stringColumnType))
-        </td>
-      </tr><tr>
-        <td>
-          16
-        </td>
-        <td>
-          1945
-        </td>
-        <td>
-          443
-          -
-          454
+          438
         </td>
         <td>
           Select
         </td>
         <td>
-          whatson.db.ImageTable.contentType
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
         </td>
         <td style="background: #AEF1AE">
-          ImageTable.this.contentType
+          slick.jdbc.PostgresProfile.api.intColumnType
         </td>
       </tr><tr>
         <td>
           16
         </td>
         <td>
-          1948
+          2358
         </td>
         <td>
-          432
+          437
           -
-          432
+          437
         </td>
         <td>
           ApplyToImplicitArgs
@@ -544,33 +416,98 @@
           16
         </td>
         <td>
-          1956
+          2352
         </td>
         <td>
-          474
+          452
           -
-          487
+          457
         </td>
         <td>
-          Apply
+          Select
         </td>
         <td>
-          whatson.model.Image.unapply
+          whatson.db.ParticipantCountView.count
         </td>
         <td style="background: #AEF1AE">
-          whatson.model.Image.unapply(x$0)
+          ParticipantCountView.this.count
         </td>
       </tr><tr>
         <td>
           16
         </td>
         <td>
-          1947
+          2361
         </td>
         <td>
-          432
+          437
           -
-          432
+          437
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.TupleShapeImplicits.tuple3Shape
+        </td>
+        <td style="background: #AEF1AE">
+          lifted.this.Shape.tuple3Shape[slick.jdbc.PostgresProfile.api.FlatShapeLevel, slick.lifted.Rep[Option[Int]], slick.lifted.Rep[Int], slick.lifted.Rep[Int], Option[Int], Int, Int, slick.lifted.Rep[Option[Int]], slick.lifted.Rep[Int], slick.lifted.Rep[Int]](lifted.this.Shape.optionShape[Int, Int, Int, Nothing](lifted.this.Shape.repColumnShape[Int, Nothing](slick.jdbc.PostgresProfile.api.intColumnType)), lifted.this.Shape.repColumnShape[Int, Nothing](slick.jdbc.PostgresProfile.api.intColumnType), lifted.this.Shape.repColumnShape[Int, Nothing](slick.jdbc.PostgresProfile.api.intColumnType))
+        </td>
+      </tr><tr>
+        <td>
+          16
+        </td>
+        <td>
+          2355
+        </td>
+        <td>
+          437
+          -
+          437
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.RepShapeImplicits.repColumnShape
+        </td>
+        <td style="background: #AEF1AE">
+          lifted.this.Shape.repColumnShape[Int, Nothing](slick.jdbc.PostgresProfile.api.intColumnType)
+        </td>
+      </tr><tr>
+        <td>
+          16
+        </td>
+        <td>
+          2364
+        </td>
+        <td>
+          437
+          -
+          513
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.ShapedValue.&lt;&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          slick.jdbc.PostgresProfile.api.anyToShapedValue[(slick.lifted.Rep[Option[Int]], slick.lifted.Rep[Int], slick.lifted.Rep[Int]), (Option[Int], Int, Int)](scala.Tuple3.apply[slick.lifted.Rep[Option[Int]], slick.lifted.Rep[Int], slick.lifted.Rep[Int]](slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](ParticipantCountView.this.id)(slick.jdbc.PostgresProfile.api.intColumnType).?, ParticipantCountView.this.event_fk, ParticipantCountView.this.count))(lifted.this.Shape.tuple3Shape[slick.jdbc.PostgresProfile.api.FlatShapeLevel, slick.lifted.Rep[Option[Int]], slick.lifted.Rep[Int], slick.lifted.Rep[Int], Option[Int], Int, Int, slick.lifted.Rep[Option[Int]], slick.lifted.Rep[Int], slick.lifted.Rep[Int]](lifted.this.Shape.optionShape[Int, Int, Int, Nothing](lifted.this.Shape.repColumnShape[Int, Nothing](slick.jdbc.PostgresProfile.api.intColumnType)), lifted.this.Shape.repColumnShape[Int, Nothing](slick.jdbc.PostgresProfile.api.intColumnType), lifted.this.Shape.repColumnShape[Int, Nothing](slick.jdbc.PostgresProfile.api.intColumnType))).&lt;&gt;[whatson.model.ParticipantCount](whatson.model.ParticipantCount.tupled, {
+  ((x$0: whatson.model.ParticipantCount) =&gt; whatson.model.ParticipantCount.unapply(x$0))
+})((ClassTag.apply[whatson.model.ParticipantCount](classOf[whatson.model.ParticipantCount]): scala.reflect.ClassTag[whatson.model.ParticipantCount]))
+        </td>
+      </tr><tr>
+        <td>
+          16
+        </td>
+        <td>
+          2354
+        </td>
+        <td>
+          437
+          -
+          437
         </td>
         <td>
           Select
@@ -586,12 +523,75 @@
           16
         </td>
         <td>
-          1959
+          2363
         </td>
         <td>
-          432
-          -
           488
+          -
+          512
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          whatson.model.ParticipantCount.unapply
+        </td>
+        <td style="background: #F0ADAD">
+          whatson.model.ParticipantCount.unapply(x$0)
+        </td>
+      </tr><tr>
+        <td>
+          16
+        </td>
+        <td>
+          2348
+        </td>
+        <td>
+          438
+          -
+          440
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.db.ParticipantCountView.id
+        </td>
+        <td style="background: #AEF1AE">
+          ParticipantCountView.this.id
+        </td>
+      </tr><tr>
+        <td>
+          16
+        </td>
+        <td>
+          2357
+        </td>
+        <td>
+          437
+          -
+          437
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
+        </td>
+        <td style="background: #AEF1AE">
+          slick.jdbc.PostgresProfile.api.intColumnType
+        </td>
+      </tr><tr>
+        <td>
+          16
+        </td>
+        <td>
+          2366
+        </td>
+        <td>
+          437
+          -
+          513
         </td>
         <td>
           ApplyToImplicitArgs
@@ -600,84 +600,42 @@
           slick.lifted.ProvenShape.proveShapeOf
         </td>
         <td style="background: #AEF1AE">
-          slick.lifted.ProvenShape.proveShapeOf[slick.lifted.MappedProjection[whatson.model.Image,(Option[Int], Array[Byte], String)], whatson.model.Image](slick.jdbc.PostgresProfile.api.anyToShapedValue[(slick.lifted.Rep[Option[Int]], slick.lifted.Rep[Array[Byte]], slick.lifted.Rep[String]), (Option[Int], Array[Byte], String)](scala.Tuple3.apply[slick.lifted.Rep[Option[Int]], slick.lifted.Rep[Array[Byte]], slick.lifted.Rep[String]](slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](ImageTable.this.id)(slick.jdbc.PostgresProfile.api.intColumnType).?, ImageTable.this.data, ImageTable.this.contentType))(lifted.this.Shape.tuple3Shape[slick.jdbc.PostgresProfile.api.FlatShapeLevel, slick.lifted.Rep[Option[Int]], slick.lifted.Rep[Array[Byte]], slick.lifted.Rep[String], Option[Int], Array[Byte], String, slick.lifted.Rep[Option[Int]], slick.lifted.Rep[Array[Byte]], slick.lifted.Rep[String]](lifted.this.Shape.optionShape[Int, Int, Int, Nothing](lifted.this.Shape.repColumnShape[Int, Nothing](slick.jdbc.PostgresProfile.api.intColumnType)), lifted.this.Shape.repColumnShape[Array[Byte], Nothing](slick.jdbc.PostgresProfile.api.byteArrayColumnType), lifted.this.Shape.repColumnShape[String, Nothing](slick.jdbc.PostgresProfile.api.stringColumnType))).&lt;&gt;[whatson.model.Image](whatson.model.Image.tupled, {
-  ((x$0: whatson.model.Image) =&gt; whatson.model.Image.unapply(x$0))
-})((ClassTag.apply[whatson.model.Image](classOf[whatson.model.Image]): scala.reflect.ClassTag[whatson.model.Image])))(lifted.this.MappedProjection.mappedProjectionShape[slick.lifted.FlatShapeLevel, whatson.model.Image, (Option[Int], Array[Byte], String)])
+          slick.lifted.ProvenShape.proveShapeOf[slick.lifted.MappedProjection[whatson.model.ParticipantCount,(Option[Int], Int, Int)], whatson.model.ParticipantCount](slick.jdbc.PostgresProfile.api.anyToShapedValue[(slick.lifted.Rep[Option[Int]], slick.lifted.Rep[Int], slick.lifted.Rep[Int]), (Option[Int], Int, Int)](scala.Tuple3.apply[slick.lifted.Rep[Option[Int]], slick.lifted.Rep[Int], slick.lifted.Rep[Int]](slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](ParticipantCountView.this.id)(slick.jdbc.PostgresProfile.api.intColumnType).?, ParticipantCountView.this.event_fk, ParticipantCountView.this.count))(lifted.this.Shape.tuple3Shape[slick.jdbc.PostgresProfile.api.FlatShapeLevel, slick.lifted.Rep[Option[Int]], slick.lifted.Rep[Int], slick.lifted.Rep[Int], Option[Int], Int, Int, slick.lifted.Rep[Option[Int]], slick.lifted.Rep[Int], slick.lifted.Rep[Int]](lifted.this.Shape.optionShape[Int, Int, Int, Nothing](lifted.this.Shape.repColumnShape[Int, Nothing](slick.jdbc.PostgresProfile.api.intColumnType)), lifted.this.Shape.repColumnShape[Int, Nothing](slick.jdbc.PostgresProfile.api.intColumnType), lifted.this.Shape.repColumnShape[Int, Nothing](slick.jdbc.PostgresProfile.api.intColumnType))).&lt;&gt;[whatson.model.ParticipantCount](whatson.model.ParticipantCount.tupled, {
+  ((x$0: whatson.model.ParticipantCount) =&gt; whatson.model.ParticipantCount.unapply(x$0))
+})((ClassTag.apply[whatson.model.ParticipantCount](classOf[whatson.model.ParticipantCount]): scala.reflect.ClassTag[whatson.model.ParticipantCount])))(lifted.this.MappedProjection.mappedProjectionShape[slick.lifted.FlatShapeLevel, whatson.model.ParticipantCount, (Option[Int], Int, Int)])
         </td>
       </tr><tr>
         <td>
           16
         </td>
         <td>
-          1941
+          2351
         </td>
         <td>
-          433
+          443
           -
-          435
+          451
         </td>
         <td>
           Select
         </td>
         <td>
-          whatson.db.ImageTable.id
+          whatson.db.ParticipantCountView.event_fk
         </td>
         <td style="background: #AEF1AE">
-          ImageTable.this.id
+          ParticipantCountView.this.event_fk
         </td>
       </tr><tr>
         <td>
           16
         </td>
         <td>
-          1950
+          2360
         </td>
         <td>
-          432
+          437
           -
-          432
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.byteArrayColumnType
-        </td>
-        <td style="background: #AEF1AE">
-          slick.jdbc.PostgresProfile.api.byteArrayColumnType
-        </td>
-      </tr><tr>
-        <td>
-          16
-        </td>
-        <td>
-          1944
-        </td>
-        <td>
-          438
-          -
-          442
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          whatson.db.ImageTable.data
-        </td>
-        <td style="background: #AEF1AE">
-          ImageTable.this.data
-        </td>
-      </tr><tr>
-        <td>
-          16
-        </td>
-        <td>
-          1953
-        </td>
-        <td>
-          432
-          -
-          432
+          437
         </td>
         <td>
           ApplyToImplicitArgs
@@ -686,7 +644,7 @@
           slick.lifted.RepShapeImplicits.repColumnShape
         </td>
         <td style="background: #AEF1AE">
-          lifted.this.Shape.repColumnShape[String, Nothing](slick.jdbc.PostgresProfile.api.stringColumnType)
+          lifted.this.Shape.repColumnShape[Int, Nothing](slick.jdbc.PostgresProfile.api.intColumnType)
         </td>
       </tr>
     </table>
