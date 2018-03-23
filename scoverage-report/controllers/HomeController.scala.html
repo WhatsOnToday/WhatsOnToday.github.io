@@ -31,27 +31,39 @@
 </span>7 <span style=''>import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 </span>8 <span style=''>import play.api.mvc._
 </span>9 <span style=''>import slick.jdbc.JdbcProfile
-</span>10 <span style=''>
-</span>11 <span style=''>/**
-</span>12 <span style=''> * This controller creates an `Action` to handle HTTP requests to the
-</span>13 <span style=''> * application's home page.
-</span>14 <span style=''> */
-</span>15 <span style=''>@Singleton
-</span>16 <span style=''>class HomeController @Inject()(cc: ControllerComponents, protected val dbConfigProvider: DatabaseConfigProvider)(implicit context: ExecutionContext) extends AbstractController(cc) 
-</span>17 <span style=''>  with HasDatabaseConfigProvider[JdbcProfile] {
-</span>18 <span style=''>
-</span>19 <span style=''>  val log = </span><span style='background: #AEF1AE'>Logger(&quot;api.home&quot;)</span><span style=''>
-</span>20 <span style=''>
-</span>21 <span style=''>  def index() = </span><span style='background: #AEF1AE'>Action { implicit request: Request[AnyContent] =&gt;
-</span>22 <span style=''></span><span style='background: #AEF1AE'>    log.debug(&quot;Rest request for the main page ('/') redirect to '/web'&quot;)
-</span>23 <span style=''></span><span style='background: #AEF1AE'>    Redirect(&quot;/web&quot;, MOVED_PERMANENTLY)
-</span>24 <span style=''></span><span style='background: #AEF1AE'>  }</span><span style=''>
+</span>10 <span style=''>import play.api._
+</span>11 <span style=''>import whatson.util._
+</span>12 <span style=''>
+</span>13 <span style=''>/**
+</span>14 <span style=''> * This controller creates an `Action` to handle HTTP requests to the
+</span>15 <span style=''> * application's home page.
+</span>16 <span style=''> */
+</span>17 <span style=''>@Singleton
+</span>18 <span style=''>class HomeController @Inject()(cc: ControllerComponents,
+</span>19 <span style=''>                               protected val dbConfigProvider: DatabaseConfigProvider,
+</span>20 <span style=''>                               config: Configuration,
+</span>21 <span style=''>                               applicationConfig: ApplicationConfig)(implicit context: ExecutionContext) extends AbstractController(cc)
+</span>22 <span style=''>  with HasDatabaseConfigProvider[JdbcProfile] {
+</span>23 <span style=''>
+</span>24 <span style=''>  val log = </span><span style='background: #AEF1AE'>Logger(&quot;api.home&quot;)</span><span style=''>
 </span>25 <span style=''>
-</span>26 <span style=''>  def indexWeb(any: String) = </span><span style='background: #AEF1AE'>Action { implicit request: Request[AnyContent] =&gt;
-</span>27 <span style=''></span><span style='background: #AEF1AE'>    log.debug(&quot;Rest request for the main page&quot;)
-</span>28 <span style=''></span><span style='background: #AEF1AE'>    Ok.sendFile(new java.io.File(&quot;./public/index.html&quot;))
+</span>26 <span style=''>  def index() = </span><span style='background: #AEF1AE'>Action { implicit request: Request[AnyContent] =&gt;
+</span>27 <span style=''></span><span style='background: #AEF1AE'>    log.debug(&quot;Rest request for the main page ('/') redirect to '/web'&quot;)
+</span>28 <span style=''></span><span style='background: #AEF1AE'>    Redirect(&quot;/web&quot;, MOVED_PERMANENTLY)
 </span>29 <span style=''></span><span style='background: #AEF1AE'>  }</span><span style=''>
-</span>30 <span style=''>}
+</span>30 <span style=''>
+</span>31 <span style=''>  def indexWeb(any: String) = </span><span style='background: #AEF1AE'>Action { implicit request: Request[AnyContent] =&gt;
+</span>32 <span style=''></span><span style='background: #AEF1AE'>    log.debug(&quot;Rest request for the main page&quot;)
+</span>33 <span style=''></span><span style='background: #AEF1AE'>    if(!request.secure &amp;&amp; play.api.Play.current.mode == Mode.Prod) {
+</span>34 <span style=''></span><span style='background: #AEF1AE'>      </span><span style='background: #F0ADAD'>if(any == &quot;&quot;)
+</span>35 <span style=''></span><span style='background: #F0ADAD'>        Redirect(applicationConfig.url ++ &quot;web&quot;, MOVED_PERMANENTLY)
+</span>36 <span style=''></span><span style='background: #F0ADAD'>      else
+</span>37 <span style=''></span><span style='background: #F0ADAD'>        Redirect(applicationConfig.url ++ &quot;web/&quot; ++ any, MOVED_PERMANENTLY)</span><span style='background: #AEF1AE'>
+</span>38 <span style=''></span><span style='background: #AEF1AE'>    } else {
+</span>39 <span style=''></span><span style='background: #AEF1AE'>      Ok.sendFile(new java.io.File(&quot;./public/index.html&quot;))
+</span>40 <span style=''></span><span style='background: #AEF1AE'>    }
+</span>41 <span style=''></span><span style='background: #AEF1AE'>  }</span><span style=''>
+</span>42 <span style=''>}
 </span></pre>
           </div>
           <div class="tab-pane" id="statementlist">
@@ -65,15 +77,15 @@
         <th>Code</th>
       </tr><tr>
         <td>
-          19
+          24
         </td>
         <td>
           839
         </td>
         <td>
-          592
+          785
           -
-          610
+          803
         </td>
         <td>
           Apply
@@ -86,15 +98,15 @@
         </td>
       </tr><tr>
         <td>
-          21
+          26
         </td>
         <td>
           846
         </td>
         <td>
-          628
+          821
           -
-          794
+          987
         </td>
         <td>
           Apply
@@ -110,15 +122,15 @@
         </td>
       </tr><tr>
         <td>
-          22
+          27
         </td>
         <td>
           842
         </td>
         <td>
-          682
+          875
           -
-          750
+          943
         </td>
         <td>
           ApplyToImplicitArgs
@@ -131,15 +143,15 @@
         </td>
       </tr><tr>
         <td>
-          22
+          27
         </td>
         <td>
           841
         </td>
         <td>
-          691
+          884
           -
-          691
+          884
         </td>
         <td>
           Select
@@ -152,15 +164,15 @@
         </td>
       </tr><tr>
         <td>
-          22
+          27
         </td>
         <td>
           840
         </td>
         <td>
-          692
+          885
           -
-          749
+          942
         </td>
         <td>
           Literal
@@ -173,15 +185,15 @@
         </td>
       </tr><tr>
         <td>
-          23
+          28
         </td>
         <td>
           845
         </td>
         <td>
-          755
+          948
           -
-          790
+          983
         </td>
         <td>
           Apply
@@ -194,15 +206,15 @@
         </td>
       </tr><tr>
         <td>
-          23
+          28
         </td>
         <td>
           844
         </td>
         <td>
-          772
+          965
           -
-          789
+          982
         </td>
         <td>
           Select
@@ -215,15 +227,15 @@
         </td>
       </tr><tr>
         <td>
-          23
+          28
         </td>
         <td>
           843
         </td>
         <td>
-          764
+          957
           -
-          770
+          963
         </td>
         <td>
           Literal
@@ -236,15 +248,15 @@
         </td>
       </tr><tr>
         <td>
-          26
+          31
         </td>
         <td>
-          857
+          880
         </td>
         <td>
-          826
+          1019
           -
-          984
+          1442
         </td>
         <td>
           Apply
@@ -255,20 +267,26 @@
         <td style="background: #AEF1AE">
           HomeController.this.Action.apply(((implicit request: play.api.mvc.Request[play.api.mvc.AnyContent]) =&gt; {
   HomeController.this.log.debug(&quot;Rest request for the main page&quot;)(api.this.MarkerContext.NoMarker);
-  HomeController.this.Ok.sendFile(new java.io.File(&quot;./public/index.html&quot;), HomeController.this.Ok.sendFile$default$2, HomeController.this.Ok.sendFile$default$3, HomeController.this.Ok.sendFile$default$4)(HomeController.this.context, HomeController.this.fileMimeTypes)
+  if (request.secure.unary_!.&amp;&amp;(play.api.Play.current.mode.==(play.api.Mode.Prod)))
+    if (any.==(&quot;&quot;))
+      HomeController.this.Redirect(scala.Predef.augmentString(HomeController.this.applicationConfig.url).++[Char, String](scala.Predef.augmentString(&quot;web&quot;))(scala.Predef.StringCanBuildFrom), HomeController.this.MOVED_PERMANENTLY)
+    else
+      HomeController.this.Redirect(scala.Predef.augmentString(scala.Predef.augmentString(HomeController.this.applicationConfig.url).++[Char, String](scala.Predef.augmentString(&quot;web/&quot;))(scala.Predef.StringCanBuildFrom)).++[Char, String](scala.Predef.augmentString(any))(scala.Predef.StringCanBuildFrom), HomeController.this.MOVED_PERMANENTLY)
+  else
+    HomeController.this.Ok.sendFile(new java.io.File(&quot;./public/index.html&quot;), HomeController.this.Ok.sendFile$default$2, HomeController.this.Ok.sendFile$default$3, HomeController.this.Ok.sendFile$default$4)(HomeController.this.context, HomeController.this.fileMimeTypes)
 }))
         </td>
       </tr><tr>
         <td>
-          27
+          32
         </td>
         <td>
           848
         </td>
         <td>
-          889
+          1082
           -
-          889
+          1082
         </td>
         <td>
           Select
@@ -281,15 +299,15 @@
         </td>
       </tr><tr>
         <td>
-          27
+          32
         </td>
         <td>
           847
         </td>
         <td>
-          890
+          1083
           -
-          922
+          1115
         </td>
         <td>
           Literal
@@ -302,15 +320,15 @@
         </td>
       </tr><tr>
         <td>
-          27
+          32
         </td>
         <td>
           849
         </td>
         <td>
-          880
+          1073
           -
-          923
+          1116
         </td>
         <td>
           ApplyToImplicitArgs
@@ -323,36 +341,480 @@
         </td>
       </tr><tr>
         <td>
-          28
-        </td>
-        <td>
-          855
-        </td>
-        <td>
-          939
-          -
-          939
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          play.api.mvc.BaseControllerHelpers.fileMimeTypes
-        </td>
-        <td style="background: #AEF1AE">
-          HomeController.this.fileMimeTypes
-        </td>
-      </tr><tr>
-        <td>
-          28
+          33
         </td>
         <td>
           851
         </td>
         <td>
-          931
+          1143
           -
-          931
+          1182
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.==
+        </td>
+        <td style="background: #AEF1AE">
+          play.api.Play.current.mode.==(play.api.Mode.Prod)
+        </td>
+      </tr><tr>
+        <td>
+          33
+        </td>
+        <td>
+          850
+        </td>
+        <td>
+          1173
+          -
+          1182
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.Mode.Prod
+        </td>
+        <td style="background: #AEF1AE">
+          play.api.Mode.Prod
+        </td>
+      </tr><tr>
+        <td>
+          33
+        </td>
+        <td>
+          852
+        </td>
+        <td>
+          1124
+          -
+          1182
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Boolean.&amp;&amp;
+        </td>
+        <td style="background: #AEF1AE">
+          request.secure.unary_!.&amp;&amp;(play.api.Play.current.mode.==(play.api.Mode.Prod))
+        </td>
+      </tr><tr>
+        <td>
+          34
+        </td>
+        <td>
+          871
+        </td>
+        <td>
+          1192
+          -
+          1360
+        </td>
+        <td>
+          If
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          if (any.==(&quot;&quot;))
+  HomeController.this.Redirect(scala.Predef.augmentString(HomeController.this.applicationConfig.url).++[Char, String](scala.Predef.augmentString(&quot;web&quot;))(scala.Predef.StringCanBuildFrom), HomeController.this.MOVED_PERMANENTLY)
+else
+  HomeController.this.Redirect(scala.Predef.augmentString(scala.Predef.augmentString(HomeController.this.applicationConfig.url).++[Char, String](scala.Predef.augmentString(&quot;web/&quot;))(scala.Predef.StringCanBuildFrom)).++[Char, String](scala.Predef.augmentString(any))(scala.Predef.StringCanBuildFrom), HomeController.this.MOVED_PERMANENTLY)
+        </td>
+      </tr><tr>
+        <td>
+          34
+        </td>
+        <td>
+          853
+        </td>
+        <td>
+          1195
+          -
+          1204
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.==
+        </td>
+        <td style="background: #F0ADAD">
+          any.==(&quot;&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          855
+        </td>
+        <td>
+          1248
+          -
+          1253
+        </td>
+        <td>
+          ApplyImplicitView
+        </td>
+        <td>
+          scala.Predef.augmentString
+        </td>
+        <td style="background: #F0ADAD">
+          scala.Predef.augmentString(&quot;web&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          857
+        </td>
+        <td>
+          1223
+          -
+          1253
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.++
+        </td>
+        <td style="background: #F0ADAD">
+          scala.Predef.augmentString(HomeController.this.applicationConfig.url).++[Char, String](scala.Predef.augmentString(&quot;web&quot;))(scala.Predef.StringCanBuildFrom)
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          860
+        </td>
+        <td>
+          1214
+          -
+          1273
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          play.api.mvc.Results.Redirect
+        </td>
+        <td style="background: #F0ADAD">
+          HomeController.this.Redirect(scala.Predef.augmentString(HomeController.this.applicationConfig.url).++[Char, String](scala.Predef.augmentString(&quot;web&quot;))(scala.Predef.StringCanBuildFrom), HomeController.this.MOVED_PERMANENTLY)
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          854
+        </td>
+        <td>
+          1223
+          -
+          1244
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.util.ApplicationConfig.url
+        </td>
+        <td style="background: #F0ADAD">
+          HomeController.this.applicationConfig.url
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          856
+        </td>
+        <td>
+          1245
+          -
+          1245
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Predef.StringCanBuildFrom
+        </td>
+        <td style="background: #F0ADAD">
+          scala.Predef.StringCanBuildFrom
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          859
+        </td>
+        <td>
+          1214
+          -
+          1273
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          play.api.mvc.Results.Redirect
+        </td>
+        <td style="background: #F0ADAD">
+          HomeController.this.Redirect(scala.Predef.augmentString(HomeController.this.applicationConfig.url).++[Char, String](scala.Predef.augmentString(&quot;web&quot;))(scala.Predef.StringCanBuildFrom), HomeController.this.MOVED_PERMANENTLY)
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          858
+        </td>
+        <td>
+          1255
+          -
+          1272
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.http.Status.MOVED_PERMANENTLY
+        </td>
+        <td style="background: #F0ADAD">
+          HomeController.this.MOVED_PERMANENTLY
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          864
+        </td>
+        <td>
+          1302
+          -
+          1333
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.++
+        </td>
+        <td style="background: #F0ADAD">
+          scala.Predef.augmentString(HomeController.this.applicationConfig.url).++[Char, String](scala.Predef.augmentString(&quot;web/&quot;))(scala.Predef.StringCanBuildFrom)
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          863
+        </td>
+        <td>
+          1324
+          -
+          1324
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Predef.StringCanBuildFrom
+        </td>
+        <td style="background: #F0ADAD">
+          scala.Predef.StringCanBuildFrom
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          866
+        </td>
+        <td>
+          1334
+          -
+          1334
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Predef.StringCanBuildFrom
+        </td>
+        <td style="background: #F0ADAD">
+          scala.Predef.StringCanBuildFrom
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          869
+        </td>
+        <td>
+          1293
+          -
+          1360
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          play.api.mvc.Results.Redirect
+        </td>
+        <td style="background: #F0ADAD">
+          HomeController.this.Redirect(scala.Predef.augmentString(scala.Predef.augmentString(HomeController.this.applicationConfig.url).++[Char, String](scala.Predef.augmentString(&quot;web/&quot;))(scala.Predef.StringCanBuildFrom)).++[Char, String](scala.Predef.augmentString(any))(scala.Predef.StringCanBuildFrom), HomeController.this.MOVED_PERMANENTLY)
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          862
+        </td>
+        <td>
+          1327
+          -
+          1333
+        </td>
+        <td>
+          ApplyImplicitView
+        </td>
+        <td>
+          scala.Predef.augmentString
+        </td>
+        <td style="background: #F0ADAD">
+          scala.Predef.augmentString(&quot;web/&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          865
+        </td>
+        <td>
+          1337
+          -
+          1340
+        </td>
+        <td>
+          ApplyImplicitView
+        </td>
+        <td>
+          scala.Predef.augmentString
+        </td>
+        <td style="background: #F0ADAD">
+          scala.Predef.augmentString(any)
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          868
+        </td>
+        <td>
+          1342
+          -
+          1359
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.http.Status.MOVED_PERMANENTLY
+        </td>
+        <td style="background: #F0ADAD">
+          HomeController.this.MOVED_PERMANENTLY
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          867
+        </td>
+        <td>
+          1302
+          -
+          1340
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.++
+        </td>
+        <td style="background: #F0ADAD">
+          scala.Predef.augmentString(scala.Predef.augmentString(HomeController.this.applicationConfig.url).++[Char, String](scala.Predef.augmentString(&quot;web/&quot;))(scala.Predef.StringCanBuildFrom)).++[Char, String](scala.Predef.augmentString(any))(scala.Predef.StringCanBuildFrom)
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          861
+        </td>
+        <td>
+          1302
+          -
+          1323
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.util.ApplicationConfig.url
+        </td>
+        <td style="background: #F0ADAD">
+          HomeController.this.applicationConfig.url
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          870
+        </td>
+        <td>
+          1293
+          -
+          1360
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          play.api.mvc.Results.Redirect
+        </td>
+        <td style="background: #F0ADAD">
+          HomeController.this.Redirect(scala.Predef.augmentString(scala.Predef.augmentString(HomeController.this.applicationConfig.url).++[Char, String](scala.Predef.augmentString(&quot;web/&quot;))(scala.Predef.StringCanBuildFrom)).++[Char, String](scala.Predef.augmentString(any))(scala.Predef.StringCanBuildFrom), HomeController.this.MOVED_PERMANENTLY)
+        </td>
+      </tr><tr>
+        <td>
+          39
+        </td>
+        <td>
+          873
+        </td>
+        <td>
+          1383
+          -
+          1383
         </td>
         <td>
           Select
@@ -365,78 +827,15 @@
         </td>
       </tr><tr>
         <td>
-          28
+          39
         </td>
         <td>
-          854
+          872
         </td>
         <td>
-          939
+          1392
           -
-          939
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          controllers.HomeController.context
-        </td>
-        <td style="background: #AEF1AE">
-          HomeController.this.context
-        </td>
-      </tr><tr>
-        <td>
-          28
-        </td>
-        <td>
-          853
-        </td>
-        <td>
-          931
-          -
-          931
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          play.api.mvc.Results.Status.sendFile$default$4
-        </td>
-        <td style="background: #AEF1AE">
-          HomeController.this.Ok.sendFile$default$4
-        </td>
-      </tr><tr>
-        <td>
-          28
-        </td>
-        <td>
-          856
-        </td>
-        <td>
-          928
-          -
-          980
-        </td>
-        <td>
-          ApplyToImplicitArgs
-        </td>
-        <td>
-          play.api.mvc.Results.Status.sendFile
-        </td>
-        <td style="background: #AEF1AE">
-          HomeController.this.Ok.sendFile(new java.io.File(&quot;./public/index.html&quot;), HomeController.this.Ok.sendFile$default$2, HomeController.this.Ok.sendFile$default$3, HomeController.this.Ok.sendFile$default$4)(HomeController.this.context, HomeController.this.fileMimeTypes)
-        </td>
-      </tr><tr>
-        <td>
-          28
-        </td>
-        <td>
-          850
-        </td>
-        <td>
-          940
-          -
-          979
+          1431
         </td>
         <td>
           Apply
@@ -449,15 +848,78 @@
         </td>
       </tr><tr>
         <td>
-          28
+          39
         </td>
         <td>
-          852
+          875
         </td>
         <td>
-          931
+          1383
           -
-          931
+          1383
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.mvc.Results.Status.sendFile$default$4
+        </td>
+        <td style="background: #AEF1AE">
+          HomeController.this.Ok.sendFile$default$4
+        </td>
+      </tr><tr>
+        <td>
+          39
+        </td>
+        <td>
+          878
+        </td>
+        <td>
+          1380
+          -
+          1432
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          play.api.mvc.Results.Status.sendFile
+        </td>
+        <td style="background: #AEF1AE">
+          HomeController.this.Ok.sendFile(new java.io.File(&quot;./public/index.html&quot;), HomeController.this.Ok.sendFile$default$2, HomeController.this.Ok.sendFile$default$3, HomeController.this.Ok.sendFile$default$4)(HomeController.this.context, HomeController.this.fileMimeTypes)
+        </td>
+      </tr><tr>
+        <td>
+          39
+        </td>
+        <td>
+          877
+        </td>
+        <td>
+          1391
+          -
+          1391
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.mvc.BaseControllerHelpers.fileMimeTypes
+        </td>
+        <td style="background: #AEF1AE">
+          HomeController.this.fileMimeTypes
+        </td>
+      </tr><tr>
+        <td>
+          39
+        </td>
+        <td>
+          874
+        </td>
+        <td>
+          1383
+          -
+          1383
         </td>
         <td>
           Select
@@ -467,6 +929,48 @@
         </td>
         <td style="background: #AEF1AE">
           HomeController.this.Ok.sendFile$default$3
+        </td>
+      </tr><tr>
+        <td>
+          39
+        </td>
+        <td>
+          876
+        </td>
+        <td>
+          1391
+          -
+          1391
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          controllers.HomeController.context
+        </td>
+        <td style="background: #AEF1AE">
+          HomeController.this.context
+        </td>
+      </tr><tr>
+        <td>
+          39
+        </td>
+        <td>
+          879
+        </td>
+        <td>
+          1380
+          -
+          1432
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          play.api.mvc.Results.Status.sendFile
+        </td>
+        <td style="background: #AEF1AE">
+          HomeController.this.Ok.sendFile(new java.io.File(&quot;./public/index.html&quot;), HomeController.this.Ok.sendFile$default$2, HomeController.this.Ok.sendFile$default$3, HomeController.this.Ok.sendFile$default$4)(HomeController.this.context, HomeController.this.fileMimeTypes)
         </td>
       </tr>
     </table>
