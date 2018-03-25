@@ -30,32 +30,33 @@
 </span>6 <span style=''>import java.sql.Timestamp
 </span>7 <span style=''>import whatson.util.DateTime._
 </span>8 <span style=''>import whatson.model._
-</span>9 <span style=''>
-</span>10 <span style=''>/**
-</span>11 <span style=''>  * The form which handles creating/updating Events.
-</span>12 <span style=''>  */
-</span>13 <span style=''>object EventForm {
-</span>14 <span style=''>  val map = </span><span style='background: #AEF1AE'>mapping(
-</span>15 <span style=''></span><span style='background: #AEF1AE'>      &quot;name&quot; -&gt; nonEmptyText,
-</span>16 <span style=''></span><span style='background: #AEF1AE'>      &quot;from&quot; -&gt; sqlTimestamp(&quot;yyyy-MM-dd HH:mm:ss&quot;),
-</span>17 <span style=''></span><span style='background: #AEF1AE'>      &quot;to&quot; -&gt; optional(sqlTimestamp(&quot;yyyy-MM-dd HH:mm:ss&quot;)),
-</span>18 <span style=''></span><span style='background: #AEF1AE'>      &quot;categories&quot; -&gt; list(CategoryForm.map),
-</span>19 <span style=''></span><span style='background: #AEF1AE'>      &quot;location&quot; -&gt; LocationForm.map,
-</span>20 <span style=''></span><span style='background: #AEF1AE'>      &quot;images&quot; -&gt; list(TaggedImageForm.map),
-</span>21 <span style=''></span><span style='background: #AEF1AE'>      &quot;description&quot; -&gt; nonEmptyText,
-</span>22 <span style=''></span><span style='background: #AEF1AE'>      &quot;shortDescription&quot; -&gt; nonEmptyText(maxLength = 128)
-</span>23 <span style=''></span><span style='background: #AEF1AE'>    )(Data.apply)(</span><span style='background: #F0ADAD'>Data.unapply</span><span style='background: #AEF1AE'>)</span><span style=''>
-</span>24 <span style=''>  val form = </span><span style='background: #AEF1AE'>Form(map)</span><span style=''>
-</span>25 <span style=''>
-</span>26 <span style=''>  case class Data(name: String, from: Timestamp,
-</span>27 <span style=''>                  to: Option[Timestamp], categories: List[Category],
-</span>28 <span style=''>                  location: Location, images: List[TaggedImageForm.Data],
-</span>29 <span style=''>                  description: String, shortDescription: String)
-</span>30 <span style=''>
-</span>31 <span style=''>  object Data {
-</span>32 <span style=''>    implicit val jsonFormat = Json.format[Data]
-</span>33 <span style=''>  }
-</span>34 <span style=''>}
+</span>9 <span style=''>import whatson.model.forms.LocationForm.Data._
+</span>10 <span style=''>
+</span>11 <span style=''>/**
+</span>12 <span style=''>  * The form which handles creating/updating Events.
+</span>13 <span style=''>  */
+</span>14 <span style=''>object EventForm {
+</span>15 <span style=''>  val map = </span><span style='background: #AEF1AE'>mapping(
+</span>16 <span style=''></span><span style='background: #AEF1AE'>      &quot;name&quot; -&gt; nonEmptyText,
+</span>17 <span style=''></span><span style='background: #AEF1AE'>      &quot;from&quot; -&gt; sqlTimestamp(&quot;yyyy-MM-dd HH:mm:ss&quot;),
+</span>18 <span style=''></span><span style='background: #AEF1AE'>      &quot;to&quot; -&gt; optional(sqlTimestamp(&quot;yyyy-MM-dd HH:mm:ss&quot;)),
+</span>19 <span style=''></span><span style='background: #AEF1AE'>      &quot;categories&quot; -&gt; list(CategoryForm.map),
+</span>20 <span style=''></span><span style='background: #AEF1AE'>      &quot;location&quot; -&gt; LocationForm.map,
+</span>21 <span style=''></span><span style='background: #AEF1AE'>      &quot;images&quot; -&gt; list(TaggedImageForm.map),
+</span>22 <span style=''></span><span style='background: #AEF1AE'>      &quot;description&quot; -&gt; nonEmptyText,
+</span>23 <span style=''></span><span style='background: #AEF1AE'>      &quot;shortDescription&quot; -&gt; nonEmptyText(maxLength = 128)
+</span>24 <span style=''></span><span style='background: #AEF1AE'>    )(Data.apply)(</span><span style='background: #F0ADAD'>Data.unapply</span><span style='background: #AEF1AE'>)</span><span style=''>
+</span>25 <span style=''>  val form = </span><span style='background: #AEF1AE'>Form(map)</span><span style=''>
+</span>26 <span style=''>
+</span>27 <span style=''>  case class Data(name: String, from: Timestamp,
+</span>28 <span style=''>                  to: Option[Timestamp], categories: List[Category],
+</span>29 <span style=''>                  location: LocationForm.Data, images: List[TaggedImageForm.Data],
+</span>30 <span style=''>                  description: String, shortDescription: String)
+</span>31 <span style=''>
+</span>32 <span style=''>  object Data {
+</span>33 <span style=''>    implicit val jsonFormat = Json.format[Data]
+</span>34 <span style=''>  }
+</span>35 <span style=''>}
 </span></pre>
           </div>
           <div class="tab-pane" id="statementlist">
@@ -69,36 +70,15 @@
         <th>Code</th>
       </tr><tr>
         <td>
-          15
+          16
         </td>
         <td>
-          2577
+          2586
         </td>
         <td>
-          304
+          351
           -
-          310
-        </td>
-        <td>
-          Literal
-        </td>
-        <td>
-          &lt;nosymbol&gt;
-        </td>
-        <td style="background: #AEF1AE">
-          &quot;name&quot;
-        </td>
-      </tr><tr>
-        <td>
-          15
-        </td>
-        <td>
-          2579
-        </td>
-        <td>
-          304
-          -
-          326
+          373
         </td>
         <td>
           Apply
@@ -111,15 +91,15 @@
         </td>
       </tr><tr>
         <td>
-          15
+          16
         </td>
         <td>
-          2578
+          2585
         </td>
         <td>
-          314
+          361
           -
-          326
+          373
         </td>
         <td>
           Select
@@ -129,69 +109,6 @@
         </td>
         <td style="background: #AEF1AE">
           play.api.data.Forms.nonEmptyText
-        </td>
-      </tr><tr>
-        <td>
-          16
-        </td>
-        <td>
-          2580
-        </td>
-        <td>
-          334
-          -
-          340
-        </td>
-        <td>
-          Literal
-        </td>
-        <td>
-          &lt;nosymbol&gt;
-        </td>
-        <td style="background: #AEF1AE">
-          &quot;from&quot;
-        </td>
-      </tr><tr>
-        <td>
-          16
-        </td>
-        <td>
-          2583
-        </td>
-        <td>
-          344
-          -
-          379
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          play.api.data.Forms.sqlTimestamp
-        </td>
-        <td style="background: #AEF1AE">
-          play.api.data.Forms.sqlTimestamp(&quot;yyyy-MM-dd HH:mm:ss&quot;, play.api.data.Forms.sqlTimestamp$default$2)
-        </td>
-      </tr><tr>
-        <td>
-          16
-        </td>
-        <td>
-          2582
-        </td>
-        <td>
-          344
-          -
-          344
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          play.api.data.Forms.sqlTimestamp$default$2
-        </td>
-        <td style="background: #AEF1AE">
-          play.api.data.Forms.sqlTimestamp$default$2
         </td>
       </tr><tr>
         <td>
@@ -201,9 +118,72 @@
           2584
         </td>
         <td>
-          334
+          351
           -
-          379
+          357
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;name&quot;
+        </td>
+      </tr><tr>
+        <td>
+          17
+        </td>
+        <td>
+          2589
+        </td>
+        <td>
+          391
+          -
+          391
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.data.Forms.sqlTimestamp$default$2
+        </td>
+        <td style="background: #AEF1AE">
+          play.api.data.Forms.sqlTimestamp$default$2
+        </td>
+      </tr><tr>
+        <td>
+          17
+        </td>
+        <td>
+          2588
+        </td>
+        <td>
+          404
+          -
+          425
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;yyyy-MM-dd HH:mm:ss&quot;
+        </td>
+      </tr><tr>
+        <td>
+          17
+        </td>
+        <td>
+          2591
+        </td>
+        <td>
+          381
+          -
+          426
         </td>
         <td>
           Apply
@@ -216,15 +196,15 @@
         </td>
       </tr><tr>
         <td>
-          16
+          17
         </td>
         <td>
-          2581
+          2587
         </td>
         <td>
-          357
+          381
           -
-          378
+          387
         </td>
         <td>
           Literal
@@ -233,61 +213,19 @@
           &lt;nosymbol&gt;
         </td>
         <td style="background: #AEF1AE">
-          &quot;yyyy-MM-dd HH:mm:ss&quot;
+          &quot;from&quot;
         </td>
       </tr><tr>
         <td>
           17
         </td>
         <td>
-          2589
+          2590
         </td>
         <td>
-          395
+          391
           -
-          440
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          play.api.data.Forms.optional
-        </td>
-        <td style="background: #AEF1AE">
-          play.api.data.Forms.optional[java.sql.Timestamp](play.api.data.Forms.sqlTimestamp(&quot;yyyy-MM-dd HH:mm:ss&quot;, play.api.data.Forms.sqlTimestamp$default$2))
-        </td>
-      </tr><tr>
-        <td>
-          17
-        </td>
-        <td>
-          2586
-        </td>
-        <td>
-          417
-          -
-          438
-        </td>
-        <td>
-          Literal
-        </td>
-        <td>
-          &lt;nosymbol&gt;
-        </td>
-        <td style="background: #AEF1AE">
-          &quot;yyyy-MM-dd HH:mm:ss&quot;
-        </td>
-      </tr><tr>
-        <td>
-          17
-        </td>
-        <td>
-          2588
-        </td>
-        <td>
-          404
-          -
-          439
+          426
         </td>
         <td>
           Apply
@@ -300,15 +238,15 @@
         </td>
       </tr><tr>
         <td>
-          17
+          18
         </td>
         <td>
-          2585
+          2592
         </td>
         <td>
-          387
+          434
           -
-          391
+          438
         </td>
         <td>
           Literal
@@ -321,15 +259,36 @@
         </td>
       </tr><tr>
         <td>
-          17
+          18
         </td>
         <td>
-          2587
+          2595
         </td>
         <td>
-          404
+          451
           -
-          404
+          486
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          play.api.data.Forms.sqlTimestamp
+        </td>
+        <td style="background: #AEF1AE">
+          play.api.data.Forms.sqlTimestamp(&quot;yyyy-MM-dd HH:mm:ss&quot;, play.api.data.Forms.sqlTimestamp$default$2)
+        </td>
+      </tr><tr>
+        <td>
+          18
+        </td>
+        <td>
+          2594
+        </td>
+        <td>
+          451
+          -
+          451
         </td>
         <td>
           Select
@@ -342,15 +301,15 @@
         </td>
       </tr><tr>
         <td>
-          17
+          18
         </td>
         <td>
-          2590
+          2597
         </td>
         <td>
-          387
+          434
           -
-          440
+          487
         </td>
         <td>
           Apply
@@ -366,54 +325,54 @@
           18
         </td>
         <td>
-          2592
+          2593
         </td>
         <td>
-          469
+          464
           -
           485
         </td>
         <td>
-          Select
+          Literal
         </td>
         <td>
-          whatson.model.forms.CategoryForm.map
+          &lt;nosymbol&gt;
         </td>
         <td style="background: #AEF1AE">
-          CategoryForm.map
+          &quot;yyyy-MM-dd HH:mm:ss&quot;
         </td>
       </tr><tr>
         <td>
           18
         </td>
         <td>
-          2594
+          2596
         </td>
         <td>
-          448
+          442
           -
-          486
+          487
         </td>
         <td>
           Apply
         </td>
         <td>
-          scala.Predef.ArrowAssoc.-&gt;
+          play.api.data.Forms.optional
         </td>
         <td style="background: #AEF1AE">
-          scala.Predef.ArrowAssoc[String](&quot;categories&quot;).-&gt;[play.api.data.Mapping[List[whatson.model.Category]]](play.api.data.Forms.list[whatson.model.Category](CategoryForm.map))
+          play.api.data.Forms.optional[java.sql.Timestamp](play.api.data.Forms.sqlTimestamp(&quot;yyyy-MM-dd HH:mm:ss&quot;, play.api.data.Forms.sqlTimestamp$default$2))
         </td>
       </tr><tr>
         <td>
-          18
+          19
         </td>
         <td>
-          2591
+          2598
         </td>
         <td>
-          448
+          495
           -
-          460
+          507
         </td>
         <td>
           Literal
@@ -426,15 +385,36 @@
         </td>
       </tr><tr>
         <td>
-          18
+          19
         </td>
         <td>
-          2593
+          2601
         </td>
         <td>
-          464
+          495
           -
-          486
+          533
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Predef.ArrowAssoc.-&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Predef.ArrowAssoc[String](&quot;categories&quot;).-&gt;[play.api.data.Mapping[List[whatson.model.Category]]](play.api.data.Forms.list[whatson.model.Category](CategoryForm.map))
+        </td>
+      </tr><tr>
+        <td>
+          19
+        </td>
+        <td>
+          2600
+        </td>
+        <td>
+          511
+          -
+          533
         </td>
         <td>
           Apply
@@ -450,33 +430,33 @@
           19
         </td>
         <td>
-          2595
+          2599
         </td>
         <td>
-          494
+          516
           -
-          504
+          532
         </td>
         <td>
-          Literal
+          Select
         </td>
         <td>
-          &lt;nosymbol&gt;
+          whatson.model.forms.CategoryForm.map
         </td>
         <td style="background: #AEF1AE">
-          &quot;location&quot;
+          CategoryForm.map
         </td>
       </tr><tr>
         <td>
-          19
+          20
         </td>
         <td>
-          2597
+          2604
         </td>
         <td>
-          494
+          541
           -
-          524
+          571
         </td>
         <td>
           Apply
@@ -485,19 +465,19 @@
           scala.Predef.ArrowAssoc.-&gt;
         </td>
         <td style="background: #AEF1AE">
-          scala.Predef.ArrowAssoc[String](&quot;location&quot;).-&gt;[play.api.data.Mapping[whatson.model.Location]](LocationForm.map)
+          scala.Predef.ArrowAssoc[String](&quot;location&quot;).-&gt;[play.api.data.Mapping[whatson.model.forms.LocationForm.Data]](LocationForm.map)
         </td>
       </tr><tr>
         <td>
-          19
+          20
         </td>
         <td>
-          2596
+          2603
         </td>
         <td>
-          508
+          555
           -
-          524
+          571
         </td>
         <td>
           Select
@@ -513,12 +493,12 @@
           20
         </td>
         <td>
-          2598
+          2602
         </td>
         <td>
-          532
+          541
           -
-          540
+          551
         </td>
         <td>
           Literal
@@ -527,40 +507,19 @@
           &lt;nosymbol&gt;
         </td>
         <td style="background: #AEF1AE">
-          &quot;images&quot;
+          &quot;location&quot;
         </td>
       </tr><tr>
         <td>
-          20
+          21
         </td>
         <td>
-          2601
+          2607
         </td>
         <td>
-          532
+          591
           -
-          569
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          scala.Predef.ArrowAssoc.-&gt;
-        </td>
-        <td style="background: #AEF1AE">
-          scala.Predef.ArrowAssoc[String](&quot;images&quot;).-&gt;[play.api.data.Mapping[List[whatson.model.forms.TaggedImageForm.Data]]](play.api.data.Forms.list[whatson.model.forms.TaggedImageForm.Data](TaggedImageForm.map))
-        </td>
-      </tr><tr>
-        <td>
-          20
-        </td>
-        <td>
-          2600
-        </td>
-        <td>
-          544
-          -
-          569
+          616
         </td>
         <td>
           Apply
@@ -573,15 +532,15 @@
         </td>
       </tr><tr>
         <td>
-          20
+          21
         </td>
         <td>
-          2599
+          2606
         </td>
         <td>
-          549
+          596
           -
-          568
+          615
         </td>
         <td>
           Select
@@ -597,12 +556,33 @@
           21
         </td>
         <td>
-          2604
+          2605
         </td>
         <td>
-          577
+          579
           -
-          606
+          587
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;images&quot;
+        </td>
+      </tr><tr>
+        <td>
+          21
+        </td>
+        <td>
+          2608
+        </td>
+        <td>
+          579
+          -
+          616
         </td>
         <td>
           Apply
@@ -611,19 +591,19 @@
           scala.Predef.ArrowAssoc.-&gt;
         </td>
         <td style="background: #AEF1AE">
-          scala.Predef.ArrowAssoc[String](&quot;description&quot;).-&gt;[play.api.data.Mapping[String]](play.api.data.Forms.nonEmptyText)
+          scala.Predef.ArrowAssoc[String](&quot;images&quot;).-&gt;[play.api.data.Mapping[List[whatson.model.forms.TaggedImageForm.Data]]](play.api.data.Forms.list[whatson.model.forms.TaggedImageForm.Data](TaggedImageForm.map))
         </td>
       </tr><tr>
         <td>
-          21
+          22
         </td>
         <td>
-          2603
+          2610
         </td>
         <td>
-          594
+          641
           -
-          606
+          653
         </td>
         <td>
           Select
@@ -636,15 +616,15 @@
         </td>
       </tr><tr>
         <td>
-          21
+          22
         </td>
         <td>
-          2602
+          2609
         </td>
         <td>
-          577
+          624
           -
-          590
+          637
         </td>
         <td>
           Literal
@@ -660,54 +640,33 @@
           22
         </td>
         <td>
-          2607
+          2611
         </td>
         <td>
-          636
+          624
           -
-          636
+          653
         </td>
         <td>
-          Select
+          Apply
         </td>
         <td>
-          play.api.data.Forms.nonEmptyText$default$1
+          scala.Predef.ArrowAssoc.-&gt;
         </td>
         <td style="background: #AEF1AE">
-          play.api.data.Forms.nonEmptyText$default$1
+          scala.Predef.ArrowAssoc[String](&quot;description&quot;).-&gt;[play.api.data.Mapping[String]](play.api.data.Forms.nonEmptyText)
         </td>
       </tr><tr>
         <td>
-          22
+          23
         </td>
         <td>
-          2606
+          2616
         </td>
         <td>
           661
           -
-          664
-        </td>
-        <td>
-          Literal
-        </td>
-        <td>
-          &lt;nosymbol&gt;
-        </td>
-        <td style="background: #AEF1AE">
-          128
-        </td>
-      </tr><tr>
-        <td>
-          22
-        </td>
-        <td>
-          2609
-        </td>
-        <td>
-          614
-          -
-          665
+          712
         </td>
         <td>
           Apply
@@ -724,15 +683,36 @@
         </td>
       </tr><tr>
         <td>
-          22
+          23
         </td>
         <td>
-          2605
+          2613
         </td>
         <td>
-          614
+          708
           -
-          632
+          711
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          128
+        </td>
+      </tr><tr>
+        <td>
+          23
+        </td>
+        <td>
+          2612
+        </td>
+        <td>
+          661
+          -
+          679
         </td>
         <td>
           Literal
@@ -745,15 +725,15 @@
         </td>
       </tr><tr>
         <td>
-          22
+          23
         </td>
         <td>
-          2608
+          2615
         </td>
         <td>
-          636
+          683
           -
-          665
+          712
         </td>
         <td>
           Apply
@@ -769,33 +749,33 @@
           23
         </td>
         <td>
-          2610
+          2614
         </td>
         <td>
-          672
+          683
           -
-          682
+          683
         </td>
         <td>
-          Apply
+          Select
         </td>
         <td>
-          whatson.model.forms.EventForm.Data.apply
+          play.api.data.Forms.nonEmptyText$default$1
         </td>
         <td style="background: #AEF1AE">
-          EventForm.this.Data.apply(name, from, to, categories, location, images, description, shortDescription)
+          play.api.data.Forms.nonEmptyText$default$1
         </td>
       </tr><tr>
         <td>
-          23
+          24
         </td>
         <td>
-          2612
+          2619
         </td>
         <td>
-          289
+          336
           -
-          697
+          744
         </td>
         <td>
           Apply
@@ -804,27 +784,27 @@
           play.api.data.Forms.mapping
         </td>
         <td style="background: #AEF1AE">
-          play.api.data.Forms.mapping[whatson.model.forms.EventForm.Data, String, java.sql.Timestamp, Option[java.sql.Timestamp], List[whatson.model.Category], whatson.model.Location, List[whatson.model.forms.TaggedImageForm.Data], String, String](scala.Predef.ArrowAssoc[String](&quot;name&quot;).-&gt;[play.api.data.Mapping[String]](play.api.data.Forms.nonEmptyText), scala.Predef.ArrowAssoc[String](&quot;from&quot;).-&gt;[play.api.data.Mapping[java.sql.Timestamp]](play.api.data.Forms.sqlTimestamp(&quot;yyyy-MM-dd HH:mm:ss&quot;, play.api.data.Forms.sqlTimestamp$default$2)), scala.Predef.ArrowAssoc[String](&quot;to&quot;).-&gt;[play.api.data.Mapping[Option[java.sql.Timestamp]]](play.api.data.Forms.optional[java.sql.Timestamp](play.api.data.Forms.sqlTimestamp(&quot;yyyy-MM-dd HH:mm:ss&quot;, play.api.data.Forms.sqlTimestamp$default$2))), scala.Predef.ArrowAssoc[String](&quot;categories&quot;).-&gt;[play.api.data.Mapping[List[whatson.model.Category]]](play.api.data.Forms.list[whatson.model.Category](CategoryForm.map)), scala.Predef.ArrowAssoc[String](&quot;location&quot;).-&gt;[play.api.data.Mapping[whatson.model.Location]](LocationForm.map), scala.Predef.ArrowAssoc[String](&quot;images&quot;).-&gt;[play.api.data.Mapping[List[whatson.model.forms.TaggedImageForm.Data]]](play.api.data.Forms.list[whatson.model.forms.TaggedImageForm.Data](TaggedImageForm.map)), scala.Predef.ArrowAssoc[String](&quot;description&quot;).-&gt;[play.api.data.Mapping[String]](play.api.data.Forms.nonEmptyText), scala.Predef.ArrowAssoc[String](&quot;shortDescription&quot;).-&gt;[play.api.data.Mapping[String]]({
+          play.api.data.Forms.mapping[whatson.model.forms.EventForm.Data, String, java.sql.Timestamp, Option[java.sql.Timestamp], List[whatson.model.Category], whatson.model.forms.LocationForm.Data, List[whatson.model.forms.TaggedImageForm.Data], String, String](scala.Predef.ArrowAssoc[String](&quot;name&quot;).-&gt;[play.api.data.Mapping[String]](play.api.data.Forms.nonEmptyText), scala.Predef.ArrowAssoc[String](&quot;from&quot;).-&gt;[play.api.data.Mapping[java.sql.Timestamp]](play.api.data.Forms.sqlTimestamp(&quot;yyyy-MM-dd HH:mm:ss&quot;, play.api.data.Forms.sqlTimestamp$default$2)), scala.Predef.ArrowAssoc[String](&quot;to&quot;).-&gt;[play.api.data.Mapping[Option[java.sql.Timestamp]]](play.api.data.Forms.optional[java.sql.Timestamp](play.api.data.Forms.sqlTimestamp(&quot;yyyy-MM-dd HH:mm:ss&quot;, play.api.data.Forms.sqlTimestamp$default$2))), scala.Predef.ArrowAssoc[String](&quot;categories&quot;).-&gt;[play.api.data.Mapping[List[whatson.model.Category]]](play.api.data.Forms.list[whatson.model.Category](CategoryForm.map)), scala.Predef.ArrowAssoc[String](&quot;location&quot;).-&gt;[play.api.data.Mapping[whatson.model.forms.LocationForm.Data]](LocationForm.map), scala.Predef.ArrowAssoc[String](&quot;images&quot;).-&gt;[play.api.data.Mapping[List[whatson.model.forms.TaggedImageForm.Data]]](play.api.data.Forms.list[whatson.model.forms.TaggedImageForm.Data](TaggedImageForm.map)), scala.Predef.ArrowAssoc[String](&quot;description&quot;).-&gt;[play.api.data.Mapping[String]](play.api.data.Forms.nonEmptyText), scala.Predef.ArrowAssoc[String](&quot;shortDescription&quot;).-&gt;[play.api.data.Mapping[String]]({
   &lt;artifact&gt; val x$1: Int = 128;
   &lt;artifact&gt; val x$2: Int = play.api.data.Forms.nonEmptyText$default$1;
   play.api.data.Forms.nonEmptyText(x$2, x$1)
 }))({
-  ((name: String, from: java.sql.Timestamp, to: Option[java.sql.Timestamp], categories: List[whatson.model.Category], location: whatson.model.Location, images: List[whatson.model.forms.TaggedImageForm.Data], description: String, shortDescription: String) =&gt; EventForm.this.Data.apply(name, from, to, categories, location, images, description, shortDescription))
+  ((name: String, from: java.sql.Timestamp, to: Option[java.sql.Timestamp], categories: List[whatson.model.Category], location: whatson.model.forms.LocationForm.Data, images: List[whatson.model.forms.TaggedImageForm.Data], description: String, shortDescription: String) =&gt; EventForm.this.Data.apply(name, from, to, categories, location, images, description, shortDescription))
 })({
   ((x$0: whatson.model.forms.EventForm.Data) =&gt; EventForm.this.Data.unapply(x$0))
 })
         </td>
       </tr><tr>
         <td>
-          23
+          24
         </td>
         <td>
-          2611
+          2618
         </td>
         <td>
-          684
+          731
           -
-          696
+          743
         </td>
         <td>
           Apply
@@ -840,33 +820,33 @@
           24
         </td>
         <td>
-          2613
+          2617
         </td>
         <td>
-          716
-          -
           719
+          -
+          729
         </td>
         <td>
-          Select
+          Apply
         </td>
         <td>
-          whatson.model.forms.EventForm.map
+          whatson.model.forms.EventForm.Data.apply
         </td>
         <td style="background: #AEF1AE">
-          EventForm.this.map
+          EventForm.this.Data.apply(name, from, to, categories, location, images, description, shortDescription)
         </td>
       </tr><tr>
         <td>
-          24
+          25
         </td>
         <td>
-          2614
+          2621
         </td>
         <td>
-          711
+          758
           -
-          720
+          767
         </td>
         <td>
           Apply
@@ -876,6 +856,27 @@
         </td>
         <td style="background: #AEF1AE">
           play.api.data.Form.apply[whatson.model.forms.EventForm.Data](EventForm.this.map)
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          2620
+        </td>
+        <td>
+          763
+          -
+          766
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.model.forms.EventForm.map
+        </td>
+        <td style="background: #AEF1AE">
+          EventForm.this.map
         </td>
       </tr>
     </table>
