@@ -1,0 +1,578 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          controllers/ErrorHandler.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package controllers
+</span>2 <span style=''>
+</span>3 <span style=''>import scala.concurrent.ExecutionContext
+</span>4 <span style=''>import play.api.http.HttpErrorHandler
+</span>5 <span style=''>import play.api.mvc._
+</span>6 <span style=''>import play.api.mvc.Results._
+</span>7 <span style=''>import scala.concurrent._
+</span>8 <span style=''>import javax.inject.Singleton
+</span>9 <span style=''>import javax.inject._
+</span>10 <span style=''>import play.api.http.FileMimeTypes
+</span>11 <span style=''>import whatson.util._
+</span>12 <span style=''>
+</span>13 <span style=''>
+</span>14 <span style=''>@Singleton
+</span>15 <span style=''>class ErrorHandler @Inject()(implicit context: ExecutionContext,
+</span>16 <span style=''>                             val fileMimeTypes: FileMimeTypes,
+</span>17 <span style=''>                             applicationConfig: ApplicationConfig)
+</span>18 <span style=''>    extends HttpErrorHandler {
+</span>19 <span style=''>
+</span>20 <span style=''>  def onClientError(request: RequestHeader, statusCode: Int, message: String) = {
+</span>21 <span style=''>    if(</span><span style='background: #AEF1AE'>statusCode==404</span><span style=''>)
+</span>22 <span style=''>      </span><span style='background: #F0ADAD'>Future.successful(Redirect(applicationConfig.url ++ &quot;web/404&quot;))</span><span style=''>
+</span>23 <span style=''>    else
+</span>24 <span style=''>      </span><span style='background: #AEF1AE'>Future.successful(
+</span>25 <span style=''></span><span style='background: #AEF1AE'>        Status(statusCode)(&quot;A client error occurred: &quot; + message)
+</span>26 <span style=''></span><span style='background: #AEF1AE'>      )</span><span style=''>
+</span>27 <span style=''>  }
+</span>28 <span style=''>
+</span>29 <span style=''>  def onServerError(request: RequestHeader, exception: Throwable) = {
+</span>30 <span style=''>    </span><span style='background: #F0ADAD'>Future.successful(Redirect(applicationConfig.url ++ &quot;web/500&quot;))</span><span style=''>
+</span>31 <span style=''>    //TODO: Inform devs?
+</span>32 <span style=''>  }
+</span>33 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          21
+        </td>
+        <td>
+          115
+        </td>
+        <td>
+          616
+          -
+          631
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.==
+        </td>
+        <td style="background: #AEF1AE">
+          statusCode.==(404)
+        </td>
+      </tr><tr>
+        <td>
+          22
+        </td>
+        <td>
+          119
+        </td>
+        <td>
+          666
+          -
+          700
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.++
+        </td>
+        <td style="background: #F0ADAD">
+          scala.Predef.augmentString(ErrorHandler.this.applicationConfig.url).++[Char, String](scala.Predef.augmentString(&quot;web/404&quot;))(scala.Predef.StringCanBuildFrom)
+        </td>
+      </tr><tr>
+        <td>
+          22
+        </td>
+        <td>
+          122
+        </td>
+        <td>
+          657
+          -
+          701
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          play.api.mvc.Results.Redirect
+        </td>
+        <td style="background: #F0ADAD">
+          play.api.mvc.Results.Redirect(scala.Predef.augmentString(ErrorHandler.this.applicationConfig.url).++[Char, String](scala.Predef.augmentString(&quot;web/404&quot;))(scala.Predef.StringCanBuildFrom), play.api.mvc.Results.Redirect$default$2, play.api.mvc.Results.Redirect$default$3)
+        </td>
+      </tr><tr>
+        <td>
+          22
+        </td>
+        <td>
+          116
+        </td>
+        <td>
+          666
+          -
+          687
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.util.ApplicationConfig.url
+        </td>
+        <td style="background: #F0ADAD">
+          ErrorHandler.this.applicationConfig.url
+        </td>
+      </tr><tr>
+        <td>
+          22
+        </td>
+        <td>
+          124
+        </td>
+        <td>
+          639
+          -
+          702
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          scala.concurrent.Future.successful
+        </td>
+        <td style="background: #F0ADAD">
+          scala.concurrent.Future.successful[play.api.mvc.Result](play.api.mvc.Results.Redirect(scala.Predef.augmentString(ErrorHandler.this.applicationConfig.url).++[Char, String](scala.Predef.augmentString(&quot;web/404&quot;))(scala.Predef.StringCanBuildFrom), play.api.mvc.Results.Redirect$default$2, play.api.mvc.Results.Redirect$default$3))
+        </td>
+      </tr><tr>
+        <td>
+          22
+        </td>
+        <td>
+          118
+        </td>
+        <td>
+          688
+          -
+          688
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Predef.StringCanBuildFrom
+        </td>
+        <td style="background: #F0ADAD">
+          scala.Predef.StringCanBuildFrom
+        </td>
+      </tr><tr>
+        <td>
+          22
+        </td>
+        <td>
+          121
+        </td>
+        <td>
+          657
+          -
+          657
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.mvc.Results.Redirect$default$3
+        </td>
+        <td style="background: #F0ADAD">
+          play.api.mvc.Results.Redirect$default$3
+        </td>
+      </tr><tr>
+        <td>
+          22
+        </td>
+        <td>
+          120
+        </td>
+        <td>
+          657
+          -
+          657
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.mvc.Results.Redirect$default$2
+        </td>
+        <td style="background: #F0ADAD">
+          play.api.mvc.Results.Redirect$default$2
+        </td>
+      </tr><tr>
+        <td>
+          22
+        </td>
+        <td>
+          123
+        </td>
+        <td>
+          639
+          -
+          702
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.concurrent.Future.successful
+        </td>
+        <td style="background: #F0ADAD">
+          scala.concurrent.Future.successful[play.api.mvc.Result](play.api.mvc.Results.Redirect(scala.Predef.augmentString(ErrorHandler.this.applicationConfig.url).++[Char, String](scala.Predef.augmentString(&quot;web/404&quot;))(scala.Predef.StringCanBuildFrom), play.api.mvc.Results.Redirect$default$2, play.api.mvc.Results.Redirect$default$3))
+        </td>
+      </tr><tr>
+        <td>
+          22
+        </td>
+        <td>
+          117
+        </td>
+        <td>
+          691
+          -
+          700
+        </td>
+        <td>
+          ApplyImplicitView
+        </td>
+        <td>
+          scala.Predef.augmentString
+        </td>
+        <td style="background: #F0ADAD">
+          scala.Predef.augmentString(&quot;web/404&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          24
+        </td>
+        <td>
+          130
+        </td>
+        <td>
+          718
+          -
+          810
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          scala.concurrent.Future.successful
+        </td>
+        <td style="background: #AEF1AE">
+          scala.concurrent.Future.successful[play.api.mvc.Result](play.api.mvc.Results.Status(statusCode).apply[String](&quot;A client error occurred: &quot;.+(message))(http.this.Writeable.wString(mvc.this.Codec.utf_8)))
+        </td>
+      </tr><tr>
+        <td>
+          24
+        </td>
+        <td>
+          129
+        </td>
+        <td>
+          718
+          -
+          810
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.concurrent.Future.successful
+        </td>
+        <td style="background: #AEF1AE">
+          scala.concurrent.Future.successful[play.api.mvc.Result](play.api.mvc.Results.Status(statusCode).apply[String](&quot;A client error occurred: &quot;.+(message))(http.this.Writeable.wString(mvc.this.Codec.utf_8)))
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          128
+        </td>
+        <td>
+          745
+          -
+          802
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          play.api.mvc.Results.Status.apply
+        </td>
+        <td style="background: #AEF1AE">
+          play.api.mvc.Results.Status(statusCode).apply[String](&quot;A client error occurred: &quot;.+(message))(http.this.Writeable.wString(mvc.this.Codec.utf_8))
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          125
+        </td>
+        <td>
+          764
+          -
+          801
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.+
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;A client error occurred: &quot;.+(message)
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          127
+        </td>
+        <td>
+          763
+          -
+          763
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          play.api.http.DefaultWriteables.wString
+        </td>
+        <td style="background: #AEF1AE">
+          http.this.Writeable.wString(mvc.this.Codec.utf_8)
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          126
+        </td>
+        <td>
+          763
+          -
+          763
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.mvc.Codec.utf_8
+        </td>
+        <td style="background: #AEF1AE">
+          mvc.this.Codec.utf_8
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          137
+        </td>
+        <td>
+          908
+          -
+          952
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          play.api.mvc.Results.Redirect
+        </td>
+        <td style="background: #F0ADAD">
+          play.api.mvc.Results.Redirect(scala.Predef.augmentString(ErrorHandler.this.applicationConfig.url).++[Char, String](scala.Predef.augmentString(&quot;web/500&quot;))(scala.Predef.StringCanBuildFrom), play.api.mvc.Results.Redirect$default$2, play.api.mvc.Results.Redirect$default$3)
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          131
+        </td>
+        <td>
+          917
+          -
+          938
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.util.ApplicationConfig.url
+        </td>
+        <td style="background: #F0ADAD">
+          ErrorHandler.this.applicationConfig.url
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          134
+        </td>
+        <td>
+          917
+          -
+          951
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.++
+        </td>
+        <td style="background: #F0ADAD">
+          scala.Predef.augmentString(ErrorHandler.this.applicationConfig.url).++[Char, String](scala.Predef.augmentString(&quot;web/500&quot;))(scala.Predef.StringCanBuildFrom)
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          133
+        </td>
+        <td>
+          939
+          -
+          939
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Predef.StringCanBuildFrom
+        </td>
+        <td style="background: #F0ADAD">
+          scala.Predef.StringCanBuildFrom
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          136
+        </td>
+        <td>
+          908
+          -
+          908
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.mvc.Results.Redirect$default$3
+        </td>
+        <td style="background: #F0ADAD">
+          play.api.mvc.Results.Redirect$default$3
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          138
+        </td>
+        <td>
+          890
+          -
+          953
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.concurrent.Future.successful
+        </td>
+        <td style="background: #F0ADAD">
+          scala.concurrent.Future.successful[play.api.mvc.Result](play.api.mvc.Results.Redirect(scala.Predef.augmentString(ErrorHandler.this.applicationConfig.url).++[Char, String](scala.Predef.augmentString(&quot;web/500&quot;))(scala.Predef.StringCanBuildFrom), play.api.mvc.Results.Redirect$default$2, play.api.mvc.Results.Redirect$default$3))
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          132
+        </td>
+        <td>
+          942
+          -
+          951
+        </td>
+        <td>
+          ApplyImplicitView
+        </td>
+        <td>
+          scala.Predef.augmentString
+        </td>
+        <td style="background: #F0ADAD">
+          scala.Predef.augmentString(&quot;web/500&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          135
+        </td>
+        <td>
+          908
+          -
+          908
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.mvc.Results.Redirect$default$2
+        </td>
+        <td style="background: #F0ADAD">
+          play.api.mvc.Results.Redirect$default$2
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>
