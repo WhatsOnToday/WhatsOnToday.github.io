@@ -1,0 +1,3126 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          whatson/service/EventServiceImpl.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package whatson.service
+</span>2 <span style=''>
+</span>3 <span style=''>import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
+</span>4 <span style=''>import slick.jdbc.JdbcProfile
+</span>5 <span style=''>import whatson.db._
+</span>6 <span style=''>import whatson.db.Util._
+</span>7 <span style=''>import whatson.model._
+</span>8 <span style=''>import javax.inject._
+</span>9 <span style=''>import slick.jdbc.PostgresProfile.api._
+</span>10 <span style=''>import scala.concurrent.{ ExecutionContext, Future }
+</span>11 <span style=''>import java.io._
+</span>12 <span style=''>import com.github.tototoshi.csv._
+</span>13 <span style=''>import play.api._
+</span>14 <span style=''>import scala.collection.Map._
+</span>15 <span style=''>import whatson.util.ListUtil._
+</span>16 <span style=''>import java.text.SimpleDateFormat
+</span>17 <span style=''>import java.sql.Timestamp
+</span>18 <span style=''>import whatson.model.detail.EventDetail._
+</span>19 <span style=''>import whatson.model.detail._
+</span>20 <span style=''>
+</span>21 <span style=''>class EventServiceImpl @Inject()(protected val dbConfigProvider: DatabaseConfigProvider)
+</span>22 <span style=''>                              (implicit context: ExecutionContext)
+</span>23 <span style=''>    extends EventService with HasDatabaseConfigProvider[JdbcProfile] {
+</span>24 <span style=''>
+</span>25 <span style=''>  val log = </span><span style='background: #AEF1AE'>Logger(&quot;api.event&quot;)</span><span style=''>
+</span>26 <span style=''>
+</span>27 <span style=''>  val format = </span><span style='background: #AEF1AE'>new SimpleDateFormat(&quot;yyyy-MM-dd HH:mm:ss&quot;)</span><span style=''>
+</span>28 <span style=''>
+</span>29 <span style=''>  def insertCSV(file: File, organizer: Organizer): Future[List[EventDetail]] = {
+</span>30 <span style=''>    val reader = </span><span style='background: #F0ADAD'>CSVReader.open(file)</span><span style=''>
+</span>31 <span style=''>    val events = </span><span style='background: #F0ADAD'>reader.allWithHeaders()</span><span style=''>
+</span>32 <span style=''>
+</span>33 <span style=''>    </span><span style='background: #F0ADAD'>events.mapFutureSync { case map =&gt;
+</span>34 <span style=''></span><span style='background: #F0ADAD'>      val default = map.map(x =&gt; (x._1,Some(x._2))).toMap
+</span>35 <span style=''></span><span style='background: #F0ADAD'>      List(&quot;Name&quot;,&quot;From&quot;,&quot;To&quot;,&quot;Description&quot;, &quot;ShortDescription&quot;, &quot;Categories&quot;,
+</span>36 <span style=''></span><span style='background: #F0ADAD'>           &quot;LocationName&quot;,&quot;Country&quot;,&quot;City&quot;,&quot;Street&quot;).map(default.getOrElse(_,None))
+</span>37 <span style=''></span><span style='background: #F0ADAD'>        .foldRight(Some(List()) : Option[List[String]]) {
+</span>38 <span style=''></span><span style='background: #F0ADAD'>          case (Some(a),Some(b)) =&gt; Some(a :: b)
+</span>39 <span style=''></span><span style='background: #F0ADAD'>          case _ =&gt; None
+</span>40 <span style=''></span><span style='background: #F0ADAD'>        } match {
+</span>41 <span style=''></span><span style='background: #F0ADAD'>          case Some(l) =&gt; {
+</span>42 <span style=''></span><span style='background: #F0ADAD'>            val categoryQuery = CategoryTable.category.filter(x =&gt; x.name inSetBind (l(5).split(&quot;;&quot;)))
+</span>43 <span style=''></span><span style='background: #F0ADAD'>
+</span>44 <span style=''></span><span style='background: #F0ADAD'>            val loc = Location(None,l(6),0.0f,0.0f,l(7),l(8),l(9))
+</span>45 <span style=''></span><span style='background: #F0ADAD'>            val locationQuery = db.run(LocationTable.location.filter(x =&gt; x.country === l(7) &amp;&amp; x.city === l(8) &amp;&amp; x.street === l(9)).result).map(_.headOption).flatMap {
+</span>46 <span style=''></span><span style='background: #F0ADAD'>              case Some(l) =&gt; Future.successful(l)
+</span>47 <span style=''></span><span style='background: #F0ADAD'>              case None =&gt; db.run(insertAndReturn[Location,LocationTable](LocationTable.location,loc))
+</span>48 <span style=''></span><span style='background: #F0ADAD'>            }
+</span>49 <span style=''></span><span style='background: #F0ADAD'>
+</span>50 <span style=''></span><span style='background: #F0ADAD'>            db.run(categoryQuery.result).zip(locationQuery).flatMap { case (categories,location) =&gt;
+</span>51 <span style=''></span><span style='background: #F0ADAD'>              val event = Event(None, l(0),
+</span>52 <span style=''></span><span style='background: #F0ADAD'>                                new Timestamp(format.parse(l(1)).getTime), Some(new Timestamp(format.parse(l(2)).getTime)),
+</span>53 <span style=''></span><span style='background: #F0ADAD'>                                l(3), l(4),
+</span>54 <span style=''></span><span style='background: #F0ADAD'>                                organizer.id, location.id.getOrElse(-1))
+</span>55 <span style=''></span><span style='background: #F0ADAD'>              db.run(insertAndReturn[Event,EventTable](EventTable.event,event)).map(r =&gt; (r,categories))
+</span>56 <span style=''></span><span style='background: #F0ADAD'>            }.flatMap {
+</span>57 <span style=''></span><span style='background: #F0ADAD'>              case (event,categories) =&gt; {
+</span>58 <span style=''></span><span style='background: #F0ADAD'>                val categoriesAdd = EventCategoryTable.eventCategory ++= categories.map(cat =&gt; (cat.id.getOrElse(-1),event.id.getOrElse(-1)))
+</span>59 <span style=''></span><span style='background: #F0ADAD'>                val eventDetailed = EventTable.event.filter(_.id === event.id.getOrElse(-1)).detailed
+</span>60 <span style=''></span><span style='background: #F0ADAD'>                db.run(categoriesAdd &gt;&gt; eventDetailed).map(List(_))
+</span>61 <span style=''></span><span style='background: #F0ADAD'>              }
+</span>62 <span style=''></span><span style='background: #F0ADAD'>            }
+</span>63 <span style=''></span><span style='background: #F0ADAD'>          }
+</span>64 <span style=''></span><span style='background: #F0ADAD'>          case None =&gt; Future.successful(List())
+</span>65 <span style=''></span><span style='background: #F0ADAD'>        }
+</span>66 <span style=''></span><span style='background: #F0ADAD'>    }.map(_.flatten.flatten)</span><span style=''>
+</span>67 <span style=''>  }
+</span>68 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          3145
+        </td>
+        <td>
+          818
+          -
+          837
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          play.api.Logger.apply
+        </td>
+        <td style="background: #AEF1AE">
+          play.api.Logger.apply(&quot;api.event&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          3146
+        </td>
+        <td>
+          854
+          -
+          897
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.text.SimpleDateFormat.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new java.text.SimpleDateFormat(&quot;yyyy-MM-dd HH:mm:ss&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          3148
+        </td>
+        <td>
+          997
+          -
+          1017
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          com.github.tototoshi.csv.CSVReader.open
+        </td>
+        <td style="background: #F0ADAD">
+          com.github.tototoshi.csv.CSVReader.open(file)(com.github.tototoshi.csv.`package`.defaultCSVFormat)
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          3147
+        </td>
+        <td>
+          1011
+          -
+          1011
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.github.tototoshi.csv.defaultCSVFormat
+        </td>
+        <td style="background: #F0ADAD">
+          com.github.tototoshi.csv.`package`.defaultCSVFormat
+        </td>
+      </tr><tr>
+        <td>
+          31
+        </td>
+        <td>
+          3149
+        </td>
+        <td>
+          1035
+          -
+          1058
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.github.tototoshi.csv.CSVReader.allWithHeaders
+        </td>
+        <td style="background: #F0ADAD">
+          reader.allWithHeaders()
+        </td>
+      </tr><tr>
+        <td>
+          33
+        </td>
+        <td>
+          3280
+        </td>
+        <td>
+          1085
+          -
+          1085
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.service.EventServiceImpl.context
+        </td>
+        <td style="background: #F0ADAD">
+          EventServiceImpl.this.context
+        </td>
+      </tr><tr>
+        <td>
+          34
+        </td>
+        <td>
+          3151
+        </td>
+        <td>
+          1143
+          -
+          1147
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Tuple2._2
+        </td>
+        <td style="background: #F0ADAD">
+          x._2
+        </td>
+      </tr><tr>
+        <td>
+          34
+        </td>
+        <td>
+          3154
+        </td>
+        <td>
+          1126
+          -
+          1126
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Map.canBuildFrom
+        </td>
+        <td style="background: #F0ADAD">
+          scala.collection.Map.canBuildFrom[String, Some[String]]
+        </td>
+      </tr><tr>
+        <td>
+          34
+        </td>
+        <td>
+          3156
+        </td>
+        <td>
+          1119
+          -
+          1156
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableOnce.toMap
+        </td>
+        <td style="background: #F0ADAD">
+          map.map[(String, Some[String]), scala.collection.Map[String,Some[String]]](((x: (String, String)) =&gt; scala.Tuple2.apply[String, Some[String]](x._1, scala.Some.apply[String](x._2))))(scala.collection.Map.canBuildFrom[String, Some[String]]).toMap[String, Some[String]](scala.Predef.$conforms[(String, Some[String])])
+        </td>
+      </tr><tr>
+        <td>
+          34
+        </td>
+        <td>
+          3150
+        </td>
+        <td>
+          1133
+          -
+          1137
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Tuple2._1
+        </td>
+        <td style="background: #F0ADAD">
+          x._1
+        </td>
+      </tr><tr>
+        <td>
+          34
+        </td>
+        <td>
+          3153
+        </td>
+        <td>
+          1132
+          -
+          1149
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Tuple2.apply
+        </td>
+        <td style="background: #F0ADAD">
+          scala.Tuple2.apply[String, Some[String]](x._1, scala.Some.apply[String](x._2))
+        </td>
+      </tr><tr>
+        <td>
+          34
+        </td>
+        <td>
+          3152
+        </td>
+        <td>
+          1138
+          -
+          1148
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #F0ADAD">
+          scala.Some.apply[String](x._2)
+        </td>
+      </tr><tr>
+        <td>
+          34
+        </td>
+        <td>
+          3155
+        </td>
+        <td>
+          1151
+          -
+          1151
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Predef.$conforms
+        </td>
+        <td style="background: #F0ADAD">
+          scala.Predef.$conforms[(String, Some[String])]
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          3157
+        </td>
+        <td>
+          1168
+          -
+          1174
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;Name&quot;
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          3160
+        </td>
+        <td>
+          1187
+          -
+          1200
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;Description&quot;
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          3159
+        </td>
+        <td>
+          1182
+          -
+          1186
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;To&quot;
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          3162
+        </td>
+        <td>
+          1222
+          -
+          1234
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;Categories&quot;
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          3161
+        </td>
+        <td>
+          1202
+          -
+          1220
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;ShortDescription&quot;
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          3158
+        </td>
+        <td>
+          1175
+          -
+          1181
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;From&quot;
+        </td>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          3166
+        </td>
+        <td>
+          1279
+          -
+          1287
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;Street&quot;
+        </td>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          3169
+        </td>
+        <td>
+          1292
+          -
+          1292
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.immutable.List.canBuildFrom
+        </td>
+        <td style="background: #F0ADAD">
+          immutable.this.List.canBuildFrom[Option[String]]
+        </td>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          3163
+        </td>
+        <td>
+          1247
+          -
+          1261
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;LocationName&quot;
+        </td>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          3165
+        </td>
+        <td>
+          1272
+          -
+          1278
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;City&quot;
+        </td>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          3168
+        </td>
+        <td>
+          1293
+          -
+          1318
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.MapLike.getOrElse
+        </td>
+        <td style="background: #F0ADAD">
+          default.getOrElse[Option[String]](x$1, scala.None)
+        </td>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          3164
+        </td>
+        <td>
+          1262
+          -
+          1271
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;Country&quot;
+        </td>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          3167
+        </td>
+        <td>
+          1313
+          -
+          1317
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #F0ADAD">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          3175
+        </td>
+        <td>
+          1163
+          -
+          1461
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.immutable.List.foldRight
+        </td>
+        <td style="background: #F0ADAD">
+          scala.collection.immutable.List.apply[String](&quot;Name&quot;, &quot;From&quot;, &quot;To&quot;, &quot;Description&quot;, &quot;ShortDescription&quot;, &quot;Categories&quot;, &quot;LocationName&quot;, &quot;Country&quot;, &quot;City&quot;, &quot;Street&quot;).map[Option[String], List[Option[String]]](((x$1: String) =&gt; default.getOrElse[Option[String]](x$1, scala.None)))(immutable.this.List.canBuildFrom[Option[String]]).foldRight[Option[List[String]]]((scala.Some.apply[List[Nothing]](scala.collection.immutable.Nil): Option[List[String]]))(((x0$2: Option[String], x1$1: Option[List[String]]) =&gt; scala.Tuple2.apply[Option[String], Option[List[String]]](x0$2, x1$1) match {
+  case (_1: Option[String], _2: Option[List[String]])(Option[String], Option[List[String]])((value: String)Some[String]((a @ _)), (value: List[String])Some[List[String]]((b @ _))) =&gt; scala.Some.apply[List[String]]({
+    &lt;synthetic&gt; &lt;artifact&gt; val x$2: String = a;
+    b.::[String](x$2)
+  })
+  case _ =&gt; scala.None
+}))
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          3171
+        </td>
+        <td>
+          1339
+          -
+          1351
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #F0ADAD">
+          scala.Some.apply[List[Nothing]](scala.collection.immutable.Nil)
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          3170
+        </td>
+        <td>
+          1344
+          -
+          1350
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.immutable.Nil
+        </td>
+        <td style="background: #F0ADAD">
+          scala.collection.immutable.Nil
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          3172
+        </td>
+        <td>
+          1421
+          -
+          1425
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.immutable.List.::
+        </td>
+        <td style="background: #F0ADAD">
+          b.::[String](x$2)
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          3173
+        </td>
+        <td>
+          1414
+          -
+          1426
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #F0ADAD">
+          scala.Some.apply[List[String]]({
+  &lt;synthetic&gt; &lt;artifact&gt; val x$2: String = a;
+  b.::[String](x$2)
+})
+        </td>
+      </tr><tr>
+        <td>
+          39
+        </td>
+        <td>
+          3174
+        </td>
+        <td>
+          1447
+          -
+          1451
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #F0ADAD">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          42
+        </td>
+        <td>
+          3184
+        </td>
+        <td>
+          1530
+          -
+          1600
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.Query.filter
+        </td>
+        <td style="background: #F0ADAD">
+          whatson.db.CategoryTable.category.filter[slick.lifted.Rep[Boolean]](((x: whatson.db.CategoryTable) =&gt; slick.jdbc.PostgresProfile.api.columnExtensionMethods[String](x.name)(slick.jdbc.PostgresProfile.api.stringColumnType).inSetBind[Boolean](scala.Predef.wrapRefArray[String](l.apply(5).split(&quot;;&quot;)))(lifted.this.OptionMapper2.getOptionMapper2TT[Boolean, String, Boolean](slick.jdbc.PostgresProfile.api.stringColumnType))))(lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition)
+        </td>
+      </tr><tr>
+        <td>
+          42
+        </td>
+        <td>
+          3178
+        </td>
+        <td>
+          1583
+          -
+          1598
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.split
+        </td>
+        <td style="background: #F0ADAD">
+          l.apply(5).split(&quot;;&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          42
+        </td>
+        <td>
+          3181
+        </td>
+        <td>
+          1572
+          -
+          1572
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.OptionMapper2.getOptionMapper2TT
+        </td>
+        <td style="background: #F0ADAD">
+          lifted.this.OptionMapper2.getOptionMapper2TT[Boolean, String, Boolean](slick.jdbc.PostgresProfile.api.stringColumnType)
+        </td>
+      </tr><tr>
+        <td>
+          42
+        </td>
+        <td>
+          3180
+        </td>
+        <td>
+          1572
+          -
+          1572
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.stringColumnType
+        </td>
+        <td style="background: #F0ADAD">
+          slick.jdbc.PostgresProfile.api.stringColumnType
+        </td>
+      </tr><tr>
+        <td>
+          42
+        </td>
+        <td>
+          3183
+        </td>
+        <td>
+          1559
+          -
+          1559
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.lifted.CanBeQueryCondition.BooleanColumnCanBeQueryCondition
+        </td>
+        <td style="background: #F0ADAD">
+          lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition
+        </td>
+      </tr><tr>
+        <td>
+          42
+        </td>
+        <td>
+          3177
+        </td>
+        <td>
+          1567
+          -
+          1567
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.stringColumnType
+        </td>
+        <td style="background: #F0ADAD">
+          slick.jdbc.PostgresProfile.api.stringColumnType
+        </td>
+      </tr><tr>
+        <td>
+          42
+        </td>
+        <td>
+          3179
+        </td>
+        <td>
+          1583
+          -
+          1598
+        </td>
+        <td>
+          ApplyImplicitView
+        </td>
+        <td>
+          scala.LowPriorityImplicits.wrapRefArray
+        </td>
+        <td style="background: #F0ADAD">
+          scala.Predef.wrapRefArray[String](l.apply(5).split(&quot;;&quot;))
+        </td>
+      </tr><tr>
+        <td>
+          42
+        </td>
+        <td>
+          3182
+        </td>
+        <td>
+          1565
+          -
+          1599
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.ColumnExtensionMethods.inSetBind
+        </td>
+        <td style="background: #F0ADAD">
+          slick.jdbc.PostgresProfile.api.columnExtensionMethods[String](x.name)(slick.jdbc.PostgresProfile.api.stringColumnType).inSetBind[Boolean](scala.Predef.wrapRefArray[String](l.apply(5).split(&quot;;&quot;)))(lifted.this.OptionMapper2.getOptionMapper2TT[Boolean, String, Boolean](slick.jdbc.PostgresProfile.api.stringColumnType))
+        </td>
+      </tr><tr>
+        <td>
+          42
+        </td>
+        <td>
+          3176
+        </td>
+        <td>
+          1565
+          -
+          1571
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.db.CategoryTable.name
+        </td>
+        <td style="background: #F0ADAD">
+          x.name
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          3187
+        </td>
+        <td>
+          1643
+          -
+          1647
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          0.0
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          3190
+        </td>
+        <td>
+          1658
+          -
+          1662
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.LinearSeqOptimized.apply
+        </td>
+        <td style="background: #F0ADAD">
+          l.apply(8)
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          3189
+        </td>
+        <td>
+          1653
+          -
+          1657
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.LinearSeqOptimized.apply
+        </td>
+        <td style="background: #F0ADAD">
+          l.apply(7)
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          3192
+        </td>
+        <td>
+          1624
+          -
+          1668
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          whatson.model.Location.apply
+        </td>
+        <td style="background: #F0ADAD">
+          whatson.model.Location.apply(scala.None, l.apply(6), 0.0, 0.0, l.apply(7), l.apply(8), l.apply(9))
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          3186
+        </td>
+        <td>
+          1638
+          -
+          1642
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.LinearSeqOptimized.apply
+        </td>
+        <td style="background: #F0ADAD">
+          l.apply(6)
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          3188
+        </td>
+        <td>
+          1648
+          -
+          1652
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          0.0
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          3191
+        </td>
+        <td>
+          1663
+          -
+          1667
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.LinearSeqOptimized.apply
+        </td>
+        <td style="background: #F0ADAD">
+          l.apply(9)
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          3185
+        </td>
+        <td>
+          1633
+          -
+          1637
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #F0ADAD">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          45
+        </td>
+        <td>
+          3226
+        </td>
+        <td>
+          1815
+          -
+          1827
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.TraversableLike.headOption
+        </td>
+        <td style="background: #F0ADAD">
+          x$3.headOption
+        </td>
+      </tr><tr>
+        <td>
+          45
+        </td>
+        <td>
+          3217
+        </td>
+        <td>
+          1793
+          -
+          1793
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.stringColumnType
+        </td>
+        <td style="background: #F0ADAD">
+          slick.jdbc.PostgresProfile.api.stringColumnType
+        </td>
+      </tr><tr>
+        <td>
+          45
+        </td>
+        <td>
+          3208
+        </td>
+        <td>
+          1765
+          -
+          1780
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.ColumnExtensionMethods.===
+        </td>
+        <td style="background: #F0ADAD">
+          slick.jdbc.PostgresProfile.api.columnExtensionMethods[String](x.city)(slick.jdbc.PostgresProfile.api.stringColumnType).===[String, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[String](l.apply(8))(slick.jdbc.PostgresProfile.api.stringColumnType))(lifted.this.OptionMapper2.getOptionMapper2TT[String, String, Boolean](slick.jdbc.PostgresProfile.api.stringColumnType))
+        </td>
+      </tr><tr>
+        <td>
+          45
+        </td>
+        <td>
+          3193
+        </td>
+        <td>
+          1743
+          -
+          1752
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.db.LocationTable.country
+        </td>
+        <td style="background: #F0ADAD">
+          x.country
+        </td>
+      </tr><tr>
+        <td>
+          45
+        </td>
+        <td>
+          3202
+        </td>
+        <td>
+          1767
+          -
+          1767
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.stringColumnType
+        </td>
+        <td style="background: #F0ADAD">
+          slick.jdbc.PostgresProfile.api.stringColumnType
+        </td>
+      </tr><tr>
+        <td>
+          45
+        </td>
+        <td>
+          3211
+        </td>
+        <td>
+          1743
+          -
+          1780
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.BooleanColumnExtensionMethods.&amp;&amp;
+        </td>
+        <td style="background: #F0ADAD">
+          slick.jdbc.PostgresProfile.api.booleanColumnExtensionMethods(slick.jdbc.PostgresProfile.api.columnExtensionMethods[String](x.country)(slick.jdbc.PostgresProfile.api.stringColumnType).===[String, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[String](l.apply(7))(slick.jdbc.PostgresProfile.api.stringColumnType))(lifted.this.OptionMapper2.getOptionMapper2TT[String, String, Boolean](slick.jdbc.PostgresProfile.api.stringColumnType))).&amp;&amp;[Boolean, Boolean](slick.jdbc.PostgresProfile.api.columnExtensionMethods[String](x.city)(slick.jdbc.PostgresProfile.api.stringColumnType).===[String, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[String](l.apply(8))(slick.jdbc.PostgresProfile.api.stringColumnType))(lifted.this.OptionMapper2.getOptionMapper2TT[String, String, Boolean](slick.jdbc.PostgresProfile.api.stringColumnType)))(lifted.this.OptionMapper2.getOptionMapper2TT[Boolean, Boolean, Boolean](slick.jdbc.PostgresProfile.api.booleanColumnType))
+        </td>
+      </tr><tr>
+        <td>
+          45
+        </td>
+        <td>
+          3220
+        </td>
+        <td>
+          1781
+          -
+          1781
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.booleanColumnType
+        </td>
+        <td style="background: #F0ADAD">
+          slick.jdbc.PostgresProfile.api.booleanColumnType
+        </td>
+      </tr><tr>
+        <td>
+          45
+        </td>
+        <td>
+          3196
+        </td>
+        <td>
+          1758
+          -
+          1758
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.stringColumnType
+        </td>
+        <td style="background: #F0ADAD">
+          slick.jdbc.PostgresProfile.api.stringColumnType
+        </td>
+      </tr><tr>
+        <td>
+          45
+        </td>
+        <td>
+          3223
+        </td>
+        <td>
+          1737
+          -
+          1737
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.lifted.CanBeQueryCondition.BooleanColumnCanBeQueryCondition
+        </td>
+        <td style="background: #F0ADAD">
+          lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition
+        </td>
+      </tr><tr>
+        <td>
+          45
+        </td>
+        <td>
+          3232
+        </td>
+        <td>
+          1837
+          -
+          1837
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.service.EventServiceImpl.context
+        </td>
+        <td style="background: #F0ADAD">
+          EventServiceImpl.this.context
+        </td>
+      </tr><tr>
+        <td>
+          45
+        </td>
+        <td>
+          3205
+        </td>
+        <td>
+          1776
+          -
+          1780
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.relational.RelationalProfile.API.valueToConstColumn
+        </td>
+        <td style="background: #F0ADAD">
+          slick.jdbc.PostgresProfile.api.valueToConstColumn[String](l.apply(8))(slick.jdbc.PostgresProfile.api.stringColumnType)
+        </td>
+      </tr><tr>
+        <td>
+          45
+        </td>
+        <td>
+          3214
+        </td>
+        <td>
+          1797
+          -
+          1801
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.LinearSeqOptimized.apply
+        </td>
+        <td style="background: #F0ADAD">
+          l.apply(9)
+        </td>
+      </tr><tr>
+        <td>
+          45
+        </td>
+        <td>
+          3199
+        </td>
+        <td>
+          1753
+          -
+          1753
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.OptionMapper2.getOptionMapper2TT
+        </td>
+        <td style="background: #F0ADAD">
+          lifted.this.OptionMapper2.getOptionMapper2TT[String, String, Boolean](slick.jdbc.PostgresProfile.api.stringColumnType)
+        </td>
+      </tr><tr>
+        <td>
+          45
+        </td>
+        <td>
+          3225
+        </td>
+        <td>
+          1708
+          -
+          1809
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcActionComponent.StreamingQueryActionExtensionMethodsImpl.result
+        </td>
+        <td style="background: #F0ADAD">
+          slick.jdbc.PostgresProfile.api.streamableQueryActionExtensionMethods[whatson.db.LocationTable#TableElementType, Seq](whatson.db.LocationTable.location.filter[slick.lifted.Rep[Boolean]](((x: whatson.db.LocationTable) =&gt; slick.jdbc.PostgresProfile.api.booleanColumnExtensionMethods(slick.jdbc.PostgresProfile.api.booleanColumnExtensionMethods(slick.jdbc.PostgresProfile.api.columnExtensionMethods[String](x.country)(slick.jdbc.PostgresProfile.api.stringColumnType).===[String, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[String](l.apply(7))(slick.jdbc.PostgresProfile.api.stringColumnType))(lifted.this.OptionMapper2.getOptionMapper2TT[String, String, Boolean](slick.jdbc.PostgresProfile.api.stringColumnType))).&amp;&amp;[Boolean, Boolean](slick.jdbc.PostgresProfile.api.columnExtensionMethods[String](x.city)(slick.jdbc.PostgresProfile.api.stringColumnType).===[String, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[String](l.apply(8))(slick.jdbc.PostgresProfile.api.stringColumnType))(lifted.this.OptionMapper2.getOptionMapper2TT[String, String, Boolean](slick.jdbc.PostgresProfile.api.stringColumnType)))(lifted.this.OptionMapper2.getOptionMapper2TT[Boolean, Boolean, Boolean](slick.jdbc.PostgresProfile.api.booleanColumnType))).&amp;&amp;[Boolean, Boolean](slick.jdbc.PostgresProfile.api.columnExtensionMethods[String](x.street)(slick.jdbc.PostgresProfile.api.stringColumnType).===[String, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[String](l.apply(9))(slick.jdbc.PostgresProfile.api.stringColumnType))(lifted.this.OptionMapper2.getOptionMapper2TT[String, String, Boolean](slick.jdbc.PostgresProfile.api.stringColumnType)))(lifted.this.OptionMapper2.getOptionMapper2TT[Boolean, Boolean, Boolean](slick.jdbc.PostgresProfile.api.booleanColumnType))))(lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition)).result
+        </td>
+      </tr><tr>
+        <td>
+          45
+        </td>
+        <td>
+          3198
+        </td>
+        <td>
+          1753
+          -
+          1753
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.stringColumnType
+        </td>
+        <td style="background: #F0ADAD">
+          slick.jdbc.PostgresProfile.api.stringColumnType
+        </td>
+      </tr><tr>
+        <td>
+          45
+        </td>
+        <td>
+          3216
+        </td>
+        <td>
+          1797
+          -
+          1801
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.relational.RelationalProfile.API.valueToConstColumn
+        </td>
+        <td style="background: #F0ADAD">
+          slick.jdbc.PostgresProfile.api.valueToConstColumn[String](l.apply(9))(slick.jdbc.PostgresProfile.api.stringColumnType)
+        </td>
+      </tr><tr>
+        <td>
+          45
+        </td>
+        <td>
+          3207
+        </td>
+        <td>
+          1772
+          -
+          1772
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.OptionMapper2.getOptionMapper2TT
+        </td>
+        <td style="background: #F0ADAD">
+          lifted.this.OptionMapper2.getOptionMapper2TT[String, String, Boolean](slick.jdbc.PostgresProfile.api.stringColumnType)
+        </td>
+      </tr><tr>
+        <td>
+          45
+        </td>
+        <td>
+          3201
+        </td>
+        <td>
+          1765
+          -
+          1771
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.db.LocationTable.city
+        </td>
+        <td style="background: #F0ADAD">
+          x.city
+        </td>
+      </tr><tr>
+        <td>
+          45
+        </td>
+        <td>
+          3210
+        </td>
+        <td>
+          1762
+          -
+          1762
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.OptionMapper2.getOptionMapper2TT
+        </td>
+        <td style="background: #F0ADAD">
+          lifted.this.OptionMapper2.getOptionMapper2TT[Boolean, Boolean, Boolean](slick.jdbc.PostgresProfile.api.booleanColumnType)
+        </td>
+      </tr><tr>
+        <td>
+          45
+        </td>
+        <td>
+          3219
+        </td>
+        <td>
+          1784
+          -
+          1801
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.ColumnExtensionMethods.===
+        </td>
+        <td style="background: #F0ADAD">
+          slick.jdbc.PostgresProfile.api.columnExtensionMethods[String](x.street)(slick.jdbc.PostgresProfile.api.stringColumnType).===[String, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[String](l.apply(9))(slick.jdbc.PostgresProfile.api.stringColumnType))(lifted.this.OptionMapper2.getOptionMapper2TT[String, String, Boolean](slick.jdbc.PostgresProfile.api.stringColumnType))
+        </td>
+      </tr><tr>
+        <td>
+          45
+        </td>
+        <td>
+          3222
+        </td>
+        <td>
+          1743
+          -
+          1801
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.BooleanColumnExtensionMethods.&amp;&amp;
+        </td>
+        <td style="background: #F0ADAD">
+          slick.jdbc.PostgresProfile.api.booleanColumnExtensionMethods(slick.jdbc.PostgresProfile.api.booleanColumnExtensionMethods(slick.jdbc.PostgresProfile.api.columnExtensionMethods[String](x.country)(slick.jdbc.PostgresProfile.api.stringColumnType).===[String, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[String](l.apply(7))(slick.jdbc.PostgresProfile.api.stringColumnType))(lifted.this.OptionMapper2.getOptionMapper2TT[String, String, Boolean](slick.jdbc.PostgresProfile.api.stringColumnType))).&amp;&amp;[Boolean, Boolean](slick.jdbc.PostgresProfile.api.columnExtensionMethods[String](x.city)(slick.jdbc.PostgresProfile.api.stringColumnType).===[String, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[String](l.apply(8))(slick.jdbc.PostgresProfile.api.stringColumnType))(lifted.this.OptionMapper2.getOptionMapper2TT[String, String, Boolean](slick.jdbc.PostgresProfile.api.stringColumnType)))(lifted.this.OptionMapper2.getOptionMapper2TT[Boolean, Boolean, Boolean](slick.jdbc.PostgresProfile.api.booleanColumnType))).&amp;&amp;[Boolean, Boolean](slick.jdbc.PostgresProfile.api.columnExtensionMethods[String](x.street)(slick.jdbc.PostgresProfile.api.stringColumnType).===[String, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[String](l.apply(9))(slick.jdbc.PostgresProfile.api.stringColumnType))(lifted.this.OptionMapper2.getOptionMapper2TT[String, String, Boolean](slick.jdbc.PostgresProfile.api.stringColumnType)))(lifted.this.OptionMapper2.getOptionMapper2TT[Boolean, Boolean, Boolean](slick.jdbc.PostgresProfile.api.booleanColumnType))
+        </td>
+      </tr><tr>
+        <td>
+          45
+        </td>
+        <td>
+          3213
+        </td>
+        <td>
+          1786
+          -
+          1786
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.stringColumnType
+        </td>
+        <td style="background: #F0ADAD">
+          slick.jdbc.PostgresProfile.api.stringColumnType
+        </td>
+      </tr><tr>
+        <td>
+          45
+        </td>
+        <td>
+          3195
+        </td>
+        <td>
+          1757
+          -
+          1761
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.LinearSeqOptimized.apply
+        </td>
+        <td style="background: #F0ADAD">
+          l.apply(7)
+        </td>
+      </tr><tr>
+        <td>
+          45
+        </td>
+        <td>
+          3204
+        </td>
+        <td>
+          1777
+          -
+          1777
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.stringColumnType
+        </td>
+        <td style="background: #F0ADAD">
+          slick.jdbc.PostgresProfile.api.stringColumnType
+        </td>
+      </tr><tr>
+        <td>
+          45
+        </td>
+        <td>
+          3221
+        </td>
+        <td>
+          1781
+          -
+          1781
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.OptionMapper2.getOptionMapper2TT
+        </td>
+        <td style="background: #F0ADAD">
+          lifted.this.OptionMapper2.getOptionMapper2TT[Boolean, Boolean, Boolean](slick.jdbc.PostgresProfile.api.booleanColumnType)
+        </td>
+      </tr><tr>
+        <td>
+          45
+        </td>
+        <td>
+          3194
+        </td>
+        <td>
+          1745
+          -
+          1745
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.stringColumnType
+        </td>
+        <td style="background: #F0ADAD">
+          slick.jdbc.PostgresProfile.api.stringColumnType
+        </td>
+      </tr><tr>
+        <td>
+          45
+        </td>
+        <td>
+          3203
+        </td>
+        <td>
+          1776
+          -
+          1780
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.LinearSeqOptimized.apply
+        </td>
+        <td style="background: #F0ADAD">
+          l.apply(8)
+        </td>
+      </tr><tr>
+        <td>
+          45
+        </td>
+        <td>
+          3212
+        </td>
+        <td>
+          1784
+          -
+          1792
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.db.LocationTable.street
+        </td>
+        <td style="background: #F0ADAD">
+          x.street
+        </td>
+      </tr><tr>
+        <td>
+          45
+        </td>
+        <td>
+          3215
+        </td>
+        <td>
+          1798
+          -
+          1798
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.stringColumnType
+        </td>
+        <td style="background: #F0ADAD">
+          slick.jdbc.PostgresProfile.api.stringColumnType
+        </td>
+      </tr><tr>
+        <td>
+          45
+        </td>
+        <td>
+          3224
+        </td>
+        <td>
+          1708
+          -
+          1802
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.Query.filter
+        </td>
+        <td style="background: #F0ADAD">
+          whatson.db.LocationTable.location.filter[slick.lifted.Rep[Boolean]](((x: whatson.db.LocationTable) =&gt; slick.jdbc.PostgresProfile.api.booleanColumnExtensionMethods(slick.jdbc.PostgresProfile.api.booleanColumnExtensionMethods(slick.jdbc.PostgresProfile.api.columnExtensionMethods[String](x.country)(slick.jdbc.PostgresProfile.api.stringColumnType).===[String, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[String](l.apply(7))(slick.jdbc.PostgresProfile.api.stringColumnType))(lifted.this.OptionMapper2.getOptionMapper2TT[String, String, Boolean](slick.jdbc.PostgresProfile.api.stringColumnType))).&amp;&amp;[Boolean, Boolean](slick.jdbc.PostgresProfile.api.columnExtensionMethods[String](x.city)(slick.jdbc.PostgresProfile.api.stringColumnType).===[String, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[String](l.apply(8))(slick.jdbc.PostgresProfile.api.stringColumnType))(lifted.this.OptionMapper2.getOptionMapper2TT[String, String, Boolean](slick.jdbc.PostgresProfile.api.stringColumnType)))(lifted.this.OptionMapper2.getOptionMapper2TT[Boolean, Boolean, Boolean](slick.jdbc.PostgresProfile.api.booleanColumnType))).&amp;&amp;[Boolean, Boolean](slick.jdbc.PostgresProfile.api.columnExtensionMethods[String](x.street)(slick.jdbc.PostgresProfile.api.stringColumnType).===[String, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[String](l.apply(9))(slick.jdbc.PostgresProfile.api.stringColumnType))(lifted.this.OptionMapper2.getOptionMapper2TT[String, String, Boolean](slick.jdbc.PostgresProfile.api.stringColumnType)))(lifted.this.OptionMapper2.getOptionMapper2TT[Boolean, Boolean, Boolean](slick.jdbc.PostgresProfile.api.booleanColumnType))))(lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition)
+        </td>
+      </tr><tr>
+        <td>
+          45
+        </td>
+        <td>
+          3233
+        </td>
+        <td>
+          1701
+          -
+          2006
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.concurrent.Future.flatMap
+        </td>
+        <td style="background: #F0ADAD">
+          EventServiceImpl.this.db.run[Seq[whatson.db.LocationTable#TableElementType]](slick.jdbc.PostgresProfile.api.streamableQueryActionExtensionMethods[whatson.db.LocationTable#TableElementType, Seq](whatson.db.LocationTable.location.filter[slick.lifted.Rep[Boolean]](((x: whatson.db.LocationTable) =&gt; slick.jdbc.PostgresProfile.api.booleanColumnExtensionMethods(slick.jdbc.PostgresProfile.api.booleanColumnExtensionMethods(slick.jdbc.PostgresProfile.api.columnExtensionMethods[String](x.country)(slick.jdbc.PostgresProfile.api.stringColumnType).===[String, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[String](l.apply(7))(slick.jdbc.PostgresProfile.api.stringColumnType))(lifted.this.OptionMapper2.getOptionMapper2TT[String, String, Boolean](slick.jdbc.PostgresProfile.api.stringColumnType))).&amp;&amp;[Boolean, Boolean](slick.jdbc.PostgresProfile.api.columnExtensionMethods[String](x.city)(slick.jdbc.PostgresProfile.api.stringColumnType).===[String, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[String](l.apply(8))(slick.jdbc.PostgresProfile.api.stringColumnType))(lifted.this.OptionMapper2.getOptionMapper2TT[String, String, Boolean](slick.jdbc.PostgresProfile.api.stringColumnType)))(lifted.this.OptionMapper2.getOptionMapper2TT[Boolean, Boolean, Boolean](slick.jdbc.PostgresProfile.api.booleanColumnType))).&amp;&amp;[Boolean, Boolean](slick.jdbc.PostgresProfile.api.columnExtensionMethods[String](x.street)(slick.jdbc.PostgresProfile.api.stringColumnType).===[String, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[String](l.apply(9))(slick.jdbc.PostgresProfile.api.stringColumnType))(lifted.this.OptionMapper2.getOptionMapper2TT[String, String, Boolean](slick.jdbc.PostgresProfile.api.stringColumnType)))(lifted.this.OptionMapper2.getOptionMapper2TT[Boolean, Boolean, Boolean](slick.jdbc.PostgresProfile.api.booleanColumnType))))(lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition)).result).map[Option[whatson.db.LocationTable#TableElementType]](((x$3: Seq[whatson.db.LocationTable#TableElementType]) =&gt; x$3.headOption))(EventServiceImpl.this.context).flatMap[whatson.db.LocationTable#TableElementType](((x0$3: Option[whatson.db.LocationTable#TableElementType]) =&gt; x0$3 match {
+  case (value: whatson.db.LocationTable#TableElementType)Some[whatson.db.LocationTable#TableElementType]((l @ _)) =&gt; scala.concurrent.Future.successful[whatson.db.LocationTable#TableElementType](l)
+  case scala.None =&gt; EventServiceImpl.this.db.run[whatson.model.Location](whatson.db.Util.insertAndReturn[whatson.model.Location, whatson.db.LocationTable](whatson.db.LocationTable.location, loc))
+}))(EventServiceImpl.this.context)
+        </td>
+      </tr><tr>
+        <td>
+          45
+        </td>
+        <td>
+          3197
+        </td>
+        <td>
+          1757
+          -
+          1761
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.relational.RelationalProfile.API.valueToConstColumn
+        </td>
+        <td style="background: #F0ADAD">
+          slick.jdbc.PostgresProfile.api.valueToConstColumn[String](l.apply(7))(slick.jdbc.PostgresProfile.api.stringColumnType)
+        </td>
+      </tr><tr>
+        <td>
+          45
+        </td>
+        <td>
+          3206
+        </td>
+        <td>
+          1772
+          -
+          1772
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.stringColumnType
+        </td>
+        <td style="background: #F0ADAD">
+          slick.jdbc.PostgresProfile.api.stringColumnType
+        </td>
+      </tr><tr>
+        <td>
+          45
+        </td>
+        <td>
+          3227
+        </td>
+        <td>
+          1814
+          -
+          1814
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.service.EventServiceImpl.context
+        </td>
+        <td style="background: #F0ADAD">
+          EventServiceImpl.this.context
+        </td>
+      </tr><tr>
+        <td>
+          45
+        </td>
+        <td>
+          3218
+        </td>
+        <td>
+          1793
+          -
+          1793
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.OptionMapper2.getOptionMapper2TT
+        </td>
+        <td style="background: #F0ADAD">
+          lifted.this.OptionMapper2.getOptionMapper2TT[String, String, Boolean](slick.jdbc.PostgresProfile.api.stringColumnType)
+        </td>
+      </tr><tr>
+        <td>
+          45
+        </td>
+        <td>
+          3200
+        </td>
+        <td>
+          1743
+          -
+          1761
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.ColumnExtensionMethods.===
+        </td>
+        <td style="background: #F0ADAD">
+          slick.jdbc.PostgresProfile.api.columnExtensionMethods[String](x.country)(slick.jdbc.PostgresProfile.api.stringColumnType).===[String, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[String](l.apply(7))(slick.jdbc.PostgresProfile.api.stringColumnType))(lifted.this.OptionMapper2.getOptionMapper2TT[String, String, Boolean](slick.jdbc.PostgresProfile.api.stringColumnType))
+        </td>
+      </tr><tr>
+        <td>
+          45
+        </td>
+        <td>
+          3209
+        </td>
+        <td>
+          1762
+          -
+          1762
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.booleanColumnType
+        </td>
+        <td style="background: #F0ADAD">
+          slick.jdbc.PostgresProfile.api.booleanColumnType
+        </td>
+      </tr><tr>
+        <td>
+          46
+        </td>
+        <td>
+          3228
+        </td>
+        <td>
+          1869
+          -
+          1889
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.concurrent.Future.successful
+        </td>
+        <td style="background: #F0ADAD">
+          scala.concurrent.Future.successful[whatson.db.LocationTable#TableElementType](l)
+        </td>
+      </tr><tr>
+        <td>
+          47
+        </td>
+        <td>
+          3229
+        </td>
+        <td>
+          1964
+          -
+          1986
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.db.LocationTable.location
+        </td>
+        <td style="background: #F0ADAD">
+          whatson.db.LocationTable.location
+        </td>
+      </tr><tr>
+        <td>
+          47
+        </td>
+        <td>
+          3231
+        </td>
+        <td>
+          1917
+          -
+          1992
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          slick.basic.BasicBackend.DatabaseDef.run
+        </td>
+        <td style="background: #F0ADAD">
+          EventServiceImpl.this.db.run[whatson.model.Location](whatson.db.Util.insertAndReturn[whatson.model.Location, whatson.db.LocationTable](whatson.db.LocationTable.location, loc))
+        </td>
+      </tr><tr>
+        <td>
+          47
+        </td>
+        <td>
+          3230
+        </td>
+        <td>
+          1924
+          -
+          1991
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          whatson.db.Util.insertAndReturn
+        </td>
+        <td style="background: #F0ADAD">
+          whatson.db.Util.insertAndReturn[whatson.model.Location, whatson.db.LocationTable](whatson.db.LocationTable.location, loc)
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          3234
+        </td>
+        <td>
+          2027
+          -
+          2047
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcActionComponent.StreamingQueryActionExtensionMethodsImpl.result
+        </td>
+        <td style="background: #F0ADAD">
+          slick.jdbc.PostgresProfile.api.streamableQueryActionExtensionMethods[whatson.db.CategoryTable#TableElementType, Seq](categoryQuery).result
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          3252
+        </td>
+        <td>
+          2076
+          -
+          2076
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.service.EventServiceImpl.context
+        </td>
+        <td style="background: #F0ADAD">
+          EventServiceImpl.this.context
+        </td>
+      </tr><tr>
+        <td>
+          51
+        </td>
+        <td>
+          3235
+        </td>
+        <td>
+          2140
+          -
+          2144
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #F0ADAD">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          51
+        </td>
+        <td>
+          3246
+        </td>
+        <td>
+          2134
+          -
+          2392
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          whatson.model.Event.apply
+        </td>
+        <td style="background: #F0ADAD">
+          whatson.model.Event.apply(scala.None, l.apply(0), new java.sql.Timestamp(EventServiceImpl.this.format.parse(l.apply(1)).getTime()), scala.Some.apply[java.sql.Timestamp](new java.sql.Timestamp(EventServiceImpl.this.format.parse(l.apply(2)).getTime())), l.apply(3), l.apply(4), organizer.id, location.id.getOrElse[Int](-1))
+        </td>
+      </tr><tr>
+        <td>
+          51
+        </td>
+        <td>
+          3236
+        </td>
+        <td>
+          2146
+          -
+          2150
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.LinearSeqOptimized.apply
+        </td>
+        <td style="background: #F0ADAD">
+          l.apply(0)
+        </td>
+      </tr><tr>
+        <td>
+          52
+        </td>
+        <td>
+          3238
+        </td>
+        <td>
+          2184
+          -
+          2225
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.sql.Timestamp.&lt;init&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          new java.sql.Timestamp(EventServiceImpl.this.format.parse(l.apply(1)).getTime())
+        </td>
+      </tr><tr>
+        <td>
+          52
+        </td>
+        <td>
+          3241
+        </td>
+        <td>
+          2227
+          -
+          2274
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #F0ADAD">
+          scala.Some.apply[java.sql.Timestamp](new java.sql.Timestamp(EventServiceImpl.this.format.parse(l.apply(2)).getTime()))
+        </td>
+      </tr><tr>
+        <td>
+          52
+        </td>
+        <td>
+          3240
+        </td>
+        <td>
+          2232
+          -
+          2273
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.sql.Timestamp.&lt;init&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          new java.sql.Timestamp(EventServiceImpl.this.format.parse(l.apply(2)).getTime())
+        </td>
+      </tr><tr>
+        <td>
+          52
+        </td>
+        <td>
+          3237
+        </td>
+        <td>
+          2198
+          -
+          2224
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.Date.getTime
+        </td>
+        <td style="background: #F0ADAD">
+          EventServiceImpl.this.format.parse(l.apply(1)).getTime()
+        </td>
+      </tr><tr>
+        <td>
+          52
+        </td>
+        <td>
+          3239
+        </td>
+        <td>
+          2246
+          -
+          2272
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.Date.getTime
+        </td>
+        <td style="background: #F0ADAD">
+          EventServiceImpl.this.format.parse(l.apply(2)).getTime()
+        </td>
+      </tr><tr>
+        <td>
+          53
+        </td>
+        <td>
+          3243
+        </td>
+        <td>
+          2314
+          -
+          2318
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.LinearSeqOptimized.apply
+        </td>
+        <td style="background: #F0ADAD">
+          l.apply(4)
+        </td>
+      </tr><tr>
+        <td>
+          53
+        </td>
+        <td>
+          3242
+        </td>
+        <td>
+          2308
+          -
+          2312
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.LinearSeqOptimized.apply
+        </td>
+        <td style="background: #F0ADAD">
+          l.apply(3)
+        </td>
+      </tr><tr>
+        <td>
+          54
+        </td>
+        <td>
+          3244
+        </td>
+        <td>
+          2352
+          -
+          2364
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.model.Organizer.id
+        </td>
+        <td style="background: #F0ADAD">
+          organizer.id
+        </td>
+      </tr><tr>
+        <td>
+          54
+        </td>
+        <td>
+          3245
+        </td>
+        <td>
+          2366
+          -
+          2391
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Option.getOrElse
+        </td>
+        <td style="background: #F0ADAD">
+          location.id.getOrElse[Int](-1)
+        </td>
+      </tr><tr>
+        <td>
+          55
+        </td>
+        <td>
+          3247
+        </td>
+        <td>
+          2448
+          -
+          2464
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.db.EventTable.event
+        </td>
+        <td style="background: #F0ADAD">
+          whatson.db.EventTable.event
+        </td>
+      </tr><tr>
+        <td>
+          55
+        </td>
+        <td>
+          3250
+        </td>
+        <td>
+          2476
+          -
+          2476
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.service.EventServiceImpl.context
+        </td>
+        <td style="background: #F0ADAD">
+          EventServiceImpl.this.context
+        </td>
+      </tr><tr>
+        <td>
+          55
+        </td>
+        <td>
+          3249
+        </td>
+        <td>
+          2482
+          -
+          2496
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Tuple2.apply
+        </td>
+        <td style="background: #F0ADAD">
+          scala.Tuple2.apply[whatson.model.Event, Seq[whatson.db.CategoryTable#TableElementType]](r, categories)
+        </td>
+      </tr><tr>
+        <td>
+          55
+        </td>
+        <td>
+          3248
+        </td>
+        <td>
+          2414
+          -
+          2471
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          whatson.db.Util.insertAndReturn
+        </td>
+        <td style="background: #F0ADAD">
+          whatson.db.Util.insertAndReturn[whatson.model.Event, whatson.db.EventTable](whatson.db.EventTable.event, event)
+        </td>
+      </tr><tr>
+        <td>
+          55
+        </td>
+        <td>
+          3251
+        </td>
+        <td>
+          2407
+          -
+          2497
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.concurrent.Future.map
+        </td>
+        <td style="background: #F0ADAD">
+          EventServiceImpl.this.db.run[whatson.model.Event](whatson.db.Util.insertAndReturn[whatson.model.Event, whatson.db.EventTable](whatson.db.EventTable.event, event)).map[(whatson.model.Event, Seq[whatson.db.CategoryTable#TableElementType])](((r: whatson.model.Event) =&gt; scala.Tuple2.apply[whatson.model.Event, Seq[whatson.db.CategoryTable#TableElementType]](r, categories)))(EventServiceImpl.this.context)
+        </td>
+      </tr><tr>
+        <td>
+          56
+        </td>
+        <td>
+          3277
+        </td>
+        <td>
+          2020
+          -
+          2906
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.concurrent.Future.flatMap
+        </td>
+        <td style="background: #F0ADAD">
+          EventServiceImpl.this.db.run[Seq[whatson.db.CategoryTable#TableElementType]](slick.jdbc.PostgresProfile.api.streamableQueryActionExtensionMethods[whatson.db.CategoryTable#TableElementType, Seq](categoryQuery).result).zip[whatson.db.LocationTable#TableElementType](locationQuery).flatMap[(whatson.model.Event, Seq[whatson.db.CategoryTable#TableElementType])](((x0$4: (Seq[whatson.db.CategoryTable#TableElementType], whatson.db.LocationTable#TableElementType)) =&gt; x0$4 match {
+  case (_1: Seq[whatson.db.CategoryTable#TableElementType], _2: whatson.db.LocationTable#TableElementType)(Seq[whatson.db.CategoryTable#TableElementType], whatson.db.LocationTable#TableElementType)((categories @ _), (location @ _)) =&gt; {
+    val event: whatson.model.Event = whatson.model.Event.apply(scala.None, l.apply(0), new java.sql.Timestamp(EventServiceImpl.this.format.parse(l.apply(1)).getTime()), scala.Some.apply[java.sql.Timestamp](new java.sql.Timestamp(EventServiceImpl.this.format.parse(l.apply(2)).getTime())), l.apply(3), l.apply(4), organizer.id, location.id.getOrElse[Int](-1));
+    EventServiceImpl.this.db.run[whatson.model.Event](whatson.db.Util.insertAndReturn[whatson.model.Event, whatson.db.EventTable](whatson.db.EventTable.event, event)).map[(whatson.model.Event, Seq[whatson.db.CategoryTable#TableElementType])](((r: whatson.model.Event) =&gt; scala.Tuple2.apply[whatson.model.Event, Seq[whatson.db.CategoryTable#TableElementType]](r, categories)))(EventServiceImpl.this.context)
+  }
+}))(EventServiceImpl.this.context).flatMap[List[Seq[whatson.model.detail.EventDetail]]](((x0$5: (whatson.model.Event, Seq[whatson.db.CategoryTable#TableElementType])) =&gt; x0$5 match {
+  case (_1: whatson.model.Event, _2: Seq[whatson.db.CategoryTable#TableElementType])(whatson.model.Event, Seq[whatson.db.CategoryTable#TableElementType])((event @ _), (categories @ _)) =&gt; {
+    val categoriesAdd: slick.sql.FixedSqlAction[Option[Int],slick.dbio.NoStream,slick.dbio.Effect.Write] = slick.jdbc.PostgresProfile.api.queryInsertActionExtensionMethods[whatson.db.EventCategoryTable#TableElementType, Seq](whatson.db.EventCategoryTable.eventCategory).++=(categories.map[(Int, Int), Iterable[(Int, Int)]](((cat: whatson.db.CategoryTable#TableElementType) =&gt; scala.Tuple2.apply[Int, Int](cat.id.getOrElse[Int](-1), event.id.getOrElse[Int](-1))))(collection.this.Seq.canBuildFrom[(Int, Int)]));
+    val eventDetailed: slick.dbio.DBIOAction[Seq[whatson.model.detail.EventDetail],slick.dbio.NoStream,slick.dbio.Effect.Read with slick.dbio.Effect.Read with slick.dbio.Effect.Read] = whatson.model.detail.EventDetail.EventDetailQuery(whatson.db.EventTable.event.filter[slick.lifted.Rep[Boolean]](((x$4: whatson.db.EventTable) =&gt; slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](x$4.id)(slick.jdbc.PostgresProfile.api.intColumnType).===[Int, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[Int](event.id.getOrElse[Int](-1))(slick.jdbc.PostgresProfile.api.intColumnType))(lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType))))(lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition)).detailed(EventServiceImpl.this.context);
+    EventServiceImpl.this.db.run[Seq[whatson.model.detail.EventDetail]](categoriesAdd.&gt;&gt;[Seq[whatson.model.detail.EventDetail], slick.dbio.NoStream, slick.dbio.Effect.Read with slick.dbio.Effect.Read with slick.dbio.Effect.Read](eventDetailed)).map[List[Seq[whatson.model.detail.EventDetail]]](((x$5: Seq[whatson.model.detail.EventDetail]) =&gt; scala.collection.immutable.List.apply[Seq[whatson.model.detail.EventDetail]](x$5)))(EventServiceImpl.this.context)
+  }
+}))(EventServiceImpl.this.context)
+        </td>
+      </tr><tr>
+        <td>
+          56
+        </td>
+        <td>
+          3276
+        </td>
+        <td>
+          2520
+          -
+          2520
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.service.EventServiceImpl.context
+        </td>
+        <td style="background: #F0ADAD">
+          EventServiceImpl.this.context
+        </td>
+      </tr><tr>
+        <td>
+          58
+        </td>
+        <td>
+          3253
+        </td>
+        <td>
+          2601
+          -
+          2633
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.db.EventCategoryTable.eventCategory
+        </td>
+        <td style="background: #F0ADAD">
+          whatson.db.EventCategoryTable.eventCategory
+        </td>
+      </tr><tr>
+        <td>
+          58
+        </td>
+        <td>
+          3256
+        </td>
+        <td>
+          2660
+          -
+          2705
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Tuple2.apply
+        </td>
+        <td style="background: #F0ADAD">
+          scala.Tuple2.apply[Int, Int](cat.id.getOrElse[Int](-1), event.id.getOrElse[Int](-1))
+        </td>
+      </tr><tr>
+        <td>
+          58
+        </td>
+        <td>
+          3259
+        </td>
+        <td>
+          2601
+          -
+          2706
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          slick.jdbc.JdbcActionComponent.SimpleInsertActionComposer.++=
+        </td>
+        <td style="background: #F0ADAD">
+          slick.jdbc.PostgresProfile.api.queryInsertActionExtensionMethods[whatson.db.EventCategoryTable#TableElementType, Seq](whatson.db.EventCategoryTable.eventCategory).++=(categories.map[(Int, Int), Iterable[(Int, Int)]](((cat: whatson.db.CategoryTable#TableElementType) =&gt; scala.Tuple2.apply[Int, Int](cat.id.getOrElse[Int](-1), event.id.getOrElse[Int](-1))))(collection.this.Seq.canBuildFrom[(Int, Int)]))
+        </td>
+      </tr><tr>
+        <td>
+          58
+        </td>
+        <td>
+          3258
+        </td>
+        <td>
+          2638
+          -
+          2706
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.map
+        </td>
+        <td style="background: #F0ADAD">
+          categories.map[(Int, Int), Iterable[(Int, Int)]](((cat: whatson.db.CategoryTable#TableElementType) =&gt; scala.Tuple2.apply[Int, Int](cat.id.getOrElse[Int](-1), event.id.getOrElse[Int](-1))))(collection.this.Seq.canBuildFrom[(Int, Int)])
+        </td>
+      </tr><tr>
+        <td>
+          58
+        </td>
+        <td>
+          3255
+        </td>
+        <td>
+          2682
+          -
+          2704
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Option.getOrElse
+        </td>
+        <td style="background: #F0ADAD">
+          event.id.getOrElse[Int](-1)
+        </td>
+      </tr><tr>
+        <td>
+          58
+        </td>
+        <td>
+          3254
+        </td>
+        <td>
+          2661
+          -
+          2681
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Option.getOrElse
+        </td>
+        <td style="background: #F0ADAD">
+          cat.id.getOrElse[Int](-1)
+        </td>
+      </tr><tr>
+        <td>
+          58
+        </td>
+        <td>
+          3257
+        </td>
+        <td>
+          2652
+          -
+          2652
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #F0ADAD">
+          collection.this.Seq.canBuildFrom[(Int, Int)]
+        </td>
+      </tr><tr>
+        <td>
+          59
+        </td>
+        <td>
+          3268
+        </td>
+        <td>
+          2766
+          -
+          2766
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.lifted.CanBeQueryCondition.BooleanColumnCanBeQueryCondition
+        </td>
+        <td style="background: #F0ADAD">
+          lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition
+        </td>
+      </tr><tr>
+        <td>
+          59
+        </td>
+        <td>
+          3271
+        </td>
+        <td>
+          2743
+          -
+          2808
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          whatson.model.detail.EventDetail.EventDetailQuery.detailed
+        </td>
+        <td style="background: #F0ADAD">
+          whatson.model.detail.EventDetail.EventDetailQuery(whatson.db.EventTable.event.filter[slick.lifted.Rep[Boolean]](((x$4: whatson.db.EventTable) =&gt; slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](x$4.id)(slick.jdbc.PostgresProfile.api.intColumnType).===[Int, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[Int](event.id.getOrElse[Int](-1))(slick.jdbc.PostgresProfile.api.intColumnType))(lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType))))(lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition)).detailed(EventServiceImpl.this.context)
+        </td>
+      </tr><tr>
+        <td>
+          59
+        </td>
+        <td>
+          3262
+        </td>
+        <td>
+          2776
+          -
+          2798
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Option.getOrElse
+        </td>
+        <td style="background: #F0ADAD">
+          event.id.getOrElse[Int](-1)
+        </td>
+      </tr><tr>
+        <td>
+          59
+        </td>
+        <td>
+          3265
+        </td>
+        <td>
+          2772
+          -
+          2772
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
+        </td>
+        <td style="background: #F0ADAD">
+          slick.jdbc.PostgresProfile.api.intColumnType
+        </td>
+      </tr><tr>
+        <td>
+          59
+        </td>
+        <td>
+          3267
+        </td>
+        <td>
+          2767
+          -
+          2798
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.ColumnExtensionMethods.===
+        </td>
+        <td style="background: #F0ADAD">
+          slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](x$4.id)(slick.jdbc.PostgresProfile.api.intColumnType).===[Int, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[Int](event.id.getOrElse[Int](-1))(slick.jdbc.PostgresProfile.api.intColumnType))(lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType))
+        </td>
+      </tr><tr>
+        <td>
+          59
+        </td>
+        <td>
+          3270
+        </td>
+        <td>
+          2800
+          -
+          2800
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.service.EventServiceImpl.context
+        </td>
+        <td style="background: #F0ADAD">
+          EventServiceImpl.this.context
+        </td>
+      </tr><tr>
+        <td>
+          59
+        </td>
+        <td>
+          3261
+        </td>
+        <td>
+          2769
+          -
+          2769
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
+        </td>
+        <td style="background: #F0ADAD">
+          slick.jdbc.PostgresProfile.api.intColumnType
+        </td>
+      </tr><tr>
+        <td>
+          59
+        </td>
+        <td>
+          3264
+        </td>
+        <td>
+          2776
+          -
+          2798
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.relational.RelationalProfile.API.valueToConstColumn
+        </td>
+        <td style="background: #F0ADAD">
+          slick.jdbc.PostgresProfile.api.valueToConstColumn[Int](event.id.getOrElse[Int](-1))(slick.jdbc.PostgresProfile.api.intColumnType)
+        </td>
+      </tr><tr>
+        <td>
+          59
+        </td>
+        <td>
+          3263
+        </td>
+        <td>
+          2794
+          -
+          2794
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
+        </td>
+        <td style="background: #F0ADAD">
+          slick.jdbc.PostgresProfile.api.intColumnType
+        </td>
+      </tr><tr>
+        <td>
+          59
+        </td>
+        <td>
+          3266
+        </td>
+        <td>
+          2772
+          -
+          2772
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.OptionMapper2.getOptionMapper2TT
+        </td>
+        <td style="background: #F0ADAD">
+          lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType)
+        </td>
+      </tr><tr>
+        <td>
+          59
+        </td>
+        <td>
+          3260
+        </td>
+        <td>
+          2767
+          -
+          2771
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.db.EventTable.id
+        </td>
+        <td style="background: #F0ADAD">
+          x$4.id
+        </td>
+      </tr><tr>
+        <td>
+          59
+        </td>
+        <td>
+          3269
+        </td>
+        <td>
+          2743
+          -
+          2799
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.Query.filter
+        </td>
+        <td style="background: #F0ADAD">
+          whatson.db.EventTable.event.filter[slick.lifted.Rep[Boolean]](((x$4: whatson.db.EventTable) =&gt; slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](x$4.id)(slick.jdbc.PostgresProfile.api.intColumnType).===[Int, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[Int](event.id.getOrElse[Int](-1))(slick.jdbc.PostgresProfile.api.intColumnType))(lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType))))(lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition)
+        </td>
+      </tr><tr>
+        <td>
+          60
+        </td>
+        <td>
+          3274
+        </td>
+        <td>
+          2867
+          -
+          2867
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.service.EventServiceImpl.context
+        </td>
+        <td style="background: #F0ADAD">
+          EventServiceImpl.this.context
+        </td>
+      </tr><tr>
+        <td>
+          60
+        </td>
+        <td>
+          3273
+        </td>
+        <td>
+          2868
+          -
+          2875
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.immutable.List.apply
+        </td>
+        <td style="background: #F0ADAD">
+          scala.collection.immutable.List.apply[Seq[whatson.model.detail.EventDetail]](x$5)
+        </td>
+      </tr><tr>
+        <td>
+          60
+        </td>
+        <td>
+          3272
+        </td>
+        <td>
+          2832
+          -
+          2862
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          slick.dbio.DBIOAction.&gt;&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          categoriesAdd.&gt;&gt;[Seq[whatson.model.detail.EventDetail], slick.dbio.NoStream, slick.dbio.Effect.Read with slick.dbio.Effect.Read with slick.dbio.Effect.Read](eventDetailed)
+        </td>
+      </tr><tr>
+        <td>
+          60
+        </td>
+        <td>
+          3275
+        </td>
+        <td>
+          2825
+          -
+          2876
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.concurrent.Future.map
+        </td>
+        <td style="background: #F0ADAD">
+          EventServiceImpl.this.db.run[Seq[whatson.model.detail.EventDetail]](categoriesAdd.&gt;&gt;[Seq[whatson.model.detail.EventDetail], slick.dbio.NoStream, slick.dbio.Effect.Read with slick.dbio.Effect.Read with slick.dbio.Effect.Read](eventDetailed)).map[List[Seq[whatson.model.detail.EventDetail]]](((x$5: Seq[whatson.model.detail.EventDetail]) =&gt; scala.collection.immutable.List.apply[Seq[whatson.model.detail.EventDetail]](x$5)))(EventServiceImpl.this.context)
+        </td>
+      </tr><tr>
+        <td>
+          64
+        </td>
+        <td>
+          3279
+        </td>
+        <td>
+          2942
+          -
+          2967
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.concurrent.Future.successful
+        </td>
+        <td style="background: #F0ADAD">
+          scala.concurrent.Future.successful[List[Nothing]](scala.collection.immutable.Nil)
+        </td>
+      </tr><tr>
+        <td>
+          64
+        </td>
+        <td>
+          3278
+        </td>
+        <td>
+          2960
+          -
+          2966
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.immutable.Nil
+        </td>
+        <td style="background: #F0ADAD">
+          scala.collection.immutable.Nil
+        </td>
+      </tr><tr>
+        <td>
+          66
+        </td>
+        <td>
+          3283
+        </td>
+        <td>
+          2988
+          -
+          3005
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.generic.GenericTraversableTemplate.flatten
+        </td>
+        <td style="background: #F0ADAD">
+          x$6.flatten[Seq[whatson.model.detail.EventDetail]](scala.Predef.$conforms[List[Seq[whatson.model.detail.EventDetail]]]).flatten[whatson.model.detail.EventDetail](scala.Predef.$conforms[Seq[whatson.model.detail.EventDetail]])
+        </td>
+      </tr><tr>
+        <td>
+          66
+        </td>
+        <td>
+          3285
+        </td>
+        <td>
+          1064
+          -
+          3006
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.concurrent.Future.map
+        </td>
+        <td style="background: #F0ADAD">
+          whatson.util.ListUtil.ListFutureUtil[Map[String,String]](events).mapFutureSync[List[Seq[whatson.model.detail.EventDetail]]](((x0$1: Map[String,String]) =&gt; x0$1 match {
+  case (map @ _) =&gt; {
+    val default: scala.collection.immutable.Map[String,Some[String]] = map.map[(String, Some[String]), scala.collection.Map[String,Some[String]]](((x: (String, String)) =&gt; scala.Tuple2.apply[String, Some[String]](x._1, scala.Some.apply[String](x._2))))(scala.collection.Map.canBuildFrom[String, Some[String]]).toMap[String, Some[String]](scala.Predef.$conforms[(String, Some[String])]);
+    scala.collection.immutable.List.apply[String](&quot;Name&quot;, &quot;From&quot;, &quot;To&quot;, &quot;Description&quot;, &quot;ShortDescription&quot;, &quot;Categories&quot;, &quot;LocationName&quot;, &quot;Country&quot;, &quot;City&quot;, &quot;Street&quot;).map[Option[String], List[Option[String]]](((x$1: String) =&gt; default.getOrElse[Option[String]](x$1, scala.None)))(immutable.this.List.canBuildFrom[Option[String]]).foldRight[Option[List[String]]]((scala.Some.apply[List[Nothing]](scala.collection.immutable.Nil): Option[List[String]]))(((x0$2: Option[String], x1$1: Option[List[String]]) =&gt; scala.Tuple2.apply[Option[String], Option[List[String]]](x0$2, x1$1) match {
+      case (_1: Option[String], _2: Option[List[String]])(Option[String], Option[List[String]])((value: String)Some[String]((a @ _)), (value: List[String])Some[List[String]]((b @ _))) =&gt; scala.Some.apply[List[String]]({
+        &lt;synthetic&gt; &lt;artifact&gt; val x$2: String = a;
+        b.::[String](x$2)
+      })
+      case _ =&gt; scala.None
+    })) match {
+      case (value: List[String])Some[List[String]]((l @ _)) =&gt; {
+        val categoryQuery: slick.lifted.Query[whatson.db.CategoryTable,whatson.db.CategoryTable#TableElementType,Seq] = whatson.db.CategoryTable.category.filter[slick.lifted.Rep[Boolean]](((x: whatson.db.CategoryTable) =&gt; slick.jdbc.PostgresProfile.api.columnExtensionMethods[String](x.name)(slick.jdbc.PostgresProfile.api.stringColumnType).inSetBind[Boolean](scala.Predef.wrapRefArray[String](l.apply(5).split(&quot;;&quot;)))(lifted.this.OptionMapper2.getOptionMapper2TT[Boolean, String, Boolean](slick.jdbc.PostgresProfile.api.stringColumnType))))(lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition);
+        val loc: whatson.model.Location = whatson.model.Location.apply(scala.None, l.apply(6), 0.0, 0.0, l.apply(7), l.apply(8), l.apply(9));
+        val locationQuery: scala.concurrent.Future[whatson.db.LocationTable#TableElementType] = EventServiceImpl.this.db.run[Seq[whatson.db.LocationTable#TableElementType]](slick.jdbc.PostgresProfile.api.streamableQueryActionExtensionMethods[whatson.db.LocationTable#TableElementType, Seq](whatson.db.LocationTable.location.filter[slick.lifted.Rep[Boolean]](((x: whatson.db.LocationTable) =&gt; slick.jdbc.PostgresProfile.api.booleanColumnExtensionMethods(slick.jdbc.PostgresProfile.api.booleanColumnExtensionMethods(slick.jdbc.PostgresProfile.api.columnExtensionMethods[String](x.country)(slick.jdbc.PostgresProfile.api.stringColumnType).===[String, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[String](l.apply(7))(slick.jdbc.PostgresProfile.api.stringColumnType))(lifted.this.OptionMapper2.getOptionMapper2TT[String, String, Boolean](slick.jdbc.PostgresProfile.api.stringColumnType))).&amp;&amp;[Boolean, Boolean](slick.jdbc.PostgresProfile.api.columnExtensionMethods[String](x.city)(slick.jdbc.PostgresProfile.api.stringColumnType).===[String, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[String](l.apply(8))(slick.jdbc.PostgresProfile.api.stringColumnType))(lifted.this.OptionMapper2.getOptionMapper2TT[String, String, Boolean](slick.jdbc.PostgresProfile.api.stringColumnType)))(lifted.this.OptionMapper2.getOptionMapper2TT[Boolean, Boolean, Boolean](slick.jdbc.PostgresProfile.api.booleanColumnType))).&amp;&amp;[Boolean, Boolean](slick.jdbc.PostgresProfile.api.columnExtensionMethods[String](x.street)(slick.jdbc.PostgresProfile.api.stringColumnType).===[String, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[String](l.apply(9))(slick.jdbc.PostgresProfile.api.stringColumnType))(lifted.this.OptionMapper2.getOptionMapper2TT[String, String, Boolean](slick.jdbc.PostgresProfile.api.stringColumnType)))(lifted.this.OptionMapper2.getOptionMapper2TT[Boolean, Boolean, Boolean](slick.jdbc.PostgresProfile.api.booleanColumnType))))(lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition)).result).map[Option[whatson.db.LocationTable#TableElementType]](((x$3: Seq[whatson.db.LocationTable#TableElementType]) =&gt; x$3.headOption))(EventServiceImpl.this.context).flatMap[whatson.db.LocationTable#TableElementType](((x0$3: Option[whatson.db.LocationTable#TableElementType]) =&gt; x0$3 match {
+          case (value: whatson.db.LocationTable#TableElementType)Some[whatson.db.LocationTable#TableElementType]((l @ _)) =&gt; scala.concurrent.Future.successful[whatson.db.LocationTable#TableElementType](l)
+          case scala.None =&gt; EventServiceImpl.this.db.run[whatson.model.Location](whatson.db.Util.insertAndReturn[whatson.model.Location, whatson.db.LocationTable](whatson.db.LocationTable.location, loc))
+        }))(EventServiceImpl.this.context);
+        EventServiceImpl.this.db.run[Seq[whatson.db.CategoryTable#TableElementType]](slick.jdbc.PostgresProfile.api.streamableQueryActionExtensionMethods[whatson.db.CategoryTable#TableElementType, Seq](categoryQuery).result).zip[whatson.db.LocationTable#TableElementType](locationQuery).flatMap[(whatson.model.Event, Seq[whatson.db.CategoryTable#TableElementType])](((x0$4: (Seq[whatson.db.CategoryTable#TableElementType], whatson.db.LocationTable#TableElementType)) =&gt; x0$4 match {
+  case (_1: Seq[whatson.db.CategoryTable#TableElementType], _2: whatson.db.LocationTable#TableElementType)(Seq[whatson.db.CategoryTable#TableElementType], whatson.db.LocationTable#TableElementType)((categories @ _), (location @ _)) =&gt; {
+    val event: whatson.model.Event = whatson.model.Event.apply(scala.None, l.apply(0), new java.sql.Timestamp(EventServiceImpl.this.format.parse(l.apply(1)).getTime()), scala.Some.apply[java.sql.Timestamp](new java.sql.Timestamp(EventServiceImpl.this.format.parse(l.apply(2)).getTime())), l.apply(3), l.apply(4), organizer.id, location.id.getOrElse[Int](-1));
+    EventServiceImpl.this.db.run[whatson.model.Event](whatson.db.Util.insertAndReturn[whatson.model.Event, whatson.db.EventTable](whatson.db.EventTable.event, event)).map[(whatson.model.Event, Seq[whatson.db.CategoryTable#TableElementType])](((r: whatson.model.Event) =&gt; scala.Tuple2.apply[whatson.model.Event, Seq[whatson.db.CategoryTable#TableElementType]](r, categories)))(EventServiceImpl.this.context)
+  }
+}))(EventServiceImpl.this.context).flatMap[List[Seq[whatson.model.detail.EventDetail]]](((x0$5: (whatson.model.Event, Seq[whatson.db.CategoryTable#TableElementType])) =&gt; x0$5 match {
+          case (_1: whatson.model.Event, _2: Seq[whatson.db.CategoryTable#TableElementType])(whatson.model.Event, Seq[whatson.db.CategoryTable#TableElementType])((event @ _), (categories @ _)) =&gt; {
+            val categoriesAdd: slick.sql.FixedSqlAction[Option[Int],slick.dbio.NoStream,slick.dbio.Effect.Write] = slick.jdbc.PostgresProfile.api.queryInsertActionExtensionMethods[whatson.db.EventCategoryTable#TableElementType, Seq](whatson.db.EventCategoryTable.eventCategory).++=(categories.map[(Int, Int), Iterable[(Int, Int)]](((cat: whatson.db.CategoryTable#TableElementType) =&gt; scala.Tuple2.apply[Int, Int](cat.id.getOrElse[Int](-1), event.id.getOrElse[Int](-1))))(collection.this.Seq.canBuildFrom[(Int, Int)]));
+            val eventDetailed: slick.dbio.DBIOAction[Seq[whatson.model.detail.EventDetail],slick.dbio.NoStream,slick.dbio.Effect.Read with slick.dbio.Effect.Read with slick.dbio.Effect.Read] = whatson.model.detail.EventDetail.EventDetailQuery(whatson.db.EventTable.event.filter[slick.lifted.Rep[Boolean]](((x$4: whatson.db.EventTable) =&gt; slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](x$4.id)(slick.jdbc.PostgresProfile.api.intColumnType).===[Int, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[Int](event.id.getOrElse[Int](-1))(slick.jdbc.PostgresProfile.api.intColumnType))(lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType))))(lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition)).detailed(EventServiceImpl.this.context);
+            EventServiceImpl.this.db.run[Seq[whatson.model.detail.EventDetail]](categoriesAdd.&gt;&gt;[Seq[whatson.model.detail.EventDetail], slick.dbio.NoStream, slick.dbio.Effect.Read with slick.dbio.Effect.Read with slick.dbio.Effect.Read](eventDetailed)).map[List[Seq[whatson.model.detail.EventDetail]]](((x$5: Seq[whatson.model.detail.EventDetail]) =&gt; scala.collection.immutable.List.apply[Seq[whatson.model.detail.EventDetail]](x$5)))(EventServiceImpl.this.context)
+          }
+        }))(EventServiceImpl.this.context)
+      }
+      case scala.None =&gt; scala.concurrent.Future.successful[List[Nothing]](scala.collection.immutable.Nil)
+    }
+  }
+}))(EventServiceImpl.this.context).map[List[whatson.model.detail.EventDetail]](((x$6: List[List[Seq[whatson.model.detail.EventDetail]]]) =&gt; x$6.flatten[Seq[whatson.model.detail.EventDetail]](scala.Predef.$conforms[List[Seq[whatson.model.detail.EventDetail]]]).flatten[whatson.model.detail.EventDetail](scala.Predef.$conforms[Seq[whatson.model.detail.EventDetail]])))(EventServiceImpl.this.context)
+        </td>
+      </tr><tr>
+        <td>
+          66
+        </td>
+        <td>
+          3282
+        </td>
+        <td>
+          2998
+          -
+          2998
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Predef.$conforms
+        </td>
+        <td style="background: #F0ADAD">
+          scala.Predef.$conforms[Seq[whatson.model.detail.EventDetail]]
+        </td>
+      </tr><tr>
+        <td>
+          66
+        </td>
+        <td>
+          3281
+        </td>
+        <td>
+          2990
+          -
+          2990
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Predef.$conforms
+        </td>
+        <td style="background: #F0ADAD">
+          scala.Predef.$conforms[List[Seq[whatson.model.detail.EventDetail]]]
+        </td>
+      </tr><tr>
+        <td>
+          66
+        </td>
+        <td>
+          3284
+        </td>
+        <td>
+          2987
+          -
+          2987
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.service.EventServiceImpl.context
+        </td>
+        <td style="background: #F0ADAD">
+          EventServiceImpl.this.context
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

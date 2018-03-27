@@ -2,7 +2,7 @@
       <head>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
         <title id="title">
-          whatson/model/User.scala.html
+          whatson/util/ListUtil.scala.html
         </title>
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
         $(document).ready(function() {$(".tablesorter").tablesorter();});
@@ -22,21 +22,20 @@
         </ul>
         <div class="tab-content">
           <div class="tab-pane active" id="codegrid">
-            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package whatson.model
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package whatson.util
 </span>2 <span style=''>
-</span>3 <span style=''>import play.api.libs.json._
+</span>3 <span style=''>import scala.concurrent._
 </span>4 <span style=''>
-</span>5 <span style=''>case class User(id: Option[Int], loginFk: Int, avatar: Option[String]) extends HasCopy[User] {
-</span>6 <span style=''>  def cpy(i: Option[Int]) = </span><span style='background: #AEF1AE'>this.copy(id = i)</span><span style=''>
-</span>7 <span style=''>}
-</span>8 <span style=''>
-</span>9 <span style=''>object User {
-</span>10 <span style=''>  implicit val userReads = Json.reads[User]
-</span>11 <span style=''>
-</span>12 <span style=''>  implicit val userWrites = Json.writes[User]
-</span>13 <span style=''>
-</span>14 <span style=''>  val tupled = (</span><span style='background: #AEF1AE'>this.apply _).tupled</span><span style=''>
-</span>15 <span style=''>}
+</span>5 <span style=''>object ListUtil {
+</span>6 <span style=''>  implicit class ListFutureUtil[A](l: List[A]) {
+</span>7 <span style=''>    def mapFutureSync[B](f: A =&gt; Future[B])(implicit context: ExecutionContext): Future[List[B]] = {
+</span>8 <span style=''>      </span><span style='background: #F0ADAD'>l.headOption</span><span style=''> match {
+</span>9 <span style=''>        case Some(o) =&gt; </span><span style='background: #F0ADAD'>f(o).flatMap(x =&gt; l.tail.mapFutureSync(f).map(xs =&gt; x::xs))</span><span style=''>
+</span>10 <span style=''>        case None =&gt; </span><span style='background: #F0ADAD'>Future.successful(List())</span><span style=''>
+</span>11 <span style=''>      }
+</span>12 <span style=''>    }
+</span>13 <span style=''>  }
+</span>14 <span style=''>}
 </span></pre>
           </div>
           <div class="tab-pane" id="statementlist">
@@ -50,110 +49,90 @@
         <th>Code</th>
       </tr><tr>
         <td>
-          6
+          8
         </td>
         <td>
-          2625
+          3608
         </td>
         <td>
-          180
+          223
           -
-          180
+          235
         </td>
         <td>
           Select
         </td>
         <td>
-          whatson.model.User.copy$default$3
+          scala.collection.TraversableLike.headOption
         </td>
-        <td style="background: #AEF1AE">
-          this.copy$default$3
-        </td>
-      </tr><tr>
-        <td>
-          6
-        </td>
-        <td>
-          2624
-        </td>
-        <td>
-          180
-          -
-          180
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          whatson.model.User.copy$default$2
-        </td>
-        <td style="background: #AEF1AE">
-          this.copy$default$2
+        <td style="background: #F0ADAD">
+          ListFutureUtil.this.l.headOption
         </td>
       </tr><tr>
         <td>
-          6
+          9
         </td>
         <td>
-          2626
+          3609
         </td>
         <td>
-          175
+          268
           -
-          192
+          327
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.concurrent.Future.flatMap
+        </td>
+        <td style="background: #F0ADAD">
+          f.apply(o).flatMap[List[B]](((x: B) =&gt; ListUtil.this.ListFutureUtil[A](ListFutureUtil.this.l.tail).mapFutureSync[B](f)(context).map[List[B]](((xs: List[B]) =&gt; {
+  &lt;synthetic&gt; &lt;artifact&gt; val x$1: B = x;
+  xs.::[B](x$1)
+}))(context)))(context)
+        </td>
+      </tr><tr>
+        <td>
+          10
+        </td>
+        <td>
+          3611
+        </td>
+        <td>
+          349
+          -
+          374
         </td>
         <td>
           Apply
         </td>
         <td>
-          whatson.model.User.copy
+          scala.concurrent.Future.successful
         </td>
-        <td style="background: #AEF1AE">
-          this.copy(i, this.copy$default$2, this.copy$default$3)
+        <td style="background: #F0ADAD">
+          scala.concurrent.Future.successful[List[Nothing]](scala.collection.immutable.Nil)
         </td>
       </tr><tr>
         <td>
-          14
+          10
         </td>
         <td>
-          2628
+          3610
         </td>
         <td>
-          318
+          367
           -
-          338
+          373
         </td>
         <td>
           Select
         </td>
         <td>
-          scala.Function3.tupled
+          scala.collection.immutable.Nil
         </td>
-        <td style="background: #AEF1AE">
-          {
-  ((id: Option[Int], loginFk: Int, avatar: Option[String]) =&gt; this.apply(id, loginFk, avatar))
-}.tupled
-        </td>
-      </tr><tr>
-        <td>
-          14
-        </td>
-        <td>
-          2627
-        </td>
-        <td>
-          318
-          -
-          328
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          whatson.model.User.apply
-        </td>
-        <td style="background: #AEF1AE">
-          this.apply(id, loginFk, avatar)
+        <td style="background: #F0ADAD">
+          scala.collection.immutable.Nil
         </td>
       </tr>
     </table>
