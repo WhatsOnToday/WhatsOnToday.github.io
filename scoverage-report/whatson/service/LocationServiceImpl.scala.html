@@ -1,0 +1,709 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          whatson/service/LocationServiceImpl.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package whatson.service
+</span>2 <span style=''>
+</span>3 <span style=''>import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
+</span>4 <span style=''>import slick.jdbc.JdbcProfile
+</span>5 <span style=''>import whatson.db._
+</span>6 <span style=''>import whatson.db.Util._
+</span>7 <span style=''>import whatson.model._
+</span>8 <span style=''>import javax.inject._
+</span>9 <span style=''>import slick.jdbc.PostgresProfile.api._
+</span>10 <span style=''>import scala.concurrent.{ ExecutionContext, Future }
+</span>11 <span style=''>import play.api._
+</span>12 <span style=''>import scala.collection.Map._
+</span>13 <span style=''>import whatson.util.ListUtil._
+</span>14 <span style=''>import whatson.model.detail._
+</span>15 <span style=''>import whatson.service.geocoder.Geocoder
+</span>16 <span style=''>import whatson.model.forms._
+</span>17 <span style=''>
+</span>18 <span style=''>class LocationServiceImpl @Inject()(protected val dbConfigProvider: DatabaseConfigProvider,
+</span>19 <span style=''>                                    geocoder: Geocoder)
+</span>20 <span style=''>                                 (implicit context: ExecutionContext)
+</span>21 <span style=''>    extends LocationService with HasDatabaseConfigProvider[JdbcProfile] {
+</span>22 <span style=''>
+</span>23 <span style=''>  def insertOrGet(form: LocationForm.Data): Future[Option[Location]] = {
+</span>24 <span style=''>    </span><span style='background: #AEF1AE'>form.id</span><span style=''> match {
+</span>25 <span style=''>      case None =&gt; {
+</span>26 <span style=''>        </span><span style='background: #AEF1AE'>geocoder.getPosition(Geocoder.Address(form.country,form.city,form.street)).flatMap {
+</span>27 <span style=''></span><span style='background: #AEF1AE'>          case Some(pos) =&gt; db.run(insertAndReturn[Location,LocationTable]
+</span>28 <span style=''></span><span style='background: #AEF1AE'>                                    (LocationTable.location,form.toLocation(pos.lat,pos.lng))).map(Some(_))
+</span>29 <span style=''></span><span style='background: #AEF1AE'>          case None =&gt; </span><span style='background: #F0ADAD'>Future.successful(None)</span><span style='background: #AEF1AE'>
+</span>30 <span style=''></span><span style='background: #AEF1AE'>        }</span><span style=''>
+</span>31 <span style=''>      }
+</span>32 <span style=''>      case Some(id) =&gt; </span><span style='background: #AEF1AE'>db.run(LocationTable.location.filter(_.id === id).result).map(_.headOption)</span><span style=''>
+</span>33 <span style=''>    }
+</span>34 <span style=''>  }
+</span>35 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          24
+        </td>
+        <td>
+          3242
+        </td>
+        <td>
+          865
+          -
+          872
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.model.forms.LocationForm.Data.id
+        </td>
+        <td style="background: #AEF1AE">
+          form.id
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          3244
+        </td>
+        <td>
+          961
+          -
+          970
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.model.forms.LocationForm.Data.city
+        </td>
+        <td style="background: #AEF1AE">
+          form.city
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          3258
+        </td>
+        <td>
+          910
+          -
+          1234
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.concurrent.Future.flatMap
+        </td>
+        <td style="background: #AEF1AE">
+          LocationServiceImpl.this.geocoder.getPosition(whatson.service.geocoder.Geocoder.Address.apply(form.country, form.city, form.street)).flatMap[Option[whatson.model.Location]](((x0$1: Option[whatson.service.geocoder.Location]) =&gt; x0$1 match {
+  case (value: whatson.service.geocoder.Location)Some[whatson.service.geocoder.Location]((pos @ _)) =&gt; LocationServiceImpl.this.db.run[whatson.model.Location](whatson.db.Util.insertAndReturn[whatson.model.Location, whatson.db.LocationTable](whatson.db.LocationTable.location, form.toLocation(pos.lat, pos.lng))).map[Some[whatson.model.Location]](((x$1: whatson.model.Location) =&gt; scala.Some.apply[whatson.model.Location](x$1)))(LocationServiceImpl.this.context)
+  case scala.None =&gt; scala.concurrent.Future.successful[None.type](scala.None)
+}))(LocationServiceImpl.this.context)
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          3243
+        </td>
+        <td>
+          948
+          -
+          960
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.model.forms.LocationForm.Data.country
+        </td>
+        <td style="background: #AEF1AE">
+          form.country
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          3246
+        </td>
+        <td>
+          931
+          -
+          983
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          whatson.service.geocoder.Geocoder.Address.apply
+        </td>
+        <td style="background: #AEF1AE">
+          whatson.service.geocoder.Geocoder.Address.apply(form.country, form.city, form.street)
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          3257
+        </td>
+        <td>
+          993
+          -
+          993
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.service.LocationServiceImpl.context
+        </td>
+        <td style="background: #AEF1AE">
+          LocationServiceImpl.this.context
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          3245
+        </td>
+        <td>
+          971
+          -
+          982
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.model.forms.LocationForm.Data.street
+        </td>
+        <td style="background: #AEF1AE">
+          form.street
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          3253
+        </td>
+        <td>
+          1168
+          -
+          1168
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.service.LocationServiceImpl.context
+        </td>
+        <td style="background: #AEF1AE">
+          LocationServiceImpl.this.context
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          3247
+        </td>
+        <td>
+          1107
+          -
+          1129
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.db.LocationTable.location
+        </td>
+        <td style="background: #AEF1AE">
+          whatson.db.LocationTable.location
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          3250
+        </td>
+        <td>
+          1130
+          -
+          1162
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          whatson.model.forms.LocationForm.Data.toLocation
+        </td>
+        <td style="background: #AEF1AE">
+          form.toLocation(pos.lat, pos.lng)
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          3249
+        </td>
+        <td>
+          1154
+          -
+          1161
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.service.geocoder.Location.lng
+        </td>
+        <td style="background: #AEF1AE">
+          pos.lng
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          3252
+        </td>
+        <td>
+          1169
+          -
+          1176
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Some.apply[whatson.model.Location](x$1)
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          3254
+        </td>
+        <td>
+          1023
+          -
+          1177
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.concurrent.Future.map
+        </td>
+        <td style="background: #AEF1AE">
+          LocationServiceImpl.this.db.run[whatson.model.Location](whatson.db.Util.insertAndReturn[whatson.model.Location, whatson.db.LocationTable](whatson.db.LocationTable.location, form.toLocation(pos.lat, pos.lng))).map[Some[whatson.model.Location]](((x$1: whatson.model.Location) =&gt; scala.Some.apply[whatson.model.Location](x$1)))(LocationServiceImpl.this.context)
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          3248
+        </td>
+        <td>
+          1146
+          -
+          1153
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.service.geocoder.Location.lat
+        </td>
+        <td style="background: #AEF1AE">
+          pos.lat
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          3251
+        </td>
+        <td>
+          1030
+          -
+          1163
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          whatson.db.Util.insertAndReturn
+        </td>
+        <td style="background: #AEF1AE">
+          whatson.db.Util.insertAndReturn[whatson.model.Location, whatson.db.LocationTable](whatson.db.LocationTable.location, form.toLocation(pos.lat, pos.lng))
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          3256
+        </td>
+        <td>
+          1201
+          -
+          1224
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.concurrent.Future.successful
+        </td>
+        <td style="background: #F0ADAD">
+          scala.concurrent.Future.successful[None.type](scala.None)
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          3255
+        </td>
+        <td>
+          1219
+          -
+          1223
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #F0ADAD">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          3268
+        </td>
+        <td>
+          1273
+          -
+          1322
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcActionComponent.StreamingQueryActionExtensionMethodsImpl.result
+        </td>
+        <td style="background: #AEF1AE">
+          slick.jdbc.PostgresProfile.api.streamableQueryActionExtensionMethods[whatson.db.LocationTable#TableElementType, Seq](whatson.db.LocationTable.location.filter[slick.lifted.Rep[Boolean]](((x$2: whatson.db.LocationTable) =&gt; slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](x$2.id)(slick.jdbc.PostgresProfile.api.intColumnType).===[Int, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[Int](id)(slick.jdbc.PostgresProfile.api.intColumnType))(lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType))))(lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition)).result
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          3271
+        </td>
+        <td>
+          1266
+          -
+          1341
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.concurrent.Future.map
+        </td>
+        <td style="background: #AEF1AE">
+          LocationServiceImpl.this.db.run[Seq[whatson.db.LocationTable#TableElementType]](slick.jdbc.PostgresProfile.api.streamableQueryActionExtensionMethods[whatson.db.LocationTable#TableElementType, Seq](whatson.db.LocationTable.location.filter[slick.lifted.Rep[Boolean]](((x$2: whatson.db.LocationTable) =&gt; slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](x$2.id)(slick.jdbc.PostgresProfile.api.intColumnType).===[Int, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[Int](id)(slick.jdbc.PostgresProfile.api.intColumnType))(lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType))))(lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition)).result).map[Option[whatson.db.LocationTable#TableElementType]](((x$3: Seq[whatson.db.LocationTable#TableElementType]) =&gt; x$3.headOption))(LocationServiceImpl.this.context)
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          3262
+        </td>
+        <td>
+          1312
+          -
+          1314
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.relational.RelationalProfile.API.valueToConstColumn
+        </td>
+        <td style="background: #AEF1AE">
+          slick.jdbc.PostgresProfile.api.valueToConstColumn[Int](id)(slick.jdbc.PostgresProfile.api.intColumnType)
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          3265
+        </td>
+        <td>
+          1303
+          -
+          1314
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.ColumnExtensionMethods.===
+        </td>
+        <td style="background: #AEF1AE">
+          slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](x$2.id)(slick.jdbc.PostgresProfile.api.intColumnType).===[Int, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[Int](id)(slick.jdbc.PostgresProfile.api.intColumnType))(lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType))
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          3259
+        </td>
+        <td>
+          1303
+          -
+          1307
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.db.LocationTable.id
+        </td>
+        <td style="background: #AEF1AE">
+          x$2.id
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          3267
+        </td>
+        <td>
+          1273
+          -
+          1315
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.Query.filter
+        </td>
+        <td style="background: #AEF1AE">
+          whatson.db.LocationTable.location.filter[slick.lifted.Rep[Boolean]](((x$2: whatson.db.LocationTable) =&gt; slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](x$2.id)(slick.jdbc.PostgresProfile.api.intColumnType).===[Int, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[Int](id)(slick.jdbc.PostgresProfile.api.intColumnType))(lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType))))(lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition)
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          3270
+        </td>
+        <td>
+          1327
+          -
+          1327
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.service.LocationServiceImpl.context
+        </td>
+        <td style="background: #AEF1AE">
+          LocationServiceImpl.this.context
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          3261
+        </td>
+        <td>
+          1312
+          -
+          1312
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
+        </td>
+        <td style="background: #AEF1AE">
+          slick.jdbc.PostgresProfile.api.intColumnType
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          3264
+        </td>
+        <td>
+          1308
+          -
+          1308
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.OptionMapper2.getOptionMapper2TT
+        </td>
+        <td style="background: #AEF1AE">
+          lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType)
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          3263
+        </td>
+        <td>
+          1308
+          -
+          1308
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
+        </td>
+        <td style="background: #AEF1AE">
+          slick.jdbc.PostgresProfile.api.intColumnType
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          3266
+        </td>
+        <td>
+          1302
+          -
+          1302
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.lifted.CanBeQueryCondition.BooleanColumnCanBeQueryCondition
+        </td>
+        <td style="background: #AEF1AE">
+          lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          3260
+        </td>
+        <td>
+          1305
+          -
+          1305
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
+        </td>
+        <td style="background: #AEF1AE">
+          slick.jdbc.PostgresProfile.api.intColumnType
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          3269
+        </td>
+        <td>
+          1328
+          -
+          1340
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.TraversableLike.headOption
+        </td>
+        <td style="background: #AEF1AE">
+          x$3.headOption
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

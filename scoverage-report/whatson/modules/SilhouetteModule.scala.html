@@ -48,173 +48,185 @@
 </span>24 <span style=''>import play.api.libs.ws.WSClient
 </span>25 <span style=''>import play.api.mvc.DefaultCookieHeaderEncoding
 </span>26 <span style=''>import whatson.service._
-</span>27 <span style=''>import whatson.auth._
-</span>28 <span style=''>import whatson.util._
-</span>29 <span style=''>import com.google.inject._
-</span>30 <span style=''>import com.mohiva.play.silhouette.api.Env
-</span>31 <span style=''>
+</span>27 <span style=''>import whatson.service.geocoder._
+</span>28 <span style=''>import whatson.auth._
+</span>29 <span style=''>import whatson.util._
+</span>30 <span style=''>import com.google.inject._
+</span>31 <span style=''>import com.mohiva.play.silhouette.api.Env
 </span>32 <span style=''>
-</span>33 <span style=''>class SilhouetteModule extends AbstractModule with ScalaModule {
-</span>34 <span style=''>  override def configure() = {
-</span>35 <span style=''>    </span><span style='background: #AEF1AE'>bind[Silhouette[AuthEnv]].to[SilhouetteProvider[AuthEnv]]</span><span style=''>
-</span>36 <span style=''>
-</span>37 <span style=''>    </span><span style='background: #AEF1AE'>bind[PasswordHasher].toInstance(new BCryptPasswordHasher())</span><span style=''>
-</span>38 <span style=''>    </span><span style='background: #AEF1AE'>bind[FingerprintGenerator].toInstance(new DefaultFingerprintGenerator(false))</span><span style=''>
-</span>39 <span style=''>    </span><span style='background: #AEF1AE'>bind[EventBus].toInstance(EventBus())</span><span style=''>
-</span>40 <span style=''>    </span><span style='background: #AEF1AE'>bind[Clock].toInstance(Clock())</span><span style=''>
-</span>41 <span style=''>    </span><span style='background: #AEF1AE'>bind[IDGenerator].toInstance(new SecureRandomIDGenerator())</span><span style=''>
-</span>42 <span style=''>    </span><span style='background: #AEF1AE'>bind[AuthInfoRepository].to[AuthInfoService]</span><span style=''>
-</span>43 <span style=''>    </span><span style='background: #AEF1AE'>bind[LoginService].to[LoginServiceImpl]</span><span style=''>
-</span>44 <span style=''>    </span><span style='background: #AEF1AE'>bind[UserService].to[UserServiceImpl]</span><span style=''>
-</span>45 <span style=''>    </span><span style='background: #AEF1AE'>bind[OrganizerService].to[OrganizerServiceImpl]</span><span style=''>
-</span>46 <span style=''>    </span><span style='background: #AEF1AE'>bind[MailService].to[MailServiceImpl]</span><span style=''>
-</span>47 <span style=''>    </span><span style='background: #AEF1AE'>bind[EventService].to[EventServiceImpl]</span><span style=''>
-</span>48 <span style=''>  }
-</span>49 <span style=''>
-</span>50 <span style=''>  @Provides
-</span>51 <span style=''>  def provideHTTPLayer(client: WSClient): HTTPLayer = </span><span style='background: #AEF1AE'>new PlayHTTPLayer(client)</span><span style=''>
+</span>33 <span style=''>
+</span>34 <span style=''>class SilhouetteModule extends AbstractModule with ScalaModule {
+</span>35 <span style=''>  override def configure() = {
+</span>36 <span style=''>    </span><span style='background: #AEF1AE'>bind[Silhouette[AuthEnv]].to[SilhouetteProvider[AuthEnv]]</span><span style=''>
+</span>37 <span style=''>
+</span>38 <span style=''>    </span><span style='background: #AEF1AE'>bind[PasswordHasher].toInstance(new BCryptPasswordHasher())</span><span style=''>
+</span>39 <span style=''>    </span><span style='background: #AEF1AE'>bind[FingerprintGenerator].toInstance(new DefaultFingerprintGenerator(false))</span><span style=''>
+</span>40 <span style=''>    </span><span style='background: #AEF1AE'>bind[EventBus].toInstance(EventBus())</span><span style=''>
+</span>41 <span style=''>    </span><span style='background: #AEF1AE'>bind[Clock].toInstance(Clock())</span><span style=''>
+</span>42 <span style=''>    </span><span style='background: #AEF1AE'>bind[IDGenerator].toInstance(new SecureRandomIDGenerator())</span><span style=''>
+</span>43 <span style=''>    </span><span style='background: #AEF1AE'>bind[AuthInfoRepository].to[AuthInfoService]</span><span style=''>
+</span>44 <span style=''>    </span><span style='background: #AEF1AE'>bind[LoginService].to[LoginServiceImpl]</span><span style=''>
+</span>45 <span style=''>    </span><span style='background: #AEF1AE'>bind[UserService].to[UserServiceImpl]</span><span style=''>
+</span>46 <span style=''>    </span><span style='background: #AEF1AE'>bind[OrganizerService].to[OrganizerServiceImpl]</span><span style=''>
+</span>47 <span style=''>    </span><span style='background: #AEF1AE'>bind[MailService].to[MailServiceImpl]</span><span style=''>
+</span>48 <span style=''>    </span><span style='background: #AEF1AE'>bind[EventService].to[EventServiceImpl]</span><span style=''>
+</span>49 <span style=''>    </span><span style='background: #AEF1AE'>bind[Geocoder].to[GeocoderImpl]</span><span style=''>
+</span>50 <span style=''>    </span><span style='background: #AEF1AE'>bind[LocationService].to[LocationServiceImpl]</span><span style=''>
+</span>51 <span style=''>  }
 </span>52 <span style=''>
 </span>53 <span style=''>  @Provides
-</span>54 <span style=''>  def provideEnvironment(
-</span>55 <span style=''>    authenticatorService: AuthenticatorService[JWTAuthenticator],
-</span>56 <span style=''>    eventBus: EventBus,
-</span>57 <span style=''>    loginService: LoginService
-</span>58 <span style=''>  ): Environment[AuthEnv] = {
-</span>59 <span style=''>    </span><span style='background: #AEF1AE'>Environment[AuthEnv](loginService, authenticatorService, Seq.empty, eventBus)</span><span style=''>
-</span>60 <span style=''>  }
-</span>61 <span style=''>
-</span>62 <span style=''>  @Provides
-</span>63 <span style=''>  def provideAuthenticatorCrypter(): Crypter = {
-</span>64 <span style=''>    val settings = </span><span style='background: #AEF1AE'>JcaCrypterSettings(&quot;changeme&quot;)</span><span style=''>
-</span>65 <span style=''>    </span><span style='background: #AEF1AE'>new JcaCrypter(settings)</span><span style=''>
-</span>66 <span style=''>  }
-</span>67 <span style=''>
-</span>68 <span style=''>  @Provides
-</span>69 <span style=''>  def provideCrypterAuthenticatorEncoder(crypter: Crypter): CrypterAuthenticatorEncoder = {
-</span>70 <span style=''>    </span><span style='background: #AEF1AE'>new CrypterAuthenticatorEncoder(crypter)</span><span style=''>
-</span>71 <span style=''>  }
-</span>72 <span style=''>
-</span>73 <span style=''>  @Provides
-</span>74 <span style=''>  def provideCrypterAuthenticatorEncoder(encoder: CrypterAuthenticatorEncoder): AuthenticatorEncoder = encoder
+</span>54 <span style=''>  def provideHTTPLayer(client: WSClient): HTTPLayer = </span><span style='background: #AEF1AE'>new PlayHTTPLayer(client)</span><span style=''>
+</span>55 <span style=''>
+</span>56 <span style=''>  @Provides
+</span>57 <span style=''>  def provideEnvironment(
+</span>58 <span style=''>    authenticatorService: AuthenticatorService[JWTAuthenticator],
+</span>59 <span style=''>    eventBus: EventBus,
+</span>60 <span style=''>    loginService: LoginService
+</span>61 <span style=''>  ): Environment[AuthEnv] = {
+</span>62 <span style=''>    </span><span style='background: #AEF1AE'>Environment[AuthEnv](loginService, authenticatorService, Seq.empty, eventBus)</span><span style=''>
+</span>63 <span style=''>  }
+</span>64 <span style=''>
+</span>65 <span style=''>  @Provides
+</span>66 <span style=''>  def provideAuthenticatorCrypter(): Crypter = {
+</span>67 <span style=''>    val settings = </span><span style='background: #AEF1AE'>JcaCrypterSettings(&quot;changeme&quot;)</span><span style=''>
+</span>68 <span style=''>    </span><span style='background: #AEF1AE'>new JcaCrypter(settings)</span><span style=''>
+</span>69 <span style=''>  }
+</span>70 <span style=''>
+</span>71 <span style=''>  @Provides
+</span>72 <span style=''>  def provideCrypterAuthenticatorEncoder(crypter: Crypter): CrypterAuthenticatorEncoder = {
+</span>73 <span style=''>    </span><span style='background: #AEF1AE'>new CrypterAuthenticatorEncoder(crypter)</span><span style=''>
+</span>74 <span style=''>  }
 </span>75 <span style=''>
 </span>76 <span style=''>  @Provides
-</span>77 <span style=''>  def provideJWTAuthenticatorSettings(): JWTAuthenticatorSettings = {
-</span>78 <span style=''>    </span><span style='background: #AEF1AE'>JWTAuthenticatorSettings(sharedSecret = &quot;changeme&quot;)</span><span style=''>
-</span>79 <span style=''>  }
-</span>80 <span style=''>
-</span>81 <span style=''>  @Provides
-</span>82 <span style=''>  def provideJWTAuthenticatorService(
-</span>83 <span style=''>    encoder: CrypterAuthenticatorEncoder, encoding: DefaultCookieHeaderEncoding,
-</span>84 <span style=''>    fpg: FingerprintGenerator, idg: IDGenerator, config: Configuration,
-</span>85 <span style=''>    clock: Clock, settings: JWTAuthenticatorSettings
-</span>86 <span style=''>  ): JWTAuthenticatorService = {
-</span>87 <span style=''>    </span><span style='background: #AEF1AE'>new JWTAuthenticatorService(settings,None,encoder,idg,clock)</span><span style=''>
-</span>88 <span style=''>  }
-</span>89 <span style=''>
-</span>90 <span style=''>  @Provides
-</span>91 <span style=''>  def provideAuthenticatorService(
-</span>92 <span style=''>    jwt: JWTAuthenticatorService): AuthenticatorService[JWTAuthenticator] = jwt
-</span>93 <span style=''>
-</span>94 <span style=''>  @Provides
-</span>95 <span style=''>  def provideCredentialsProvider(authInfoRepository: AuthInfoRepository, passwordHasher: PasswordHasher): CredentialsProvider = {
-</span>96 <span style=''>    val passwordHasherRegisty = </span><span style='background: #AEF1AE'>PasswordHasherRegistry(passwordHasher)</span><span style=''>
-</span>97 <span style=''>    </span><span style='background: #AEF1AE'>new CredentialsProvider(authInfoRepository, passwordHasherRegisty)</span><span style=''>
-</span>98 <span style=''>  }
-</span>99 <span style=''>
-</span>100 <span style=''>  @Provides
-</span>101 <span style=''>  def provideAvatarService(httpLayer: HTTPLayer): AvatarService = </span><span style='background: #AEF1AE'>new GravatarService(httpLayer)</span><span style=''>
+</span>77 <span style=''>  def provideCrypterAuthenticatorEncoder(encoder: CrypterAuthenticatorEncoder): AuthenticatorEncoder = encoder
+</span>78 <span style=''>
+</span>79 <span style=''>  @Provides
+</span>80 <span style=''>  def provideJWTAuthenticatorSettings(): JWTAuthenticatorSettings = {
+</span>81 <span style=''>    </span><span style='background: #AEF1AE'>JWTAuthenticatorSettings(sharedSecret = &quot;changeme&quot;)</span><span style=''>
+</span>82 <span style=''>  }
+</span>83 <span style=''>
+</span>84 <span style=''>  @Provides
+</span>85 <span style=''>  def provideJWTAuthenticatorService(
+</span>86 <span style=''>    encoder: CrypterAuthenticatorEncoder, encoding: DefaultCookieHeaderEncoding,
+</span>87 <span style=''>    fpg: FingerprintGenerator, idg: IDGenerator, config: Configuration,
+</span>88 <span style=''>    clock: Clock, settings: JWTAuthenticatorSettings
+</span>89 <span style=''>  ): JWTAuthenticatorService = {
+</span>90 <span style=''>    </span><span style='background: #AEF1AE'>new JWTAuthenticatorService(settings,None,encoder,idg,clock)</span><span style=''>
+</span>91 <span style=''>  }
+</span>92 <span style=''>
+</span>93 <span style=''>  @Provides
+</span>94 <span style=''>  def provideAuthenticatorService(
+</span>95 <span style=''>    jwt: JWTAuthenticatorService): AuthenticatorService[JWTAuthenticator] = jwt
+</span>96 <span style=''>
+</span>97 <span style=''>  @Provides
+</span>98 <span style=''>  def provideCredentialsProvider(authInfoRepository: AuthInfoRepository, passwordHasher: PasswordHasher): CredentialsProvider = {
+</span>99 <span style=''>    val passwordHasherRegisty = </span><span style='background: #AEF1AE'>PasswordHasherRegistry(passwordHasher)</span><span style=''>
+</span>100 <span style=''>    </span><span style='background: #AEF1AE'>new CredentialsProvider(authInfoRepository, passwordHasherRegisty)</span><span style=''>
+</span>101 <span style=''>  }
 </span>102 <span style=''>
-</span>103 <span style=''>  /**
-</span>104 <span style=''>   * Provides the social provider registry.
-</span>105 <span style=''>   *
-</span>106 <span style=''>   * @param facebookProvider The Facebook provider implementation.
-</span>107 <span style=''>   * @param googleProvider The Google provider implementation.
-</span>108 <span style=''>   * @param vkProvider The VK provider implementation.
-</span>109 <span style=''>   * @param twitterProvider The Twitter provider implementation.
-</span>110 <span style=''>   * @param xingProvider The Xing provider implementation.
-</span>111 <span style=''>   * @return The Silhouette environment.
-</span>112 <span style=''>   */
-</span>113 <span style=''>  @Provides
-</span>114 <span style=''>  def provideSocialProviderRegistry(googleProvider: GoogleProvider,
-</span>115 <span style=''>    facebookProvider: FacebookProvider): SocialProviderRegistry = {
-</span>116 <span style=''>    </span><span style='background: #AEF1AE'>SocialProviderRegistry(Seq(facebookProvider,googleProvider))</span><span style=''>
-</span>117 <span style=''>  }
-</span>118 <span style=''>
-</span>119 <span style=''>   /**
-</span>120 <span style=''>   * Provides the Facebook provider.
-</span>121 <span style=''>   *
-</span>122 <span style=''>   * @param httpLayer The HTTP layer implementation.
-</span>123 <span style=''>   * @param stateProvider The OAuth2 state provider implementation.
-</span>124 <span style=''>   * @param configuration The Play configuration.
-</span>125 <span style=''>   * @return The Facebook provider.
-</span>126 <span style=''>   */
-</span>127 <span style=''>  @Provides
-</span>128 <span style=''>  def provideFacebookProvider(
-</span>129 <span style=''>    httpLayer: HTTPLayer,
-</span>130 <span style=''>    stateProvider: SocialStateHandler,
-</span>131 <span style=''>    configuration: Configuration): FacebookProvider = {
-</span>132 <span style=''>
-</span>133 <span style=''>    </span><span style='background: #AEF1AE'>new FacebookProvider(httpLayer, stateProvider,
-</span>134 <span style=''></span><span style='background: #AEF1AE'>                         configuration.underlying.as[OAuth2Settings](&quot;silhouette.facebook&quot;))</span><span style=''>
-</span>135 <span style=''>  }
-</span>136 <span style=''>
-</span>137 <span style=''>  /**
-</span>138 <span style=''>    * Provides the Facebook provider.
-</span>139 <span style=''>    *
-</span>140 <span style=''>    * @param httpLayer The HTTP layer implementation.
-</span>141 <span style=''>    * @param stateProvider The OAuth2 state provider implementation.
-</span>142 <span style=''>    * @param configuration The Play configuration.
-</span>143 <span style=''>    * @return The Facebook provider.
-</span>144 <span style=''>    */
-</span>145 <span style=''>  @Provides
-</span>146 <span style=''>  def provideGoogleProvider(
-</span>147 <span style=''>    httpLayer: HTTPLayer,
-</span>148 <span style=''>    stateProvider: SocialStateHandler,
-</span>149 <span style=''>    configuration: Configuration): GoogleProvider = {
-</span>150 <span style=''>
-</span>151 <span style=''>    </span><span style='background: #AEF1AE'>new GoogleProvider(httpLayer, stateProvider,
-</span>152 <span style=''></span><span style='background: #AEF1AE'>                         configuration.underlying.as[OAuth2Settings](&quot;silhouette.google&quot;))</span><span style=''>
-</span>153 <span style=''>  }
-</span>154 <span style=''>
-</span>155 <span style=''>  /**
-</span>156 <span style=''>    * Provides the SocialStateHandler.
-</span>157 <span style=''>    *
-</span>158 <span style=''>    */
-</span>159 <span style=''>  @Provides
-</span>160 <span style=''>  def provideSocialStateHandler(
-</span>161 <span style=''>    csrfHandler: CsrfStateItemHandler,
-</span>162 <span style=''>    signer: Signer,
-</span>163 <span style=''>    configuration: Configuration): SocialStateHandler = {
-</span>164 <span style=''>    </span><span style='background: #AEF1AE'>new DefaultSocialStateHandler(Set(),signer)</span><span style=''>
-</span>165 <span style=''>  }
-</span>166 <span style=''>
-</span>167 <span style=''>  /**
-</span>168 <span style=''>    * Provides the JcaSigner.
-</span>169 <span style=''>    */
-</span>170 <span style=''>  @Provides
-</span>171 <span style=''>  def provideJcaSigner(
-</span>172 <span style=''>    configuration: Configuration): Signer = {
-</span>173 <span style=''>    </span><span style='background: #AEF1AE'>new JcaSigner(configuration.underlying.as[JcaSignerSettings](&quot;silhouette.signer&quot;))</span><span style=''>
-</span>174 <span style=''>  }
-</span>175 <span style=''>
-</span>176 <span style=''>  /**
-</span>177 <span style=''>    * Provides the CsrfStateSettings.
-</span>178 <span style=''>    */
-</span>179 <span style=''>  @Provides
-</span>180 <span style=''>  def provideCsrfStateSettings(
-</span>181 <span style=''>    configuration: Configuration): CsrfStateSettings = {
-</span>182 <span style=''>    </span><span style='background: #AEF1AE'>configuration.underlying.as[CsrfStateSettings](&quot;silhouette.csrfState&quot;)</span><span style=''>
-</span>183 <span style=''>  }
-</span>184 <span style=''>
-</span>185 <span style=''>  /**
-</span>186 <span style=''>    * Provides the ApplicationConfig.
-</span>187 <span style=''>    */
-</span>188 <span style=''>  @Provides
-</span>189 <span style=''>  def provideApplicationConfig(
-</span>190 <span style=''>    configuration: Configuration): ApplicationConfig = {
-</span>191 <span style=''>    </span><span style='background: #AEF1AE'>configuration.underlying.as[ApplicationConfig](&quot;application&quot;)</span><span style=''>
-</span>192 <span style=''>  }
-</span>193 <span style=''>}
+</span>103 <span style=''>  @Provides
+</span>104 <span style=''>  def provideAvatarService(httpLayer: HTTPLayer): AvatarService = </span><span style='background: #AEF1AE'>new GravatarService(httpLayer)</span><span style=''>
+</span>105 <span style=''>
+</span>106 <span style=''>  /**
+</span>107 <span style=''>   * Provides the social provider registry.
+</span>108 <span style=''>   *
+</span>109 <span style=''>   * @param facebookProvider The Facebook provider implementation.
+</span>110 <span style=''>   * @param googleProvider The Google provider implementation.
+</span>111 <span style=''>   * @param vkProvider The VK provider implementation.
+</span>112 <span style=''>   * @param twitterProvider The Twitter provider implementation.
+</span>113 <span style=''>   * @param xingProvider The Xing provider implementation.
+</span>114 <span style=''>   * @return The Silhouette environment.
+</span>115 <span style=''>   */
+</span>116 <span style=''>  @Provides
+</span>117 <span style=''>  def provideSocialProviderRegistry(googleProvider: GoogleProvider,
+</span>118 <span style=''>    facebookProvider: FacebookProvider): SocialProviderRegistry = {
+</span>119 <span style=''>    </span><span style='background: #AEF1AE'>SocialProviderRegistry(Seq(facebookProvider,googleProvider))</span><span style=''>
+</span>120 <span style=''>  }
+</span>121 <span style=''>
+</span>122 <span style=''>   /**
+</span>123 <span style=''>   * Provides the Facebook provider.
+</span>124 <span style=''>   *
+</span>125 <span style=''>   * @param httpLayer The HTTP layer implementation.
+</span>126 <span style=''>   * @param stateProvider The OAuth2 state provider implementation.
+</span>127 <span style=''>   * @param configuration The Play configuration.
+</span>128 <span style=''>   * @return The Facebook provider.
+</span>129 <span style=''>   */
+</span>130 <span style=''>  @Provides
+</span>131 <span style=''>  def provideFacebookProvider(
+</span>132 <span style=''>    httpLayer: HTTPLayer,
+</span>133 <span style=''>    stateProvider: SocialStateHandler,
+</span>134 <span style=''>    configuration: Configuration): FacebookProvider = {
+</span>135 <span style=''>
+</span>136 <span style=''>    </span><span style='background: #AEF1AE'>new FacebookProvider(httpLayer, stateProvider,
+</span>137 <span style=''></span><span style='background: #AEF1AE'>                         configuration.underlying.as[OAuth2Settings](&quot;silhouette.facebook&quot;))</span><span style=''>
+</span>138 <span style=''>  }
+</span>139 <span style=''>
+</span>140 <span style=''>  /**
+</span>141 <span style=''>    * Provides the Facebook provider.
+</span>142 <span style=''>    *
+</span>143 <span style=''>    * @param httpLayer The HTTP layer implementation.
+</span>144 <span style=''>    * @param stateProvider The OAuth2 state provider implementation.
+</span>145 <span style=''>    * @param configuration The Play configuration.
+</span>146 <span style=''>    * @return The Facebook provider.
+</span>147 <span style=''>    */
+</span>148 <span style=''>  @Provides
+</span>149 <span style=''>  def provideGoogleProvider(
+</span>150 <span style=''>    httpLayer: HTTPLayer,
+</span>151 <span style=''>    stateProvider: SocialStateHandler,
+</span>152 <span style=''>    configuration: Configuration): GoogleProvider = {
+</span>153 <span style=''>
+</span>154 <span style=''>    </span><span style='background: #AEF1AE'>new GoogleProvider(httpLayer, stateProvider,
+</span>155 <span style=''></span><span style='background: #AEF1AE'>                         configuration.underlying.as[OAuth2Settings](&quot;silhouette.google&quot;))</span><span style=''>
+</span>156 <span style=''>  }
+</span>157 <span style=''>
+</span>158 <span style=''>  /**
+</span>159 <span style=''>    * Provides the SocialStateHandler.
+</span>160 <span style=''>    *
+</span>161 <span style=''>    */
+</span>162 <span style=''>  @Provides
+</span>163 <span style=''>  def provideSocialStateHandler(
+</span>164 <span style=''>    csrfHandler: CsrfStateItemHandler,
+</span>165 <span style=''>    signer: Signer,
+</span>166 <span style=''>    configuration: Configuration): SocialStateHandler = {
+</span>167 <span style=''>    </span><span style='background: #AEF1AE'>new DefaultSocialStateHandler(Set(),signer)</span><span style=''>
+</span>168 <span style=''>  }
+</span>169 <span style=''>
+</span>170 <span style=''>  /**
+</span>171 <span style=''>    * Provides the JcaSigner.
+</span>172 <span style=''>    */
+</span>173 <span style=''>  @Provides
+</span>174 <span style=''>  def provideJcaSigner(
+</span>175 <span style=''>    configuration: Configuration): Signer = {
+</span>176 <span style=''>    </span><span style='background: #AEF1AE'>new JcaSigner(configuration.underlying.as[JcaSignerSettings](&quot;silhouette.signer&quot;))</span><span style=''>
+</span>177 <span style=''>  }
+</span>178 <span style=''>
+</span>179 <span style=''>  /**
+</span>180 <span style=''>    * Provides the CsrfStateSettings.
+</span>181 <span style=''>    */
+</span>182 <span style=''>  @Provides
+</span>183 <span style=''>  def provideCsrfStateSettings(
+</span>184 <span style=''>    configuration: Configuration): CsrfStateSettings = {
+</span>185 <span style=''>    </span><span style='background: #AEF1AE'>configuration.underlying.as[CsrfStateSettings](&quot;silhouette.csrfState&quot;)</span><span style=''>
+</span>186 <span style=''>  }
+</span>187 <span style=''>
+</span>188 <span style=''>  /**
+</span>189 <span style=''>    * Provides the ApplicationConfig.
+</span>190 <span style=''>    */
+</span>191 <span style=''>  @Provides
+</span>192 <span style=''>  def provideApplicationConfig(
+</span>193 <span style=''>    configuration: Configuration): ApplicationConfig = {
+</span>194 <span style=''>    </span><span style='background: #AEF1AE'>configuration.underlying.as[ApplicationConfig](&quot;application&quot;)</span><span style=''>
+</span>195 <span style=''>  }
+</span>196 <span style=''>
+</span>197 <span style=''>  /**
+</span>198 <span style=''>    * Provides the GeocoderConfig.
+</span>199 <span style=''>    */
+</span>200 <span style=''>  @Provides
+</span>201 <span style=''>  def provideGeocoderConfig(
+</span>202 <span style=''>    configuration: Configuration): GeocoderConfig = {
+</span>203 <span style=''>    </span><span style='background: #F0ADAD'>configuration.underlying.as[GeocoderConfig](&quot;geocoder&quot;)</span><span style=''>
+</span>204 <span style=''>  }
+</span>205 <span style=''>}
 </span></pre>
           </div>
           <div class="tab-pane" id="statementlist">
@@ -228,120 +240,15 @@
         <th>Code</th>
       </tr><tr>
         <td>
-          35
+          36
         </td>
         <td>
-          2822
+          2793
         </td>
         <td>
-          1386
+          1444
           -
-          1386
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          scala.reflect.ManifestFactory.classType
-        </td>
-        <td style="background: #AEF1AE">
-          scala.reflect.ManifestFactory.classType[com.mohiva.play.silhouette.api.Silhouette[whatson.auth.AuthEnv]](classOf[com.mohiva.play.silhouette.api.Silhouette], scala.reflect.ManifestFactory.classType[whatson.auth.AuthEnv](classOf[whatson.auth.AuthEnv]))
-        </td>
-      </tr><tr>
-        <td>
-          35
-        </td>
-        <td>
-          2825
-        </td>
-        <td>
-          1410
-          -
-          1410
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          scala.reflect.ManifestFactory.classType
-        </td>
-        <td style="background: #AEF1AE">
-          scala.reflect.ManifestFactory.classType[com.mohiva.play.silhouette.api.SilhouetteProvider[whatson.auth.AuthEnv]](classOf[com.mohiva.play.silhouette.api.SilhouetteProvider], scala.reflect.ManifestFactory.classType[whatson.auth.AuthEnv](classOf[whatson.auth.AuthEnv]))
-        </td>
-      </tr><tr>
-        <td>
-          35
-        </td>
-        <td>
-          2824
-        </td>
-        <td>
-          1410
-          -
-          1410
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          scala.reflect.ManifestFactory.classType
-        </td>
-        <td style="background: #AEF1AE">
-          scala.reflect.ManifestFactory.classType[whatson.auth.AuthEnv](classOf[whatson.auth.AuthEnv])
-        </td>
-      </tr><tr>
-        <td>
-          35
-        </td>
-        <td>
-          2821
-        </td>
-        <td>
-          1386
-          -
-          1386
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          scala.reflect.ManifestFactory.classType
-        </td>
-        <td style="background: #AEF1AE">
-          scala.reflect.ManifestFactory.classType[whatson.auth.AuthEnv](classOf[whatson.auth.AuthEnv])
-        </td>
-      </tr><tr>
-        <td>
-          35
-        </td>
-        <td>
-          2820
-        </td>
-        <td>
-          1386
-          -
-          1386
-        </td>
-        <td>
-          Literal
-        </td>
-        <td>
-          &lt;nosymbol&gt;
-        </td>
-        <td style="background: #AEF1AE">
-          classOf[com.mohiva.play.silhouette.api.Silhouette]
-        </td>
-      </tr><tr>
-        <td>
-          35
-        </td>
-        <td>
-          2823
-        </td>
-        <td>
-          1410
-          -
-          1410
+          1444
         </td>
         <td>
           Literal
@@ -354,15 +261,99 @@
         </td>
       </tr><tr>
         <td>
-          35
+          36
         </td>
         <td>
-          2826
+          2792
         </td>
         <td>
-          1382
+          1420
           -
-          1439
+          1420
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.reflect.ManifestFactory.classType
+        </td>
+        <td style="background: #AEF1AE">
+          scala.reflect.ManifestFactory.classType[com.mohiva.play.silhouette.api.Silhouette[whatson.auth.AuthEnv]](classOf[com.mohiva.play.silhouette.api.Silhouette], scala.reflect.ManifestFactory.classType[whatson.auth.AuthEnv](classOf[whatson.auth.AuthEnv]))
+        </td>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          2795
+        </td>
+        <td>
+          1444
+          -
+          1444
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.reflect.ManifestFactory.classType
+        </td>
+        <td style="background: #AEF1AE">
+          scala.reflect.ManifestFactory.classType[com.mohiva.play.silhouette.api.SilhouetteProvider[whatson.auth.AuthEnv]](classOf[com.mohiva.play.silhouette.api.SilhouetteProvider], scala.reflect.ManifestFactory.classType[whatson.auth.AuthEnv](classOf[whatson.auth.AuthEnv]))
+        </td>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          2791
+        </td>
+        <td>
+          1420
+          -
+          1420
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.reflect.ManifestFactory.classType
+        </td>
+        <td style="background: #AEF1AE">
+          scala.reflect.ManifestFactory.classType[whatson.auth.AuthEnv](classOf[whatson.auth.AuthEnv])
+        </td>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          2794
+        </td>
+        <td>
+          1444
+          -
+          1444
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.reflect.ManifestFactory.classType
+        </td>
+        <td style="background: #AEF1AE">
+          scala.reflect.ManifestFactory.classType[whatson.auth.AuthEnv](classOf[whatson.auth.AuthEnv])
+        </td>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          2796
+        </td>
+        <td>
+          1416
+          -
+          1473
         </td>
         <td>
           ApplyToImplicitArgs
@@ -375,15 +366,36 @@
         </td>
       </tr><tr>
         <td>
-          37
+          36
         </td>
         <td>
-          2828
+          2790
         </td>
         <td>
-          1477
+          1420
           -
-          1477
+          1420
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          classOf[com.mohiva.play.silhouette.api.Silhouette]
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          2798
+        </td>
+        <td>
+          1511
+          -
+          1511
         </td>
         <td>
           Select
@@ -396,15 +408,15 @@
         </td>
       </tr><tr>
         <td>
-          37
+          38
         </td>
         <td>
-          2827
+          2797
         </td>
         <td>
-          1449
+          1483
           -
-          1449
+          1483
         </td>
         <td>
           Apply
@@ -417,15 +429,15 @@
         </td>
       </tr><tr>
         <td>
-          37
+          38
         </td>
         <td>
-          2830
+          2800
         </td>
         <td>
-          1445
+          1479
           -
-          1504
+          1538
         </td>
         <td>
           Apply
@@ -438,15 +450,15 @@
         </td>
       </tr><tr>
         <td>
-          37
+          38
         </td>
         <td>
-          2829
+          2799
         </td>
         <td>
-          1477
+          1511
           -
-          1503
+          1537
         </td>
         <td>
           Apply
@@ -459,57 +471,15 @@
         </td>
       </tr><tr>
         <td>
-          38
+          39
         </td>
         <td>
-          2831
+          2802
         </td>
         <td>
-          1513
+          1581
           -
-          1513
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          scala.reflect.ManifestFactory.classType
-        </td>
-        <td style="background: #AEF1AE">
-          scala.reflect.ManifestFactory.classType[com.mohiva.play.silhouette.api.util.FingerprintGenerator](classOf[com.mohiva.play.silhouette.api.util.FingerprintGenerator])
-        </td>
-      </tr><tr>
-        <td>
-          38
-        </td>
-        <td>
-          2833
-        </td>
-        <td>
-          1509
-          -
-          1586
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          net.codingwell.scalaguice.binder.LinkedBindingBuilderProxy.toInstance
-        </td>
-        <td style="background: #AEF1AE">
-          SilhouetteModule.this.bind[com.mohiva.play.silhouette.api.util.FingerprintGenerator](scala.reflect.ManifestFactory.classType[com.mohiva.play.silhouette.api.util.FingerprintGenerator](classOf[com.mohiva.play.silhouette.api.util.FingerprintGenerator])).toInstance(new com.mohiva.play.silhouette.impl.util.DefaultFingerprintGenerator(false))
-        </td>
-      </tr><tr>
-        <td>
-          38
-        </td>
-        <td>
-          2832
-        </td>
-        <td>
-          1547
-          -
-          1585
+          1619
         </td>
         <td>
           Apply
@@ -525,12 +495,54 @@
           39
         </td>
         <td>
-          2834
+          2801
         </td>
         <td>
-          1595
+          1547
           -
-          1595
+          1547
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.reflect.ManifestFactory.classType
+        </td>
+        <td style="background: #AEF1AE">
+          scala.reflect.ManifestFactory.classType[com.mohiva.play.silhouette.api.util.FingerprintGenerator](classOf[com.mohiva.play.silhouette.api.util.FingerprintGenerator])
+        </td>
+      </tr><tr>
+        <td>
+          39
+        </td>
+        <td>
+          2803
+        </td>
+        <td>
+          1543
+          -
+          1620
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          net.codingwell.scalaguice.binder.LinkedBindingBuilderProxy.toInstance
+        </td>
+        <td style="background: #AEF1AE">
+          SilhouetteModule.this.bind[com.mohiva.play.silhouette.api.util.FingerprintGenerator](scala.reflect.ManifestFactory.classType[com.mohiva.play.silhouette.api.util.FingerprintGenerator](classOf[com.mohiva.play.silhouette.api.util.FingerprintGenerator])).toInstance(new com.mohiva.play.silhouette.impl.util.DefaultFingerprintGenerator(false))
+        </td>
+      </tr><tr>
+        <td>
+          40
+        </td>
+        <td>
+          2804
+        </td>
+        <td>
+          1629
+          -
+          1629
         </td>
         <td>
           Apply
@@ -543,15 +555,15 @@
         </td>
       </tr><tr>
         <td>
-          39
+          40
         </td>
         <td>
-          2836
+          2806
         </td>
         <td>
-          1591
+          1625
           -
-          1628
+          1662
         </td>
         <td>
           Apply
@@ -564,15 +576,15 @@
         </td>
       </tr><tr>
         <td>
-          39
+          40
         </td>
         <td>
-          2835
+          2805
         </td>
         <td>
-          1617
+          1651
           -
-          1627
+          1661
         </td>
         <td>
           Apply
@@ -585,15 +597,15 @@
         </td>
       </tr><tr>
         <td>
-          40
+          41
         </td>
         <td>
-          2837
+          2807
         </td>
         <td>
-          1637
+          1671
           -
-          1637
+          1671
         </td>
         <td>
           Apply
@@ -606,15 +618,15 @@
         </td>
       </tr><tr>
         <td>
-          40
+          41
         </td>
         <td>
-          2839
+          2809
         </td>
         <td>
-          1633
+          1667
           -
-          1664
+          1698
         </td>
         <td>
           Apply
@@ -627,15 +639,15 @@
         </td>
       </tr><tr>
         <td>
-          40
+          41
         </td>
         <td>
-          2838
+          2808
         </td>
         <td>
-          1656
+          1690
           -
-          1663
+          1697
         </td>
         <td>
           Apply
@@ -648,36 +660,15 @@
         </td>
       </tr><tr>
         <td>
-          41
+          42
         </td>
         <td>
-          2843
+          2810
         </td>
         <td>
-          1698
+          1707
           -
-          1727
-        </td>
-        <td>
-          ApplyToImplicitArgs
-        </td>
-        <td>
-          com.mohiva.play.silhouette.impl.util.SecureRandomIDGenerator.&lt;init&gt;
-        </td>
-        <td style="background: #AEF1AE">
-          new com.mohiva.play.silhouette.impl.util.SecureRandomIDGenerator(util.this.SecureRandomIDGenerator.&lt;init&gt;$default$1)(play.api.libs.concurrent.Execution.Implicits.defaultContext)
-        </td>
-      </tr><tr>
-        <td>
-          41
-        </td>
-        <td>
-          2840
-        </td>
-        <td>
-          1673
-          -
-          1673
+          1707
         </td>
         <td>
           Apply
@@ -690,15 +681,36 @@
         </td>
       </tr><tr>
         <td>
-          41
+          42
         </td>
         <td>
-          2842
+          2813
         </td>
         <td>
-          1698
+          1732
           -
-          1698
+          1761
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          com.mohiva.play.silhouette.impl.util.SecureRandomIDGenerator.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new com.mohiva.play.silhouette.impl.util.SecureRandomIDGenerator(util.this.SecureRandomIDGenerator.&lt;init&gt;$default$1)(play.api.libs.concurrent.Execution.Implicits.defaultContext)
+        </td>
+      </tr><tr>
+        <td>
+          42
+        </td>
+        <td>
+          2812
+        </td>
+        <td>
+          1732
+          -
+          1732
         </td>
         <td>
           Select
@@ -711,15 +723,15 @@
         </td>
       </tr><tr>
         <td>
-          41
+          42
         </td>
         <td>
-          2841
+          2811
         </td>
         <td>
-          1698
+          1732
           -
-          1698
+          1732
         </td>
         <td>
           Select
@@ -732,15 +744,15 @@
         </td>
       </tr><tr>
         <td>
-          41
+          42
         </td>
         <td>
-          2844
+          2814
         </td>
         <td>
-          1669
+          1703
           -
-          1728
+          1762
         </td>
         <td>
           Apply
@@ -753,15 +765,15 @@
         </td>
       </tr><tr>
         <td>
-          42
+          43
         </td>
         <td>
-          2846
+          2816
         </td>
         <td>
-          1760
+          1794
           -
-          1760
+          1794
         </td>
         <td>
           Apply
@@ -774,15 +786,15 @@
         </td>
       </tr><tr>
         <td>
-          42
+          43
         </td>
         <td>
-          2845
+          2815
         </td>
         <td>
-          1737
+          1771
           -
-          1737
+          1771
         </td>
         <td>
           Apply
@@ -795,15 +807,15 @@
         </td>
       </tr><tr>
         <td>
-          42
+          43
         </td>
         <td>
-          2847
+          2817
         </td>
         <td>
-          1733
+          1767
           -
-          1777
+          1811
         </td>
         <td>
           ApplyToImplicitArgs
@@ -816,15 +828,15 @@
         </td>
       </tr><tr>
         <td>
-          43
+          44
         </td>
         <td>
-          2849
+          2819
         </td>
         <td>
-          1803
+          1837
           -
-          1803
+          1837
         </td>
         <td>
           Apply
@@ -837,15 +849,15 @@
         </td>
       </tr><tr>
         <td>
-          43
+          44
         </td>
         <td>
-          2848
+          2818
         </td>
         <td>
-          1786
+          1820
           -
-          1786
+          1820
         </td>
         <td>
           Apply
@@ -858,15 +870,15 @@
         </td>
       </tr><tr>
         <td>
-          43
+          44
         </td>
         <td>
-          2850
+          2820
         </td>
         <td>
-          1782
+          1816
           -
-          1821
+          1855
         </td>
         <td>
           ApplyToImplicitArgs
@@ -879,15 +891,15 @@
         </td>
       </tr><tr>
         <td>
-          44
+          45
         </td>
         <td>
-          2852
+          2822
         </td>
         <td>
-          1846
+          1880
           -
-          1846
+          1880
         </td>
         <td>
           Apply
@@ -900,15 +912,15 @@
         </td>
       </tr><tr>
         <td>
-          44
+          45
         </td>
         <td>
-          2851
+          2821
         </td>
         <td>
-          1830
+          1864
           -
-          1830
+          1864
         </td>
         <td>
           Apply
@@ -921,15 +933,15 @@
         </td>
       </tr><tr>
         <td>
-          44
+          45
         </td>
         <td>
-          2853
+          2823
         </td>
         <td>
-          1826
+          1860
           -
-          1863
+          1897
         </td>
         <td>
           ApplyToImplicitArgs
@@ -942,15 +954,15 @@
         </td>
       </tr><tr>
         <td>
-          45
+          46
         </td>
         <td>
-          2855
+          2825
         </td>
         <td>
-          1893
+          1927
           -
-          1893
+          1927
         </td>
         <td>
           Apply
@@ -963,15 +975,15 @@
         </td>
       </tr><tr>
         <td>
-          45
+          46
         </td>
         <td>
-          2854
+          2824
         </td>
         <td>
-          1872
+          1906
           -
-          1872
+          1906
         </td>
         <td>
           Apply
@@ -984,15 +996,15 @@
         </td>
       </tr><tr>
         <td>
-          45
+          46
         </td>
         <td>
-          2856
+          2826
         </td>
         <td>
-          1868
+          1902
           -
-          1915
+          1949
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1005,15 +1017,15 @@
         </td>
       </tr><tr>
         <td>
-          46
+          47
         </td>
         <td>
-          2858
+          2828
         </td>
         <td>
-          1940
+          1974
           -
-          1940
+          1974
         </td>
         <td>
           Apply
@@ -1026,15 +1038,15 @@
         </td>
       </tr><tr>
         <td>
-          46
+          47
         </td>
         <td>
-          2857
+          2827
         </td>
         <td>
-          1924
+          1958
           -
-          1924
+          1958
         </td>
         <td>
           Apply
@@ -1047,15 +1059,15 @@
         </td>
       </tr><tr>
         <td>
-          46
+          47
         </td>
         <td>
-          2859
+          2829
         </td>
         <td>
-          1920
+          1954
           -
-          1957
+          1991
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1068,15 +1080,15 @@
         </td>
       </tr><tr>
         <td>
-          47
+          48
         </td>
         <td>
-          2861
+          2831
         </td>
         <td>
-          1983
+          2017
           -
-          1983
+          2017
         </td>
         <td>
           Apply
@@ -1089,15 +1101,15 @@
         </td>
       </tr><tr>
         <td>
-          47
+          48
         </td>
         <td>
-          2860
+          2830
         </td>
         <td>
-          1966
+          2000
           -
-          1966
+          2000
         </td>
         <td>
           Apply
@@ -1110,36 +1122,15 @@
         </td>
       </tr><tr>
         <td>
-          47
+          48
         </td>
         <td>
-          2863
+          2832
         </td>
         <td>
-          1983
+          1996
           -
-          1983
-        </td>
-        <td>
-          Literal
-        </td>
-        <td>
-          &lt;nosymbol&gt;
-        </td>
-        <td style="background: #AEF1AE">
-          ()
-        </td>
-      </tr><tr>
-        <td>
-          47
-        </td>
-        <td>
-          2862
-        </td>
-        <td>
-          1962
-          -
-          2001
+          2035
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1152,15 +1143,162 @@
         </td>
       </tr><tr>
         <td>
-          51
+          49
         </td>
         <td>
-          2864
+          2834
         </td>
         <td>
-          2073
+          2057
           -
-          2073
+          2057
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.reflect.ManifestFactory.classType
+        </td>
+        <td style="background: #AEF1AE">
+          scala.reflect.ManifestFactory.classType[whatson.service.geocoder.GeocoderImpl](classOf[whatson.service.geocoder.GeocoderImpl])
+        </td>
+      </tr><tr>
+        <td>
+          49
+        </td>
+        <td>
+          2833
+        </td>
+        <td>
+          2044
+          -
+          2044
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.reflect.ManifestFactory.classType
+        </td>
+        <td style="background: #AEF1AE">
+          scala.reflect.ManifestFactory.classType[whatson.service.geocoder.Geocoder](classOf[whatson.service.geocoder.Geocoder])
+        </td>
+      </tr><tr>
+        <td>
+          49
+        </td>
+        <td>
+          2835
+        </td>
+        <td>
+          2040
+          -
+          2071
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          net.codingwell.scalaguice.ScalaModule.ScalaLinkedBindingBuilder.to
+        </td>
+        <td style="background: #AEF1AE">
+          SilhouetteModule.this.bind[whatson.service.geocoder.Geocoder](scala.reflect.ManifestFactory.classType[whatson.service.geocoder.Geocoder](classOf[whatson.service.geocoder.Geocoder])).to[whatson.service.geocoder.GeocoderImpl](scala.reflect.ManifestFactory.classType[whatson.service.geocoder.GeocoderImpl](classOf[whatson.service.geocoder.GeocoderImpl]))
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          2837
+        </td>
+        <td>
+          2100
+          -
+          2100
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.reflect.ManifestFactory.classType
+        </td>
+        <td style="background: #AEF1AE">
+          scala.reflect.ManifestFactory.classType[whatson.service.LocationServiceImpl](classOf[whatson.service.LocationServiceImpl])
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          2836
+        </td>
+        <td>
+          2080
+          -
+          2080
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.reflect.ManifestFactory.classType
+        </td>
+        <td style="background: #AEF1AE">
+          scala.reflect.ManifestFactory.classType[whatson.service.LocationService](classOf[whatson.service.LocationService])
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          2839
+        </td>
+        <td>
+          2100
+          -
+          2100
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          2838
+        </td>
+        <td>
+          2076
+          -
+          2121
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          net.codingwell.scalaguice.ScalaModule.ScalaLinkedBindingBuilder.to
+        </td>
+        <td style="background: #AEF1AE">
+          SilhouetteModule.this.bind[whatson.service.LocationService](scala.reflect.ManifestFactory.classType[whatson.service.LocationService](classOf[whatson.service.LocationService])).to[whatson.service.LocationServiceImpl](scala.reflect.ManifestFactory.classType[whatson.service.LocationServiceImpl](classOf[whatson.service.LocationServiceImpl]))
+        </td>
+      </tr><tr>
+        <td>
+          54
+        </td>
+        <td>
+          2840
+        </td>
+        <td>
+          2193
+          -
+          2193
         </td>
         <td>
           Select
@@ -1173,15 +1311,15 @@
         </td>
       </tr><tr>
         <td>
-          51
+          54
         </td>
         <td>
-          2865
+          2841
         </td>
         <td>
-          2073
+          2193
           -
-          2098
+          2218
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1194,15 +1332,15 @@
         </td>
       </tr><tr>
         <td>
-          59
+          62
         </td>
         <td>
-          2867
+          2843
         </td>
         <td>
-          2313
+          2433
           -
-          2313
+          2433
         </td>
         <td>
           Select
@@ -1215,15 +1353,15 @@
         </td>
       </tr><tr>
         <td>
-          59
+          62
         </td>
         <td>
-          2866
+          2842
         </td>
         <td>
-          2350
+          2470
           -
-          2359
+          2479
         </td>
         <td>
           TypeApply
@@ -1236,15 +1374,15 @@
         </td>
       </tr><tr>
         <td>
-          59
+          62
         </td>
         <td>
-          2868
+          2844
         </td>
         <td>
-          2293
+          2413
           -
-          2370
+          2490
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1257,15 +1395,15 @@
         </td>
       </tr><tr>
         <td>
-          64
+          67
         </td>
         <td>
-          2869
+          2845
         </td>
         <td>
-          2456
+          2576
           -
-          2486
+          2606
         </td>
         <td>
           Apply
@@ -1278,15 +1416,15 @@
         </td>
       </tr><tr>
         <td>
-          65
+          68
         </td>
         <td>
-          2870
+          2846
         </td>
         <td>
-          2491
+          2611
           -
-          2515
+          2635
         </td>
         <td>
           Apply
@@ -1299,15 +1437,15 @@
         </td>
       </tr><tr>
         <td>
-          70
+          73
         </td>
         <td>
-          2871
+          2847
         </td>
         <td>
-          2629
+          2749
           -
-          2669
+          2789
         </td>
         <td>
           Apply
@@ -1320,36 +1458,15 @@
         </td>
       </tr><tr>
         <td>
-          78
+          81
         </td>
         <td>
-          2873
+          2852
         </td>
         <td>
-          2885
+          3005
           -
-          2885
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          com.mohiva.play.silhouette.impl.authenticators.JWTAuthenticatorSettings.apply$default$1
-        </td>
-        <td style="background: #AEF1AE">
-          com.mohiva.play.silhouette.impl.authenticators.JWTAuthenticatorSettings.apply$default$1
-        </td>
-      </tr><tr>
-        <td>
-          78
-        </td>
-        <td>
-          2876
-        </td>
-        <td>
-          2885
-          -
-          2885
+          3005
         </td>
         <td>
           Select
@@ -1362,57 +1479,36 @@
         </td>
       </tr><tr>
         <td>
-          78
+          81
         </td>
         <td>
-          2875
+          2849
         </td>
         <td>
-          2885
+          3005
           -
-          2885
+          3005
         </td>
         <td>
           Select
         </td>
         <td>
-          com.mohiva.play.silhouette.impl.authenticators.JWTAuthenticatorSettings.apply$default$3
+          com.mohiva.play.silhouette.impl.authenticators.JWTAuthenticatorSettings.apply$default$1
         </td>
         <td style="background: #AEF1AE">
-          com.mohiva.play.silhouette.impl.authenticators.JWTAuthenticatorSettings.apply$default$3
+          com.mohiva.play.silhouette.impl.authenticators.JWTAuthenticatorSettings.apply$default$1
         </td>
       </tr><tr>
         <td>
-          78
+          81
         </td>
         <td>
-          2878
+          2848
         </td>
         <td>
-          2885
+          3045
           -
-          2936
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          com.mohiva.play.silhouette.impl.authenticators.JWTAuthenticatorSettings.apply
-        </td>
-        <td style="background: #AEF1AE">
-          com.mohiva.play.silhouette.impl.authenticators.JWTAuthenticatorSettings.apply(x$2, x$3, x$4, x$5, x$6, x$1)
-        </td>
-      </tr><tr>
-        <td>
-          78
-        </td>
-        <td>
-          2872
-        </td>
-        <td>
-          2925
-          -
-          2935
+          3055
         </td>
         <td>
           Literal
@@ -1425,15 +1521,57 @@
         </td>
       </tr><tr>
         <td>
-          78
+          81
         </td>
         <td>
-          2874
+          2851
         </td>
         <td>
-          2885
+          3005
           -
-          2885
+          3005
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.mohiva.play.silhouette.impl.authenticators.JWTAuthenticatorSettings.apply$default$3
+        </td>
+        <td style="background: #AEF1AE">
+          com.mohiva.play.silhouette.impl.authenticators.JWTAuthenticatorSettings.apply$default$3
+        </td>
+      </tr><tr>
+        <td>
+          81
+        </td>
+        <td>
+          2854
+        </td>
+        <td>
+          3005
+          -
+          3056
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.mohiva.play.silhouette.impl.authenticators.JWTAuthenticatorSettings.apply
+        </td>
+        <td style="background: #AEF1AE">
+          com.mohiva.play.silhouette.impl.authenticators.JWTAuthenticatorSettings.apply(x$2, x$3, x$4, x$5, x$6, x$1)
+        </td>
+      </tr><tr>
+        <td>
+          81
+        </td>
+        <td>
+          2850
+        </td>
+        <td>
+          3005
+          -
+          3005
         </td>
         <td>
           Select
@@ -1446,15 +1584,15 @@
         </td>
       </tr><tr>
         <td>
-          78
+          81
         </td>
         <td>
-          2877
+          2853
         </td>
         <td>
-          2885
+          3005
           -
-          2885
+          3005
         </td>
         <td>
           Select
@@ -1467,15 +1605,15 @@
         </td>
       </tr><tr>
         <td>
-          87
+          90
         </td>
         <td>
-          2879
+          2855
         </td>
         <td>
-          3272
+          3392
           -
-          3276
+          3396
         </td>
         <td>
           Select
@@ -1488,15 +1626,15 @@
         </td>
       </tr><tr>
         <td>
-          87
+          90
         </td>
         <td>
-          2881
+          2857
         </td>
         <td>
-          3235
+          3355
           -
-          3295
+          3415
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1509,15 +1647,15 @@
         </td>
       </tr><tr>
         <td>
-          87
+          90
         </td>
         <td>
-          2880
+          2856
         </td>
         <td>
-          3235
+          3355
           -
-          3235
+          3355
         </td>
         <td>
           Select
@@ -1530,15 +1668,15 @@
         </td>
       </tr><tr>
         <td>
-          96
+          99
         </td>
         <td>
-          2882
+          2858
         </td>
         <td>
-          3603
+          3723
           -
-          3603
+          3723
         </td>
         <td>
           Select
@@ -1551,15 +1689,15 @@
         </td>
       </tr><tr>
         <td>
-          96
+          99
         </td>
         <td>
-          2883
+          2859
         </td>
         <td>
-          3603
+          3723
           -
-          3641
+          3761
         </td>
         <td>
           Apply
@@ -1572,15 +1710,15 @@
         </td>
       </tr><tr>
         <td>
-          97
+          100
         </td>
         <td>
-          2885
+          2861
         </td>
         <td>
-          3646
+          3766
           -
-          3712
+          3832
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1593,15 +1731,15 @@
         </td>
       </tr><tr>
         <td>
-          97
+          100
         </td>
         <td>
-          2884
+          2860
         </td>
         <td>
-          3646
+          3766
           -
-          3646
+          3766
         </td>
         <td>
           Select
@@ -1614,15 +1752,15 @@
         </td>
       </tr><tr>
         <td>
-          101
+          104
         </td>
         <td>
-          2887
+          2863
         </td>
         <td>
-          3796
+          3916
           -
-          3826
+          3946
         </td>
         <td>
           Apply
@@ -1635,15 +1773,15 @@
         </td>
       </tr><tr>
         <td>
-          101
+          104
         </td>
         <td>
-          2886
+          2862
         </td>
         <td>
-          3796
+          3916
           -
-          3796
+          3916
         </td>
         <td>
           Select
@@ -1656,15 +1794,15 @@
         </td>
       </tr><tr>
         <td>
-          116
+          119
         </td>
         <td>
-          2888
+          2864
         </td>
         <td>
-          4414
+          4534
           -
-          4450
+          4570
         </td>
         <td>
           Apply
@@ -1677,15 +1815,15 @@
         </td>
       </tr><tr>
         <td>
-          116
+          119
         </td>
         <td>
-          2889
+          2865
         </td>
         <td>
-          4391
+          4511
           -
-          4451
+          4571
         </td>
         <td>
           Apply
@@ -1698,15 +1836,15 @@
         </td>
       </tr><tr>
         <td>
-          133
+          136
         </td>
         <td>
-          2893
+          2869
         </td>
         <td>
-          4888
+          5008
           -
-          5027
+          5147
         </td>
         <td>
           Apply
@@ -1758,15 +1896,15 @@ else
         </td>
       </tr><tr>
         <td>
-          134
+          137
         </td>
         <td>
-          2891
+          2867
         </td>
         <td>
-          5004
+          5124
           -
-          5025
+          5145
         </td>
         <td>
           Literal
@@ -1779,15 +1917,15 @@ else
         </td>
       </tr><tr>
         <td>
-          134
+          137
         </td>
         <td>
-          2890
+          2866
         </td>
         <td>
-          4960
+          5080
           -
-          4984
+          5104
         </td>
         <td>
           Select
@@ -1800,15 +1938,15 @@ else
         </td>
       </tr><tr>
         <td>
-          134
+          137
         </td>
         <td>
-          2892
+          2868
         </td>
         <td>
-          4960
+          5080
           -
-          5026
+          5146
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1860,15 +1998,15 @@ else
         </td>
       </tr><tr>
         <td>
-          151
+          154
         </td>
         <td>
-          2897
+          2873
         </td>
         <td>
-          5466
+          5586
           -
-          5601
+          5721
         </td>
         <td>
           Apply
@@ -1920,15 +2058,15 @@ else
         </td>
       </tr><tr>
         <td>
-          152
+          155
         </td>
         <td>
-          2894
+          2870
         </td>
         <td>
-          5536
+          5656
           -
-          5560
+          5680
         </td>
         <td>
           Select
@@ -1941,15 +2079,15 @@ else
         </td>
       </tr><tr>
         <td>
-          152
+          155
         </td>
         <td>
-          2896
+          2872
         </td>
         <td>
-          5536
+          5656
           -
-          5600
+          5720
         </td>
         <td>
           ApplyToImplicitArgs
@@ -2001,15 +2139,15 @@ else
         </td>
       </tr><tr>
         <td>
-          152
+          155
         </td>
         <td>
-          2895
+          2871
         </td>
         <td>
-          5580
+          5700
           -
-          5599
+          5719
         </td>
         <td>
           Literal
@@ -2022,15 +2160,15 @@ else
         </td>
       </tr><tr>
         <td>
-          164
+          167
         </td>
         <td>
-          2899
+          2875
         </td>
         <td>
-          5831
+          5951
           -
-          5874
+          5994
         </td>
         <td>
           Apply
@@ -2043,15 +2181,15 @@ else
         </td>
       </tr><tr>
         <td>
-          164
+          167
         </td>
         <td>
-          2898
+          2874
         </td>
         <td>
-          5861
+          5981
           -
-          5866
+          5986
         </td>
         <td>
           Apply
@@ -2064,15 +2202,15 @@ else
         </td>
       </tr><tr>
         <td>
-          173
+          176
         </td>
         <td>
-          2903
+          2879
         </td>
         <td>
-          6009
+          6129
           -
-          6091
+          6211
         </td>
         <td>
           Apply
@@ -2100,15 +2238,15 @@ else
         </td>
       </tr><tr>
         <td>
-          173
+          176
         </td>
         <td>
-          2900
+          2876
         </td>
         <td>
-          6023
+          6143
           -
-          6047
+          6167
         </td>
         <td>
           Select
@@ -2121,15 +2259,15 @@ else
         </td>
       </tr><tr>
         <td>
-          173
+          176
         </td>
         <td>
-          2902
+          2878
         </td>
         <td>
-          6023
+          6143
           -
-          6090
+          6210
         </td>
         <td>
           ApplyToImplicitArgs
@@ -2157,15 +2295,15 @@ else
         </td>
       </tr><tr>
         <td>
-          173
+          176
         </td>
         <td>
-          2901
+          2877
         </td>
         <td>
-          6070
+          6190
           -
-          6089
+          6209
         </td>
         <td>
           Literal
@@ -2178,15 +2316,15 @@ else
         </td>
       </tr><tr>
         <td>
-          182
+          185
         </td>
         <td>
-          2906
+          2882
         </td>
         <td>
-          6253
+          6373
           -
-          6323
+          6443
         </td>
         <td>
           ApplyToImplicitArgs
@@ -2226,15 +2364,15 @@ else
         </td>
       </tr><tr>
         <td>
-          182
+          185
         </td>
         <td>
-          2905
+          2881
         </td>
         <td>
-          6300
+          6420
           -
-          6322
+          6442
         </td>
         <td>
           Literal
@@ -2247,15 +2385,15 @@ else
         </td>
       </tr><tr>
         <td>
-          182
+          185
         </td>
         <td>
-          2904
+          2880
         </td>
         <td>
-          6253
+          6373
           -
-          6277
+          6397
         </td>
         <td>
           Select
@@ -2268,15 +2406,15 @@ else
         </td>
       </tr><tr>
         <td>
-          191
+          194
         </td>
         <td>
-          2909
+          2885
         </td>
         <td>
-          6485
+          6605
           -
-          6546
+          6666
         </td>
         <td>
           ApplyToImplicitArgs
@@ -2304,15 +2442,15 @@ else
         </td>
       </tr><tr>
         <td>
-          191
+          194
         </td>
         <td>
-          2908
+          2884
         </td>
         <td>
-          6532
+          6652
           -
-          6545
+          6665
         </td>
         <td>
           Literal
@@ -2325,15 +2463,15 @@ else
         </td>
       </tr><tr>
         <td>
-          191
+          194
         </td>
         <td>
-          2907
+          2883
         </td>
         <td>
-          6485
+          6605
           -
-          6509
+          6629
         </td>
         <td>
           Select
@@ -2342,6 +2480,84 @@ else
           play.api.Configuration.underlying
         </td>
         <td style="background: #AEF1AE">
+          configuration.underlying
+        </td>
+      </tr><tr>
+        <td>
+          203
+        </td>
+        <td>
+          2888
+        </td>
+        <td>
+          6819
+          -
+          6874
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          net.ceedubs.ficus.FicusConfig.as
+        </td>
+        <td style="background: #F0ADAD">
+          net.ceedubs.ficus.Ficus.toFicusConfig(configuration.underlying).as[whatson.service.geocoder.GeocoderConfig](&quot;geocoder&quot;)(({
+  final class $anon extends AnyRef with net.ceedubs.ficus.readers.ValueReader[whatson.service.geocoder.GeocoderConfig] {
+    def &lt;init&gt;(): &lt;$anon: net.ceedubs.ficus.readers.ValueReader[whatson.service.geocoder.GeocoderConfig]&gt; = {
+      $anon.super.&lt;init&gt;();
+      ()
+    };
+    def read(config: com.typesafe.config.Config, path: String): whatson.service.geocoder.GeocoderConfig = GeocoderConfig.apply(net.ceedubs.ficus.Ficus.stringValueReader.read(config, if (path.==(&quot;.&quot;))
+      net.ceedubs.ficus.readers.NameMapper.apply()(net.ceedubs.ficus.readers.NameMapper.apply$default$1()).map(&quot;url&quot;)
+    else
+      path.+(&quot;.&quot;).+(net.ceedubs.ficus.readers.NameMapper.apply()(net.ceedubs.ficus.readers.NameMapper.apply$default$1()).map(&quot;url&quot;))), net.ceedubs.ficus.Ficus.stringValueReader.read(config, if (path.==(&quot;.&quot;))
+      net.ceedubs.ficus.readers.NameMapper.apply()(net.ceedubs.ficus.readers.NameMapper.apply$default$1()).map(&quot;apiKey&quot;)
+    else
+      path.+(&quot;.&quot;).+(net.ceedubs.ficus.readers.NameMapper.apply()(net.ceedubs.ficus.readers.NameMapper.apply$default$1()).map(&quot;apiKey&quot;))))
+  };
+  new $anon()
+}: net.ceedubs.ficus.readers.ValueReader[whatson.service.geocoder.GeocoderConfig]))
+        </td>
+      </tr><tr>
+        <td>
+          203
+        </td>
+        <td>
+          2887
+        </td>
+        <td>
+          6863
+          -
+          6873
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;geocoder&quot;
+        </td>
+      </tr><tr>
+        <td>
+          203
+        </td>
+        <td>
+          2886
+        </td>
+        <td>
+          6819
+          -
+          6843
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.Configuration.underlying
+        </td>
+        <td style="background: #F0ADAD">
           configuration.underlying
         </td>
       </tr>

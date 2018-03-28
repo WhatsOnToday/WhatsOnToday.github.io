@@ -1,0 +1,294 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          whatson/service/geocoder/GeocoderImpl.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package whatson.service.geocoder
+</span>2 <span style=''>
+</span>3 <span style=''>import scala.concurrent.{ExecutionContext, Future}
+</span>4 <span style=''>
+</span>5 <span style=''>import javax.inject._
+</span>6 <span style=''>import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
+</span>7 <span style=''>import slick.jdbc.JdbcProfile
+</span>8 <span style=''>import slick.jdbc.PostgresProfile.api._
+</span>9 <span style=''>import whatson.db._
+</span>10 <span style=''>import whatson.db.LoginTable._
+</span>11 <span style=''>import whatson.db.Util._
+</span>12 <span style=''>import whatson.model._
+</span>13 <span style=''>import whatson.util._
+</span>14 <span style=''>import play.api.libs.ws._
+</span>15 <span style=''>import whatson.service.geocoder.Result
+</span>16 <span style=''>import whatson.service.geocoder.Result._
+</span>17 <span style=''>import play.api.libs.json.Json
+</span>18 <span style=''>
+</span>19 <span style=''>class GeocoderImpl @Inject()(protected val dbConfigProvider: DatabaseConfigProvider,
+</span>20 <span style=''>                             applicationConfig: ApplicationConfig,
+</span>21 <span style=''>                             ws: WSClient,
+</span>22 <span style=''>                             geoConfig: GeocoderConfig)
+</span>23 <span style=''>                          (implicit context: ExecutionContext)
+</span>24 <span style=''>    extends Geocoder {
+</span>25 <span style=''>
+</span>26 <span style=''>  def geocode(address: Geocoder.Address): Future[Result] = {
+</span>27 <span style=''>    val result = </span><span style='background: #F0ADAD'>ws.url(geoConfig.url)
+</span>28 <span style=''></span><span style='background: #F0ADAD'>      .addQueryStringParameters(&quot;address&quot; -&gt; address.toString, &quot;key&quot; -&gt; geoConfig.apiKey)
+</span>29 <span style=''></span><span style='background: #F0ADAD'>      .get()</span><span style=''>
+</span>30 <span style=''>
+</span>31 <span style=''>
+</span>32 <span style=''>    </span><span style='background: #F0ADAD'>result.map(x =&gt; x.json.validate[Result].get)</span><span style=''>
+</span>33 <span style=''>  }
+</span>34 <span style=''>
+</span>35 <span style=''>  def getPosition(address: Geocoder.Address): Future[Option[Location]] = </span><span style='background: #F0ADAD'>geocode(address)
+</span>36 <span style=''></span><span style='background: #F0ADAD'>    .map {
+</span>37 <span style=''></span><span style='background: #F0ADAD'>      case Result(loc :: _, &quot;OK&quot;, _) =&gt; Some(loc.geometry.location)
+</span>38 <span style=''></span><span style='background: #F0ADAD'>      case _ =&gt; None
+</span>39 <span style=''></span><span style='background: #F0ADAD'>    }</span><span style=''>
+</span>40 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          3579
+        </td>
+        <td>
+          930
+          -
+          1054
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          play.api.libs.ws.WSRequest.get
+        </td>
+        <td style="background: #F0ADAD">
+          GeocoderImpl.this.ws.url(GeocoderImpl.this.geoConfig.url).addQueryStringParameters(scala.Predef.ArrowAssoc[String](&quot;address&quot;).-&gt;[String](address.toString()), scala.Predef.ArrowAssoc[String](&quot;key&quot;).-&gt;[String](GeocoderImpl.this.geoConfig.apiKey)).get()
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          3582
+        </td>
+        <td>
+          1071
+          -
+          1071
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.service.geocoder.GeocoderImpl.context
+        </td>
+        <td style="background: #F0ADAD">
+          GeocoderImpl.this.context
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          3581
+        </td>
+        <td>
+          1077
+          -
+          1104
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.libs.json.JsResult.get
+        </td>
+        <td style="background: #F0ADAD">
+          x.json.validate[whatson.service.geocoder.Result](whatson.service.geocoder.Result.resultFormat).get
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          3580
+        </td>
+        <td>
+          1092
+          -
+          1092
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.service.geocoder.Result.resultFormat
+        </td>
+        <td style="background: #F0ADAD">
+          whatson.service.geocoder.Result.resultFormat
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          3583
+        </td>
+        <td>
+          1061
+          -
+          1105
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.concurrent.Future.map
+        </td>
+        <td style="background: #F0ADAD">
+          result.map[whatson.service.geocoder.Result](((x: play.api.libs.ws.WSResponse) =&gt; x.json.validate[whatson.service.geocoder.Result](whatson.service.geocoder.Result.resultFormat).get))(GeocoderImpl.this.context)
+        </td>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          3588
+        </td>
+        <td>
+          1184
+          -
+          1306
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.concurrent.Future.map
+        </td>
+        <td style="background: #F0ADAD">
+          GeocoderImpl.this.geocode(address).map[Option[whatson.service.geocoder.Location]](((x0$1: whatson.service.geocoder.Result) =&gt; x0$1 match {
+  case (results: List[whatson.service.geocoder.Address], status: String, error_message: Option[String])whatson.service.geocoder.Result((head: whatson.service.geocoder.Address, tl: List[whatson.service.geocoder.Address])scala.collection.immutable.::[whatson.service.geocoder.Address]((loc @ _), _), &quot;OK&quot;, _) =&gt; scala.Some.apply[whatson.service.geocoder.Location](loc.geometry.location)
+  case _ =&gt; scala.None
+}))(GeocoderImpl.this.context)
+        </td>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          3587
+        </td>
+        <td>
+          1210
+          -
+          1210
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.service.geocoder.GeocoderImpl.context
+        </td>
+        <td style="background: #F0ADAD">
+          GeocoderImpl.this.context
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          3585
+        </td>
+        <td>
+          1252
+          -
+          1279
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #F0ADAD">
+          scala.Some.apply[whatson.service.geocoder.Location](loc.geometry.location)
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          3584
+        </td>
+        <td>
+          1257
+          -
+          1278
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.service.geocoder.Geometry.location
+        </td>
+        <td style="background: #F0ADAD">
+          loc.geometry.location
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          3586
+        </td>
+        <td>
+          1296
+          -
+          1300
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #F0ADAD">
+          scala.None
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>
