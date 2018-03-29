@@ -34,33 +34,38 @@
 </span>10 <span style=''>
 </span>11 <span style=''>case class LocationDetail(id: Option[Int], name: String, latitude: Float, longitude: Float,
 </span>12 <span style=''>                          country: String, city: String, street: String,
-</span>13 <span style=''>                          avgRating: Option[Float], images: List[TaggedImage]) extends Rateable with WithTaggedImages
-</span>14 <span style=''>
-</span>15 <span style=''>object LocationDetail {
-</span>16 <span style=''>  implicit val locationDetailReads = Json.reads[LocationDetail]
-</span>17 <span style=''>  implicit val locationDetailWrites = Json.writes[LocationDetail]
+</span>13 <span style=''>                          avgRating: Option[Float], images: List[TaggedImage],
+</span>14 <span style=''>                          website: Option[String], phone: Option[String], comment: Option[String], 
+</span>15 <span style=''>                          link: Option[String]) extends Rateable with WithTaggedImages {
+</span>16 <span style=''>  def toLocation = </span><span style='background: #AEF1AE'>Location(id,name,latitude,longitude,country,city,street,website,phone,comment,link)</span><span style=''>
+</span>17 <span style=''>}
 </span>18 <span style=''>
-</span>19 <span style=''>  val tupled = (</span><span style='background: #F0ADAD'>this.apply</span><span style='background: #AEF1AE'> _).tupled</span><span style=''>
-</span>20 <span style=''>
-</span>21 <span style=''>  implicit class LocationDetailQuery(q: Query[LocationTable, Location, Seq]) {
-</span>22 <span style=''>    def detailed(implicit ec: ExecutionContext) = {
-</span>23 <span style=''>      val t = </span><span style='background: #AEF1AE'>q.map(x =&gt; (x,x.avgRating)).result.flatMap(y =&gt; {
-</span>24 <span style=''></span><span style='background: #AEF1AE'>        DBIO.sequence(y.map {
-</span>25 <span style=''></span><span style='background: #AEF1AE'>          case (location,avg) =&gt; {
-</span>26 <span style=''></span><span style='background: #AEF1AE'>            val imgTagged = LocationTable.location.filter(_.id === location.id).flatMap(_.taggedImages)
-</span>27 <span style=''></span><span style='background: #AEF1AE'>              .result.map(l =&gt; l.map(x =&gt; TaggedImage(x._2.id,x._1)))
-</span>28 <span style=''></span><span style='background: #AEF1AE'>
-</span>29 <span style=''></span><span style='background: #AEF1AE'>            imgTagged.map(o =&gt; {
-</span>30 <span style=''></span><span style='background: #AEF1AE'>                            LocationDetail(location.id, location.name, location.latitude, location.longitude,
-</span>31 <span style=''></span><span style='background: #AEF1AE'>                                           location.country, location.city, location.street, avg, o.toList)
-</span>32 <span style=''></span><span style='background: #AEF1AE'>            })
-</span>33 <span style=''></span><span style='background: #AEF1AE'>          }
-</span>34 <span style=''></span><span style='background: #AEF1AE'>        })
-</span>35 <span style=''></span><span style='background: #AEF1AE'>      })</span><span style=''>
-</span>36 <span style=''>      t
-</span>37 <span style=''>    }
-</span>38 <span style=''>  }
-</span>39 <span style=''>}
+</span>19 <span style=''>object LocationDetail {
+</span>20 <span style=''>  implicit val locationDetailReads = Json.reads[LocationDetail]
+</span>21 <span style=''>  implicit val locationDetailWrites = Json.writes[LocationDetail]
+</span>22 <span style=''>
+</span>23 <span style=''>  val tupled = (</span><span style='background: #F0ADAD'>this.apply</span><span style='background: #AEF1AE'> _).tupled</span><span style=''>
+</span>24 <span style=''>
+</span>25 <span style=''>  implicit class LocationDetailQuery(q: Query[LocationTable, Location, Seq]) {
+</span>26 <span style=''>    def detailed(implicit ec: ExecutionContext) = {
+</span>27 <span style=''>      val t = </span><span style='background: #AEF1AE'>q.map(x =&gt; (x,x.avgRating)).result.flatMap(y =&gt; {
+</span>28 <span style=''></span><span style='background: #AEF1AE'>        DBIO.sequence(y.map {
+</span>29 <span style=''></span><span style='background: #AEF1AE'>          case (location,avg) =&gt; {
+</span>30 <span style=''></span><span style='background: #AEF1AE'>            val imgTagged = LocationTable.location.filter(_.id === location.id).flatMap(_.taggedImages)
+</span>31 <span style=''></span><span style='background: #AEF1AE'>              .result.map(l =&gt; l.map(x =&gt; TaggedImage(x._2.id,x._1)))
+</span>32 <span style=''></span><span style='background: #AEF1AE'>
+</span>33 <span style=''></span><span style='background: #AEF1AE'>            imgTagged.map(o =&gt; {
+</span>34 <span style=''></span><span style='background: #AEF1AE'>                            LocationDetail(location.id, location.name, location.latitude, location.longitude,
+</span>35 <span style=''></span><span style='background: #AEF1AE'>                                           location.country, location.city, location.street, avg, o.toList,
+</span>36 <span style=''></span><span style='background: #AEF1AE'>                                           location.website, location.phone, location.comment, location.link)
+</span>37 <span style=''></span><span style='background: #AEF1AE'>            })
+</span>38 <span style=''></span><span style='background: #AEF1AE'>          }
+</span>39 <span style=''></span><span style='background: #AEF1AE'>        })
+</span>40 <span style=''></span><span style='background: #AEF1AE'>      })</span><span style=''>
+</span>41 <span style=''>      t
+</span>42 <span style=''>    }
+</span>43 <span style=''>  }
+</span>44 <span style=''>}
 </span></pre>
           </div>
           <div class="tab-pane" id="statementlist">
@@ -74,15 +79,290 @@
         <th>Code</th>
       </tr><tr>
         <td>
-          19
+          16
         </td>
         <td>
-          2646
+          2694
         </td>
         <td>
-          669
+          730
           -
-          679
+          735
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.model.detail.LocationDetail.phone
+        </td>
+        <td style="background: #AEF1AE">
+          LocationDetail.this.phone
+        </td>
+      </tr><tr>
+        <td>
+          16
+        </td>
+        <td>
+          2688
+        </td>
+        <td>
+          683
+          -
+          691
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.model.detail.LocationDetail.latitude
+        </td>
+        <td style="background: #AEF1AE">
+          LocationDetail.this.latitude
+        </td>
+      </tr><tr>
+        <td>
+          16
+        </td>
+        <td>
+          2697
+        </td>
+        <td>
+          666
+          -
+          749
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          whatson.model.Location.apply
+        </td>
+        <td style="background: #AEF1AE">
+          whatson.model.Location.apply(LocationDetail.this.id, LocationDetail.this.name, LocationDetail.this.latitude, LocationDetail.this.longitude, LocationDetail.this.country, LocationDetail.this.city, LocationDetail.this.street, LocationDetail.this.website, LocationDetail.this.phone, LocationDetail.this.comment, LocationDetail.this.link)
+        </td>
+      </tr><tr>
+        <td>
+          16
+        </td>
+        <td>
+          2690
+        </td>
+        <td>
+          702
+          -
+          709
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.model.detail.LocationDetail.country
+        </td>
+        <td style="background: #AEF1AE">
+          LocationDetail.this.country
+        </td>
+      </tr><tr>
+        <td>
+          16
+        </td>
+        <td>
+          2693
+        </td>
+        <td>
+          722
+          -
+          729
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.model.detail.LocationDetail.website
+        </td>
+        <td style="background: #AEF1AE">
+          LocationDetail.this.website
+        </td>
+      </tr><tr>
+        <td>
+          16
+        </td>
+        <td>
+          2687
+        </td>
+        <td>
+          678
+          -
+          682
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.model.detail.LocationDetail.name
+        </td>
+        <td style="background: #AEF1AE">
+          LocationDetail.this.name
+        </td>
+      </tr><tr>
+        <td>
+          16
+        </td>
+        <td>
+          2696
+        </td>
+        <td>
+          744
+          -
+          748
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.model.detail.LocationDetail.link
+        </td>
+        <td style="background: #AEF1AE">
+          LocationDetail.this.link
+        </td>
+      </tr><tr>
+        <td>
+          16
+        </td>
+        <td>
+          2695
+        </td>
+        <td>
+          736
+          -
+          743
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.model.detail.LocationDetail.comment
+        </td>
+        <td style="background: #AEF1AE">
+          LocationDetail.this.comment
+        </td>
+      </tr><tr>
+        <td>
+          16
+        </td>
+        <td>
+          2686
+        </td>
+        <td>
+          675
+          -
+          677
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.model.detail.LocationDetail.id
+        </td>
+        <td style="background: #AEF1AE">
+          LocationDetail.this.id
+        </td>
+      </tr><tr>
+        <td>
+          16
+        </td>
+        <td>
+          2689
+        </td>
+        <td>
+          692
+          -
+          701
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.model.detail.LocationDetail.longitude
+        </td>
+        <td style="background: #AEF1AE">
+          LocationDetail.this.longitude
+        </td>
+      </tr><tr>
+        <td>
+          16
+        </td>
+        <td>
+          2692
+        </td>
+        <td>
+          715
+          -
+          721
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.model.detail.LocationDetail.street
+        </td>
+        <td style="background: #AEF1AE">
+          LocationDetail.this.street
+        </td>
+      </tr><tr>
+        <td>
+          16
+        </td>
+        <td>
+          2691
+        </td>
+        <td>
+          710
+          -
+          714
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.model.detail.LocationDetail.city
+        </td>
+        <td style="background: #AEF1AE">
+          LocationDetail.this.city
+        </td>
+      </tr><tr>
+        <td>
+          23
+        </td>
+        <td>
+          2699
+        </td>
+        <td>
+          924
+          -
+          944
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Function13.tupled
+        </td>
+        <td style="background: #AEF1AE">
+          {
+  ((id: Option[Int], name: String, latitude: Float, longitude: Float, country: String, city: String, street: String, avgRating: Option[Float], images: List[whatson.model.detail.TaggedImage], website: Option[String], phone: Option[String], comment: Option[String], link: Option[String]) =&gt; this.apply(id, name, latitude, longitude, country, city, street, avgRating, images, website, phone, comment, link))
+}.tupled
+        </td>
+      </tr><tr>
+        <td>
+          23
+        </td>
+        <td>
+          2698
+        </td>
+        <td>
+          924
+          -
+          934
         </td>
         <td>
           Apply
@@ -91,42 +371,19 @@
           whatson.model.detail.LocationDetail.apply
         </td>
         <td style="background: #F0ADAD">
-          this.apply(id, name, latitude, longitude, country, city, street, avgRating, images)
+          this.apply(id, name, latitude, longitude, country, city, street, avgRating, images, website, phone, comment, link)
         </td>
       </tr><tr>
         <td>
-          19
+          27
         </td>
         <td>
-          2647
+          2700
         </td>
         <td>
-          669
+          1091
           -
-          689
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          scala.Function9.tupled
-        </td>
-        <td style="background: #AEF1AE">
-          {
-  ((id: Option[Int], name: String, latitude: Float, longitude: Float, country: String, city: String, street: String, avgRating: Option[Float], images: List[whatson.model.detail.TaggedImage]) =&gt; this.apply(id, name, latitude, longitude, country, city, street, avgRating, images))
-}.tupled
-        </td>
-      </tr><tr>
-        <td>
-          23
-        </td>
-        <td>
-          2648
-        </td>
-        <td>
-          836
-          -
-          1423
+          1788
         </td>
         <td>
           ApplyToImplicitArgs
@@ -138,7 +395,7 @@
           slick.jdbc.PostgresProfile.api.streamableQueryActionExtensionMethods[(whatson.model.Location, Option[Float]), Seq](LocationDetailQuery.this.q.map[(whatson.db.LocationTable, slick.lifted.Rep[Option[Float]]), (whatson.db.LocationTable, slick.lifted.Rep[Option[Float]]), (whatson.model.Location, Option[Float])](((x: whatson.db.LocationTable) =&gt; scala.Tuple2.apply[whatson.db.LocationTable, slick.lifted.Rep[Option[Float]]](x, x.avgRating)))(lifted.this.Shape.tuple2Shape[slick.lifted.FlatShapeLevel, whatson.db.LocationTable, slick.lifted.Rep[Option[Float]], whatson.model.Location, Option[Float], whatson.db.LocationTable, slick.lifted.Rep[Option[Float]]](lifted.this.Shape.tableShape[slick.lifted.FlatShapeLevel, whatson.model.Location, whatson.db.LocationTable](scala.Predef.$conforms[whatson.db.LocationTable]), lifted.this.Shape.optionShape[Float, Float, Float, Nothing](lifted.this.Shape.repColumnShape[Float, Nothing](slick.jdbc.PostgresProfile.api.floatColumnType))))).result.flatMap[Seq[whatson.model.detail.LocationDetail], slick.dbio.NoStream, slick.dbio.Effect.Read](((y: Seq[(whatson.model.Location, Option[Float])]) =&gt; slick.jdbc.PostgresProfile.api.DBIO.sequence[whatson.model.detail.LocationDetail, Seq, slick.dbio.Effect.Read](y.map[slick.dbio.DBIOAction[whatson.model.detail.LocationDetail,slick.dbio.NoStream,slick.dbio.Effect.Read], Seq[slick.dbio.DBIOAction[whatson.model.detail.LocationDetail,slick.dbio.NoStream,slick.dbio.Effect.Read]]](((x0$2: (whatson.model.Location, Option[Float])) =&gt; x0$2 match {
   case (_1: whatson.model.Location, _2: Option[Float])(whatson.model.Location, Option[Float])((location @ _), (avg @ _)) =&gt; {
     val imgTagged: slick.dbio.DBIOAction[Seq[whatson.model.detail.TaggedImage],slick.dbio.NoStream,slick.dbio.Effect.Read] = slick.jdbc.PostgresProfile.api.streamableQueryActionExtensionMethods[(Option[String], whatson.model.Image), Seq](whatson.db.LocationTable.location.filter[slick.lifted.Rep[Option[Boolean]]](((x$1: whatson.db.LocationTable) =&gt; slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](x$1.id)(slick.jdbc.PostgresProfile.api.intColumnType).===[Option[Int], Option[Boolean]](slick.jdbc.PostgresProfile.api.valueToConstColumn[Option[Int]](location.id)(ast.this.TypedType.typedTypeToOptionTypedType[Int](slick.jdbc.PostgresProfile.api.intColumnType)))(lifted.this.OptionMapper2.getOptionMapper2TO[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType))))(lifted.this.CanBeQueryCondition.BooleanOptionColumnCanBeQueryCondition).flatMap[(slick.lifted.Rep[Option[String]], whatson.db.ImageTable), (Option[String], whatson.model.Image), Seq](((x$2: whatson.db.LocationTable) =&gt; x$2.taggedImages))).result.map[Seq[whatson.model.detail.TaggedImage]](((l: Seq[(Option[String], whatson.model.Image)]) =&gt; l.map[whatson.model.detail.TaggedImage, Seq[whatson.model.detail.TaggedImage]](((x: (Option[String], whatson.model.Image)) =&gt; TaggedImage.apply(x._2.id, x._1)))(collection.this.Seq.canBuildFrom[whatson.model.detail.TaggedImage])))(ec);
-    imgTagged.map[whatson.model.detail.LocationDetail](((o: Seq[whatson.model.detail.TaggedImage]) =&gt; LocationDetail.apply(location.id, location.name, location.latitude, location.longitude, location.country, location.city, location.street, avg, o.toList)))(ec)
+    imgTagged.map[whatson.model.detail.LocationDetail](((o: Seq[whatson.model.detail.TaggedImage]) =&gt; LocationDetail.apply(location.id, location.name, location.latitude, location.longitude, location.country, location.city, location.street, avg, o.toList, location.website, location.phone, location.comment, location.link)))(ec)
   }
 }))(collection.this.Seq.canBuildFrom[slick.dbio.DBIOAction[whatson.model.detail.LocationDetail,slick.dbio.NoStream,slick.dbio.Effect.Read]]))(collection.this.Seq.canBuildFrom[whatson.model.detail.LocationDetail])))(ec)
         </td>
