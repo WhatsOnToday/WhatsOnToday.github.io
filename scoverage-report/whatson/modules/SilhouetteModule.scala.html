@@ -66,167 +66,143 @@
 </span>42 <span style=''>    </span><span style='background: #AEF1AE'>bind[IDGenerator].toInstance(new SecureRandomIDGenerator())</span><span style=''>
 </span>43 <span style=''>    </span><span style='background: #AEF1AE'>bind[AuthInfoRepository].to[AuthInfoService]</span><span style=''>
 </span>44 <span style=''>    </span><span style='background: #AEF1AE'>bind[LoginService].to[LoginServiceImpl]</span><span style=''>
-</span>45 <span style=''>    </span><span style='background: #AEF1AE'>bind[UserService].to[UserServiceImpl]</span><span style=''>
-</span>46 <span style=''>    </span><span style='background: #AEF1AE'>bind[OrganizerService].to[OrganizerServiceImpl]</span><span style=''>
-</span>47 <span style=''>    </span><span style='background: #AEF1AE'>bind[MailService].to[MailServiceImpl]</span><span style=''>
-</span>48 <span style=''>    </span><span style='background: #AEF1AE'>bind[EventService].to[EventServiceImpl]</span><span style=''>
-</span>49 <span style=''>    </span><span style='background: #AEF1AE'>bind[Geocoder].to[GeocoderImpl]</span><span style=''>
-</span>50 <span style=''>    </span><span style='background: #AEF1AE'>bind[LocationService].to[LocationServiceImpl]</span><span style=''>
-</span>51 <span style=''>  }
-</span>52 <span style=''>
-</span>53 <span style=''>  @Provides
-</span>54 <span style=''>  def provideHTTPLayer(client: WSClient): HTTPLayer = </span><span style='background: #AEF1AE'>new PlayHTTPLayer(client)</span><span style=''>
-</span>55 <span style=''>
-</span>56 <span style=''>  @Provides
-</span>57 <span style=''>  def provideEnvironment(
-</span>58 <span style=''>    authenticatorService: AuthenticatorService[JWTAuthenticator],
-</span>59 <span style=''>    eventBus: EventBus,
-</span>60 <span style=''>    loginService: LoginService
-</span>61 <span style=''>  ): Environment[AuthEnv] = {
-</span>62 <span style=''>    </span><span style='background: #AEF1AE'>Environment[AuthEnv](loginService, authenticatorService, Seq.empty, eventBus)</span><span style=''>
+</span>45 <span style=''>  }
+</span>46 <span style=''>
+</span>47 <span style=''>  @Provides
+</span>48 <span style=''>  def provideHTTPLayer(client: WSClient): HTTPLayer = </span><span style='background: #AEF1AE'>new PlayHTTPLayer(client)</span><span style=''>
+</span>49 <span style=''>
+</span>50 <span style=''>  @Provides
+</span>51 <span style=''>  def provideEnvironment(
+</span>52 <span style=''>    authenticatorService: AuthenticatorService[JWTAuthenticator],
+</span>53 <span style=''>    eventBus: EventBus,
+</span>54 <span style=''>    loginService: LoginService
+</span>55 <span style=''>  ): Environment[AuthEnv] = {
+</span>56 <span style=''>    </span><span style='background: #AEF1AE'>Environment[AuthEnv](loginService, authenticatorService, Seq.empty, eventBus)</span><span style=''>
+</span>57 <span style=''>  }
+</span>58 <span style=''>
+</span>59 <span style=''>  @Provides
+</span>60 <span style=''>  def provideAuthenticatorCrypter(): Crypter = {
+</span>61 <span style=''>    val settings = </span><span style='background: #AEF1AE'>JcaCrypterSettings(&quot;changeme&quot;)</span><span style=''>
+</span>62 <span style=''>    </span><span style='background: #AEF1AE'>new JcaCrypter(settings)</span><span style=''>
 </span>63 <span style=''>  }
 </span>64 <span style=''>
 </span>65 <span style=''>  @Provides
-</span>66 <span style=''>  def provideAuthenticatorCrypter(): Crypter = {
-</span>67 <span style=''>    val settings = </span><span style='background: #AEF1AE'>JcaCrypterSettings(&quot;changeme&quot;)</span><span style=''>
-</span>68 <span style=''>    </span><span style='background: #AEF1AE'>new JcaCrypter(settings)</span><span style=''>
-</span>69 <span style=''>  }
-</span>70 <span style=''>
-</span>71 <span style=''>  @Provides
-</span>72 <span style=''>  def provideCrypterAuthenticatorEncoder(crypter: Crypter): CrypterAuthenticatorEncoder = {
-</span>73 <span style=''>    </span><span style='background: #AEF1AE'>new CrypterAuthenticatorEncoder(crypter)</span><span style=''>
-</span>74 <span style=''>  }
-</span>75 <span style=''>
-</span>76 <span style=''>  @Provides
-</span>77 <span style=''>  def provideCrypterAuthenticatorEncoder(encoder: CrypterAuthenticatorEncoder): AuthenticatorEncoder = encoder
-</span>78 <span style=''>
-</span>79 <span style=''>  @Provides
-</span>80 <span style=''>  def provideJWTAuthenticatorSettings(): JWTAuthenticatorSettings = {
-</span>81 <span style=''>    </span><span style='background: #AEF1AE'>JWTAuthenticatorSettings(sharedSecret = &quot;changeme&quot;)</span><span style=''>
-</span>82 <span style=''>  }
-</span>83 <span style=''>
-</span>84 <span style=''>  @Provides
-</span>85 <span style=''>  def provideJWTAuthenticatorService(
-</span>86 <span style=''>    encoder: CrypterAuthenticatorEncoder, encoding: DefaultCookieHeaderEncoding,
-</span>87 <span style=''>    fpg: FingerprintGenerator, idg: IDGenerator, config: Configuration,
-</span>88 <span style=''>    clock: Clock, settings: JWTAuthenticatorSettings
-</span>89 <span style=''>  ): JWTAuthenticatorService = {
-</span>90 <span style=''>    </span><span style='background: #AEF1AE'>new JWTAuthenticatorService(settings,None,encoder,idg,clock)</span><span style=''>
-</span>91 <span style=''>  }
-</span>92 <span style=''>
-</span>93 <span style=''>  @Provides
-</span>94 <span style=''>  def provideAuthenticatorService(
-</span>95 <span style=''>    jwt: JWTAuthenticatorService): AuthenticatorService[JWTAuthenticator] = jwt
+</span>66 <span style=''>  def provideCrypterAuthenticatorEncoder(crypter: Crypter): CrypterAuthenticatorEncoder = {
+</span>67 <span style=''>    </span><span style='background: #AEF1AE'>new CrypterAuthenticatorEncoder(crypter)</span><span style=''>
+</span>68 <span style=''>  }
+</span>69 <span style=''>
+</span>70 <span style=''>  @Provides
+</span>71 <span style=''>  def provideCrypterAuthenticatorEncoder(encoder: CrypterAuthenticatorEncoder): AuthenticatorEncoder = encoder
+</span>72 <span style=''>
+</span>73 <span style=''>  @Provides
+</span>74 <span style=''>  def provideJWTAuthenticatorSettings(): JWTAuthenticatorSettings = {
+</span>75 <span style=''>    </span><span style='background: #AEF1AE'>JWTAuthenticatorSettings(sharedSecret = &quot;changeme&quot;)</span><span style=''>
+</span>76 <span style=''>  }
+</span>77 <span style=''>
+</span>78 <span style=''>  @Provides
+</span>79 <span style=''>  def provideJWTAuthenticatorService(
+</span>80 <span style=''>    encoder: CrypterAuthenticatorEncoder, encoding: DefaultCookieHeaderEncoding,
+</span>81 <span style=''>    fpg: FingerprintGenerator, idg: IDGenerator, config: Configuration,
+</span>82 <span style=''>    clock: Clock, settings: JWTAuthenticatorSettings
+</span>83 <span style=''>  ): JWTAuthenticatorService = {
+</span>84 <span style=''>    </span><span style='background: #AEF1AE'>new JWTAuthenticatorService(settings,None,encoder,idg,clock)</span><span style=''>
+</span>85 <span style=''>  }
+</span>86 <span style=''>
+</span>87 <span style=''>  @Provides
+</span>88 <span style=''>  def provideAuthenticatorService(
+</span>89 <span style=''>    jwt: JWTAuthenticatorService): AuthenticatorService[JWTAuthenticator] = jwt
+</span>90 <span style=''>
+</span>91 <span style=''>  @Provides
+</span>92 <span style=''>  def provideCredentialsProvider(authInfoRepository: AuthInfoRepository, passwordHasher: PasswordHasher): CredentialsProvider = {
+</span>93 <span style=''>    val passwordHasherRegisty = </span><span style='background: #AEF1AE'>PasswordHasherRegistry(passwordHasher)</span><span style=''>
+</span>94 <span style=''>    </span><span style='background: #AEF1AE'>new CredentialsProvider(authInfoRepository, passwordHasherRegisty)</span><span style=''>
+</span>95 <span style=''>  }
 </span>96 <span style=''>
 </span>97 <span style=''>  @Provides
-</span>98 <span style=''>  def provideCredentialsProvider(authInfoRepository: AuthInfoRepository, passwordHasher: PasswordHasher): CredentialsProvider = {
-</span>99 <span style=''>    val passwordHasherRegisty = </span><span style='background: #AEF1AE'>PasswordHasherRegistry(passwordHasher)</span><span style=''>
-</span>100 <span style=''>    </span><span style='background: #AEF1AE'>new CredentialsProvider(authInfoRepository, passwordHasherRegisty)</span><span style=''>
-</span>101 <span style=''>  }
-</span>102 <span style=''>
-</span>103 <span style=''>  @Provides
-</span>104 <span style=''>  def provideAvatarService(httpLayer: HTTPLayer): AvatarService = </span><span style='background: #AEF1AE'>new GravatarService(httpLayer)</span><span style=''>
-</span>105 <span style=''>
-</span>106 <span style=''>  /**
-</span>107 <span style=''>   * Provides the social provider registry.
-</span>108 <span style=''>   *
-</span>109 <span style=''>   * @param facebookProvider The Facebook provider implementation.
-</span>110 <span style=''>   * @param googleProvider The Google provider implementation.
-</span>111 <span style=''>   * @param vkProvider The VK provider implementation.
-</span>112 <span style=''>   * @param twitterProvider The Twitter provider implementation.
-</span>113 <span style=''>   * @param xingProvider The Xing provider implementation.
-</span>114 <span style=''>   * @return The Silhouette environment.
-</span>115 <span style=''>   */
-</span>116 <span style=''>  @Provides
-</span>117 <span style=''>  def provideSocialProviderRegistry(googleProvider: GoogleProvider,
-</span>118 <span style=''>    facebookProvider: FacebookProvider): SocialProviderRegistry = {
-</span>119 <span style=''>    </span><span style='background: #AEF1AE'>SocialProviderRegistry(Seq(facebookProvider,googleProvider))</span><span style=''>
-</span>120 <span style=''>  }
-</span>121 <span style=''>
-</span>122 <span style=''>   /**
-</span>123 <span style=''>   * Provides the Facebook provider.
-</span>124 <span style=''>   *
-</span>125 <span style=''>   * @param httpLayer The HTTP layer implementation.
-</span>126 <span style=''>   * @param stateProvider The OAuth2 state provider implementation.
-</span>127 <span style=''>   * @param configuration The Play configuration.
-</span>128 <span style=''>   * @return The Facebook provider.
-</span>129 <span style=''>   */
-</span>130 <span style=''>  @Provides
-</span>131 <span style=''>  def provideFacebookProvider(
-</span>132 <span style=''>    httpLayer: HTTPLayer,
-</span>133 <span style=''>    stateProvider: SocialStateHandler,
-</span>134 <span style=''>    configuration: Configuration): FacebookProvider = {
-</span>135 <span style=''>
-</span>136 <span style=''>    </span><span style='background: #AEF1AE'>new FacebookProvider(httpLayer, stateProvider,
-</span>137 <span style=''></span><span style='background: #AEF1AE'>                         configuration.underlying.as[OAuth2Settings](&quot;silhouette.facebook&quot;))</span><span style=''>
-</span>138 <span style=''>  }
-</span>139 <span style=''>
-</span>140 <span style=''>  /**
-</span>141 <span style=''>    * Provides the Facebook provider.
-</span>142 <span style=''>    *
-</span>143 <span style=''>    * @param httpLayer The HTTP layer implementation.
-</span>144 <span style=''>    * @param stateProvider The OAuth2 state provider implementation.
-</span>145 <span style=''>    * @param configuration The Play configuration.
-</span>146 <span style=''>    * @return The Facebook provider.
-</span>147 <span style=''>    */
-</span>148 <span style=''>  @Provides
-</span>149 <span style=''>  def provideGoogleProvider(
-</span>150 <span style=''>    httpLayer: HTTPLayer,
-</span>151 <span style=''>    stateProvider: SocialStateHandler,
-</span>152 <span style=''>    configuration: Configuration): GoogleProvider = {
-</span>153 <span style=''>
-</span>154 <span style=''>    </span><span style='background: #AEF1AE'>new GoogleProvider(httpLayer, stateProvider,
-</span>155 <span style=''></span><span style='background: #AEF1AE'>                         configuration.underlying.as[OAuth2Settings](&quot;silhouette.google&quot;))</span><span style=''>
-</span>156 <span style=''>  }
-</span>157 <span style=''>
-</span>158 <span style=''>  /**
-</span>159 <span style=''>    * Provides the SocialStateHandler.
-</span>160 <span style=''>    *
-</span>161 <span style=''>    */
-</span>162 <span style=''>  @Provides
-</span>163 <span style=''>  def provideSocialStateHandler(
-</span>164 <span style=''>    csrfHandler: CsrfStateItemHandler,
-</span>165 <span style=''>    signer: Signer,
-</span>166 <span style=''>    configuration: Configuration): SocialStateHandler = {
-</span>167 <span style=''>    </span><span style='background: #AEF1AE'>new DefaultSocialStateHandler(Set(),signer)</span><span style=''>
-</span>168 <span style=''>  }
-</span>169 <span style=''>
-</span>170 <span style=''>  /**
-</span>171 <span style=''>    * Provides the JcaSigner.
-</span>172 <span style=''>    */
-</span>173 <span style=''>  @Provides
-</span>174 <span style=''>  def provideJcaSigner(
-</span>175 <span style=''>    configuration: Configuration): Signer = {
-</span>176 <span style=''>    </span><span style='background: #AEF1AE'>new JcaSigner(configuration.underlying.as[JcaSignerSettings](&quot;silhouette.signer&quot;))</span><span style=''>
-</span>177 <span style=''>  }
-</span>178 <span style=''>
-</span>179 <span style=''>  /**
-</span>180 <span style=''>    * Provides the CsrfStateSettings.
-</span>181 <span style=''>    */
-</span>182 <span style=''>  @Provides
-</span>183 <span style=''>  def provideCsrfStateSettings(
-</span>184 <span style=''>    configuration: Configuration): CsrfStateSettings = {
-</span>185 <span style=''>    </span><span style='background: #AEF1AE'>configuration.underlying.as[CsrfStateSettings](&quot;silhouette.csrfState&quot;)</span><span style=''>
-</span>186 <span style=''>  }
-</span>187 <span style=''>
-</span>188 <span style=''>  /**
-</span>189 <span style=''>    * Provides the ApplicationConfig.
-</span>190 <span style=''>    */
-</span>191 <span style=''>  @Provides
-</span>192 <span style=''>  def provideApplicationConfig(
-</span>193 <span style=''>    configuration: Configuration): ApplicationConfig = {
-</span>194 <span style=''>    </span><span style='background: #AEF1AE'>configuration.underlying.as[ApplicationConfig](&quot;application&quot;)</span><span style=''>
-</span>195 <span style=''>  }
-</span>196 <span style=''>
-</span>197 <span style=''>  /**
-</span>198 <span style=''>    * Provides the GeocoderConfig.
-</span>199 <span style=''>    */
-</span>200 <span style=''>  @Provides
-</span>201 <span style=''>  def provideGeocoderConfig(
-</span>202 <span style=''>    configuration: Configuration): GeocoderConfig = {
-</span>203 <span style=''>    </span><span style='background: #F0ADAD'>configuration.underlying.as[GeocoderConfig](&quot;geocoder&quot;)</span><span style=''>
-</span>204 <span style=''>  }
-</span>205 <span style=''>}
+</span>98 <span style=''>  def provideAvatarService(httpLayer: HTTPLayer): AvatarService = </span><span style='background: #AEF1AE'>new GravatarService(httpLayer)</span><span style=''>
+</span>99 <span style=''>
+</span>100 <span style=''>  /**
+</span>101 <span style=''>   * Provides the social provider registry.
+</span>102 <span style=''>   *
+</span>103 <span style=''>   * @param facebookProvider The Facebook provider implementation.
+</span>104 <span style=''>   * @param googleProvider The Google provider implementation.
+</span>105 <span style=''>   * @param vkProvider The VK provider implementation.
+</span>106 <span style=''>   * @param twitterProvider The Twitter provider implementation.
+</span>107 <span style=''>   * @param xingProvider The Xing provider implementation.
+</span>108 <span style=''>   * @return The Silhouette environment.
+</span>109 <span style=''>   */
+</span>110 <span style=''>  @Provides
+</span>111 <span style=''>  def provideSocialProviderRegistry(googleProvider: GoogleProvider,
+</span>112 <span style=''>    facebookProvider: FacebookProvider): SocialProviderRegistry = {
+</span>113 <span style=''>    </span><span style='background: #AEF1AE'>SocialProviderRegistry(Seq(facebookProvider,googleProvider))</span><span style=''>
+</span>114 <span style=''>  }
+</span>115 <span style=''>
+</span>116 <span style=''>   /**
+</span>117 <span style=''>   * Provides the Facebook provider.
+</span>118 <span style=''>   *
+</span>119 <span style=''>   * @param httpLayer The HTTP layer implementation.
+</span>120 <span style=''>   * @param stateProvider The OAuth2 state provider implementation.
+</span>121 <span style=''>   * @param configuration The Play configuration.
+</span>122 <span style=''>   * @return The Facebook provider.
+</span>123 <span style=''>   */
+</span>124 <span style=''>  @Provides
+</span>125 <span style=''>  def provideFacebookProvider(
+</span>126 <span style=''>    httpLayer: HTTPLayer,
+</span>127 <span style=''>    stateProvider: SocialStateHandler,
+</span>128 <span style=''>    configuration: Configuration): FacebookProvider = {
+</span>129 <span style=''>
+</span>130 <span style=''>    </span><span style='background: #AEF1AE'>new FacebookProvider(httpLayer, stateProvider,
+</span>131 <span style=''></span><span style='background: #AEF1AE'>                         configuration.underlying.as[OAuth2Settings](&quot;silhouette.facebook&quot;))</span><span style=''>
+</span>132 <span style=''>  }
+</span>133 <span style=''>
+</span>134 <span style=''>  /**
+</span>135 <span style=''>    * Provides the Facebook provider.
+</span>136 <span style=''>    *
+</span>137 <span style=''>    * @param httpLayer The HTTP layer implementation.
+</span>138 <span style=''>    * @param stateProvider The OAuth2 state provider implementation.
+</span>139 <span style=''>    * @param configuration The Play configuration.
+</span>140 <span style=''>    * @return The Facebook provider.
+</span>141 <span style=''>    */
+</span>142 <span style=''>  @Provides
+</span>143 <span style=''>  def provideGoogleProvider(
+</span>144 <span style=''>    httpLayer: HTTPLayer,
+</span>145 <span style=''>    stateProvider: SocialStateHandler,
+</span>146 <span style=''>    configuration: Configuration): GoogleProvider = {
+</span>147 <span style=''>
+</span>148 <span style=''>    </span><span style='background: #AEF1AE'>new GoogleProvider(httpLayer, stateProvider,
+</span>149 <span style=''></span><span style='background: #AEF1AE'>                         configuration.underlying.as[OAuth2Settings](&quot;silhouette.google&quot;))</span><span style=''>
+</span>150 <span style=''>  }
+</span>151 <span style=''>
+</span>152 <span style=''>  /**
+</span>153 <span style=''>    * Provides the SocialStateHandler.
+</span>154 <span style=''>    *
+</span>155 <span style=''>    */
+</span>156 <span style=''>  @Provides
+</span>157 <span style=''>  def provideSocialStateHandler(
+</span>158 <span style=''>    csrfHandler: CsrfStateItemHandler,
+</span>159 <span style=''>    signer: Signer,
+</span>160 <span style=''>    configuration: Configuration): SocialStateHandler = {
+</span>161 <span style=''>    </span><span style='background: #AEF1AE'>new DefaultSocialStateHandler(Set(),signer)</span><span style=''>
+</span>162 <span style=''>  }
+</span>163 <span style=''>
+</span>164 <span style=''>  /**
+</span>165 <span style=''>    * Provides the JcaSigner.
+</span>166 <span style=''>    */
+</span>167 <span style=''>  @Provides
+</span>168 <span style=''>  def provideJcaSigner(
+</span>169 <span style=''>    configuration: Configuration): Signer = {
+</span>170 <span style=''>    </span><span style='background: #AEF1AE'>new JcaSigner(configuration.underlying.as[JcaSignerSettings](&quot;silhouette.signer&quot;))</span><span style=''>
+</span>171 <span style=''>  }
+</span>172 <span style=''>
+</span>173 <span style=''>  /**
+</span>174 <span style=''>    * Provides the CsrfStateSettings.
+</span>175 <span style=''>    */
+</span>176 <span style=''>  @Provides
+</span>177 <span style=''>  def provideCsrfStateSettings(
+</span>178 <span style=''>    configuration: Configuration): CsrfStateSettings = {
+</span>179 <span style=''>    </span><span style='background: #AEF1AE'>configuration.underlying.as[CsrfStateSettings](&quot;silhouette.csrfState&quot;)</span><span style=''>
+</span>180 <span style=''>  }
+</span>181 <span style=''>}
 </span></pre>
           </div>
           <div class="tab-pane" id="statementlist">
@@ -243,70 +219,7 @@
           36
         </td>
         <td>
-          2954
-        </td>
-        <td>
-          1444
-          -
-          1444
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          scala.reflect.ManifestFactory.classType
-        </td>
-        <td style="background: #AEF1AE">
-          scala.reflect.ManifestFactory.classType[whatson.auth.AuthEnv](classOf[whatson.auth.AuthEnv])
-        </td>
-      </tr><tr>
-        <td>
-          36
-        </td>
-        <td>
-          2951
-        </td>
-        <td>
-          1420
-          -
-          1420
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          scala.reflect.ManifestFactory.classType
-        </td>
-        <td style="background: #AEF1AE">
-          scala.reflect.ManifestFactory.classType[whatson.auth.AuthEnv](classOf[whatson.auth.AuthEnv])
-        </td>
-      </tr><tr>
-        <td>
-          36
-        </td>
-        <td>
-          2953
-        </td>
-        <td>
-          1444
-          -
-          1444
-        </td>
-        <td>
-          Literal
-        </td>
-        <td>
-          &lt;nosymbol&gt;
-        </td>
-        <td style="background: #AEF1AE">
-          classOf[com.mohiva.play.silhouette.api.SilhouetteProvider]
-        </td>
-      </tr><tr>
-        <td>
-          36
-        </td>
-        <td>
-          2956
+          2981
         </td>
         <td>
           1416
@@ -327,7 +240,7 @@
           36
         </td>
         <td>
-          2950
+          2975
         </td>
         <td>
           1420
@@ -348,7 +261,28 @@
           36
         </td>
         <td>
-          2952
+          2978
+        </td>
+        <td>
+          1444
+          -
+          1444
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          classOf[com.mohiva.play.silhouette.api.SilhouetteProvider]
+        </td>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          2977
         </td>
         <td>
           1420
@@ -369,7 +303,7 @@
           36
         </td>
         <td>
-          2955
+          2980
         </td>
         <td>
           1444
@@ -387,15 +321,15 @@
         </td>
       </tr><tr>
         <td>
-          38
+          36
         </td>
         <td>
-          2957
+          2976
         </td>
         <td>
-          1483
+          1420
           -
-          1483
+          1420
         </td>
         <td>
           Apply
@@ -404,35 +338,35 @@
           scala.reflect.ManifestFactory.classType
         </td>
         <td style="background: #AEF1AE">
-          scala.reflect.ManifestFactory.classType[com.mohiva.play.silhouette.api.util.PasswordHasher](classOf[com.mohiva.play.silhouette.api.util.PasswordHasher])
+          scala.reflect.ManifestFactory.classType[whatson.auth.AuthEnv](classOf[whatson.auth.AuthEnv])
         </td>
       </tr><tr>
         <td>
-          38
+          36
         </td>
         <td>
-          2960
+          2979
         </td>
         <td>
-          1479
+          1444
           -
-          1538
+          1444
         </td>
         <td>
           Apply
         </td>
         <td>
-          net.codingwell.scalaguice.binder.LinkedBindingBuilderProxy.toInstance
+          scala.reflect.ManifestFactory.classType
         </td>
         <td style="background: #AEF1AE">
-          SilhouetteModule.this.bind[com.mohiva.play.silhouette.api.util.PasswordHasher](scala.reflect.ManifestFactory.classType[com.mohiva.play.silhouette.api.util.PasswordHasher](classOf[com.mohiva.play.silhouette.api.util.PasswordHasher])).toInstance(new com.mohiva.play.silhouette.password.BCryptPasswordHasher(password.this.BCryptPasswordHasher.&lt;init&gt;$default$1))
+          scala.reflect.ManifestFactory.classType[whatson.auth.AuthEnv](classOf[whatson.auth.AuthEnv])
         </td>
       </tr><tr>
         <td>
           38
         </td>
         <td>
-          2959
+          2984
         </td>
         <td>
           1511
@@ -453,7 +387,7 @@
           38
         </td>
         <td>
-          2958
+          2983
         </td>
         <td>
           1511
@@ -471,15 +405,15 @@
         </td>
       </tr><tr>
         <td>
-          39
+          38
         </td>
         <td>
-          2963
+          2985
         </td>
         <td>
-          1543
+          1479
           -
-          1620
+          1538
         </td>
         <td>
           Apply
@@ -488,14 +422,35 @@
           net.codingwell.scalaguice.binder.LinkedBindingBuilderProxy.toInstance
         </td>
         <td style="background: #AEF1AE">
-          SilhouetteModule.this.bind[com.mohiva.play.silhouette.api.util.FingerprintGenerator](scala.reflect.ManifestFactory.classType[com.mohiva.play.silhouette.api.util.FingerprintGenerator](classOf[com.mohiva.play.silhouette.api.util.FingerprintGenerator])).toInstance(new com.mohiva.play.silhouette.impl.util.DefaultFingerprintGenerator(false))
+          SilhouetteModule.this.bind[com.mohiva.play.silhouette.api.util.PasswordHasher](scala.reflect.ManifestFactory.classType[com.mohiva.play.silhouette.api.util.PasswordHasher](classOf[com.mohiva.play.silhouette.api.util.PasswordHasher])).toInstance(new com.mohiva.play.silhouette.password.BCryptPasswordHasher(password.this.BCryptPasswordHasher.&lt;init&gt;$default$1))
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          2982
+        </td>
+        <td>
+          1483
+          -
+          1483
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.reflect.ManifestFactory.classType
+        </td>
+        <td style="background: #AEF1AE">
+          scala.reflect.ManifestFactory.classType[com.mohiva.play.silhouette.api.util.PasswordHasher](classOf[com.mohiva.play.silhouette.api.util.PasswordHasher])
         </td>
       </tr><tr>
         <td>
           39
         </td>
         <td>
-          2962
+          2987
         </td>
         <td>
           1581
@@ -516,7 +471,7 @@
           39
         </td>
         <td>
-          2961
+          2986
         </td>
         <td>
           1547
@@ -534,15 +489,15 @@
         </td>
       </tr><tr>
         <td>
-          40
+          39
         </td>
         <td>
-          2966
+          2988
         </td>
         <td>
-          1625
+          1543
           -
-          1662
+          1620
         </td>
         <td>
           Apply
@@ -551,14 +506,14 @@
           net.codingwell.scalaguice.binder.LinkedBindingBuilderProxy.toInstance
         </td>
         <td style="background: #AEF1AE">
-          SilhouetteModule.this.bind[com.mohiva.play.silhouette.api.EventBus](scala.reflect.ManifestFactory.classType[com.mohiva.play.silhouette.api.EventBus](classOf[com.mohiva.play.silhouette.api.EventBus])).toInstance(com.mohiva.play.silhouette.api.EventBus.apply())
+          SilhouetteModule.this.bind[com.mohiva.play.silhouette.api.util.FingerprintGenerator](scala.reflect.ManifestFactory.classType[com.mohiva.play.silhouette.api.util.FingerprintGenerator](classOf[com.mohiva.play.silhouette.api.util.FingerprintGenerator])).toInstance(new com.mohiva.play.silhouette.impl.util.DefaultFingerprintGenerator(false))
         </td>
       </tr><tr>
         <td>
           40
         </td>
         <td>
-          2965
+          2990
         </td>
         <td>
           1651
@@ -579,7 +534,7 @@
           40
         </td>
         <td>
-          2964
+          2989
         </td>
         <td>
           1629
@@ -597,15 +552,15 @@
         </td>
       </tr><tr>
         <td>
-          41
+          40
         </td>
         <td>
-          2969
+          2991
         </td>
         <td>
-          1667
+          1625
           -
-          1698
+          1662
         </td>
         <td>
           Apply
@@ -614,14 +569,14 @@
           net.codingwell.scalaguice.binder.LinkedBindingBuilderProxy.toInstance
         </td>
         <td style="background: #AEF1AE">
-          SilhouetteModule.this.bind[com.mohiva.play.silhouette.api.util.Clock](scala.reflect.ManifestFactory.classType[com.mohiva.play.silhouette.api.util.Clock](classOf[com.mohiva.play.silhouette.api.util.Clock])).toInstance(com.mohiva.play.silhouette.api.util.Clock.apply())
+          SilhouetteModule.this.bind[com.mohiva.play.silhouette.api.EventBus](scala.reflect.ManifestFactory.classType[com.mohiva.play.silhouette.api.EventBus](classOf[com.mohiva.play.silhouette.api.EventBus])).toInstance(com.mohiva.play.silhouette.api.EventBus.apply())
         </td>
       </tr><tr>
         <td>
           41
         </td>
         <td>
-          2968
+          2993
         </td>
         <td>
           1690
@@ -642,7 +597,7 @@
           41
         </td>
         <td>
-          2967
+          2992
         </td>
         <td>
           1671
@@ -660,52 +615,31 @@
         </td>
       </tr><tr>
         <td>
-          42
+          41
         </td>
         <td>
-          2972
+          2994
         </td>
         <td>
-          1732
+          1667
           -
-          1732
+          1698
         </td>
         <td>
-          Select
+          Apply
         </td>
         <td>
-          play.api.libs.concurrent.Execution.Implicits.defaultContext
+          net.codingwell.scalaguice.binder.LinkedBindingBuilderProxy.toInstance
         </td>
         <td style="background: #AEF1AE">
-          play.api.libs.concurrent.Execution.Implicits.defaultContext
+          SilhouetteModule.this.bind[com.mohiva.play.silhouette.api.util.Clock](scala.reflect.ManifestFactory.classType[com.mohiva.play.silhouette.api.util.Clock](classOf[com.mohiva.play.silhouette.api.util.Clock])).toInstance(com.mohiva.play.silhouette.api.util.Clock.apply())
         </td>
       </tr><tr>
         <td>
           42
         </td>
         <td>
-          2971
-        </td>
-        <td>
-          1732
-          -
-          1732
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          com.mohiva.play.silhouette.impl.util.SecureRandomIDGenerator.&lt;init&gt;$default$1
-        </td>
-        <td style="background: #AEF1AE">
-          util.this.SecureRandomIDGenerator.&lt;init&gt;$default$1
-        </td>
-      </tr><tr>
-        <td>
-          42
-        </td>
-        <td>
-          2974
+          2999
         </td>
         <td>
           1703
@@ -726,7 +660,28 @@
           42
         </td>
         <td>
-          2970
+          2996
+        </td>
+        <td>
+          1732
+          -
+          1732
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.mohiva.play.silhouette.impl.util.SecureRandomIDGenerator.&lt;init&gt;$default$1
+        </td>
+        <td style="background: #AEF1AE">
+          util.this.SecureRandomIDGenerator.&lt;init&gt;$default$1
+        </td>
+      </tr><tr>
+        <td>
+          42
+        </td>
+        <td>
+          2995
         </td>
         <td>
           1707
@@ -747,7 +702,7 @@
           42
         </td>
         <td>
-          2973
+          2998
         </td>
         <td>
           1732
@@ -765,31 +720,31 @@
         </td>
       </tr><tr>
         <td>
-          43
+          42
         </td>
         <td>
-          2975
+          2997
         </td>
         <td>
-          1771
+          1732
           -
-          1771
+          1732
         </td>
         <td>
-          Apply
+          Select
         </td>
         <td>
-          scala.reflect.ManifestFactory.classType
+          play.api.libs.concurrent.Execution.Implicits.defaultContext
         </td>
         <td style="background: #AEF1AE">
-          scala.reflect.ManifestFactory.classType[com.mohiva.play.silhouette.api.repositories.AuthInfoRepository](classOf[com.mohiva.play.silhouette.api.repositories.AuthInfoRepository])
+          play.api.libs.concurrent.Execution.Implicits.defaultContext
         </td>
       </tr><tr>
         <td>
           43
         </td>
         <td>
-          2977
+          3002
         </td>
         <td>
           1767
@@ -810,7 +765,7 @@
           43
         </td>
         <td>
-          2976
+          3001
         </td>
         <td>
           1794
@@ -828,15 +783,15 @@
         </td>
       </tr><tr>
         <td>
-          44
+          43
         </td>
         <td>
-          2978
+          3000
         </td>
         <td>
-          1820
+          1771
           -
-          1820
+          1771
         </td>
         <td>
           Apply
@@ -845,14 +800,14 @@
           scala.reflect.ManifestFactory.classType
         </td>
         <td style="background: #AEF1AE">
-          scala.reflect.ManifestFactory.classType[whatson.service.LoginService](classOf[whatson.service.LoginService])
+          scala.reflect.ManifestFactory.classType[com.mohiva.play.silhouette.api.repositories.AuthInfoRepository](classOf[com.mohiva.play.silhouette.api.repositories.AuthInfoRepository])
         </td>
       </tr><tr>
         <td>
           44
         </td>
         <td>
-          2980
+          3005
         </td>
         <td>
           1816
@@ -873,7 +828,7 @@
           44
         </td>
         <td>
-          2979
+          3004
         </td>
         <td>
           1837
@@ -891,15 +846,15 @@
         </td>
       </tr><tr>
         <td>
-          45
+          44
         </td>
         <td>
-          2981
+          3003
         </td>
         <td>
-          1864
+          1820
           -
-          1864
+          1820
         </td>
         <td>
           Apply
@@ -908,313 +863,19 @@
           scala.reflect.ManifestFactory.classType
         </td>
         <td style="background: #AEF1AE">
-          scala.reflect.ManifestFactory.classType[whatson.service.UserService](classOf[whatson.service.UserService])
+          scala.reflect.ManifestFactory.classType[whatson.service.LoginService](classOf[whatson.service.LoginService])
         </td>
       </tr><tr>
         <td>
-          45
+          44
         </td>
         <td>
-          2983
+          3006
         </td>
         <td>
-          1860
+          1837
           -
-          1897
-        </td>
-        <td>
-          ApplyToImplicitArgs
-        </td>
-        <td>
-          net.codingwell.scalaguice.ScalaModule.ScalaLinkedBindingBuilder.to
-        </td>
-        <td style="background: #AEF1AE">
-          SilhouetteModule.this.bind[whatson.service.UserService](scala.reflect.ManifestFactory.classType[whatson.service.UserService](classOf[whatson.service.UserService])).to[whatson.service.UserServiceImpl](scala.reflect.ManifestFactory.classType[whatson.service.UserServiceImpl](classOf[whatson.service.UserServiceImpl]))
-        </td>
-      </tr><tr>
-        <td>
-          45
-        </td>
-        <td>
-          2982
-        </td>
-        <td>
-          1880
-          -
-          1880
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          scala.reflect.ManifestFactory.classType
-        </td>
-        <td style="background: #AEF1AE">
-          scala.reflect.ManifestFactory.classType[whatson.service.UserServiceImpl](classOf[whatson.service.UserServiceImpl])
-        </td>
-      </tr><tr>
-        <td>
-          46
-        </td>
-        <td>
-          2984
-        </td>
-        <td>
-          1906
-          -
-          1906
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          scala.reflect.ManifestFactory.classType
-        </td>
-        <td style="background: #AEF1AE">
-          scala.reflect.ManifestFactory.classType[whatson.service.OrganizerService](classOf[whatson.service.OrganizerService])
-        </td>
-      </tr><tr>
-        <td>
-          46
-        </td>
-        <td>
-          2986
-        </td>
-        <td>
-          1902
-          -
-          1949
-        </td>
-        <td>
-          ApplyToImplicitArgs
-        </td>
-        <td>
-          net.codingwell.scalaguice.ScalaModule.ScalaLinkedBindingBuilder.to
-        </td>
-        <td style="background: #AEF1AE">
-          SilhouetteModule.this.bind[whatson.service.OrganizerService](scala.reflect.ManifestFactory.classType[whatson.service.OrganizerService](classOf[whatson.service.OrganizerService])).to[whatson.service.OrganizerServiceImpl](scala.reflect.ManifestFactory.classType[whatson.service.OrganizerServiceImpl](classOf[whatson.service.OrganizerServiceImpl]))
-        </td>
-      </tr><tr>
-        <td>
-          46
-        </td>
-        <td>
-          2985
-        </td>
-        <td>
-          1927
-          -
-          1927
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          scala.reflect.ManifestFactory.classType
-        </td>
-        <td style="background: #AEF1AE">
-          scala.reflect.ManifestFactory.classType[whatson.service.OrganizerServiceImpl](classOf[whatson.service.OrganizerServiceImpl])
-        </td>
-      </tr><tr>
-        <td>
-          47
-        </td>
-        <td>
-          2987
-        </td>
-        <td>
-          1958
-          -
-          1958
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          scala.reflect.ManifestFactory.classType
-        </td>
-        <td style="background: #AEF1AE">
-          scala.reflect.ManifestFactory.classType[whatson.service.MailService](classOf[whatson.service.MailService])
-        </td>
-      </tr><tr>
-        <td>
-          47
-        </td>
-        <td>
-          2989
-        </td>
-        <td>
-          1954
-          -
-          1991
-        </td>
-        <td>
-          ApplyToImplicitArgs
-        </td>
-        <td>
-          net.codingwell.scalaguice.ScalaModule.ScalaLinkedBindingBuilder.to
-        </td>
-        <td style="background: #AEF1AE">
-          SilhouetteModule.this.bind[whatson.service.MailService](scala.reflect.ManifestFactory.classType[whatson.service.MailService](classOf[whatson.service.MailService])).to[whatson.service.MailServiceImpl](scala.reflect.ManifestFactory.classType[whatson.service.MailServiceImpl](classOf[whatson.service.MailServiceImpl]))
-        </td>
-      </tr><tr>
-        <td>
-          47
-        </td>
-        <td>
-          2988
-        </td>
-        <td>
-          1974
-          -
-          1974
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          scala.reflect.ManifestFactory.classType
-        </td>
-        <td style="background: #AEF1AE">
-          scala.reflect.ManifestFactory.classType[whatson.service.MailServiceImpl](classOf[whatson.service.MailServiceImpl])
-        </td>
-      </tr><tr>
-        <td>
-          48
-        </td>
-        <td>
-          2990
-        </td>
-        <td>
-          2000
-          -
-          2000
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          scala.reflect.ManifestFactory.classType
-        </td>
-        <td style="background: #AEF1AE">
-          scala.reflect.ManifestFactory.classType[whatson.service.EventService](classOf[whatson.service.EventService])
-        </td>
-      </tr><tr>
-        <td>
-          48
-        </td>
-        <td>
-          2992
-        </td>
-        <td>
-          1996
-          -
-          2035
-        </td>
-        <td>
-          ApplyToImplicitArgs
-        </td>
-        <td>
-          net.codingwell.scalaguice.ScalaModule.ScalaLinkedBindingBuilder.to
-        </td>
-        <td style="background: #AEF1AE">
-          SilhouetteModule.this.bind[whatson.service.EventService](scala.reflect.ManifestFactory.classType[whatson.service.EventService](classOf[whatson.service.EventService])).to[whatson.service.EventServiceImpl](scala.reflect.ManifestFactory.classType[whatson.service.EventServiceImpl](classOf[whatson.service.EventServiceImpl]))
-        </td>
-      </tr><tr>
-        <td>
-          48
-        </td>
-        <td>
-          2991
-        </td>
-        <td>
-          2017
-          -
-          2017
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          scala.reflect.ManifestFactory.classType
-        </td>
-        <td style="background: #AEF1AE">
-          scala.reflect.ManifestFactory.classType[whatson.service.EventServiceImpl](classOf[whatson.service.EventServiceImpl])
-        </td>
-      </tr><tr>
-        <td>
-          49
-        </td>
-        <td>
-          2993
-        </td>
-        <td>
-          2044
-          -
-          2044
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          scala.reflect.ManifestFactory.classType
-        </td>
-        <td style="background: #AEF1AE">
-          scala.reflect.ManifestFactory.classType[whatson.service.geocoder.Geocoder](classOf[whatson.service.geocoder.Geocoder])
-        </td>
-      </tr><tr>
-        <td>
-          49
-        </td>
-        <td>
-          2995
-        </td>
-        <td>
-          2040
-          -
-          2071
-        </td>
-        <td>
-          ApplyToImplicitArgs
-        </td>
-        <td>
-          net.codingwell.scalaguice.ScalaModule.ScalaLinkedBindingBuilder.to
-        </td>
-        <td style="background: #AEF1AE">
-          SilhouetteModule.this.bind[whatson.service.geocoder.Geocoder](scala.reflect.ManifestFactory.classType[whatson.service.geocoder.Geocoder](classOf[whatson.service.geocoder.Geocoder])).to[whatson.service.geocoder.GeocoderImpl](scala.reflect.ManifestFactory.classType[whatson.service.geocoder.GeocoderImpl](classOf[whatson.service.geocoder.GeocoderImpl]))
-        </td>
-      </tr><tr>
-        <td>
-          49
-        </td>
-        <td>
-          2994
-        </td>
-        <td>
-          2057
-          -
-          2057
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          scala.reflect.ManifestFactory.classType
-        </td>
-        <td style="background: #AEF1AE">
-          scala.reflect.ManifestFactory.classType[whatson.service.geocoder.GeocoderImpl](classOf[whatson.service.geocoder.GeocoderImpl])
-        </td>
-      </tr><tr>
-        <td>
-          50
-        </td>
-        <td>
-          2999
-        </td>
-        <td>
-          2100
-          -
-          2100
+          1837
         </td>
         <td>
           Literal
@@ -1227,78 +888,15 @@
         </td>
       </tr><tr>
         <td>
-          50
+          48
         </td>
         <td>
-          2996
+          3008
         </td>
         <td>
-          2080
+          1927
           -
-          2080
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          scala.reflect.ManifestFactory.classType
-        </td>
-        <td style="background: #AEF1AE">
-          scala.reflect.ManifestFactory.classType[whatson.service.LocationService](classOf[whatson.service.LocationService])
-        </td>
-      </tr><tr>
-        <td>
-          50
-        </td>
-        <td>
-          2998
-        </td>
-        <td>
-          2076
-          -
-          2121
-        </td>
-        <td>
-          ApplyToImplicitArgs
-        </td>
-        <td>
-          net.codingwell.scalaguice.ScalaModule.ScalaLinkedBindingBuilder.to
-        </td>
-        <td style="background: #AEF1AE">
-          SilhouetteModule.this.bind[whatson.service.LocationService](scala.reflect.ManifestFactory.classType[whatson.service.LocationService](classOf[whatson.service.LocationService])).to[whatson.service.LocationServiceImpl](scala.reflect.ManifestFactory.classType[whatson.service.LocationServiceImpl](classOf[whatson.service.LocationServiceImpl]))
-        </td>
-      </tr><tr>
-        <td>
-          50
-        </td>
-        <td>
-          2997
-        </td>
-        <td>
-          2100
-          -
-          2100
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          scala.reflect.ManifestFactory.classType
-        </td>
-        <td style="background: #AEF1AE">
-          scala.reflect.ManifestFactory.classType[whatson.service.LocationServiceImpl](classOf[whatson.service.LocationServiceImpl])
-        </td>
-      </tr><tr>
-        <td>
-          54
-        </td>
-        <td>
-          3001
-        </td>
-        <td>
-          2193
-          -
-          2218
+          1952
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1311,15 +909,15 @@
         </td>
       </tr><tr>
         <td>
-          54
+          48
         </td>
         <td>
-          3000
+          3007
         </td>
         <td>
-          2193
+          1927
           -
-          2193
+          1927
         </td>
         <td>
           Select
@@ -1332,36 +930,15 @@
         </td>
       </tr><tr>
         <td>
-          62
+          56
         </td>
         <td>
-          3002
+          3011
         </td>
         <td>
-          2470
+          2147
           -
-          2479
-        </td>
-        <td>
-          TypeApply
-        </td>
-        <td>
-          scala.collection.generic.GenericCompanion.empty
-        </td>
-        <td style="background: #AEF1AE">
-          scala.collection.immutable.Seq.empty[Nothing]
-        </td>
-      </tr><tr>
-        <td>
-          62
-        </td>
-        <td>
-          3004
-        </td>
-        <td>
-          2413
-          -
-          2490
+          2224
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1374,15 +951,15 @@
         </td>
       </tr><tr>
         <td>
-          62
+          56
         </td>
         <td>
-          3003
+          3010
         </td>
         <td>
-          2433
+          2167
           -
-          2433
+          2167
         </td>
         <td>
           Select
@@ -1395,15 +972,36 @@
         </td>
       </tr><tr>
         <td>
-          67
+          56
         </td>
         <td>
-          3005
+          3009
         </td>
         <td>
-          2576
+          2204
           -
-          2606
+          2213
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.empty
+        </td>
+        <td style="background: #AEF1AE">
+          scala.collection.immutable.Seq.empty[Nothing]
+        </td>
+      </tr><tr>
+        <td>
+          61
+        </td>
+        <td>
+          3012
+        </td>
+        <td>
+          2310
+          -
+          2340
         </td>
         <td>
           Apply
@@ -1416,15 +1014,15 @@
         </td>
       </tr><tr>
         <td>
-          68
+          62
         </td>
         <td>
-          3006
+          3013
         </td>
         <td>
-          2611
+          2345
           -
-          2635
+          2369
         </td>
         <td>
           Apply
@@ -1437,15 +1035,15 @@
         </td>
       </tr><tr>
         <td>
-          73
+          67
         </td>
         <td>
-          3007
+          3014
         </td>
         <td>
-          2749
+          2483
           -
-          2789
+          2523
         </td>
         <td>
           Apply
@@ -1458,78 +1056,15 @@
         </td>
       </tr><tr>
         <td>
-          81
+          75
         </td>
         <td>
-          3008
+          3017
         </td>
         <td>
-          3045
+          2739
           -
-          3055
-        </td>
-        <td>
-          Literal
-        </td>
-        <td>
-          &lt;nosymbol&gt;
-        </td>
-        <td style="background: #AEF1AE">
-          &quot;changeme&quot;
-        </td>
-      </tr><tr>
-        <td>
-          81
-        </td>
-        <td>
-          3011
-        </td>
-        <td>
-          3005
-          -
-          3005
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          com.mohiva.play.silhouette.impl.authenticators.JWTAuthenticatorSettings.apply$default$3
-        </td>
-        <td style="background: #AEF1AE">
-          com.mohiva.play.silhouette.impl.authenticators.JWTAuthenticatorSettings.apply$default$3
-        </td>
-      </tr><tr>
-        <td>
-          81
-        </td>
-        <td>
-          3013
-        </td>
-        <td>
-          3005
-          -
-          3005
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          com.mohiva.play.silhouette.impl.authenticators.JWTAuthenticatorSettings.apply$default$5
-        </td>
-        <td style="background: #AEF1AE">
-          com.mohiva.play.silhouette.impl.authenticators.JWTAuthenticatorSettings.apply$default$5
-        </td>
-      </tr><tr>
-        <td>
-          81
-        </td>
-        <td>
-          3010
-        </td>
-        <td>
-          3005
-          -
-          3005
+          2739
         </td>
         <td>
           Select
@@ -1542,15 +1077,36 @@
         </td>
       </tr><tr>
         <td>
-          81
+          75
         </td>
         <td>
-          3009
+          3020
         </td>
         <td>
-          3005
+          2739
           -
-          3005
+          2739
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.mohiva.play.silhouette.impl.authenticators.JWTAuthenticatorSettings.apply$default$5
+        </td>
+        <td style="background: #AEF1AE">
+          com.mohiva.play.silhouette.impl.authenticators.JWTAuthenticatorSettings.apply$default$5
+        </td>
+      </tr><tr>
+        <td>
+          75
+        </td>
+        <td>
+          3016
+        </td>
+        <td>
+          2739
+          -
+          2739
         </td>
         <td>
           Select
@@ -1563,15 +1119,15 @@
         </td>
       </tr><tr>
         <td>
-          81
+          75
         </td>
         <td>
-          3012
+          3019
         </td>
         <td>
-          3005
+          2739
           -
-          3005
+          2739
         </td>
         <td>
           Select
@@ -1584,15 +1140,36 @@
         </td>
       </tr><tr>
         <td>
-          81
+          75
         </td>
         <td>
-          3014
+          3018
         </td>
         <td>
-          3005
+          2739
           -
-          3056
+          2739
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.mohiva.play.silhouette.impl.authenticators.JWTAuthenticatorSettings.apply$default$3
+        </td>
+        <td style="background: #AEF1AE">
+          com.mohiva.play.silhouette.impl.authenticators.JWTAuthenticatorSettings.apply$default$3
+        </td>
+      </tr><tr>
+        <td>
+          75
+        </td>
+        <td>
+          3021
+        </td>
+        <td>
+          2739
+          -
+          2790
         </td>
         <td>
           Apply
@@ -1605,15 +1182,57 @@
         </td>
       </tr><tr>
         <td>
-          90
+          75
         </td>
         <td>
-          3017
+          3015
         </td>
         <td>
-          3355
+          2779
           -
-          3415
+          2789
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;changeme&quot;
+        </td>
+      </tr><tr>
+        <td>
+          84
+        </td>
+        <td>
+          3022
+        </td>
+        <td>
+          3126
+          -
+          3130
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #AEF1AE">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          84
+        </td>
+        <td>
+          3024
+        </td>
+        <td>
+          3089
+          -
+          3149
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1626,15 +1245,15 @@
         </td>
       </tr><tr>
         <td>
-          90
+          84
         </td>
         <td>
-          3016
+          3023
         </td>
         <td>
-          3355
+          3089
           -
-          3355
+          3089
         </td>
         <td>
           Select
@@ -1647,36 +1266,15 @@
         </td>
       </tr><tr>
         <td>
-          90
+          93
         </td>
         <td>
-          3015
+          3026
         </td>
         <td>
-          3392
+          3457
           -
-          3396
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          scala.None
-        </td>
-        <td style="background: #AEF1AE">
-          scala.None
-        </td>
-      </tr><tr>
-        <td>
-          99
-        </td>
-        <td>
-          3019
-        </td>
-        <td>
-          3723
-          -
-          3761
+          3495
         </td>
         <td>
           Apply
@@ -1689,15 +1287,15 @@
         </td>
       </tr><tr>
         <td>
-          99
+          93
         </td>
         <td>
-          3018
+          3025
         </td>
         <td>
-          3723
+          3457
           -
-          3723
+          3457
         </td>
         <td>
           Select
@@ -1710,36 +1308,15 @@
         </td>
       </tr><tr>
         <td>
-          100
+          94
         </td>
         <td>
-          3020
+          3028
         </td>
         <td>
-          3766
+          3500
           -
-          3766
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          play.api.libs.concurrent.Execution.Implicits.defaultContext
-        </td>
-        <td style="background: #AEF1AE">
-          play.api.libs.concurrent.Execution.Implicits.defaultContext
-        </td>
-      </tr><tr>
-        <td>
-          100
-        </td>
-        <td>
-          3021
-        </td>
-        <td>
-          3766
-          -
-          3832
+          3566
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1752,15 +1329,36 @@
         </td>
       </tr><tr>
         <td>
-          104
+          94
         </td>
         <td>
-          3022
+          3027
         </td>
         <td>
-          3916
+          3500
           -
-          3916
+          3500
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.libs.concurrent.Execution.Implicits.defaultContext
+        </td>
+        <td style="background: #AEF1AE">
+          play.api.libs.concurrent.Execution.Implicits.defaultContext
+        </td>
+      </tr><tr>
+        <td>
+          98
+        </td>
+        <td>
+          3029
+        </td>
+        <td>
+          3650
+          -
+          3650
         </td>
         <td>
           Select
@@ -1773,15 +1371,15 @@
         </td>
       </tr><tr>
         <td>
-          104
+          98
         </td>
         <td>
-          3023
+          3030
         </td>
         <td>
-          3916
+          3650
           -
-          3946
+          3680
         </td>
         <td>
           Apply
@@ -1794,36 +1392,15 @@
         </td>
       </tr><tr>
         <td>
-          119
+          113
         </td>
         <td>
-          3025
+          3031
         </td>
         <td>
-          4511
+          4268
           -
-          4571
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          com.mohiva.play.silhouette.impl.providers.SocialProviderRegistry.apply
-        </td>
-        <td style="background: #AEF1AE">
-          com.mohiva.play.silhouette.impl.providers.SocialProviderRegistry.apply(scala.collection.immutable.Seq.apply[com.mohiva.play.silhouette.impl.providers.OAuth2Provider with com.mohiva.play.silhouette.impl.providers.CommonSocialProfileBuilder{def withSettings(f: this.Settings =&gt; this.Settings): com.mohiva.play.silhouette.impl.providers.OAuth2Provider with com.mohiva.play.silhouette.impl.providers.CommonSocialProfileBuilder; type Self &gt;: com.mohiva.play.silhouette.impl.providers.oauth2.GoogleProvider with com.mohiva.play.silhouette.impl.providers.oauth2.FacebookProvider &lt;: com.mohiva.play.silhouette.impl.providers.OAuth2Provider with com.mohiva.play.silhouette.impl.providers.CommonSocialProfileBuilder; type Content &lt;: play.api.libs.json.JsValue}](facebookProvider, googleProvider))
-        </td>
-      </tr><tr>
-        <td>
-          119
-        </td>
-        <td>
-          3024
-        </td>
-        <td>
-          4534
-          -
-          4570
+          4304
         </td>
         <td>
           Apply
@@ -1836,15 +1413,36 @@
         </td>
       </tr><tr>
         <td>
-          136
+          113
         </td>
         <td>
-          3029
+          3032
         </td>
         <td>
-          5008
+          4245
           -
-          5147
+          4305
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.mohiva.play.silhouette.impl.providers.SocialProviderRegistry.apply
+        </td>
+        <td style="background: #AEF1AE">
+          com.mohiva.play.silhouette.impl.providers.SocialProviderRegistry.apply(scala.collection.immutable.Seq.apply[com.mohiva.play.silhouette.impl.providers.OAuth2Provider with com.mohiva.play.silhouette.impl.providers.CommonSocialProfileBuilder{def withSettings(f: this.Settings =&gt; this.Settings): com.mohiva.play.silhouette.impl.providers.OAuth2Provider with com.mohiva.play.silhouette.impl.providers.CommonSocialProfileBuilder; type Self &gt;: com.mohiva.play.silhouette.impl.providers.oauth2.GoogleProvider with com.mohiva.play.silhouette.impl.providers.oauth2.FacebookProvider &lt;: com.mohiva.play.silhouette.impl.providers.OAuth2Provider with com.mohiva.play.silhouette.impl.providers.CommonSocialProfileBuilder; type Content &lt;: play.api.libs.json.JsValue}](facebookProvider, googleProvider))
+        </td>
+      </tr><tr>
+        <td>
+          130
+        </td>
+        <td>
+          3036
+        </td>
+        <td>
+          4742
+          -
+          4881
         </td>
         <td>
           Apply
@@ -1896,36 +1494,15 @@ else
         </td>
       </tr><tr>
         <td>
-          137
+          131
         </td>
         <td>
-          3026
+          3035
         </td>
         <td>
-          5080
+          4814
           -
-          5104
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          play.api.Configuration.underlying
-        </td>
-        <td style="background: #AEF1AE">
-          configuration.underlying
-        </td>
-      </tr><tr>
-        <td>
-          137
-        </td>
-        <td>
-          3028
-        </td>
-        <td>
-          5080
-          -
-          5146
+          4880
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1977,15 +1554,15 @@ else
         </td>
       </tr><tr>
         <td>
-          137
+          131
         </td>
         <td>
-          3027
+          3034
         </td>
         <td>
-          5124
+          4858
           -
-          5145
+          4879
         </td>
         <td>
           Literal
@@ -1998,15 +1575,36 @@ else
         </td>
       </tr><tr>
         <td>
-          154
+          131
         </td>
         <td>
           3033
         </td>
         <td>
-          5586
+          4814
           -
-          5721
+          4838
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.Configuration.underlying
+        </td>
+        <td style="background: #AEF1AE">
+          configuration.underlying
+        </td>
+      </tr><tr>
+        <td>
+          148
+        </td>
+        <td>
+          3040
+        </td>
+        <td>
+          5320
+          -
+          5455
         </td>
         <td>
           Apply
@@ -2058,15 +1656,15 @@ else
         </td>
       </tr><tr>
         <td>
-          155
+          149
         </td>
         <td>
-          3031
+          3038
         </td>
         <td>
-          5700
+          5434
           -
-          5719
+          5453
         </td>
         <td>
           Literal
@@ -2079,15 +1677,15 @@ else
         </td>
       </tr><tr>
         <td>
-          155
+          149
         </td>
         <td>
-          3030
+          3037
         </td>
         <td>
-          5656
+          5390
           -
-          5680
+          5414
         </td>
         <td>
           Select
@@ -2100,15 +1698,15 @@ else
         </td>
       </tr><tr>
         <td>
-          155
+          149
         </td>
         <td>
-          3032
+          3039
         </td>
         <td>
-          5656
+          5390
           -
-          5720
+          5454
         </td>
         <td>
           ApplyToImplicitArgs
@@ -2160,15 +1758,15 @@ else
         </td>
       </tr><tr>
         <td>
-          167
+          161
         </td>
         <td>
-          3035
+          3042
         </td>
         <td>
-          5951
+          5685
           -
-          5994
+          5728
         </td>
         <td>
           Apply
@@ -2181,15 +1779,15 @@ else
         </td>
       </tr><tr>
         <td>
-          167
+          161
         </td>
         <td>
-          3034
+          3041
         </td>
         <td>
-          5981
+          5715
           -
-          5986
+          5720
         </td>
         <td>
           Apply
@@ -2202,51 +1800,15 @@ else
         </td>
       </tr><tr>
         <td>
-          176
+          170
         </td>
         <td>
-          3038
+          3044
         </td>
         <td>
-          6143
+          5924
           -
-          6210
-        </td>
-        <td>
-          ApplyToImplicitArgs
-        </td>
-        <td>
-          net.ceedubs.ficus.FicusConfig.as
-        </td>
-        <td style="background: #AEF1AE">
-          net.ceedubs.ficus.Ficus.toFicusConfig(configuration.underlying).as[com.mohiva.play.silhouette.crypto.JcaSignerSettings](&quot;silhouette.signer&quot;)(({
-  final class $anon extends AnyRef with net.ceedubs.ficus.readers.ValueReader[com.mohiva.play.silhouette.crypto.JcaSignerSettings] {
-    def &lt;init&gt;(): &lt;$anon: net.ceedubs.ficus.readers.ValueReader[com.mohiva.play.silhouette.crypto.JcaSignerSettings]&gt; = {
-      $anon.super.&lt;init&gt;();
-      ()
-    };
-    def read(config: com.typesafe.config.Config, path: String): com.mohiva.play.silhouette.crypto.JcaSignerSettings = JcaSignerSettings.apply(net.ceedubs.ficus.Ficus.stringValueReader.read(config, if (path.==(&quot;.&quot;))
-      net.ceedubs.ficus.readers.NameMapper.apply()(net.ceedubs.ficus.readers.NameMapper.apply$default$1()).map(&quot;key&quot;)
-    else
-      path.+(&quot;.&quot;).+(net.ceedubs.ficus.readers.NameMapper.apply()(net.ceedubs.ficus.readers.NameMapper.apply$default$1()).map(&quot;key&quot;))), net.ceedubs.ficus.Ficus.optionValueReader[String](net.ceedubs.ficus.Ficus.stringValueReader).read(config, if (path.==(&quot;.&quot;))
-  net.ceedubs.ficus.readers.NameMapper.apply()(net.ceedubs.ficus.readers.NameMapper.apply$default$1()).map(&quot;pepper&quot;)
-else
-  path.+(&quot;.&quot;).+(net.ceedubs.ficus.readers.NameMapper.apply()(net.ceedubs.ficus.readers.NameMapper.apply$default$1()).map(&quot;pepper&quot;))).getOrElse[String](JcaSignerSettings.apply$default$2))
-  };
-  new $anon()
-}: net.ceedubs.ficus.readers.ValueReader[com.mohiva.play.silhouette.crypto.JcaSignerSettings]))
-        </td>
-      </tr><tr>
-        <td>
-          176
-        </td>
-        <td>
-          3037
-        </td>
-        <td>
-          6190
-          -
-          6209
+          5943
         </td>
         <td>
           Literal
@@ -2259,36 +1821,15 @@ else
         </td>
       </tr><tr>
         <td>
-          176
+          170
         </td>
         <td>
-          3036
+          3046
         </td>
         <td>
-          6143
+          5863
           -
-          6167
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          play.api.Configuration.underlying
-        </td>
-        <td style="background: #AEF1AE">
-          configuration.underlying
-        </td>
-      </tr><tr>
-        <td>
-          176
-        </td>
-        <td>
-          3039
-        </td>
-        <td>
-          6129
-          -
-          6211
+          5945
         </td>
         <td>
           Apply
@@ -2316,15 +1857,15 @@ else
         </td>
       </tr><tr>
         <td>
-          185
+          170
         </td>
         <td>
-          3040
+          3043
         </td>
         <td>
-          6373
+          5877
           -
-          6397
+          5901
         </td>
         <td>
           Select
@@ -2337,15 +1878,72 @@ else
         </td>
       </tr><tr>
         <td>
-          185
+          170
         </td>
         <td>
-          3042
+          3045
         </td>
         <td>
-          6373
+          5877
           -
-          6443
+          5944
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          net.ceedubs.ficus.FicusConfig.as
+        </td>
+        <td style="background: #AEF1AE">
+          net.ceedubs.ficus.Ficus.toFicusConfig(configuration.underlying).as[com.mohiva.play.silhouette.crypto.JcaSignerSettings](&quot;silhouette.signer&quot;)(({
+  final class $anon extends AnyRef with net.ceedubs.ficus.readers.ValueReader[com.mohiva.play.silhouette.crypto.JcaSignerSettings] {
+    def &lt;init&gt;(): &lt;$anon: net.ceedubs.ficus.readers.ValueReader[com.mohiva.play.silhouette.crypto.JcaSignerSettings]&gt; = {
+      $anon.super.&lt;init&gt;();
+      ()
+    };
+    def read(config: com.typesafe.config.Config, path: String): com.mohiva.play.silhouette.crypto.JcaSignerSettings = JcaSignerSettings.apply(net.ceedubs.ficus.Ficus.stringValueReader.read(config, if (path.==(&quot;.&quot;))
+      net.ceedubs.ficus.readers.NameMapper.apply()(net.ceedubs.ficus.readers.NameMapper.apply$default$1()).map(&quot;key&quot;)
+    else
+      path.+(&quot;.&quot;).+(net.ceedubs.ficus.readers.NameMapper.apply()(net.ceedubs.ficus.readers.NameMapper.apply$default$1()).map(&quot;key&quot;))), net.ceedubs.ficus.Ficus.optionValueReader[String](net.ceedubs.ficus.Ficus.stringValueReader).read(config, if (path.==(&quot;.&quot;))
+  net.ceedubs.ficus.readers.NameMapper.apply()(net.ceedubs.ficus.readers.NameMapper.apply$default$1()).map(&quot;pepper&quot;)
+else
+  path.+(&quot;.&quot;).+(net.ceedubs.ficus.readers.NameMapper.apply()(net.ceedubs.ficus.readers.NameMapper.apply$default$1()).map(&quot;pepper&quot;))).getOrElse[String](JcaSignerSettings.apply$default$2))
+  };
+  new $anon()
+}: net.ceedubs.ficus.readers.ValueReader[com.mohiva.play.silhouette.crypto.JcaSignerSettings]))
+        </td>
+      </tr><tr>
+        <td>
+          179
+        </td>
+        <td>
+          3047
+        </td>
+        <td>
+          6107
+          -
+          6131
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.Configuration.underlying
+        </td>
+        <td style="background: #AEF1AE">
+          configuration.underlying
+        </td>
+      </tr><tr>
+        <td>
+          179
+        </td>
+        <td>
+          3049
+        </td>
+        <td>
+          6107
+          -
+          6177
         </td>
         <td>
           ApplyToImplicitArgs
@@ -2385,15 +1983,15 @@ else
         </td>
       </tr><tr>
         <td>
-          185
+          179
         </td>
         <td>
-          3041
+          3048
         </td>
         <td>
-          6420
+          6154
           -
-          6442
+          6176
         </td>
         <td>
           Literal
@@ -2403,162 +2001,6 @@ else
         </td>
         <td style="background: #AEF1AE">
           &quot;silhouette.csrfState&quot;
-        </td>
-      </tr><tr>
-        <td>
-          194
-        </td>
-        <td>
-          3044
-        </td>
-        <td>
-          6652
-          -
-          6665
-        </td>
-        <td>
-          Literal
-        </td>
-        <td>
-          &lt;nosymbol&gt;
-        </td>
-        <td style="background: #AEF1AE">
-          &quot;application&quot;
-        </td>
-      </tr><tr>
-        <td>
-          194
-        </td>
-        <td>
-          3043
-        </td>
-        <td>
-          6605
-          -
-          6629
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          play.api.Configuration.underlying
-        </td>
-        <td style="background: #AEF1AE">
-          configuration.underlying
-        </td>
-      </tr><tr>
-        <td>
-          194
-        </td>
-        <td>
-          3045
-        </td>
-        <td>
-          6605
-          -
-          6666
-        </td>
-        <td>
-          ApplyToImplicitArgs
-        </td>
-        <td>
-          net.ceedubs.ficus.FicusConfig.as
-        </td>
-        <td style="background: #AEF1AE">
-          net.ceedubs.ficus.Ficus.toFicusConfig(configuration.underlying).as[whatson.util.ApplicationConfig](&quot;application&quot;)(({
-  final class $anon extends AnyRef with net.ceedubs.ficus.readers.ValueReader[whatson.util.ApplicationConfig] {
-    def &lt;init&gt;(): &lt;$anon: net.ceedubs.ficus.readers.ValueReader[whatson.util.ApplicationConfig]&gt; = {
-      $anon.super.&lt;init&gt;();
-      ()
-    };
-    def read(config: com.typesafe.config.Config, path: String): whatson.util.ApplicationConfig = ApplicationConfig.apply(net.ceedubs.ficus.Ficus.stringValueReader.read(config, if (path.==(&quot;.&quot;))
-      net.ceedubs.ficus.readers.NameMapper.apply()(net.ceedubs.ficus.readers.NameMapper.apply$default$1()).map(&quot;url&quot;)
-    else
-      path.+(&quot;.&quot;).+(net.ceedubs.ficus.readers.NameMapper.apply()(net.ceedubs.ficus.readers.NameMapper.apply$default$1()).map(&quot;url&quot;))), net.ceedubs.ficus.Ficus.booleanValueReader.read(config, if (path.==(&quot;.&quot;))
-      net.ceedubs.ficus.readers.NameMapper.apply()(net.ceedubs.ficus.readers.NameMapper.apply$default$1()).map(&quot;confirmationMails&quot;)
-    else
-      path.+(&quot;.&quot;).+(net.ceedubs.ficus.readers.NameMapper.apply()(net.ceedubs.ficus.readers.NameMapper.apply$default$1()).map(&quot;confirmationMails&quot;))))
-  };
-  new $anon()
-}: net.ceedubs.ficus.readers.ValueReader[whatson.util.ApplicationConfig]))
-        </td>
-      </tr><tr>
-        <td>
-          203
-        </td>
-        <td>
-          3047
-        </td>
-        <td>
-          6863
-          -
-          6873
-        </td>
-        <td>
-          Literal
-        </td>
-        <td>
-          &lt;nosymbol&gt;
-        </td>
-        <td style="background: #F0ADAD">
-          &quot;geocoder&quot;
-        </td>
-      </tr><tr>
-        <td>
-          203
-        </td>
-        <td>
-          3046
-        </td>
-        <td>
-          6819
-          -
-          6843
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          play.api.Configuration.underlying
-        </td>
-        <td style="background: #F0ADAD">
-          configuration.underlying
-        </td>
-      </tr><tr>
-        <td>
-          203
-        </td>
-        <td>
-          3048
-        </td>
-        <td>
-          6819
-          -
-          6874
-        </td>
-        <td>
-          ApplyToImplicitArgs
-        </td>
-        <td>
-          net.ceedubs.ficus.FicusConfig.as
-        </td>
-        <td style="background: #F0ADAD">
-          net.ceedubs.ficus.Ficus.toFicusConfig(configuration.underlying).as[whatson.service.geocoder.GeocoderConfig](&quot;geocoder&quot;)(({
-  final class $anon extends AnyRef with net.ceedubs.ficus.readers.ValueReader[whatson.service.geocoder.GeocoderConfig] {
-    def &lt;init&gt;(): &lt;$anon: net.ceedubs.ficus.readers.ValueReader[whatson.service.geocoder.GeocoderConfig]&gt; = {
-      $anon.super.&lt;init&gt;();
-      ()
-    };
-    def read(config: com.typesafe.config.Config, path: String): whatson.service.geocoder.GeocoderConfig = GeocoderConfig.apply(net.ceedubs.ficus.Ficus.stringValueReader.read(config, if (path.==(&quot;.&quot;))
-      net.ceedubs.ficus.readers.NameMapper.apply()(net.ceedubs.ficus.readers.NameMapper.apply$default$1()).map(&quot;url&quot;)
-    else
-      path.+(&quot;.&quot;).+(net.ceedubs.ficus.readers.NameMapper.apply()(net.ceedubs.ficus.readers.NameMapper.apply$default$1()).map(&quot;url&quot;))), net.ceedubs.ficus.Ficus.stringValueReader.read(config, if (path.==(&quot;.&quot;))
-      net.ceedubs.ficus.readers.NameMapper.apply()(net.ceedubs.ficus.readers.NameMapper.apply$default$1()).map(&quot;apiKey&quot;)
-    else
-      path.+(&quot;.&quot;).+(net.ceedubs.ficus.readers.NameMapper.apply()(net.ceedubs.ficus.readers.NameMapper.apply$default$1()).map(&quot;apiKey&quot;))))
-  };
-  new $anon()
-}: net.ceedubs.ficus.readers.ValueReader[whatson.service.geocoder.GeocoderConfig]))
         </td>
       </tr>
     </table>

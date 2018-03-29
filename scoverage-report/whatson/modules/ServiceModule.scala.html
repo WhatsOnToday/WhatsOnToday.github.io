@@ -1,0 +1,656 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          whatson/modules/ServiceModule.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package whatson.modules
+</span>2 <span style=''>
+</span>3 <span style=''>import scala.collection.immutable._
+</span>4 <span style=''>
+</span>5 <span style=''>import com.google.inject.{AbstractModule, Provides}
+</span>6 <span style=''>import com.mohiva.play.silhouette.api.{Environment, EventBus, Silhouette, SilhouetteProvider}
+</span>7 <span style=''>import com.mohiva.play.silhouette.api.crypto._
+</span>8 <span style=''>import com.mohiva.play.silhouette.api.repositories.AuthInfoRepository
+</span>9 <span style=''>import com.mohiva.play.silhouette.api.services._
+</span>10 <span style=''>import com.mohiva.play.silhouette.api.util._
+</span>11 <span style=''>import com.mohiva.play.silhouette.crypto._
+</span>12 <span style=''>import com.mohiva.play.silhouette.impl.authenticators._
+</span>13 <span style=''>import com.mohiva.play.silhouette.impl.providers._
+</span>14 <span style=''>import com.mohiva.play.silhouette.impl.providers.oauth2._
+</span>15 <span style=''>import com.mohiva.play.silhouette.impl.providers.state._
+</span>16 <span style=''>import com.mohiva.play.silhouette.impl.util._
+</span>17 <span style=''>import com.mohiva.play.silhouette.impl.services._
+</span>18 <span style=''>import com.mohiva.play.silhouette.password.BCryptPasswordHasher
+</span>19 <span style=''>import net.ceedubs.ficus.Ficus._
+</span>20 <span style=''>import net.ceedubs.ficus.readers.ArbitraryTypeReader._
+</span>21 <span style=''>import net.codingwell.scalaguice.ScalaModule
+</span>22 <span style=''>import play.api.Configuration
+</span>23 <span style=''>import play.api.libs.concurrent.Execution.Implicits._
+</span>24 <span style=''>import play.api.libs.ws.WSClient
+</span>25 <span style=''>import play.api.mvc.DefaultCookieHeaderEncoding
+</span>26 <span style=''>import whatson.service._
+</span>27 <span style=''>import whatson.service.geocoder._
+</span>28 <span style=''>import whatson.auth._
+</span>29 <span style=''>import whatson.util._
+</span>30 <span style=''>import com.google.inject._
+</span>31 <span style=''>import com.mohiva.play.silhouette.api.Env
+</span>32 <span style=''>
+</span>33 <span style=''>class ServiceModule extends AbstractModule with ScalaModule {
+</span>34 <span style=''>  override def configure() = {
+</span>35 <span style=''>    </span><span style='background: #AEF1AE'>bind[UserService].to[UserServiceImpl]</span><span style=''>
+</span>36 <span style=''>    </span><span style='background: #AEF1AE'>bind[OrganizerService].to[OrganizerServiceImpl]</span><span style=''>
+</span>37 <span style=''>    </span><span style='background: #AEF1AE'>bind[MailService].to[MailServiceImpl]</span><span style=''>
+</span>38 <span style=''>    </span><span style='background: #AEF1AE'>bind[EventService].to[EventServiceImpl]</span><span style=''>
+</span>39 <span style=''>    </span><span style='background: #AEF1AE'>bind[Geocoder].to[GeocoderImpl]</span><span style=''>
+</span>40 <span style=''>    </span><span style='background: #AEF1AE'>bind[LocationService].to[LocationServiceImpl]</span><span style=''>
+</span>41 <span style=''>  }
+</span>42 <span style=''>  
+</span>43 <span style=''>  /**
+</span>44 <span style=''>    * Provides the ApplicationConfig.
+</span>45 <span style=''>    */
+</span>46 <span style=''>  @Provides
+</span>47 <span style=''>  def provideApplicationConfig(
+</span>48 <span style=''>    configuration: Configuration): ApplicationConfig = {
+</span>49 <span style=''>    </span><span style='background: #AEF1AE'>configuration.underlying.as[ApplicationConfig](&quot;application&quot;)</span><span style=''>
+</span>50 <span style=''>  }
+</span>51 <span style=''>
+</span>52 <span style=''>  /**
+</span>53 <span style=''>    * Provides the GeocoderConfig.
+</span>54 <span style=''>    */
+</span>55 <span style=''>  @Provides
+</span>56 <span style=''>  def provideGeocoderConfig(
+</span>57 <span style=''>    configuration: Configuration): GeocoderConfig = {
+</span>58 <span style=''>    </span><span style='background: #F0ADAD'>configuration.underlying.as[GeocoderConfig](&quot;geocoder&quot;)</span><span style=''>
+</span>59 <span style=''>  }
+</span>60 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          2951
+        </td>
+        <td>
+          1432
+          -
+          1432
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.reflect.ManifestFactory.classType
+        </td>
+        <td style="background: #AEF1AE">
+          scala.reflect.ManifestFactory.classType[whatson.service.UserServiceImpl](classOf[whatson.service.UserServiceImpl])
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          2950
+        </td>
+        <td>
+          1416
+          -
+          1416
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.reflect.ManifestFactory.classType
+        </td>
+        <td style="background: #AEF1AE">
+          scala.reflect.ManifestFactory.classType[whatson.service.UserService](classOf[whatson.service.UserService])
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          2952
+        </td>
+        <td>
+          1412
+          -
+          1449
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          net.codingwell.scalaguice.ScalaModule.ScalaLinkedBindingBuilder.to
+        </td>
+        <td style="background: #AEF1AE">
+          ServiceModule.this.bind[whatson.service.UserService](scala.reflect.ManifestFactory.classType[whatson.service.UserService](classOf[whatson.service.UserService])).to[whatson.service.UserServiceImpl](scala.reflect.ManifestFactory.classType[whatson.service.UserServiceImpl](classOf[whatson.service.UserServiceImpl]))
+        </td>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          2954
+        </td>
+        <td>
+          1479
+          -
+          1479
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.reflect.ManifestFactory.classType
+        </td>
+        <td style="background: #AEF1AE">
+          scala.reflect.ManifestFactory.classType[whatson.service.OrganizerServiceImpl](classOf[whatson.service.OrganizerServiceImpl])
+        </td>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          2953
+        </td>
+        <td>
+          1458
+          -
+          1458
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.reflect.ManifestFactory.classType
+        </td>
+        <td style="background: #AEF1AE">
+          scala.reflect.ManifestFactory.classType[whatson.service.OrganizerService](classOf[whatson.service.OrganizerService])
+        </td>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          2955
+        </td>
+        <td>
+          1454
+          -
+          1501
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          net.codingwell.scalaguice.ScalaModule.ScalaLinkedBindingBuilder.to
+        </td>
+        <td style="background: #AEF1AE">
+          ServiceModule.this.bind[whatson.service.OrganizerService](scala.reflect.ManifestFactory.classType[whatson.service.OrganizerService](classOf[whatson.service.OrganizerService])).to[whatson.service.OrganizerServiceImpl](scala.reflect.ManifestFactory.classType[whatson.service.OrganizerServiceImpl](classOf[whatson.service.OrganizerServiceImpl]))
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          2957
+        </td>
+        <td>
+          1526
+          -
+          1526
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.reflect.ManifestFactory.classType
+        </td>
+        <td style="background: #AEF1AE">
+          scala.reflect.ManifestFactory.classType[whatson.service.MailServiceImpl](classOf[whatson.service.MailServiceImpl])
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          2956
+        </td>
+        <td>
+          1510
+          -
+          1510
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.reflect.ManifestFactory.classType
+        </td>
+        <td style="background: #AEF1AE">
+          scala.reflect.ManifestFactory.classType[whatson.service.MailService](classOf[whatson.service.MailService])
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          2958
+        </td>
+        <td>
+          1506
+          -
+          1543
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          net.codingwell.scalaguice.ScalaModule.ScalaLinkedBindingBuilder.to
+        </td>
+        <td style="background: #AEF1AE">
+          ServiceModule.this.bind[whatson.service.MailService](scala.reflect.ManifestFactory.classType[whatson.service.MailService](classOf[whatson.service.MailService])).to[whatson.service.MailServiceImpl](scala.reflect.ManifestFactory.classType[whatson.service.MailServiceImpl](classOf[whatson.service.MailServiceImpl]))
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          2960
+        </td>
+        <td>
+          1569
+          -
+          1569
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.reflect.ManifestFactory.classType
+        </td>
+        <td style="background: #AEF1AE">
+          scala.reflect.ManifestFactory.classType[whatson.service.EventServiceImpl](classOf[whatson.service.EventServiceImpl])
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          2959
+        </td>
+        <td>
+          1552
+          -
+          1552
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.reflect.ManifestFactory.classType
+        </td>
+        <td style="background: #AEF1AE">
+          scala.reflect.ManifestFactory.classType[whatson.service.EventService](classOf[whatson.service.EventService])
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          2961
+        </td>
+        <td>
+          1548
+          -
+          1587
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          net.codingwell.scalaguice.ScalaModule.ScalaLinkedBindingBuilder.to
+        </td>
+        <td style="background: #AEF1AE">
+          ServiceModule.this.bind[whatson.service.EventService](scala.reflect.ManifestFactory.classType[whatson.service.EventService](classOf[whatson.service.EventService])).to[whatson.service.EventServiceImpl](scala.reflect.ManifestFactory.classType[whatson.service.EventServiceImpl](classOf[whatson.service.EventServiceImpl]))
+        </td>
+      </tr><tr>
+        <td>
+          39
+        </td>
+        <td>
+          2963
+        </td>
+        <td>
+          1609
+          -
+          1609
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.reflect.ManifestFactory.classType
+        </td>
+        <td style="background: #AEF1AE">
+          scala.reflect.ManifestFactory.classType[whatson.service.geocoder.GeocoderImpl](classOf[whatson.service.geocoder.GeocoderImpl])
+        </td>
+      </tr><tr>
+        <td>
+          39
+        </td>
+        <td>
+          2962
+        </td>
+        <td>
+          1596
+          -
+          1596
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.reflect.ManifestFactory.classType
+        </td>
+        <td style="background: #AEF1AE">
+          scala.reflect.ManifestFactory.classType[whatson.service.geocoder.Geocoder](classOf[whatson.service.geocoder.Geocoder])
+        </td>
+      </tr><tr>
+        <td>
+          39
+        </td>
+        <td>
+          2964
+        </td>
+        <td>
+          1592
+          -
+          1623
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          net.codingwell.scalaguice.ScalaModule.ScalaLinkedBindingBuilder.to
+        </td>
+        <td style="background: #AEF1AE">
+          ServiceModule.this.bind[whatson.service.geocoder.Geocoder](scala.reflect.ManifestFactory.classType[whatson.service.geocoder.Geocoder](classOf[whatson.service.geocoder.Geocoder])).to[whatson.service.geocoder.GeocoderImpl](scala.reflect.ManifestFactory.classType[whatson.service.geocoder.GeocoderImpl](classOf[whatson.service.geocoder.GeocoderImpl]))
+        </td>
+      </tr><tr>
+        <td>
+          40
+        </td>
+        <td>
+          2966
+        </td>
+        <td>
+          1652
+          -
+          1652
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.reflect.ManifestFactory.classType
+        </td>
+        <td style="background: #AEF1AE">
+          scala.reflect.ManifestFactory.classType[whatson.service.LocationServiceImpl](classOf[whatson.service.LocationServiceImpl])
+        </td>
+      </tr><tr>
+        <td>
+          40
+        </td>
+        <td>
+          2968
+        </td>
+        <td>
+          1652
+          -
+          1652
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          40
+        </td>
+        <td>
+          2965
+        </td>
+        <td>
+          1632
+          -
+          1632
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.reflect.ManifestFactory.classType
+        </td>
+        <td style="background: #AEF1AE">
+          scala.reflect.ManifestFactory.classType[whatson.service.LocationService](classOf[whatson.service.LocationService])
+        </td>
+      </tr><tr>
+        <td>
+          40
+        </td>
+        <td>
+          2967
+        </td>
+        <td>
+          1628
+          -
+          1673
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          net.codingwell.scalaguice.ScalaModule.ScalaLinkedBindingBuilder.to
+        </td>
+        <td style="background: #AEF1AE">
+          ServiceModule.this.bind[whatson.service.LocationService](scala.reflect.ManifestFactory.classType[whatson.service.LocationService](classOf[whatson.service.LocationService])).to[whatson.service.LocationServiceImpl](scala.reflect.ManifestFactory.classType[whatson.service.LocationServiceImpl](classOf[whatson.service.LocationServiceImpl]))
+        </td>
+      </tr><tr>
+        <td>
+          49
+        </td>
+        <td>
+          2969
+        </td>
+        <td>
+          1837
+          -
+          1861
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.Configuration.underlying
+        </td>
+        <td style="background: #AEF1AE">
+          configuration.underlying
+        </td>
+      </tr><tr>
+        <td>
+          49
+        </td>
+        <td>
+          2971
+        </td>
+        <td>
+          1837
+          -
+          1898
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          net.ceedubs.ficus.FicusConfig.as
+        </td>
+        <td style="background: #AEF1AE">
+          net.ceedubs.ficus.Ficus.toFicusConfig(configuration.underlying).as[whatson.util.ApplicationConfig](&quot;application&quot;)(({
+  final class $anon extends AnyRef with net.ceedubs.ficus.readers.ValueReader[whatson.util.ApplicationConfig] {
+    def &lt;init&gt;(): &lt;$anon: net.ceedubs.ficus.readers.ValueReader[whatson.util.ApplicationConfig]&gt; = {
+      $anon.super.&lt;init&gt;();
+      ()
+    };
+    def read(config: com.typesafe.config.Config, path: String): whatson.util.ApplicationConfig = ApplicationConfig.apply(net.ceedubs.ficus.Ficus.stringValueReader.read(config, if (path.==(&quot;.&quot;))
+      net.ceedubs.ficus.readers.NameMapper.apply()(net.ceedubs.ficus.readers.NameMapper.apply$default$1()).map(&quot;url&quot;)
+    else
+      path.+(&quot;.&quot;).+(net.ceedubs.ficus.readers.NameMapper.apply()(net.ceedubs.ficus.readers.NameMapper.apply$default$1()).map(&quot;url&quot;))), net.ceedubs.ficus.Ficus.booleanValueReader.read(config, if (path.==(&quot;.&quot;))
+      net.ceedubs.ficus.readers.NameMapper.apply()(net.ceedubs.ficus.readers.NameMapper.apply$default$1()).map(&quot;confirmationMails&quot;)
+    else
+      path.+(&quot;.&quot;).+(net.ceedubs.ficus.readers.NameMapper.apply()(net.ceedubs.ficus.readers.NameMapper.apply$default$1()).map(&quot;confirmationMails&quot;))))
+  };
+  new $anon()
+}: net.ceedubs.ficus.readers.ValueReader[whatson.util.ApplicationConfig]))
+        </td>
+      </tr><tr>
+        <td>
+          49
+        </td>
+        <td>
+          2970
+        </td>
+        <td>
+          1884
+          -
+          1897
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;application&quot;
+        </td>
+      </tr><tr>
+        <td>
+          58
+        </td>
+        <td>
+          2972
+        </td>
+        <td>
+          2051
+          -
+          2075
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.Configuration.underlying
+        </td>
+        <td style="background: #F0ADAD">
+          configuration.underlying
+        </td>
+      </tr><tr>
+        <td>
+          58
+        </td>
+        <td>
+          2974
+        </td>
+        <td>
+          2051
+          -
+          2106
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          net.ceedubs.ficus.FicusConfig.as
+        </td>
+        <td style="background: #F0ADAD">
+          net.ceedubs.ficus.Ficus.toFicusConfig(configuration.underlying).as[whatson.service.geocoder.GeocoderConfig](&quot;geocoder&quot;)(({
+  final class $anon extends AnyRef with net.ceedubs.ficus.readers.ValueReader[whatson.service.geocoder.GeocoderConfig] {
+    def &lt;init&gt;(): &lt;$anon: net.ceedubs.ficus.readers.ValueReader[whatson.service.geocoder.GeocoderConfig]&gt; = {
+      $anon.super.&lt;init&gt;();
+      ()
+    };
+    def read(config: com.typesafe.config.Config, path: String): whatson.service.geocoder.GeocoderConfig = GeocoderConfig.apply(net.ceedubs.ficus.Ficus.stringValueReader.read(config, if (path.==(&quot;.&quot;))
+      net.ceedubs.ficus.readers.NameMapper.apply()(net.ceedubs.ficus.readers.NameMapper.apply$default$1()).map(&quot;url&quot;)
+    else
+      path.+(&quot;.&quot;).+(net.ceedubs.ficus.readers.NameMapper.apply()(net.ceedubs.ficus.readers.NameMapper.apply$default$1()).map(&quot;url&quot;))), net.ceedubs.ficus.Ficus.stringValueReader.read(config, if (path.==(&quot;.&quot;))
+      net.ceedubs.ficus.readers.NameMapper.apply()(net.ceedubs.ficus.readers.NameMapper.apply$default$1()).map(&quot;apiKey&quot;)
+    else
+      path.+(&quot;.&quot;).+(net.ceedubs.ficus.readers.NameMapper.apply()(net.ceedubs.ficus.readers.NameMapper.apply$default$1()).map(&quot;apiKey&quot;))))
+  };
+  new $anon()
+}: net.ceedubs.ficus.readers.ValueReader[whatson.service.geocoder.GeocoderConfig]))
+        </td>
+      </tr><tr>
+        <td>
+          58
+        </td>
+        <td>
+          2973
+        </td>
+        <td>
+          2095
+          -
+          2105
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;geocoder&quot;
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>
