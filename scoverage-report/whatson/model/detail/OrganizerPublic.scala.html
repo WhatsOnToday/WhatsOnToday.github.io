@@ -48,7 +48,7 @@
 </span>24 <span style=''></span><span style='background: #AEF1AE'>        DBIO.sequence(y.map {
 </span>25 <span style=''></span><span style='background: #AEF1AE'>          case (organizer, avg) =&gt; {
 </span>26 <span style=''></span><span style='background: #AEF1AE'>            val imgTagged = OrganizerTable.organizer.filter(_.id === organizer.id).flatMap(_.taggedImages)
-</span>27 <span style=''></span><span style='background: #AEF1AE'>              .result.map(l =&gt; l.map(x =&gt; TaggedImage(x._2.id,x._1)))
+</span>27 <span style=''></span><span style='background: #AEF1AE'>              .result.map(l =&gt; l.map(x =&gt; TaggedImage(x._2.id,x._1,x._2.copyright)))
 </span>28 <span style=''></span><span style='background: #AEF1AE'>
 </span>29 <span style=''></span><span style='background: #AEF1AE'>            imgTagged.map(o =&gt; {
 </span>30 <span style=''></span><span style='background: #AEF1AE'>              OrganizerPublic(organizer.id, organizer.name, avg, o.toList, organizer.avatar)
@@ -76,7 +76,7 @@
           19
         </td>
         <td>
-          2702
+          2724
         </td>
         <td>
           647
@@ -99,7 +99,7 @@
           19
         </td>
         <td>
-          2701
+          2723
         </td>
         <td>
           647
@@ -120,12 +120,12 @@
           23
         </td>
         <td>
-          2703
+          2725
         </td>
         <td>
           815
           -
-          1282
+          1297
         </td>
         <td>
           ApplyToImplicitArgs
@@ -136,7 +136,7 @@
         <td style="background: #AEF1AE">
           slick.jdbc.PostgresProfile.api.streamableQueryActionExtensionMethods[(whatson.model.Organizer, Option[Float]), Seq](OrganizerPublicQuery.this.q.map[(whatson.db.OrganizerTable, slick.lifted.Rep[Option[Float]]), (whatson.db.OrganizerTable, slick.lifted.Rep[Option[Float]]), (whatson.model.Organizer, Option[Float])](((x: whatson.db.OrganizerTable) =&gt; scala.Tuple2.apply[whatson.db.OrganizerTable, slick.lifted.Rep[Option[Float]]](x, x.avgRating)))(lifted.this.Shape.tuple2Shape[slick.lifted.FlatShapeLevel, whatson.db.OrganizerTable, slick.lifted.Rep[Option[Float]], whatson.model.Organizer, Option[Float], whatson.db.OrganizerTable, slick.lifted.Rep[Option[Float]]](lifted.this.Shape.tableShape[slick.lifted.FlatShapeLevel, whatson.model.Organizer, whatson.db.OrganizerTable](scala.Predef.$conforms[whatson.db.OrganizerTable]), lifted.this.Shape.optionShape[Float, Float, Float, Nothing](lifted.this.Shape.repColumnShape[Float, Nothing](slick.jdbc.PostgresProfile.api.floatColumnType))))).result.flatMap[Seq[whatson.model.detail.OrganizerPublic], slick.dbio.NoStream, slick.dbio.Effect.Read](((y: Seq[(whatson.model.Organizer, Option[Float])]) =&gt; slick.jdbc.PostgresProfile.api.DBIO.sequence[whatson.model.detail.OrganizerPublic, Seq, slick.dbio.Effect.Read](y.map[slick.dbio.DBIOAction[whatson.model.detail.OrganizerPublic,slick.dbio.NoStream,slick.dbio.Effect.Read], Seq[slick.dbio.DBIOAction[whatson.model.detail.OrganizerPublic,slick.dbio.NoStream,slick.dbio.Effect.Read]]](((x0$2: (whatson.model.Organizer, Option[Float])) =&gt; x0$2 match {
   case (_1: whatson.model.Organizer, _2: Option[Float])(whatson.model.Organizer, Option[Float])((organizer @ _), (avg @ _)) =&gt; {
-    val imgTagged: slick.dbio.DBIOAction[Seq[whatson.model.detail.TaggedImage],slick.dbio.NoStream,slick.dbio.Effect.Read] = slick.jdbc.PostgresProfile.api.streamableQueryActionExtensionMethods[(Option[String], whatson.model.Image), Seq](whatson.db.OrganizerTable.organizer.filter[slick.lifted.Rep[Option[Boolean]]](((x$1: whatson.db.OrganizerTable) =&gt; slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](x$1.id)(slick.jdbc.PostgresProfile.api.intColumnType).===[Option[Int], Option[Boolean]](slick.jdbc.PostgresProfile.api.valueToConstColumn[Option[Int]](organizer.id)(ast.this.TypedType.typedTypeToOptionTypedType[Int](slick.jdbc.PostgresProfile.api.intColumnType)))(lifted.this.OptionMapper2.getOptionMapper2TO[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType))))(lifted.this.CanBeQueryCondition.BooleanOptionColumnCanBeQueryCondition).flatMap[(slick.lifted.Rep[Option[String]], whatson.db.ImageTable), (Option[String], whatson.model.Image), Seq](((x$2: whatson.db.OrganizerTable) =&gt; x$2.taggedImages))).result.map[Seq[whatson.model.detail.TaggedImage]](((l: Seq[(Option[String], whatson.model.Image)]) =&gt; l.map[whatson.model.detail.TaggedImage, Seq[whatson.model.detail.TaggedImage]](((x: (Option[String], whatson.model.Image)) =&gt; TaggedImage.apply(x._2.id, x._1)))(collection.this.Seq.canBuildFrom[whatson.model.detail.TaggedImage])))(ec);
+    val imgTagged: slick.dbio.DBIOAction[Seq[whatson.model.detail.TaggedImage],slick.dbio.NoStream,slick.dbio.Effect.Read] = slick.jdbc.PostgresProfile.api.streamableQueryActionExtensionMethods[(Option[String], whatson.model.Image), Seq](whatson.db.OrganizerTable.organizer.filter[slick.lifted.Rep[Option[Boolean]]](((x$1: whatson.db.OrganizerTable) =&gt; slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](x$1.id)(slick.jdbc.PostgresProfile.api.intColumnType).===[Option[Int], Option[Boolean]](slick.jdbc.PostgresProfile.api.valueToConstColumn[Option[Int]](organizer.id)(ast.this.TypedType.typedTypeToOptionTypedType[Int](slick.jdbc.PostgresProfile.api.intColumnType)))(lifted.this.OptionMapper2.getOptionMapper2TO[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType))))(lifted.this.CanBeQueryCondition.BooleanOptionColumnCanBeQueryCondition).flatMap[(slick.lifted.Rep[Option[String]], whatson.db.ImageTable), (Option[String], whatson.model.Image), Seq](((x$2: whatson.db.OrganizerTable) =&gt; x$2.taggedImages))).result.map[Seq[whatson.model.detail.TaggedImage]](((l: Seq[(Option[String], whatson.model.Image)]) =&gt; l.map[whatson.model.detail.TaggedImage, Seq[whatson.model.detail.TaggedImage]](((x: (Option[String], whatson.model.Image)) =&gt; TaggedImage.apply(x._2.id, x._1, x._2.copyright)))(collection.this.Seq.canBuildFrom[whatson.model.detail.TaggedImage])))(ec);
     imgTagged.map[whatson.model.detail.OrganizerPublic](((o: Seq[whatson.model.detail.TaggedImage]) =&gt; OrganizerPublic.apply(organizer.id, organizer.name, avg, o.toList, organizer.avatar)))(ec)
   }
 }))(collection.this.Seq.canBuildFrom[slick.dbio.DBIOAction[whatson.model.detail.OrganizerPublic,slick.dbio.NoStream,slick.dbio.Effect.Read]]))(collection.this.Seq.canBuildFrom[whatson.model.detail.OrganizerPublic])))(ec)
