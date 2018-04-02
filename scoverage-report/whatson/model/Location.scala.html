@@ -27,7 +27,7 @@
 </span>3 <span style=''>import play.api.libs.json._
 </span>4 <span style=''>import whatson.model.forms._
 </span>5 <span style=''>
-</span>6 <span style=''>case class Location(id: Option[Int], name: String, latitude: Float, longitude: Float,
+</span>6 <span style=''>case class Location(id: Option[Int], name: String, latitude: Option[Float], longitude: Option[Float],
 </span>7 <span style=''>                    country: String, city: String, street: String, website: Option[String],
 </span>8 <span style=''>                    phone: Option[String], comment: Option[String], link: Option[String]) extends HasCopy[Location] {
 </span>9 <span style=''>  def cpy(i: Option[Int]) = </span><span style='background: #AEF1AE'>this.copy(id = i)</span><span style=''>
@@ -42,9 +42,9 @@
 </span>18 <span style=''>
 </span>19 <span style=''>    c*LocationH.earthRadius*/
 </span>20 <span style=''>
-</span>21 <span style=''>    </span><span style='background: #AEF1AE'>Math.acos( Math.sin(fromAngle(latitude)) * Math.sin(fromAngle(b.latitude))
-</span>22 <span style=''></span><span style='background: #AEF1AE'>        + Math.cos(fromAngle(latitude)) * Math.cos(fromAngle(b.latitude))
-</span>23 <span style=''></span><span style='background: #AEF1AE'>        + Math.cos(fromAngle(longitude-b.longitude))) * Location.earthRadius</span><span style=''>
+</span>21 <span style=''>    </span><span style='background: #AEF1AE'>Math.acos( Math.sin(fromAngle(latitude.getOrElse(0.0f))) * Math.sin(fromAngle(b.latitude.getOrElse(0.0f)))
+</span>22 <span style=''></span><span style='background: #AEF1AE'>        + Math.cos(fromAngle(latitude.getOrElse(0.0f))) * Math.cos(fromAngle(b.latitude.getOrElse(0.0f)))
+</span>23 <span style=''></span><span style='background: #AEF1AE'>        + Math.cos(fromAngle(longitude.getOrElse(0.0f)-b.longitude.getOrElse(0.0f)))) * Location.earthRadius</span><span style=''>
 </span>24 <span style=''>  }
 </span>25 <span style=''>
 </span>26 <span style=''>  private def fromAngle(a: Float) = </span><span style='background: #AEF1AE'>a/180*Math.PI</span><span style=''>;
@@ -76,75 +76,12 @@
           9
         </td>
         <td>
-          2625
+          2685
         </td>
         <td>
-          410
+          426
           -
-          410
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          whatson.model.Location.copy$default$10
-        </td>
-        <td style="background: #AEF1AE">
-          this.copy$default$10
-        </td>
-      </tr><tr>
-        <td>
-          9
-        </td>
-        <td>
-          2619
-        </td>
-        <td>
-          410
-          -
-          410
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          whatson.model.Location.copy$default$4
-        </td>
-        <td style="background: #AEF1AE">
-          this.copy$default$4
-        </td>
-      </tr><tr>
-        <td>
-          9
-        </td>
-        <td>
-          2622
-        </td>
-        <td>
-          410
-          -
-          410
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          whatson.model.Location.copy$default$7
-        </td>
-        <td style="background: #AEF1AE">
-          this.copy$default$7
-        </td>
-      </tr><tr>
-        <td>
-          9
-        </td>
-        <td>
-          2621
-        </td>
-        <td>
-          410
-          -
-          410
+          426
         </td>
         <td>
           Select
@@ -160,12 +97,12 @@
           9
         </td>
         <td>
-          2624
+          2688
         </td>
         <td>
-          410
+          426
           -
-          410
+          426
         </td>
         <td>
           Select
@@ -181,33 +118,12 @@
           9
         </td>
         <td>
-          2627
+          2682
         </td>
         <td>
-          405
+          426
           -
-          422
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          whatson.model.Location.copy
-        </td>
-        <td style="background: #AEF1AE">
-          this.copy(i, this.copy$default$2, this.copy$default$3, this.copy$default$4, this.copy$default$5, this.copy$default$6, this.copy$default$7, this.copy$default$8, this.copy$default$9, this.copy$default$10, this.copy$default$11)
-        </td>
-      </tr><tr>
-        <td>
-          9
-        </td>
-        <td>
-          2618
-        </td>
-        <td>
-          410
-          -
-          410
+          426
         </td>
         <td>
           Select
@@ -223,12 +139,12 @@
           9
         </td>
         <td>
-          2626
+          2690
         </td>
         <td>
-          410
+          426
           -
-          410
+          426
         </td>
         <td>
           Select
@@ -244,12 +160,12 @@
           9
         </td>
         <td>
-          2617
+          2681
         </td>
         <td>
-          410
+          426
           -
-          410
+          426
         </td>
         <td>
           Select
@@ -265,12 +181,12 @@
           9
         </td>
         <td>
-          2620
+          2684
         </td>
         <td>
-          410
+          426
           -
-          410
+          426
         </td>
         <td>
           Select
@@ -286,12 +202,12 @@
           9
         </td>
         <td>
-          2623
+          2687
         </td>
         <td>
-          410
+          426
           -
-          410
+          426
         </td>
         <td>
           Select
@@ -304,15 +220,120 @@
         </td>
       </tr><tr>
         <td>
+          9
+        </td>
+        <td>
+          2686
+        </td>
+        <td>
+          426
+          -
+          426
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.model.Location.copy$default$7
+        </td>
+        <td style="background: #AEF1AE">
+          this.copy$default$7
+        </td>
+      </tr><tr>
+        <td>
+          9
+        </td>
+        <td>
+          2689
+        </td>
+        <td>
+          426
+          -
+          426
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.model.Location.copy$default$10
+        </td>
+        <td style="background: #AEF1AE">
+          this.copy$default$10
+        </td>
+      </tr><tr>
+        <td>
+          9
+        </td>
+        <td>
+          2683
+        </td>
+        <td>
+          426
+          -
+          426
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.model.Location.copy$default$4
+        </td>
+        <td style="background: #AEF1AE">
+          this.copy$default$4
+        </td>
+      </tr><tr>
+        <td>
+          9
+        </td>
+        <td>
+          2691
+        </td>
+        <td>
+          421
+          -
+          438
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          whatson.model.Location.copy
+        </td>
+        <td style="background: #AEF1AE">
+          this.copy(i, this.copy$default$2, this.copy$default$3, this.copy$default$4, this.copy$default$5, this.copy$default$6, this.copy$default$7, this.copy$default$8, this.copy$default$9, this.copy$default$10, this.copy$default$11)
+        </td>
+      </tr><tr>
+        <td>
           21
         </td>
         <td>
-          2631
+          2694
         </td>
         <td>
-          913
+          955
           -
-          934
+          981
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Option.getOrElse
+        </td>
+        <td style="background: #AEF1AE">
+          b.latitude.getOrElse[Float](0.0)
+        </td>
+      </tr><tr>
+        <td>
+          21
+        </td>
+        <td>
+          2693
+        </td>
+        <td>
+          897
+          -
+          932
         </td>
         <td>
           Apply
@@ -321,82 +342,19 @@
           whatson.model.Location.fromAngle
         </td>
         <td style="background: #AEF1AE">
-          Location.this.fromAngle(b.latitude)
+          Location.this.fromAngle(Location.this.latitude.getOrElse[Float](0.0))
         </td>
       </tr><tr>
         <td>
           21
         </td>
         <td>
-          2628
+          2696
         </td>
         <td>
-          891
+          936
           -
-          899
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          whatson.model.Location.latitude
-        </td>
-        <td style="background: #AEF1AE">
-          Location.this.latitude
-        </td>
-      </tr><tr>
-        <td>
-          21
-        </td>
-        <td>
-          2630
-        </td>
-        <td>
-          923
-          -
-          933
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          whatson.model.Location.latitude
-        </td>
-        <td style="background: #AEF1AE">
-          b.latitude
-        </td>
-      </tr><tr>
-        <td>
-          21
-        </td>
-        <td>
-          2629
-        </td>
-        <td>
-          881
-          -
-          900
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          whatson.model.Location.fromAngle
-        </td>
-        <td style="background: #AEF1AE">
-          Location.this.fromAngle(Location.this.latitude)
-        </td>
-      </tr><tr>
-        <td>
-          21
-        </td>
-        <td>
-          2632
-        </td>
-        <td>
-          904
-          -
-          935
+          983
         </td>
         <td>
           Apply
@@ -405,19 +363,19 @@
           java.lang.Math.sin
         </td>
         <td style="background: #AEF1AE">
-          java.lang.Math.sin(Location.this.fromAngle(b.latitude))
+          java.lang.Math.sin(Location.this.fromAngle(b.latitude.getOrElse[Float](0.0)))
         </td>
       </tr><tr>
         <td>
-          22
+          21
         </td>
         <td>
-          2634
+          2695
         </td>
         <td>
-          955
+          945
           -
-          974
+          982
         </td>
         <td>
           Apply
@@ -426,103 +384,82 @@
           whatson.model.Location.fromAngle
         </td>
         <td style="background: #AEF1AE">
-          Location.this.fromAngle(Location.this.latitude)
+          Location.this.fromAngle(b.latitude.getOrElse[Float](0.0))
         </td>
       </tr><tr>
         <td>
-          22
+          21
         </td>
         <td>
-          2637
+          2692
         </td>
         <td>
-          978
+          907
           -
-          1009
+          931
         </td>
         <td>
           Apply
         </td>
         <td>
-          java.lang.Math.cos
+          scala.Option.getOrElse
         </td>
         <td style="background: #AEF1AE">
-          java.lang.Math.cos(Location.this.fromAngle(b.latitude))
+          Location.this.latitude.getOrElse[Float](0.0)
         </td>
       </tr><tr>
         <td>
           22
         </td>
         <td>
-          2633
+          2697
         </td>
         <td>
-          965
+          1013
           -
-          973
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          whatson.model.Location.latitude
-        </td>
-        <td style="background: #AEF1AE">
-          Location.this.latitude
-        </td>
-      </tr><tr>
-        <td>
-          22
-        </td>
-        <td>
-          2636
-        </td>
-        <td>
-          987
-          -
-          1008
+          1037
         </td>
         <td>
           Apply
         </td>
         <td>
-          whatson.model.Location.fromAngle
+          scala.Option.getOrElse
         </td>
         <td style="background: #AEF1AE">
-          Location.this.fromAngle(b.latitude)
+          Location.this.latitude.getOrElse[Float](0.0)
         </td>
       </tr><tr>
         <td>
           22
         </td>
         <td>
-          2635
+          2699
         </td>
         <td>
-          997
+          1061
           -
-          1007
+          1087
         </td>
         <td>
-          Select
+          Apply
         </td>
         <td>
-          whatson.model.Location.latitude
+          scala.Option.getOrElse
         </td>
         <td style="background: #AEF1AE">
-          b.latitude
+          b.latitude.getOrElse[Float](0.0)
         </td>
       </tr><tr>
         <td>
           22
         </td>
         <td>
-          2638
+          2702
         </td>
         <td>
-          946
+          994
           -
-          1009
+          1089
         </td>
         <td>
           Apply
@@ -531,40 +468,124 @@
           scala.Double.*
         </td>
         <td style="background: #AEF1AE">
-          java.lang.Math.cos(Location.this.fromAngle(Location.this.latitude)).*(java.lang.Math.cos(Location.this.fromAngle(b.latitude)))
+          java.lang.Math.cos(Location.this.fromAngle(Location.this.latitude.getOrElse[Float](0.0))).*(java.lang.Math.cos(Location.this.fromAngle(b.latitude.getOrElse[Float](0.0))))
         </td>
       </tr><tr>
         <td>
-          23
+          22
         </td>
         <td>
-          2640
+          2698
         </td>
         <td>
-          1039
+          1003
           -
-          1060
+          1038
         </td>
         <td>
           Apply
         </td>
         <td>
-          scala.Float.-
+          whatson.model.Location.fromAngle
         </td>
         <td style="background: #AEF1AE">
-          Location.this.longitude.-(b.longitude)
+          Location.this.fromAngle(Location.this.latitude.getOrElse[Float](0.0))
+        </td>
+      </tr><tr>
+        <td>
+          22
+        </td>
+        <td>
+          2701
+        </td>
+        <td>
+          1042
+          -
+          1089
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Math.cos
+        </td>
+        <td style="background: #AEF1AE">
+          java.lang.Math.cos(Location.this.fromAngle(b.latitude.getOrElse[Float](0.0)))
+        </td>
+      </tr><tr>
+        <td>
+          22
+        </td>
+        <td>
+          2700
+        </td>
+        <td>
+          1051
+          -
+          1088
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          whatson.model.Location.fromAngle
+        </td>
+        <td style="background: #AEF1AE">
+          Location.this.fromAngle(b.latitude.getOrElse[Float](0.0))
         </td>
       </tr><tr>
         <td>
           23
         </td>
         <td>
-          2643
+          2703
         </td>
         <td>
-          872
+          1139
           -
-          1062
+          1143
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          0.0
+        </td>
+      </tr><tr>
+        <td>
+          23
+        </td>
+        <td>
+          2706
+        </td>
+        <td>
+          1109
+          -
+          1173
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          whatson.model.Location.fromAngle
+        </td>
+        <td style="background: #AEF1AE">
+          Location.this.fromAngle(Location.this.longitude.getOrElse[Float](0.0).-(b.longitude.getOrElse[Float](0.0)))
+        </td>
+      </tr><tr>
+        <td>
+          23
+        </td>
+        <td>
+          2708
+        </td>
+        <td>
+          888
+          -
+          1174
         </td>
         <td>
           Apply
@@ -573,40 +594,61 @@
           scala.Double.+
         </td>
         <td style="background: #AEF1AE">
-          java.lang.Math.sin(Location.this.fromAngle(Location.this.latitude)).*(java.lang.Math.sin(Location.this.fromAngle(b.latitude))).+(java.lang.Math.cos(Location.this.fromAngle(Location.this.latitude)).*(java.lang.Math.cos(Location.this.fromAngle(b.latitude)))).+(java.lang.Math.cos(Location.this.fromAngle(Location.this.longitude.-(b.longitude))))
+          java.lang.Math.sin(Location.this.fromAngle(Location.this.latitude.getOrElse[Float](0.0))).*(java.lang.Math.sin(Location.this.fromAngle(b.latitude.getOrElse[Float](0.0)))).+(java.lang.Math.cos(Location.this.fromAngle(Location.this.latitude.getOrElse[Float](0.0))).*(java.lang.Math.cos(Location.this.fromAngle(b.latitude.getOrElse[Float](0.0))))).+(java.lang.Math.cos(Location.this.fromAngle(Location.this.longitude.getOrElse[Float](0.0).-(b.longitude.getOrElse[Float](0.0)))))
         </td>
       </tr><tr>
         <td>
           23
         </td>
         <td>
-          2639
+          2705
         </td>
         <td>
-          1049
+          1119
           -
-          1060
+          1172
         </td>
         <td>
-          Select
+          Apply
         </td>
         <td>
-          whatson.model.Location.longitude
+          scala.Float.-
         </td>
         <td style="background: #AEF1AE">
-          b.longitude
+          Location.this.longitude.getOrElse[Float](0.0).-(b.longitude.getOrElse[Float](0.0))
         </td>
       </tr><tr>
         <td>
           23
         </td>
         <td>
-          2642
+          2704
         </td>
         <td>
-          1020
+          1145
           -
-          1062
+          1172
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Option.getOrElse
+        </td>
+        <td style="background: #AEF1AE">
+          b.longitude.getOrElse[Float](0.0)
+        </td>
+      </tr><tr>
+        <td>
+          23
+        </td>
+        <td>
+          2707
+        </td>
+        <td>
+          1100
+          -
+          1174
         </td>
         <td>
           Apply
@@ -615,19 +657,19 @@
           java.lang.Math.cos
         </td>
         <td style="background: #AEF1AE">
-          java.lang.Math.cos(Location.this.fromAngle(Location.this.longitude.-(b.longitude)))
+          java.lang.Math.cos(Location.this.fromAngle(Location.this.longitude.getOrElse[Float](0.0).-(b.longitude.getOrElse[Float](0.0))))
         </td>
       </tr><tr>
         <td>
           23
         </td>
         <td>
-          2645
+          2710
         </td>
         <td>
-          861
+          877
           -
-          1086
+          1198
         </td>
         <td>
           Apply
@@ -636,19 +678,19 @@
           scala.Double.*
         </td>
         <td style="background: #AEF1AE">
-          java.lang.Math.acos(java.lang.Math.sin(Location.this.fromAngle(Location.this.latitude)).*(java.lang.Math.sin(Location.this.fromAngle(b.latitude))).+(java.lang.Math.cos(Location.this.fromAngle(Location.this.latitude)).*(java.lang.Math.cos(Location.this.fromAngle(b.latitude)))).+(java.lang.Math.cos(Location.this.fromAngle(Location.this.longitude.-(b.longitude))))).*(Location.earthRadius)
+          java.lang.Math.acos(java.lang.Math.sin(Location.this.fromAngle(Location.this.latitude.getOrElse[Float](0.0))).*(java.lang.Math.sin(Location.this.fromAngle(b.latitude.getOrElse[Float](0.0)))).+(java.lang.Math.cos(Location.this.fromAngle(Location.this.latitude.getOrElse[Float](0.0))).*(java.lang.Math.cos(Location.this.fromAngle(b.latitude.getOrElse[Float](0.0))))).+(java.lang.Math.cos(Location.this.fromAngle(Location.this.longitude.getOrElse[Float](0.0).-(b.longitude.getOrElse[Float](0.0)))))).*(Location.earthRadius)
         </td>
       </tr><tr>
         <td>
           23
         </td>
         <td>
-          2644
+          2709
         </td>
         <td>
-          1066
+          1178
           -
-          1086
+          1198
         </td>
         <td>
           Select
@@ -661,36 +703,15 @@
         </td>
       </tr><tr>
         <td>
-          23
-        </td>
-        <td>
-          2641
-        </td>
-        <td>
-          1029
-          -
-          1061
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          whatson.model.Location.fromAngle
-        </td>
-        <td style="background: #AEF1AE">
-          Location.this.fromAngle(Location.this.longitude.-(b.longitude))
-        </td>
-      </tr><tr>
-        <td>
           26
         </td>
         <td>
-          2646
+          2711
         </td>
         <td>
-          1128
+          1240
           -
-          1141
+          1253
         </td>
         <td>
           Apply
@@ -706,180 +727,12 @@
           28
         </td>
         <td>
-          2649
+          2721
         </td>
         <td>
-          1185
+          1271
           -
-          1192
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          whatson.model.Location.country
-        </td>
-        <td style="background: #AEF1AE">
-          Location.this.country
-        </td>
-      </tr><tr>
-        <td>
-          28
-        </td>
-        <td>
-          2652
-        </td>
-        <td>
-          1205
-          -
-          1212
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          whatson.model.Location.website
-        </td>
-        <td style="background: #AEF1AE">
-          Location.this.website
-        </td>
-      </tr><tr>
-        <td>
-          28
-        </td>
-        <td>
-          2655
-        </td>
-        <td>
-          1227
-          -
-          1231
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          whatson.model.Location.link
-        </td>
-        <td style="background: #AEF1AE">
-          Location.this.link
-        </td>
-      </tr><tr>
-        <td>
-          28
-        </td>
-        <td>
-          2654
-        </td>
-        <td>
-          1219
-          -
-          1226
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          whatson.model.Location.comment
-        </td>
-        <td style="background: #AEF1AE">
-          Location.this.comment
-        </td>
-      </tr><tr>
-        <td>
-          28
-        </td>
-        <td>
-          2648
-        </td>
-        <td>
-          1180
-          -
-          1184
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          whatson.model.Location.name
-        </td>
-        <td style="background: #AEF1AE">
-          Location.this.name
-        </td>
-      </tr><tr>
-        <td>
-          28
-        </td>
-        <td>
-          2651
-        </td>
-        <td>
-          1198
-          -
-          1204
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          whatson.model.Location.street
-        </td>
-        <td style="background: #AEF1AE">
-          Location.this.street
-        </td>
-      </tr><tr>
-        <td>
-          28
-        </td>
-        <td>
-          2653
-        </td>
-        <td>
-          1213
-          -
-          1218
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          whatson.model.Location.phone
-        </td>
-        <td style="background: #AEF1AE">
-          Location.this.phone
-        </td>
-      </tr><tr>
-        <td>
-          28
-        </td>
-        <td>
-          2647
-        </td>
-        <td>
-          1177
-          -
-          1179
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          whatson.model.Location.id
-        </td>
-        <td style="background: #AEF1AE">
-          Location.this.id
-        </td>
-      </tr><tr>
-        <td>
-          28
-        </td>
-        <td>
-          2656
-        </td>
-        <td>
-          1159
-          -
-          1232
+          1344
         </td>
         <td>
           Apply
@@ -895,12 +748,33 @@
           28
         </td>
         <td>
-          2650
+          2712
         </td>
         <td>
-          1193
+          1289
           -
-          1197
+          1291
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.model.Location.id
+        </td>
+        <td style="background: #AEF1AE">
+          Location.this.id
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          2715
+        </td>
+        <td>
+          1305
+          -
+          1309
         </td>
         <td>
           Select
@@ -913,15 +787,162 @@
         </td>
       </tr><tr>
         <td>
+          28
+        </td>
+        <td>
+          2714
+        </td>
+        <td>
+          1297
+          -
+          1304
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.model.Location.country
+        </td>
+        <td style="background: #AEF1AE">
+          Location.this.country
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          2717
+        </td>
+        <td>
+          1317
+          -
+          1324
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.model.Location.website
+        </td>
+        <td style="background: #AEF1AE">
+          Location.this.website
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          2720
+        </td>
+        <td>
+          1339
+          -
+          1343
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.model.Location.link
+        </td>
+        <td style="background: #AEF1AE">
+          Location.this.link
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          2713
+        </td>
+        <td>
+          1292
+          -
+          1296
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.model.Location.name
+        </td>
+        <td style="background: #AEF1AE">
+          Location.this.name
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          2716
+        </td>
+        <td>
+          1310
+          -
+          1316
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.model.Location.street
+        </td>
+        <td style="background: #AEF1AE">
+          Location.this.street
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          2719
+        </td>
+        <td>
+          1331
+          -
+          1338
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.model.Location.comment
+        </td>
+        <td style="background: #AEF1AE">
+          Location.this.comment
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          2718
+        </td>
+        <td>
+          1325
+          -
+          1330
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.model.Location.phone
+        </td>
+        <td style="background: #AEF1AE">
+          Location.this.phone
+        </td>
+      </tr><tr>
+        <td>
           35
         </td>
         <td>
-          2657
+          2722
         </td>
         <td>
-          1381
+          1493
           -
-          1385
+          1497
         </td>
         <td>
           Literal
@@ -937,33 +958,12 @@
           37
         </td>
         <td>
-          2658
+          2724
         </td>
         <td>
-          1403
+          1515
           -
-          1413
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          whatson.model.Location.apply
-        </td>
-        <td style="background: #AEF1AE">
-          this.apply(id, name, latitude, longitude, country, city, street, website, phone, comment, link)
-        </td>
-      </tr><tr>
-        <td>
-          37
-        </td>
-        <td>
-          2659
-        </td>
-        <td>
-          1403
-          -
-          1423
+          1535
         </td>
         <td>
           Select
@@ -973,8 +973,29 @@
         </td>
         <td style="background: #AEF1AE">
           {
-  ((id: Option[Int], name: String, latitude: Float, longitude: Float, country: String, city: String, street: String, website: Option[String], phone: Option[String], comment: Option[String], link: Option[String]) =&gt; this.apply(id, name, latitude, longitude, country, city, street, website, phone, comment, link))
+  ((id: Option[Int], name: String, latitude: Option[Float], longitude: Option[Float], country: String, city: String, street: String, website: Option[String], phone: Option[String], comment: Option[String], link: Option[String]) =&gt; this.apply(id, name, latitude, longitude, country, city, street, website, phone, comment, link))
 }.tupled
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          2723
+        </td>
+        <td>
+          1515
+          -
+          1525
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          whatson.model.Location.apply
+        </td>
+        <td style="background: #AEF1AE">
+          this.apply(id, name, latitude, longitude, country, city, street, website, phone, comment, link)
         </td>
       </tr>
     </table>
