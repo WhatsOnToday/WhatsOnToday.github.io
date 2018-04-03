@@ -116,35 +116,36 @@
 </span>92 <span style=''>   *
 </span>93 <span style=''>   * @return The result to display.
 </span>94 <span style=''>   */
-</span>95 <span style=''>  def signUp = </span><span style='background: #AEF1AE'>Action.async(parse.json) { implicit request =&gt;
-</span>96 <span style=''></span><span style='background: #AEF1AE'>    OrganizerSignUpForm.form.bindFromRequest.fold(
-</span>97 <span style=''></span><span style='background: #AEF1AE'>      form =&gt; {
-</span>98 <span style=''></span><span style='background: #AEF1AE'>        Future.successful(BadRequest(Json.toJson(form.errors)))
-</span>99 <span style=''></span><span style='background: #AEF1AE'>      }, { data =&gt;
-</span>100 <span style=''></span><span style='background: #AEF1AE'>      val loginInfo = LoginInfo(CredentialsProvider.ID, data.email)
-</span>101 <span style=''></span><span style='background: #AEF1AE'>      loginService.retrieveAll(loginInfo).flatMap {
-</span>102 <span style=''></span><span style='background: #AEF1AE'>        case Some(login) =&gt;
-</span>103 <span style=''></span><span style='background: #AEF1AE'>          Future.successful(BadRequest(Json.obj(&quot;message&quot; -&gt; &quot;user.exists&quot;)))
-</span>104 <span style=''></span><span style='background: #AEF1AE'>        case None =&gt;
-</span>105 <span style=''></span><span style='background: #AEF1AE'>          val authInfo = passwordHasher.hash(data.password)
-</span>106 <span style=''></span><span style='background: #AEF1AE'>          val login = Login(None, data.email, None, None, None, loginInfo.providerID, loginInfo.providerKey, false, &quot;organizer&quot;)
-</span>107 <span style=''></span><span style='background: #AEF1AE'>          for {
-</span>108 <span style=''></span><span style='background: #AEF1AE'>            login &lt;- loginService.save(login)
-</span>109 <span style=''></span><span style='background: #AEF1AE'>            authInfo &lt;- authInfoRepository.add(loginInfo, authInfo)
-</span>110 <span style=''></span><span style='background: #AEF1AE'>            authenticator &lt;- silhouette.env.authenticatorService.create(loginInfo)
-</span>111 <span style=''></span><span style='background: #AEF1AE'>            token &lt;- silhouette.env.authenticatorService.init(authenticator)
-</span>112 <span style=''></span><span style='background: #AEF1AE'>            avatar &lt;- avatarService.retrieveURL(data.email)
-</span>113 <span style=''></span><span style='background: #AEF1AE'>          } yield {
-</span>114 <span style=''></span><span style='background: #AEF1AE'>            silhouette.env.eventBus.publish(SignUpEvent(login, request))
-</span>115 <span style=''></span><span style='background: #AEF1AE'>            silhouette.env.eventBus.publish(LoginEvent(login, request))
-</span>116 <span style=''></span><span style='background: #AEF1AE'>            organizerService.save(login,data.name,avatar)
-</span>117 <span style=''></span><span style='background: #AEF1AE'>            mailService.sendOrganizerConfirmation(data.email,data.name,token)
-</span>118 <span style=''></span><span style='background: #AEF1AE'>            Ok(Json.obj(&quot;message&quot; -&gt; &quot;mail.sent&quot;))
-</span>119 <span style=''></span><span style='background: #AEF1AE'>          }
-</span>120 <span style=''></span><span style='background: #AEF1AE'>      }
-</span>121 <span style=''></span><span style='background: #AEF1AE'>    })
-</span>122 <span style=''></span><span style='background: #AEF1AE'>  }</span><span style=''>
-</span>123 <span style=''>}
+</span>95 <span style=''>  def signUp = </span><span style='background: #AEF1AE'>organizerRequest(parse.json) { case (request,organizer) =&gt;
+</span>96 <span style=''></span><span style='background: #AEF1AE'>    implicit val req = request
+</span>97 <span style=''></span><span style='background: #AEF1AE'>    OrganizerSignUpForm.form.bindFromRequest.fold(
+</span>98 <span style=''></span><span style='background: #AEF1AE'>      form =&gt; {
+</span>99 <span style=''></span><span style='background: #AEF1AE'>        Future.successful(BadRequest(Json.toJson(form.errors)))
+</span>100 <span style=''></span><span style='background: #AEF1AE'>      }, { data =&gt;
+</span>101 <span style=''></span><span style='background: #AEF1AE'>      val loginInfo = LoginInfo(CredentialsProvider.ID, data.email)
+</span>102 <span style=''></span><span style='background: #AEF1AE'>      loginService.retrieveAll(loginInfo).flatMap {
+</span>103 <span style=''></span><span style='background: #AEF1AE'>        case Some(login) =&gt;
+</span>104 <span style=''></span><span style='background: #AEF1AE'>          Future.successful(BadRequest(Json.obj(&quot;message&quot; -&gt; &quot;user.exists&quot;)))
+</span>105 <span style=''></span><span style='background: #AEF1AE'>        case None =&gt;
+</span>106 <span style=''></span><span style='background: #AEF1AE'>          val authInfo = passwordHasher.hash(data.password)
+</span>107 <span style=''></span><span style='background: #AEF1AE'>          val login = Login(None, data.email, None, None, None, loginInfo.providerID, loginInfo.providerKey, false, &quot;organizer&quot;)
+</span>108 <span style=''></span><span style='background: #AEF1AE'>          for {
+</span>109 <span style=''></span><span style='background: #AEF1AE'>            login &lt;- loginService.save(login)
+</span>110 <span style=''></span><span style='background: #AEF1AE'>            authInfo &lt;- authInfoRepository.add(loginInfo, authInfo)
+</span>111 <span style=''></span><span style='background: #AEF1AE'>            authenticator &lt;- silhouette.env.authenticatorService.create(loginInfo)
+</span>112 <span style=''></span><span style='background: #AEF1AE'>            token &lt;- silhouette.env.authenticatorService.init(authenticator)
+</span>113 <span style=''></span><span style='background: #AEF1AE'>            avatar &lt;- avatarService.retrieveURL(data.email)
+</span>114 <span style=''></span><span style='background: #AEF1AE'>          } yield {
+</span>115 <span style=''></span><span style='background: #AEF1AE'>            silhouette.env.eventBus.publish(SignUpEvent(login, request))
+</span>116 <span style=''></span><span style='background: #AEF1AE'>            silhouette.env.eventBus.publish(LoginEvent(login, request))
+</span>117 <span style=''></span><span style='background: #AEF1AE'>            organizerService.save(login,data.name,avatar)
+</span>118 <span style=''></span><span style='background: #AEF1AE'>            mailService.sendOrganizerConfirmation(data.email,data.name,token)
+</span>119 <span style=''></span><span style='background: #AEF1AE'>            Ok(Json.obj(&quot;message&quot; -&gt; &quot;mail.sent&quot;))
+</span>120 <span style=''></span><span style='background: #AEF1AE'>          }
+</span>121 <span style=''></span><span style='background: #AEF1AE'>      }
+</span>122 <span style=''></span><span style='background: #AEF1AE'>    })
+</span>123 <span style=''></span><span style='background: #AEF1AE'>  }</span><span style=''>
+</span>124 <span style=''>}
 </span></pre>
           </div>
           <div class="tab-pane" id="statementlist">
@@ -1720,34 +1721,60 @@
           1605
         </td>
         <td>
-          3043
+          3072
           -
-          4408
+          3072
         </td>
         <td>
-          Apply
+          Select
         </td>
         <td>
-          play.api.mvc.ActionBuilder.async
+          play.api.libs.concurrent.Execution.Implicits.defaultContext
         </td>
         <td style="background: #AEF1AE">
-          OrganizerController.this.Action.async[play.api.libs.json.JsValue](OrganizerController.this.parse.json)(((implicit request: play.api.mvc.Request[play.api.libs.json.JsValue]) =&gt; whatson.model.forms.OrganizerSignUpForm.form.bindFromRequest()(request).fold[scala.concurrent.Future[play.api.mvc.Result]](((form: play.api.data.Form[whatson.model.forms.OrganizerSignUpForm.Data]) =&gt; scala.concurrent.Future.successful[play.api.mvc.Result](OrganizerController.this.BadRequest.apply[play.api.libs.json.JsValue](play.api.libs.json.Json.toJson[Seq[play.api.data.FormError]](form.errors)(whatson.util.FormErrorJson.formErrorFormat))(http.this.Writeable.writeableOf_JsValue))), ((data: whatson.model.forms.OrganizerSignUpForm.Data) =&gt; {
-  val loginInfo: com.mohiva.play.silhouette.api.LoginInfo = com.mohiva.play.silhouette.api.LoginInfo.apply(com.mohiva.play.silhouette.impl.providers.CredentialsProvider.ID, data.email);
-  OrganizerController.this.loginService.retrieveAll(loginInfo).flatMap[play.api.mvc.Result](((x0$2: Option[whatson.model.Login]) =&gt; x0$2 match {
-    case (value: whatson.model.Login)Some[whatson.model.Login]((login @ _)) =&gt; scala.concurrent.Future.successful[play.api.mvc.Result](OrganizerController.this.BadRequest.apply[play.api.libs.json.JsObject](play.api.libs.json.Json.obj(scala.Predef.ArrowAssoc[String](&quot;message&quot;).-&gt;[play.api.libs.json.Json.JsValueWrapper](json.this.Json.toJsFieldJsValueWrapper[String](&quot;user.exists&quot;)(json.this.Writes.StringWrites))))(http.this.Writeable.writeableOf_JsValue))
-    case scala.None =&gt; {
-      val authInfo: com.mohiva.play.silhouette.api.util.PasswordInfo = OrganizerController.this.passwordHasher.hash(data.password);
-      val login: whatson.model.Login = whatson.model.Login.apply(scala.None, data.email, scala.None, scala.None, scala.None, loginInfo.providerID, loginInfo.providerKey, false, &quot;organizer&quot;);
-      OrganizerController.this.loginService.save(login).flatMap[play.api.mvc.Result](((login: whatson.model.Login) =&gt; OrganizerController.this.authInfoRepository.add[com.mohiva.play.silhouette.api.util.PasswordInfo](loginInfo, authInfo).flatMap[play.api.mvc.Result](((authInfo: com.mohiva.play.silhouette.api.util.PasswordInfo) =&gt; OrganizerController.this.silhouette.env.authenticatorService.create(loginInfo)(request).flatMap[play.api.mvc.Result](((authenticator: whatson.auth.AuthEnv#A) =&gt; OrganizerController.this.silhouette.env.authenticatorService.init(authenticator)(request).flatMap[play.api.mvc.Result](((token: whatson.auth.AuthEnv#A#Value) =&gt; OrganizerController.this.avatarService.retrieveURL(data.email).map[play.api.mvc.Result](((avatar: Option[String]) =&gt; {
-        OrganizerController.this.silhouette.env.eventBus.publish(com.mohiva.play.silhouette.api.SignUpEvent.apply[whatson.model.Login](login, request));
-        OrganizerController.this.silhouette.env.eventBus.publish(com.mohiva.play.silhouette.api.LoginEvent.apply[whatson.model.Login](login, request));
-        OrganizerController.this.organizerService.save(login, data.name, avatar);
-        OrganizerController.this.mailService.sendOrganizerConfirmation(data.email, data.name, token);
-        OrganizerController.this.Ok.apply[play.api.libs.json.JsObject](play.api.libs.json.Json.obj(scala.Predef.ArrowAssoc[String](&quot;message&quot;).-&gt;[play.api.libs.json.Json.JsValueWrapper](json.this.Json.toJsFieldJsValueWrapper[String](&quot;mail.sent&quot;)(json.this.Writes.StringWrites))))(http.this.Writeable.writeableOf_JsValue)
-      }))(play.api.libs.concurrent.Execution.Implicits.defaultContext)))(play.api.libs.concurrent.Execution.Implicits.defaultContext)))(play.api.libs.concurrent.Execution.Implicits.defaultContext)))(play.api.libs.concurrent.Execution.Implicits.defaultContext)))(play.api.libs.concurrent.Execution.Implicits.defaultContext)
-    }
-  }))(play.api.libs.concurrent.Execution.Implicits.defaultContext)
-}))))
+          play.api.libs.concurrent.Execution.Implicits.defaultContext
+        </td>
+      </tr><tr>
+        <td>
+          95
+        </td>
+        <td>
+          1606
+        </td>
+        <td>
+          3043
+          -
+          4451
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          controllers.Util.organizerRequest
+        </td>
+        <td style="background: #AEF1AE">
+          OrganizerController.this.organizerRequest[play.api.libs.json.JsValue](OrganizerController.this.parse.json)(((x0$2: com.mohiva.play.silhouette.api.actions.SecuredRequest[whatson.auth.AuthEnv,play.api.libs.json.JsValue], x1$2: whatson.model.Organizer) =&gt; scala.Tuple2.apply[com.mohiva.play.silhouette.api.actions.SecuredRequest[whatson.auth.AuthEnv,play.api.libs.json.JsValue], whatson.model.Organizer](x0$2, x1$2) match {
+  case (_1: com.mohiva.play.silhouette.api.actions.SecuredRequest[whatson.auth.AuthEnv,play.api.libs.json.JsValue], _2: whatson.model.Organizer)(com.mohiva.play.silhouette.api.actions.SecuredRequest[whatson.auth.AuthEnv,play.api.libs.json.JsValue], whatson.model.Organizer)((request @ _), (organizer @ _)) =&gt; {
+    implicit val req: com.mohiva.play.silhouette.api.actions.SecuredRequest[whatson.auth.AuthEnv,play.api.libs.json.JsValue] = request;
+    whatson.model.forms.OrganizerSignUpForm.form.bindFromRequest()(req).fold[scala.concurrent.Future[play.api.mvc.Result]](((form: play.api.data.Form[whatson.model.forms.OrganizerSignUpForm.Data]) =&gt; scala.concurrent.Future.successful[play.api.mvc.Result](OrganizerController.this.BadRequest.apply[play.api.libs.json.JsValue](play.api.libs.json.Json.toJson[Seq[play.api.data.FormError]](form.errors)(whatson.util.FormErrorJson.formErrorFormat))(http.this.Writeable.writeableOf_JsValue))), ((data: whatson.model.forms.OrganizerSignUpForm.Data) =&gt; {
+      val loginInfo: com.mohiva.play.silhouette.api.LoginInfo = com.mohiva.play.silhouette.api.LoginInfo.apply(com.mohiva.play.silhouette.impl.providers.CredentialsProvider.ID, data.email);
+      OrganizerController.this.loginService.retrieveAll(loginInfo).flatMap[play.api.mvc.Result](((x0$3: Option[whatson.model.Login]) =&gt; x0$3 match {
+        case (value: whatson.model.Login)Some[whatson.model.Login]((login @ _)) =&gt; scala.concurrent.Future.successful[play.api.mvc.Result](OrganizerController.this.BadRequest.apply[play.api.libs.json.JsObject](play.api.libs.json.Json.obj(scala.Predef.ArrowAssoc[String](&quot;message&quot;).-&gt;[play.api.libs.json.Json.JsValueWrapper](json.this.Json.toJsFieldJsValueWrapper[String](&quot;user.exists&quot;)(json.this.Writes.StringWrites))))(http.this.Writeable.writeableOf_JsValue))
+        case scala.None =&gt; {
+          val authInfo: com.mohiva.play.silhouette.api.util.PasswordInfo = OrganizerController.this.passwordHasher.hash(data.password);
+          val login: whatson.model.Login = whatson.model.Login.apply(scala.None, data.email, scala.None, scala.None, scala.None, loginInfo.providerID, loginInfo.providerKey, false, &quot;organizer&quot;);
+          OrganizerController.this.loginService.save(login).flatMap[play.api.mvc.Result](((login: whatson.model.Login) =&gt; OrganizerController.this.authInfoRepository.add[com.mohiva.play.silhouette.api.util.PasswordInfo](loginInfo, authInfo).flatMap[play.api.mvc.Result](((authInfo: com.mohiva.play.silhouette.api.util.PasswordInfo) =&gt; OrganizerController.this.silhouette.env.authenticatorService.create(loginInfo)(req).flatMap[play.api.mvc.Result](((authenticator: whatson.auth.AuthEnv#A) =&gt; OrganizerController.this.silhouette.env.authenticatorService.init(authenticator)(req).flatMap[play.api.mvc.Result](((token: whatson.auth.AuthEnv#A#Value) =&gt; OrganizerController.this.avatarService.retrieveURL(data.email).map[play.api.mvc.Result](((avatar: Option[String]) =&gt; {
+            OrganizerController.this.silhouette.env.eventBus.publish(com.mohiva.play.silhouette.api.SignUpEvent.apply[whatson.model.Login](login, request));
+            OrganizerController.this.silhouette.env.eventBus.publish(com.mohiva.play.silhouette.api.LoginEvent.apply[whatson.model.Login](login, request));
+            OrganizerController.this.organizerService.save(login, data.name, avatar);
+            OrganizerController.this.mailService.sendOrganizerConfirmation(data.email, data.name, token);
+            OrganizerController.this.Ok.apply[play.api.libs.json.JsObject](play.api.libs.json.Json.obj(scala.Predef.ArrowAssoc[String](&quot;message&quot;).-&gt;[play.api.libs.json.Json.JsValueWrapper](json.this.Json.toJsFieldJsValueWrapper[String](&quot;mail.sent&quot;)(json.this.Writes.StringWrites))))(http.this.Writeable.writeableOf_JsValue)
+          }))(play.api.libs.concurrent.Execution.Implicits.defaultContext)))(play.api.libs.concurrent.Execution.Implicits.defaultContext)))(play.api.libs.concurrent.Execution.Implicits.defaultContext)))(play.api.libs.concurrent.Execution.Implicits.defaultContext)))(play.api.libs.concurrent.Execution.Implicits.defaultContext)
+        }
+      }))(play.api.libs.concurrent.Execution.Implicits.defaultContext)
+    }))
+  }
+}))(play.api.libs.concurrent.Execution.Implicits.defaultContext)
         </td>
       </tr><tr>
         <td>
@@ -1757,9 +1784,9 @@
           1543
         </td>
         <td>
-          3056
+          3060
           -
-          3066
+          3070
         </td>
         <td>
           Select
@@ -1772,15 +1799,15 @@
         </td>
       </tr><tr>
         <td>
-          96
+          97
         </td>
         <td>
           1604
         </td>
         <td>
-          3094
+          3137
           -
-          4404
+          4447
         </td>
         <td>
           Apply
@@ -1789,14 +1816,14 @@
           play.api.data.Form.fold
         </td>
         <td style="background: #AEF1AE">
-          whatson.model.forms.OrganizerSignUpForm.form.bindFromRequest()(request).fold[scala.concurrent.Future[play.api.mvc.Result]](((form: play.api.data.Form[whatson.model.forms.OrganizerSignUpForm.Data]) =&gt; scala.concurrent.Future.successful[play.api.mvc.Result](OrganizerController.this.BadRequest.apply[play.api.libs.json.JsValue](play.api.libs.json.Json.toJson[Seq[play.api.data.FormError]](form.errors)(whatson.util.FormErrorJson.formErrorFormat))(http.this.Writeable.writeableOf_JsValue))), ((data: whatson.model.forms.OrganizerSignUpForm.Data) =&gt; {
+          whatson.model.forms.OrganizerSignUpForm.form.bindFromRequest()(req).fold[scala.concurrent.Future[play.api.mvc.Result]](((form: play.api.data.Form[whatson.model.forms.OrganizerSignUpForm.Data]) =&gt; scala.concurrent.Future.successful[play.api.mvc.Result](OrganizerController.this.BadRequest.apply[play.api.libs.json.JsValue](play.api.libs.json.Json.toJson[Seq[play.api.data.FormError]](form.errors)(whatson.util.FormErrorJson.formErrorFormat))(http.this.Writeable.writeableOf_JsValue))), ((data: whatson.model.forms.OrganizerSignUpForm.Data) =&gt; {
   val loginInfo: com.mohiva.play.silhouette.api.LoginInfo = com.mohiva.play.silhouette.api.LoginInfo.apply(com.mohiva.play.silhouette.impl.providers.CredentialsProvider.ID, data.email);
-  OrganizerController.this.loginService.retrieveAll(loginInfo).flatMap[play.api.mvc.Result](((x0$2: Option[whatson.model.Login]) =&gt; x0$2 match {
+  OrganizerController.this.loginService.retrieveAll(loginInfo).flatMap[play.api.mvc.Result](((x0$3: Option[whatson.model.Login]) =&gt; x0$3 match {
     case (value: whatson.model.Login)Some[whatson.model.Login]((login @ _)) =&gt; scala.concurrent.Future.successful[play.api.mvc.Result](OrganizerController.this.BadRequest.apply[play.api.libs.json.JsObject](play.api.libs.json.Json.obj(scala.Predef.ArrowAssoc[String](&quot;message&quot;).-&gt;[play.api.libs.json.Json.JsValueWrapper](json.this.Json.toJsFieldJsValueWrapper[String](&quot;user.exists&quot;)(json.this.Writes.StringWrites))))(http.this.Writeable.writeableOf_JsValue))
     case scala.None =&gt; {
       val authInfo: com.mohiva.play.silhouette.api.util.PasswordInfo = OrganizerController.this.passwordHasher.hash(data.password);
       val login: whatson.model.Login = whatson.model.Login.apply(scala.None, data.email, scala.None, scala.None, scala.None, loginInfo.providerID, loginInfo.providerKey, false, &quot;organizer&quot;);
-      OrganizerController.this.loginService.save(login).flatMap[play.api.mvc.Result](((login: whatson.model.Login) =&gt; OrganizerController.this.authInfoRepository.add[com.mohiva.play.silhouette.api.util.PasswordInfo](loginInfo, authInfo).flatMap[play.api.mvc.Result](((authInfo: com.mohiva.play.silhouette.api.util.PasswordInfo) =&gt; OrganizerController.this.silhouette.env.authenticatorService.create(loginInfo)(request).flatMap[play.api.mvc.Result](((authenticator: whatson.auth.AuthEnv#A) =&gt; OrganizerController.this.silhouette.env.authenticatorService.init(authenticator)(request).flatMap[play.api.mvc.Result](((token: whatson.auth.AuthEnv#A#Value) =&gt; OrganizerController.this.avatarService.retrieveURL(data.email).map[play.api.mvc.Result](((avatar: Option[String]) =&gt; {
+      OrganizerController.this.loginService.save(login).flatMap[play.api.mvc.Result](((login: whatson.model.Login) =&gt; OrganizerController.this.authInfoRepository.add[com.mohiva.play.silhouette.api.util.PasswordInfo](loginInfo, authInfo).flatMap[play.api.mvc.Result](((authInfo: com.mohiva.play.silhouette.api.util.PasswordInfo) =&gt; OrganizerController.this.silhouette.env.authenticatorService.create(loginInfo)(req).flatMap[play.api.mvc.Result](((authenticator: whatson.auth.AuthEnv#A) =&gt; OrganizerController.this.silhouette.env.authenticatorService.init(authenticator)(req).flatMap[play.api.mvc.Result](((token: whatson.auth.AuthEnv#A#Value) =&gt; OrganizerController.this.avatarService.retrieveURL(data.email).map[play.api.mvc.Result](((avatar: Option[String]) =&gt; {
         OrganizerController.this.silhouette.env.eventBus.publish(com.mohiva.play.silhouette.api.SignUpEvent.apply[whatson.model.Login](login, request));
         OrganizerController.this.silhouette.env.eventBus.publish(com.mohiva.play.silhouette.api.LoginEvent.apply[whatson.model.Login](login, request));
         OrganizerController.this.organizerService.save(login, data.name, avatar);
@@ -1809,15 +1836,15 @@
         </td>
       </tr><tr>
         <td>
-          98
+          99
         </td>
         <td>
           1545
         </td>
         <td>
-          3205
+          3248
           -
-          3205
+          3248
         </td>
         <td>
           Select
@@ -1830,15 +1857,15 @@
         </td>
       </tr><tr>
         <td>
-          98
+          99
         </td>
         <td>
           1548
         </td>
         <td>
-          3183
+          3226
           -
-          3219
+          3262
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1851,15 +1878,15 @@
         </td>
       </tr><tr>
         <td>
-          98
+          99
         </td>
         <td>
           1544
         </td>
         <td>
-          3206
+          3249
           -
-          3217
+          3260
         </td>
         <td>
           Select
@@ -1872,15 +1899,15 @@
         </td>
       </tr><tr>
         <td>
-          98
+          99
         </td>
         <td>
           1547
         </td>
         <td>
-          3193
+          3236
           -
-          3193
+          3236
         </td>
         <td>
           Select
@@ -1893,15 +1920,15 @@
         </td>
       </tr><tr>
         <td>
-          98
+          99
         </td>
         <td>
           1546
         </td>
         <td>
-          3194
+          3237
           -
-          3218
+          3261
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1914,15 +1941,15 @@
         </td>
       </tr><tr>
         <td>
-          98
+          99
         </td>
         <td>
           1549
         </td>
         <td>
-          3165
+          3208
           -
-          3220
+          3263
         </td>
         <td>
           Apply
@@ -1935,15 +1962,15 @@
         </td>
       </tr><tr>
         <td>
-          100
+          101
         </td>
         <td>
           1551
         </td>
         <td>
-          3296
+          3339
           -
-          3306
+          3349
         </td>
         <td>
           Select
@@ -1956,15 +1983,15 @@
         </td>
       </tr><tr>
         <td>
-          100
+          101
         </td>
         <td>
           1550
         </td>
         <td>
-          3272
+          3315
           -
-          3294
+          3337
         </td>
         <td>
           Select
@@ -1977,15 +2004,15 @@
         </td>
       </tr><tr>
         <td>
-          100
+          101
         </td>
         <td>
           1552
         </td>
         <td>
-          3262
+          3305
           -
-          3307
+          3350
         </td>
         <td>
           Apply
@@ -1998,15 +2025,15 @@
         </td>
       </tr><tr>
         <td>
-          101
+          102
         </td>
         <td>
           1602
         </td>
         <td>
-          3358
+          3401
           -
-          3358
+          3401
         </td>
         <td>
           Select
@@ -2019,15 +2046,15 @@
         </td>
       </tr><tr>
         <td>
-          101
+          102
         </td>
         <td>
           1603
         </td>
         <td>
-          3314
+          3357
           -
-          4397
+          4440
         </td>
         <td>
           ApplyToImplicitArgs
@@ -2036,12 +2063,12 @@
           scala.concurrent.Future.flatMap
         </td>
         <td style="background: #AEF1AE">
-          OrganizerController.this.loginService.retrieveAll(loginInfo).flatMap[play.api.mvc.Result](((x0$2: Option[whatson.model.Login]) =&gt; x0$2 match {
+          OrganizerController.this.loginService.retrieveAll(loginInfo).flatMap[play.api.mvc.Result](((x0$3: Option[whatson.model.Login]) =&gt; x0$3 match {
   case (value: whatson.model.Login)Some[whatson.model.Login]((login @ _)) =&gt; scala.concurrent.Future.successful[play.api.mvc.Result](OrganizerController.this.BadRequest.apply[play.api.libs.json.JsObject](play.api.libs.json.Json.obj(scala.Predef.ArrowAssoc[String](&quot;message&quot;).-&gt;[play.api.libs.json.Json.JsValueWrapper](json.this.Json.toJsFieldJsValueWrapper[String](&quot;user.exists&quot;)(json.this.Writes.StringWrites))))(http.this.Writeable.writeableOf_JsValue))
   case scala.None =&gt; {
     val authInfo: com.mohiva.play.silhouette.api.util.PasswordInfo = OrganizerController.this.passwordHasher.hash(data.password);
     val login: whatson.model.Login = whatson.model.Login.apply(scala.None, data.email, scala.None, scala.None, scala.None, loginInfo.providerID, loginInfo.providerKey, false, &quot;organizer&quot;);
-    OrganizerController.this.loginService.save(login).flatMap[play.api.mvc.Result](((login: whatson.model.Login) =&gt; OrganizerController.this.authInfoRepository.add[com.mohiva.play.silhouette.api.util.PasswordInfo](loginInfo, authInfo).flatMap[play.api.mvc.Result](((authInfo: com.mohiva.play.silhouette.api.util.PasswordInfo) =&gt; OrganizerController.this.silhouette.env.authenticatorService.create(loginInfo)(request).flatMap[play.api.mvc.Result](((authenticator: whatson.auth.AuthEnv#A) =&gt; OrganizerController.this.silhouette.env.authenticatorService.init(authenticator)(request).flatMap[play.api.mvc.Result](((token: whatson.auth.AuthEnv#A#Value) =&gt; OrganizerController.this.avatarService.retrieveURL(data.email).map[play.api.mvc.Result](((avatar: Option[String]) =&gt; {
+    OrganizerController.this.loginService.save(login).flatMap[play.api.mvc.Result](((login: whatson.model.Login) =&gt; OrganizerController.this.authInfoRepository.add[com.mohiva.play.silhouette.api.util.PasswordInfo](loginInfo, authInfo).flatMap[play.api.mvc.Result](((authInfo: com.mohiva.play.silhouette.api.util.PasswordInfo) =&gt; OrganizerController.this.silhouette.env.authenticatorService.create(loginInfo)(req).flatMap[play.api.mvc.Result](((authenticator: whatson.auth.AuthEnv#A) =&gt; OrganizerController.this.silhouette.env.authenticatorService.init(authenticator)(req).flatMap[play.api.mvc.Result](((token: whatson.auth.AuthEnv#A#Value) =&gt; OrganizerController.this.avatarService.retrieveURL(data.email).map[play.api.mvc.Result](((avatar: Option[String]) =&gt; {
       OrganizerController.this.silhouette.env.eventBus.publish(com.mohiva.play.silhouette.api.SignUpEvent.apply[whatson.model.Login](login, request));
       OrganizerController.this.silhouette.env.eventBus.publish(com.mohiva.play.silhouette.api.LoginEvent.apply[whatson.model.Login](login, request));
       OrganizerController.this.organizerService.save(login, data.name, avatar);
@@ -2053,15 +2080,15 @@
         </td>
       </tr><tr>
         <td>
-          103
+          104
         </td>
         <td>
           1560
         </td>
         <td>
-          3416
+          3459
           -
-          3464
+          3507
         </td>
         <td>
           ApplyToImplicitArgs
@@ -2074,15 +2101,15 @@
         </td>
       </tr><tr>
         <td>
-          103
+          104
         </td>
         <td>
           1554
         </td>
         <td>
-          3449
+          3492
           -
-          3462
+          3505
         </td>
         <td>
           Literal
@@ -2095,15 +2122,15 @@
         </td>
       </tr><tr>
         <td>
-          103
+          104
         </td>
         <td>
           1557
         </td>
         <td>
-          3436
+          3479
           -
-          3462
+          3505
         </td>
         <td>
           Apply
@@ -2116,15 +2143,15 @@
         </td>
       </tr><tr>
         <td>
-          103
+          104
         </td>
         <td>
           1559
         </td>
         <td>
-          3426
+          3469
           -
-          3426
+          3469
         </td>
         <td>
           Select
@@ -2137,15 +2164,15 @@
         </td>
       </tr><tr>
         <td>
-          103
+          104
         </td>
         <td>
           1553
         </td>
         <td>
-          3436
+          3479
           -
-          3445
+          3488
         </td>
         <td>
           Literal
@@ -2158,15 +2185,15 @@
         </td>
       </tr><tr>
         <td>
-          103
+          104
         </td>
         <td>
           1556
         </td>
         <td>
-          3449
+          3492
           -
-          3462
+          3505
         </td>
         <td>
           ApplyToImplicitArgs
@@ -2179,15 +2206,15 @@
         </td>
       </tr><tr>
         <td>
-          103
+          104
         </td>
         <td>
           1555
         </td>
         <td>
-          3449
+          3492
           -
-          3449
+          3492
         </td>
         <td>
           Select
@@ -2200,15 +2227,15 @@
         </td>
       </tr><tr>
         <td>
-          103
+          104
         </td>
         <td>
           1558
         </td>
         <td>
-          3427
+          3470
           -
-          3463
+          3506
         </td>
         <td>
           Apply
@@ -2221,15 +2248,15 @@
         </td>
       </tr><tr>
         <td>
-          103
+          104
         </td>
         <td>
           1561
         </td>
         <td>
-          3398
+          3441
           -
-          3465
+          3508
         </td>
         <td>
           Apply
@@ -2242,15 +2269,15 @@
         </td>
       </tr><tr>
         <td>
-          105
+          106
         </td>
         <td>
           1563
         </td>
         <td>
-          3512
+          3555
           -
-          3546
+          3589
         </td>
         <td>
           Apply
@@ -2263,15 +2290,15 @@
         </td>
       </tr><tr>
         <td>
-          105
+          106
         </td>
         <td>
           1562
         </td>
         <td>
-          3532
+          3575
           -
-          3545
+          3588
         </td>
         <td>
           Select
@@ -2284,15 +2311,15 @@
         </td>
       </tr><tr>
         <td>
-          106
+          107
         </td>
         <td>
           1569
         </td>
         <td>
-          3611
+          3654
           -
-          3631
+          3674
         </td>
         <td>
           Select
@@ -2305,15 +2332,15 @@
         </td>
       </tr><tr>
         <td>
-          106
+          107
         </td>
         <td>
           1572
         </td>
         <td>
-          3663
+          3706
           -
-          3674
+          3717
         </td>
         <td>
           Literal
@@ -2326,15 +2353,15 @@
         </td>
       </tr><tr>
         <td>
-          106
+          107
         </td>
         <td>
           1566
         </td>
         <td>
-          3593
+          3636
           -
-          3597
+          3640
         </td>
         <td>
           Select
@@ -2347,15 +2374,15 @@
         </td>
       </tr><tr>
         <td>
-          106
+          107
         </td>
         <td>
           1568
         </td>
         <td>
-          3605
+          3648
           -
-          3609
+          3652
         </td>
         <td>
           Select
@@ -2368,15 +2395,15 @@
         </td>
       </tr><tr>
         <td>
-          106
+          107
         </td>
         <td>
           1571
         </td>
         <td>
-          3656
+          3699
           -
-          3661
+          3704
         </td>
         <td>
           Literal
@@ -2389,15 +2416,15 @@
         </td>
       </tr><tr>
         <td>
-          106
+          107
         </td>
         <td>
           1565
         </td>
         <td>
-          3581
+          3624
           -
-          3591
+          3634
         </td>
         <td>
           Select
@@ -2410,15 +2437,15 @@
         </td>
       </tr><tr>
         <td>
-          106
+          107
         </td>
         <td>
           1564
         </td>
         <td>
-          3575
+          3618
           -
-          3579
+          3622
         </td>
         <td>
           Select
@@ -2431,15 +2458,15 @@
         </td>
       </tr><tr>
         <td>
-          106
+          107
         </td>
         <td>
           1573
         </td>
         <td>
-          3569
+          3612
           -
-          3675
+          3718
         </td>
         <td>
           Apply
@@ -2452,15 +2479,15 @@
         </td>
       </tr><tr>
         <td>
-          106
+          107
         </td>
         <td>
           1567
         </td>
         <td>
-          3599
+          3642
           -
-          3603
+          3646
         </td>
         <td>
           Select
@@ -2473,15 +2500,15 @@
         </td>
       </tr><tr>
         <td>
-          106
+          107
         </td>
         <td>
           1570
         </td>
         <td>
-          3633
+          3676
           -
-          3654
+          3697
         </td>
         <td>
           Select
@@ -2494,15 +2521,15 @@
         </td>
       </tr><tr>
         <td>
-          108
+          109
         </td>
         <td>
           1601
         </td>
         <td>
-          3686
+          3729
           -
-          4389
+          4432
         </td>
         <td>
           ApplyToImplicitArgs
@@ -2511,7 +2538,7 @@
           scala.concurrent.Future.flatMap
         </td>
         <td style="background: #AEF1AE">
-          OrganizerController.this.loginService.save(login).flatMap[play.api.mvc.Result](((login: whatson.model.Login) =&gt; OrganizerController.this.authInfoRepository.add[com.mohiva.play.silhouette.api.util.PasswordInfo](loginInfo, authInfo).flatMap[play.api.mvc.Result](((authInfo: com.mohiva.play.silhouette.api.util.PasswordInfo) =&gt; OrganizerController.this.silhouette.env.authenticatorService.create(loginInfo)(request).flatMap[play.api.mvc.Result](((authenticator: whatson.auth.AuthEnv#A) =&gt; OrganizerController.this.silhouette.env.authenticatorService.init(authenticator)(request).flatMap[play.api.mvc.Result](((token: whatson.auth.AuthEnv#A#Value) =&gt; OrganizerController.this.avatarService.retrieveURL(data.email).map[play.api.mvc.Result](((avatar: Option[String]) =&gt; {
+          OrganizerController.this.loginService.save(login).flatMap[play.api.mvc.Result](((login: whatson.model.Login) =&gt; OrganizerController.this.authInfoRepository.add[com.mohiva.play.silhouette.api.util.PasswordInfo](loginInfo, authInfo).flatMap[play.api.mvc.Result](((authInfo: com.mohiva.play.silhouette.api.util.PasswordInfo) =&gt; OrganizerController.this.silhouette.env.authenticatorService.create(loginInfo)(req).flatMap[play.api.mvc.Result](((authenticator: whatson.auth.AuthEnv#A) =&gt; OrganizerController.this.silhouette.env.authenticatorService.init(authenticator)(req).flatMap[play.api.mvc.Result](((token: whatson.auth.AuthEnv#A#Value) =&gt; OrganizerController.this.avatarService.retrieveURL(data.email).map[play.api.mvc.Result](((avatar: Option[String]) =&gt; {
   OrganizerController.this.silhouette.env.eventBus.publish(com.mohiva.play.silhouette.api.SignUpEvent.apply[whatson.model.Login](login, request));
   OrganizerController.this.silhouette.env.eventBus.publish(com.mohiva.play.silhouette.api.LoginEvent.apply[whatson.model.Login](login, request));
   OrganizerController.this.organizerService.save(login, data.name, avatar);
@@ -2521,15 +2548,15 @@
         </td>
       </tr><tr>
         <td>
-          108
+          109
         </td>
         <td>
           1600
         </td>
         <td>
-          3710
+          3753
           -
-          3710
+          3753
         </td>
         <td>
           Select
@@ -2542,15 +2569,15 @@
         </td>
       </tr><tr>
         <td>
-          109
+          110
         </td>
         <td>
           1599
         </td>
         <td>
-          3750
+          3793
           -
-          4389
+          4432
         </td>
         <td>
           ApplyToImplicitArgs
@@ -2559,7 +2586,7 @@
           scala.concurrent.Future.flatMap
         </td>
         <td style="background: #AEF1AE">
-          OrganizerController.this.authInfoRepository.add[com.mohiva.play.silhouette.api.util.PasswordInfo](loginInfo, authInfo).flatMap[play.api.mvc.Result](((authInfo: com.mohiva.play.silhouette.api.util.PasswordInfo) =&gt; OrganizerController.this.silhouette.env.authenticatorService.create(loginInfo)(request).flatMap[play.api.mvc.Result](((authenticator: whatson.auth.AuthEnv#A) =&gt; OrganizerController.this.silhouette.env.authenticatorService.init(authenticator)(request).flatMap[play.api.mvc.Result](((token: whatson.auth.AuthEnv#A#Value) =&gt; OrganizerController.this.avatarService.retrieveURL(data.email).map[play.api.mvc.Result](((avatar: Option[String]) =&gt; {
+          OrganizerController.this.authInfoRepository.add[com.mohiva.play.silhouette.api.util.PasswordInfo](loginInfo, authInfo).flatMap[play.api.mvc.Result](((authInfo: com.mohiva.play.silhouette.api.util.PasswordInfo) =&gt; OrganizerController.this.silhouette.env.authenticatorService.create(loginInfo)(req).flatMap[play.api.mvc.Result](((authenticator: whatson.auth.AuthEnv#A) =&gt; OrganizerController.this.silhouette.env.authenticatorService.init(authenticator)(req).flatMap[play.api.mvc.Result](((token: whatson.auth.AuthEnv#A#Value) =&gt; OrganizerController.this.avatarService.retrieveURL(data.email).map[play.api.mvc.Result](((avatar: Option[String]) =&gt; {
   OrganizerController.this.silhouette.env.eventBus.publish(com.mohiva.play.silhouette.api.SignUpEvent.apply[whatson.model.Login](login, request));
   OrganizerController.this.silhouette.env.eventBus.publish(com.mohiva.play.silhouette.api.LoginEvent.apply[whatson.model.Login](login, request));
   OrganizerController.this.organizerService.save(login, data.name, avatar);
@@ -2569,15 +2596,15 @@
         </td>
       </tr><tr>
         <td>
-          109
+          110
         </td>
         <td>
           1598
         </td>
         <td>
-          3759
+          3802
           -
-          3759
+          3802
         </td>
         <td>
           Select
@@ -2590,15 +2617,15 @@
         </td>
       </tr><tr>
         <td>
-          110
+          111
         </td>
         <td>
           1596
         </td>
         <td>
-          3832
+          3875
           -
-          3832
+          3875
         </td>
         <td>
           Select
@@ -2611,15 +2638,15 @@
         </td>
       </tr><tr>
         <td>
-          110
+          111
         </td>
         <td>
           1597
         </td>
         <td>
-          3818
+          3861
           -
-          4389
+          4432
         </td>
         <td>
           ApplyToImplicitArgs
@@ -2628,7 +2655,7 @@
           scala.concurrent.Future.flatMap
         </td>
         <td style="background: #AEF1AE">
-          OrganizerController.this.silhouette.env.authenticatorService.create(loginInfo)(request).flatMap[play.api.mvc.Result](((authenticator: whatson.auth.AuthEnv#A) =&gt; OrganizerController.this.silhouette.env.authenticatorService.init(authenticator)(request).flatMap[play.api.mvc.Result](((token: whatson.auth.AuthEnv#A#Value) =&gt; OrganizerController.this.avatarService.retrieveURL(data.email).map[play.api.mvc.Result](((avatar: Option[String]) =&gt; {
+          OrganizerController.this.silhouette.env.authenticatorService.create(loginInfo)(req).flatMap[play.api.mvc.Result](((authenticator: whatson.auth.AuthEnv#A) =&gt; OrganizerController.this.silhouette.env.authenticatorService.init(authenticator)(req).flatMap[play.api.mvc.Result](((token: whatson.auth.AuthEnv#A#Value) =&gt; OrganizerController.this.avatarService.retrieveURL(data.email).map[play.api.mvc.Result](((avatar: Option[String]) =&gt; {
   OrganizerController.this.silhouette.env.eventBus.publish(com.mohiva.play.silhouette.api.SignUpEvent.apply[whatson.model.Login](login, request));
   OrganizerController.this.silhouette.env.eventBus.publish(com.mohiva.play.silhouette.api.LoginEvent.apply[whatson.model.Login](login, request));
   OrganizerController.this.organizerService.save(login, data.name, avatar);
@@ -2638,15 +2665,15 @@
         </td>
       </tr><tr>
         <td>
-          111
+          112
         </td>
         <td>
           1595
         </td>
         <td>
-          3901
+          3944
           -
-          4389
+          4432
         </td>
         <td>
           ApplyToImplicitArgs
@@ -2655,7 +2682,7 @@
           scala.concurrent.Future.flatMap
         </td>
         <td style="background: #AEF1AE">
-          OrganizerController.this.silhouette.env.authenticatorService.init(authenticator)(request).flatMap[play.api.mvc.Result](((token: whatson.auth.AuthEnv#A#Value) =&gt; OrganizerController.this.avatarService.retrieveURL(data.email).map[play.api.mvc.Result](((avatar: Option[String]) =&gt; {
+          OrganizerController.this.silhouette.env.authenticatorService.init(authenticator)(req).flatMap[play.api.mvc.Result](((token: whatson.auth.AuthEnv#A#Value) =&gt; OrganizerController.this.avatarService.retrieveURL(data.email).map[play.api.mvc.Result](((avatar: Option[String]) =&gt; {
   OrganizerController.this.silhouette.env.eventBus.publish(com.mohiva.play.silhouette.api.SignUpEvent.apply[whatson.model.Login](login, request));
   OrganizerController.this.silhouette.env.eventBus.publish(com.mohiva.play.silhouette.api.LoginEvent.apply[whatson.model.Login](login, request));
   OrganizerController.this.organizerService.save(login, data.name, avatar);
@@ -2665,15 +2692,15 @@
         </td>
       </tr><tr>
         <td>
-          111
+          112
         </td>
         <td>
           1594
         </td>
         <td>
-          3907
+          3950
           -
-          3907
+          3950
         </td>
         <td>
           Select
@@ -2686,15 +2713,15 @@
         </td>
       </tr><tr>
         <td>
-          112
+          113
         </td>
         <td>
           1593
         </td>
         <td>
-          3978
+          4021
           -
-          4389
+          4432
         </td>
         <td>
           ApplyToImplicitArgs
@@ -2713,15 +2740,15 @@
         </td>
       </tr><tr>
         <td>
-          112
+          113
         </td>
         <td>
           1592
         </td>
         <td>
-          3985
+          4028
           -
-          3985
+          4028
         </td>
         <td>
           Select
@@ -2734,15 +2761,15 @@
         </td>
       </tr><tr>
         <td>
-          112
+          113
         </td>
         <td>
           1574
         </td>
         <td>
-          4014
+          4057
           -
-          4024
+          4067
         </td>
         <td>
           Select
@@ -2755,15 +2782,15 @@
         </td>
       </tr><tr>
         <td>
-          114
+          115
         </td>
         <td>
           1575
         </td>
         <td>
-          4090
+          4133
           -
-          4117
+          4160
         </td>
         <td>
           Apply
@@ -2776,15 +2803,15 @@
         </td>
       </tr><tr>
         <td>
-          114
+          115
         </td>
         <td>
           1576
         </td>
         <td>
-          4058
+          4101
           -
-          4118
+          4161
         </td>
         <td>
           Apply
@@ -2797,15 +2824,15 @@
         </td>
       </tr><tr>
         <td>
-          115
+          116
         </td>
         <td>
           1578
         </td>
         <td>
-          4131
+          4174
           -
-          4190
+          4233
         </td>
         <td>
           Apply
@@ -2818,15 +2845,15 @@
         </td>
       </tr><tr>
         <td>
-          115
+          116
         </td>
         <td>
           1577
         </td>
         <td>
-          4163
+          4206
           -
-          4189
+          4232
         </td>
         <td>
           Apply
@@ -2839,15 +2866,15 @@
         </td>
       </tr><tr>
         <td>
-          116
+          117
         </td>
         <td>
           1580
         </td>
         <td>
-          4203
+          4246
           -
-          4248
+          4291
         </td>
         <td>
           Apply
@@ -2860,15 +2887,15 @@
         </td>
       </tr><tr>
         <td>
-          116
+          117
         </td>
         <td>
           1579
         </td>
         <td>
-          4231
+          4274
           -
-          4240
+          4283
         </td>
         <td>
           Select
@@ -2881,15 +2908,15 @@
         </td>
       </tr><tr>
         <td>
-          117
+          118
         </td>
         <td>
           1581
         </td>
         <td>
-          4299
+          4342
           -
-          4309
+          4352
         </td>
         <td>
           Select
@@ -2902,15 +2929,15 @@
         </td>
       </tr><tr>
         <td>
-          117
+          118
         </td>
         <td>
           1583
         </td>
         <td>
-          4261
+          4304
           -
-          4326
+          4369
         </td>
         <td>
           Apply
@@ -2923,15 +2950,15 @@
         </td>
       </tr><tr>
         <td>
-          117
+          118
         </td>
         <td>
           1582
         </td>
         <td>
-          4310
+          4353
           -
-          4319
+          4362
         </td>
         <td>
           Select
@@ -2944,15 +2971,15 @@
         </td>
       </tr><tr>
         <td>
-          118
+          119
         </td>
         <td>
           1587
         </td>
         <td>
-          4364
+          4407
           -
-          4375
+          4418
         </td>
         <td>
           ApplyToImplicitArgs
@@ -2965,15 +2992,15 @@
         </td>
       </tr><tr>
         <td>
-          118
+          119
         </td>
         <td>
           1590
         </td>
         <td>
-          4341
+          4384
           -
-          4341
+          4384
         </td>
         <td>
           Select
@@ -2986,15 +3013,15 @@
         </td>
       </tr><tr>
         <td>
-          118
+          119
         </td>
         <td>
           1584
         </td>
         <td>
-          4351
+          4394
           -
-          4360
+          4403
         </td>
         <td>
           Literal
@@ -3007,15 +3034,15 @@
         </td>
       </tr><tr>
         <td>
-          118
+          119
         </td>
         <td>
           1586
         </td>
         <td>
-          4364
+          4407
           -
-          4364
+          4407
         </td>
         <td>
           Select
@@ -3028,15 +3055,15 @@
         </td>
       </tr><tr>
         <td>
-          118
+          119
         </td>
         <td>
           1589
         </td>
         <td>
-          4342
+          4385
           -
-          4376
+          4419
         </td>
         <td>
           Apply
@@ -3049,15 +3076,15 @@
         </td>
       </tr><tr>
         <td>
-          118
+          119
         </td>
         <td>
           1591
         </td>
         <td>
-          4339
+          4382
           -
-          4377
+          4420
         </td>
         <td>
           ApplyToImplicitArgs
@@ -3070,15 +3097,15 @@
         </td>
       </tr><tr>
         <td>
-          118
+          119
         </td>
         <td>
           1585
         </td>
         <td>
-          4364
+          4407
           -
-          4375
+          4418
         </td>
         <td>
           Literal
@@ -3091,15 +3118,15 @@
         </td>
       </tr><tr>
         <td>
-          118
+          119
         </td>
         <td>
           1588
         </td>
         <td>
-          4351
+          4394
           -
-          4375
+          4418
         </td>
         <td>
           Apply
