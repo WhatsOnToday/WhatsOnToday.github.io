@@ -26,46 +26,63 @@
 </span>2 <span style=''>
 </span>3 <span style=''>import play.api.data.Form
 </span>4 <span style=''>import play.api.data.Forms._
-</span>5 <span style=''>import play.api.libs.json.Json
-</span>6 <span style=''>
-</span>7 <span style=''>/**
-</span>8 <span style=''>  * The form which handles the sign up process.
-</span>9 <span style=''>  */
-</span>10 <span style=''>object UserSignUpForm {
-</span>11 <span style=''>
-</span>12 <span style=''>  /**
-</span>13 <span style=''>    * A play framework form.
-</span>14 <span style=''>    */
-</span>15 <span style=''>  val form = </span><span style='background: #AEF1AE'>Form(
-</span>16 <span style=''></span><span style='background: #AEF1AE'>    mapping(
-</span>17 <span style=''></span><span style='background: #AEF1AE'>      &quot;email&quot; -&gt; email,
-</span>18 <span style=''></span><span style='background: #AEF1AE'>      &quot;password&quot; -&gt; nonEmptyText.verifying(&quot;too short&quot;, x =&gt; x.length&gt;7)
-</span>19 <span style=''></span><span style='background: #AEF1AE'>    )(Data.apply)(</span><span style='background: #F0ADAD'>Data.unapply</span><span style='background: #AEF1AE'>)
-</span>20 <span style=''></span><span style='background: #AEF1AE'>  )</span><span style=''>
+</span>5 <span style=''>import play.api.data.validation.{Constraint, Invalid, Valid}
+</span>6 <span style=''>import play.api.libs.json.Json
+</span>7 <span style=''>
+</span>8 <span style=''>/**
+</span>9 <span style=''>  * The form which handles the sign up process.
+</span>10 <span style=''>  */
+</span>11 <span style=''>object UserSignUpForm {
+</span>12 <span style=''>
+</span>13 <span style=''>  val repeatedPasswordConstraint: Constraint[Data] = </span><span style='background: #AEF1AE'>Constraint(&quot;repeatedPassword&quot;)({
+</span>14 <span style=''></span><span style='background: #AEF1AE'>    data =&gt;
+</span>15 <span style=''></span><span style='background: #AEF1AE'>      if (data.password.equals(data.repeatedPassword)){
+</span>16 <span style=''></span><span style='background: #AEF1AE'>        Valid
+</span>17 <span style=''></span><span style='background: #AEF1AE'>      } else {
+</span>18 <span style=''></span><span style='background: #AEF1AE'>        </span><span style='background: #F0ADAD'>Invalid(&quot;repeatedPassword&quot;)</span><span style='background: #AEF1AE'>
+</span>19 <span style=''></span><span style='background: #AEF1AE'>      }
+</span>20 <span style=''></span><span style='background: #AEF1AE'>  })</span><span style=''>
 </span>21 <span style=''>
-</span>22 <span style=''>  /**
-</span>23 <span style=''>    * The form data.
-</span>24 <span style=''>    *
-</span>25 <span style=''>    * @param firstName The first name of a user.
-</span>26 <span style=''>    * @param lastName The last name of a user.
-</span>27 <span style=''>    * @param email The email of the user.
-</span>28 <span style=''>    * @param password The password of the user.
-</span>29 <span style=''>    */
-</span>30 <span style=''>  case class Data(
-</span>31 <span style=''>    email: String,
-</span>32 <span style=''>    password: String)
-</span>33 <span style=''>
-</span>34 <span style=''>  /**
-</span>35 <span style=''>    * The companion object.
-</span>36 <span style=''>    */
-</span>37 <span style=''>  object Data {
-</span>38 <span style=''>
-</span>39 <span style=''>    /**
-</span>40 <span style=''>      * Converts the [Date] object to Json and vice versa.
-</span>41 <span style=''>      */
-</span>42 <span style=''>    implicit val jsonFormat = Json.format[Data]
-</span>43 <span style=''>  }
-</span>44 <span style=''>}
+</span>22 <span style=''>
+</span>23 <span style=''>  /**
+</span>24 <span style=''>    * A play framework form.
+</span>25 <span style=''>    */
+</span>26 <span style=''>  val form = </span><span style='background: #AEF1AE'>Form(
+</span>27 <span style=''></span><span style='background: #AEF1AE'>    mapping(
+</span>28 <span style=''></span><span style='background: #AEF1AE'>      &quot;email&quot; -&gt; email,
+</span>29 <span style=''></span><span style='background: #AEF1AE'>      &quot;password&quot; -&gt; nonEmptyText.verifying(&quot;too short&quot;, x =&gt; x.length&gt;7),
+</span>30 <span style=''></span><span style='background: #AEF1AE'>      &quot;repeatedPassword&quot; -&gt; text,
+</span>31 <span style=''></span><span style='background: #AEF1AE'>      &quot;acceptedTerms&quot; -&gt; checked(&quot;has to be true&quot;)
+</span>32 <span style=''></span><span style='background: #AEF1AE'>    )(Data.apply)(</span><span style='background: #F0ADAD'>Data.unapply</span><span style='background: #AEF1AE'>) verifying(repeatedPasswordConstraint)
+</span>33 <span style=''></span><span style='background: #AEF1AE'>  )</span><span style=''>
+</span>34 <span style=''>
+</span>35 <span style=''>  /**
+</span>36 <span style=''>    * The form data.
+</span>37 <span style=''>    *
+</span>38 <span style=''>    * @param firstName The first name of a user.
+</span>39 <span style=''>    * @param lastName The last name of a user.
+</span>40 <span style=''>    * @param email The email of the user.
+</span>41 <span style=''>    * @param password The password of the user.
+</span>42 <span style=''>    * @param repeatedPassword The password the user repeats to check if he entered it correct.
+</span>43 <span style=''>    * @param acceptedTerms If the user accepted terms of conditions.
+</span>44 <span style=''>    */
+</span>45 <span style=''>  case class Data(
+</span>46 <span style=''>    email: String,
+</span>47 <span style=''>    password: String,
+</span>48 <span style=''>    repeatedPassword: String,
+</span>49 <span style=''>    acceptedTerms: Boolean)
+</span>50 <span style=''>
+</span>51 <span style=''>  /**
+</span>52 <span style=''>    * The companion object.
+</span>53 <span style=''>    */
+</span>54 <span style=''>  object Data {
+</span>55 <span style=''>
+</span>56 <span style=''>    /**
+</span>57 <span style=''>      * Converts the [Date] object to Json and vice versa.
+</span>58 <span style=''>      */
+</span>59 <span style=''>    implicit val jsonFormat = Json.format[Data]
+</span>60 <span style=''>  }
+</span>61 <span style=''>}
 </span></pre>
           </div>
           <div class="tab-pane" id="statementlist">
@@ -79,15 +96,186 @@
         <th>Code</th>
       </tr><tr>
         <td>
+          13
+        </td>
+        <td>
+          3048
+        </td>
+        <td>
+          312
+          -
+          490
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          play.api.data.validation.Constraint.apply
+        </td>
+        <td style="background: #AEF1AE">
+          play.api.data.validation.Constraint.apply[whatson.model.forms.UserSignUpForm.Data](&quot;repeatedPassword&quot;)(((data: whatson.model.forms.UserSignUpForm.Data) =&gt; if (data.password.equals(data.repeatedPassword))
+  play.api.data.validation.Valid
+else
+  play.api.data.validation.Invalid.apply(&quot;repeatedPassword&quot;)))
+        </td>
+      </tr><tr>
+        <td>
+          13
+        </td>
+        <td>
+          3041
+        </td>
+        <td>
+          323
+          -
+          341
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;repeatedPassword&quot;
+        </td>
+      </tr><tr>
+        <td>
           15
         </td>
         <td>
-          3037
+          3043
         </td>
         <td>
-          253
+          367
           -
-          404
+          410
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.equals
+        </td>
+        <td style="background: #AEF1AE">
+          data.password.equals(data.repeatedPassword)
+        </td>
+      </tr><tr>
+        <td>
+          15
+        </td>
+        <td>
+          3042
+        </td>
+        <td>
+          388
+          -
+          409
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.model.forms.UserSignUpForm.Data.repeatedPassword
+        </td>
+        <td style="background: #AEF1AE">
+          data.repeatedPassword
+        </td>
+      </tr><tr>
+        <td>
+          16
+        </td>
+        <td>
+          3044
+        </td>
+        <td>
+          421
+          -
+          426
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.data.validation.Valid
+        </td>
+        <td style="background: #AEF1AE">
+          play.api.data.validation.Valid
+        </td>
+      </tr><tr>
+        <td>
+          16
+        </td>
+        <td>
+          3045
+        </td>
+        <td>
+          421
+          -
+          426
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          play.api.data.validation.Valid
+        </td>
+        <td style="background: #AEF1AE">
+          play.api.data.validation.Valid
+        </td>
+      </tr><tr>
+        <td>
+          18
+        </td>
+        <td>
+          3047
+        </td>
+        <td>
+          450
+          -
+          477
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          play.api.data.validation.Invalid.apply
+        </td>
+        <td style="background: #F0ADAD">
+          play.api.data.validation.Invalid.apply(&quot;repeatedPassword&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          18
+        </td>
+        <td>
+          3046
+        </td>
+        <td>
+          450
+          -
+          477
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          play.api.data.validation.Invalid.apply
+        </td>
+        <td style="background: #F0ADAD">
+          play.api.data.validation.Invalid.apply(&quot;repeatedPassword&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          3067
+        </td>
+        <td>
+          548
+          -
+          823
         </td>
         <td>
           Apply
@@ -96,23 +284,23 @@
           play.api.data.Form.apply
         </td>
         <td style="background: #AEF1AE">
-          play.api.data.Form.apply[whatson.model.forms.UserSignUpForm.Data](play.api.data.Forms.mapping[whatson.model.forms.UserSignUpForm.Data, String, String](scala.Predef.ArrowAssoc[String](&quot;email&quot;).-&gt;[play.api.data.Mapping[String]](play.api.data.Forms.email), scala.Predef.ArrowAssoc[String](&quot;password&quot;).-&gt;[play.api.data.Mapping[String]](play.api.data.Forms.nonEmptyText.verifying(&quot;too short&quot;, ((x: String) =&gt; x.length().&gt;(7)))))({
-  ((email: String, password: String) =&gt; UserSignUpForm.this.Data.apply(email, password))
+          play.api.data.Form.apply[whatson.model.forms.UserSignUpForm.Data](play.api.data.Forms.mapping[whatson.model.forms.UserSignUpForm.Data, String, String, String, Boolean](scala.Predef.ArrowAssoc[String](&quot;email&quot;).-&gt;[play.api.data.Mapping[String]](play.api.data.Forms.email), scala.Predef.ArrowAssoc[String](&quot;password&quot;).-&gt;[play.api.data.Mapping[String]](play.api.data.Forms.nonEmptyText.verifying(&quot;too short&quot;, ((x: String) =&gt; x.length().&gt;(7)))), scala.Predef.ArrowAssoc[String](&quot;repeatedPassword&quot;).-&gt;[play.api.data.Mapping[String]](play.api.data.Forms.text), scala.Predef.ArrowAssoc[String](&quot;acceptedTerms&quot;).-&gt;[play.api.data.Mapping[Boolean]](play.api.data.Forms.checked(&quot;has to be true&quot;)))({
+  ((email: String, password: String, repeatedPassword: String, acceptedTerms: Boolean) =&gt; UserSignUpForm.this.Data.apply(email, password, repeatedPassword, acceptedTerms))
 })({
   ((x$0: whatson.model.forms.UserSignUpForm.Data) =&gt; UserSignUpForm.this.Data.unapply(x$0))
-}))
+}).verifying(UserSignUpForm.this.repeatedPasswordConstraint))
         </td>
       </tr><tr>
         <td>
-          17
+          28
         </td>
         <td>
-          3026
+          3049
         </td>
         <td>
-          278
+          573
           -
-          285
+          580
         </td>
         <td>
           Literal
@@ -125,15 +313,15 @@
         </td>
       </tr><tr>
         <td>
-          17
+          28
         </td>
         <td>
-          3028
+          3051
         </td>
         <td>
-          278
+          573
           -
-          294
+          589
         </td>
         <td>
           Apply
@@ -146,15 +334,15 @@
         </td>
       </tr><tr>
         <td>
-          17
+          28
         </td>
         <td>
-          3027
+          3050
         </td>
         <td>
-          289
+          584
           -
-          294
+          589
         </td>
         <td>
           Select
@@ -167,57 +355,15 @@
         </td>
       </tr><tr>
         <td>
-          18
+          29
         </td>
         <td>
-          3029
+          3053
         </td>
         <td>
-          302
+          634
           -
-          312
-        </td>
-        <td>
-          Literal
-        </td>
-        <td>
-          &lt;nosymbol&gt;
-        </td>
-        <td style="background: #AEF1AE">
-          &quot;password&quot;
-        </td>
-      </tr><tr>
-        <td>
-          18
-        </td>
-        <td>
-          3031
-        </td>
-        <td>
-          357
-          -
-          367
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          scala.Int.&gt;
-        </td>
-        <td style="background: #AEF1AE">
-          x.length().&gt;(7)
-        </td>
-      </tr><tr>
-        <td>
-          18
-        </td>
-        <td>
-          3030
-        </td>
-        <td>
-          339
-          -
-          350
+          645
         </td>
         <td>
           Literal
@@ -230,15 +376,15 @@
         </td>
       </tr><tr>
         <td>
-          18
+          29
         </td>
         <td>
-          3033
+          3056
         </td>
         <td>
-          302
+          597
           -
-          368
+          663
         </td>
         <td>
           Apply
@@ -251,15 +397,15 @@
         </td>
       </tr><tr>
         <td>
-          18
+          29
         </td>
         <td>
-          3032
+          3055
         </td>
         <td>
-          316
+          611
           -
-          368
+          663
         </td>
         <td>
           Apply
@@ -272,15 +418,204 @@
         </td>
       </tr><tr>
         <td>
-          19
+          29
         </td>
         <td>
-          3035
+          3052
         </td>
         <td>
-          387
+          597
           -
-          399
+          607
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;password&quot;
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          3054
+        </td>
+        <td>
+          652
+          -
+          662
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          x.length().&gt;(7)
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          3058
+        </td>
+        <td>
+          693
+          -
+          697
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.data.Forms.text
+        </td>
+        <td style="background: #AEF1AE">
+          play.api.data.Forms.text
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          3057
+        </td>
+        <td>
+          671
+          -
+          689
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;repeatedPassword&quot;
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          3059
+        </td>
+        <td>
+          671
+          -
+          697
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Predef.ArrowAssoc.-&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Predef.ArrowAssoc[String](&quot;repeatedPassword&quot;).-&gt;[play.api.data.Mapping[String]](play.api.data.Forms.text)
+        </td>
+      </tr><tr>
+        <td>
+          31
+        </td>
+        <td>
+          3062
+        </td>
+        <td>
+          705
+          -
+          749
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Predef.ArrowAssoc.-&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Predef.ArrowAssoc[String](&quot;acceptedTerms&quot;).-&gt;[play.api.data.Mapping[Boolean]](play.api.data.Forms.checked(&quot;has to be true&quot;))
+        </td>
+      </tr><tr>
+        <td>
+          31
+        </td>
+        <td>
+          3061
+        </td>
+        <td>
+          724
+          -
+          749
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          play.api.data.Forms.checked
+        </td>
+        <td style="background: #AEF1AE">
+          play.api.data.Forms.checked(&quot;has to be true&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          31
+        </td>
+        <td>
+          3060
+        </td>
+        <td>
+          705
+          -
+          720
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;acceptedTerms&quot;
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          3065
+        </td>
+        <td>
+          792
+          -
+          818
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.model.forms.UserSignUpForm.repeatedPasswordConstraint
+        </td>
+        <td style="background: #AEF1AE">
+          UserSignUpForm.this.repeatedPasswordConstraint
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          3064
+        </td>
+        <td>
+          768
+          -
+          780
         </td>
         <td>
           Apply
@@ -293,15 +628,15 @@
         </td>
       </tr><tr>
         <td>
-          19
+          32
         </td>
         <td>
-          3034
+          3063
         </td>
         <td>
-          375
+          756
           -
-          385
+          766
         </td>
         <td>
           Apply
@@ -310,32 +645,32 @@
           whatson.model.forms.UserSignUpForm.Data.apply
         </td>
         <td style="background: #AEF1AE">
-          UserSignUpForm.this.Data.apply(email, password)
+          UserSignUpForm.this.Data.apply(email, password, repeatedPassword, acceptedTerms)
         </td>
       </tr><tr>
         <td>
-          19
+          32
         </td>
         <td>
-          3036
+          3066
         </td>
         <td>
-          263
+          558
           -
-          400
+          819
         </td>
         <td>
           Apply
         </td>
         <td>
-          play.api.data.Forms.mapping
+          play.api.data.Mapping.verifying
         </td>
         <td style="background: #AEF1AE">
-          play.api.data.Forms.mapping[whatson.model.forms.UserSignUpForm.Data, String, String](scala.Predef.ArrowAssoc[String](&quot;email&quot;).-&gt;[play.api.data.Mapping[String]](play.api.data.Forms.email), scala.Predef.ArrowAssoc[String](&quot;password&quot;).-&gt;[play.api.data.Mapping[String]](play.api.data.Forms.nonEmptyText.verifying(&quot;too short&quot;, ((x: String) =&gt; x.length().&gt;(7)))))({
-  ((email: String, password: String) =&gt; UserSignUpForm.this.Data.apply(email, password))
+          play.api.data.Forms.mapping[whatson.model.forms.UserSignUpForm.Data, String, String, String, Boolean](scala.Predef.ArrowAssoc[String](&quot;email&quot;).-&gt;[play.api.data.Mapping[String]](play.api.data.Forms.email), scala.Predef.ArrowAssoc[String](&quot;password&quot;).-&gt;[play.api.data.Mapping[String]](play.api.data.Forms.nonEmptyText.verifying(&quot;too short&quot;, ((x: String) =&gt; x.length().&gt;(7)))), scala.Predef.ArrowAssoc[String](&quot;repeatedPassword&quot;).-&gt;[play.api.data.Mapping[String]](play.api.data.Forms.text), scala.Predef.ArrowAssoc[String](&quot;acceptedTerms&quot;).-&gt;[play.api.data.Mapping[Boolean]](play.api.data.Forms.checked(&quot;has to be true&quot;)))({
+  ((email: String, password: String, repeatedPassword: String, acceptedTerms: Boolean) =&gt; UserSignUpForm.this.Data.apply(email, password, repeatedPassword, acceptedTerms))
 })({
   ((x$0: whatson.model.forms.UserSignUpForm.Data) =&gt; UserSignUpForm.this.Data.unapply(x$0))
-})
+}).verifying(UserSignUpForm.this.repeatedPasswordConstraint)
         </td>
       </tr>
     </table>
