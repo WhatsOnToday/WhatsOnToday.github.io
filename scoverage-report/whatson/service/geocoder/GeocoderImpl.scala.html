@@ -39,29 +39,35 @@
 </span>15 <span style=''>import whatson.service.geocoder.Result
 </span>16 <span style=''>import whatson.service.geocoder.Result._
 </span>17 <span style=''>import play.api.libs.json.Json
-</span>18 <span style=''>
-</span>19 <span style=''>class GeocoderImpl @Inject()(protected val dbConfigProvider: DatabaseConfigProvider,
-</span>20 <span style=''>                             applicationConfig: ApplicationConfig,
-</span>21 <span style=''>                             ws: WSClient,
-</span>22 <span style=''>                             geoConfig: GeocoderConfig)
-</span>23 <span style=''>                          (implicit context: ExecutionContext)
-</span>24 <span style=''>    extends Geocoder {
-</span>25 <span style=''>
-</span>26 <span style=''>  def geocode(address: Geocoder.Address): Future[Result] = {
-</span>27 <span style=''>    val result = </span><span style='background: #F0ADAD'>ws.url(geoConfig.url)
-</span>28 <span style=''></span><span style='background: #F0ADAD'>      .addQueryStringParameters(&quot;address&quot; -&gt; address.toString, &quot;key&quot; -&gt; geoConfig.apiKey)
-</span>29 <span style=''></span><span style='background: #F0ADAD'>      .get()</span><span style=''>
-</span>30 <span style=''>
-</span>31 <span style=''>
-</span>32 <span style=''>    </span><span style='background: #F0ADAD'>result.map(x =&gt; x.json.validate[Result].get)</span><span style=''>
-</span>33 <span style=''>  }
+</span>18 <span style=''>import play.api._
+</span>19 <span style=''>
+</span>20 <span style=''>class GeocoderImpl @Inject()(protected val dbConfigProvider: DatabaseConfigProvider,
+</span>21 <span style=''>                             applicationConfig: ApplicationConfig,
+</span>22 <span style=''>                             ws: WSClient,
+</span>23 <span style=''>                             geoConfig: GeocoderConfig)
+</span>24 <span style=''>                          (implicit context: ExecutionContext)
+</span>25 <span style=''>    extends Geocoder {
+</span>26 <span style=''>
+</span>27 <span style=''>  val log = </span><span style='background: #F0ADAD'>Logger(&quot;service.geocoder&quot;)</span><span style=''>
+</span>28 <span style=''>  
+</span>29 <span style=''>  def geocode(address: Geocoder.Address): Future[Result] = {
+</span>30 <span style=''>    val result = </span><span style='background: #F0ADAD'>ws.url(geoConfig.url)
+</span>31 <span style=''></span><span style='background: #F0ADAD'>      .addQueryStringParameters(&quot;address&quot; -&gt; address.toString, &quot;key&quot; -&gt; geoConfig.apiKey)
+</span>32 <span style=''></span><span style='background: #F0ADAD'>      .get()</span><span style=''>
+</span>33 <span style=''>
 </span>34 <span style=''>
-</span>35 <span style=''>  def getPosition(address: Geocoder.Address): Future[Option[Location]] = </span><span style='background: #F0ADAD'>geocode(address)
-</span>36 <span style=''></span><span style='background: #F0ADAD'>    .map {
-</span>37 <span style=''></span><span style='background: #F0ADAD'>      case Result(loc :: _, &quot;OK&quot;, _) =&gt; Some(loc.geometry.location)
-</span>38 <span style=''></span><span style='background: #F0ADAD'>      case _ =&gt; None
-</span>39 <span style=''></span><span style='background: #F0ADAD'>    }</span><span style=''>
-</span>40 <span style=''>}
+</span>35 <span style=''>    </span><span style='background: #F0ADAD'>result.map { case x =&gt; 
+</span>36 <span style=''></span><span style='background: #F0ADAD'>      log.debug(&quot;Got response from geocoding api: &quot; + x.body)
+</span>37 <span style=''></span><span style='background: #F0ADAD'>      x.json.validate[Result].get
+</span>38 <span style=''></span><span style='background: #F0ADAD'>    }</span><span style=''>
+</span>39 <span style=''>  }
+</span>40 <span style=''>
+</span>41 <span style=''>  def getPosition(address: Geocoder.Address): Future[Option[Location]] = </span><span style='background: #F0ADAD'>geocode(address)
+</span>42 <span style=''></span><span style='background: #F0ADAD'>    .map {
+</span>43 <span style=''></span><span style='background: #F0ADAD'>      case Result(loc :: _, &quot;OK&quot;, _) =&gt; Some(loc.geometry.location)
+</span>44 <span style=''></span><span style='background: #F0ADAD'>      case _ =&gt; None
+</span>45 <span style=''></span><span style='background: #F0ADAD'>    }</span><span style=''>
+</span>46 <span style=''>}
 </span></pre>
           </div>
           <div class="tab-pane" id="statementlist">
@@ -75,15 +81,36 @@
         <th>Code</th>
       </tr><tr>
         <td>
-          29
+          27
         </td>
         <td>
           3913
         </td>
         <td>
-          930
+          882
           -
-          1054
+          908
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          play.api.Logger.apply
+        </td>
+        <td style="background: #F0ADAD">
+          play.api.Logger.apply(&quot;service.geocoder&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          3914
+        </td>
+        <td>
+          990
+          -
+          1114
         </td>
         <td>
           Apply
@@ -96,36 +123,15 @@
         </td>
       </tr><tr>
         <td>
-          32
+          35
         </td>
         <td>
-          3914
+          3923
         </td>
         <td>
-          1092
+          1121
           -
-          1092
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          whatson.service.geocoder.Result.resultFormat
-        </td>
-        <td style="background: #F0ADAD">
-          whatson.service.geocoder.Result.resultFormat
-        </td>
-      </tr><tr>
-        <td>
-          32
-        </td>
-        <td>
-          3917
-        </td>
-        <td>
-          1061
-          -
-          1105
+          1246
         </td>
         <td>
           ApplyToImplicitArgs
@@ -134,19 +140,24 @@
           scala.concurrent.Future.map
         </td>
         <td style="background: #F0ADAD">
-          result.map[whatson.service.geocoder.Result](((x: play.api.libs.ws.WSResponse) =&gt; x.json.validate[whatson.service.geocoder.Result](whatson.service.geocoder.Result.resultFormat).get))(GeocoderImpl.this.context)
+          result.map[whatson.service.geocoder.Result](((x0$1: play.api.libs.ws.WSResponse) =&gt; x0$1 match {
+  case (x @ _) =&gt; {
+    GeocoderImpl.this.log.debug(&quot;Got response from geocoding api: &quot;.+(x.body))(api.this.MarkerContext.NoMarker);
+    x.json.validate[whatson.service.geocoder.Result](whatson.service.geocoder.Result.resultFormat).get
+  }
+}))(GeocoderImpl.this.context)
         </td>
       </tr><tr>
         <td>
-          32
+          35
         </td>
         <td>
-          3916
+          3922
         </td>
         <td>
-          1071
+          1132
           -
-          1071
+          1132
         </td>
         <td>
           Select
@@ -159,15 +170,141 @@
         </td>
       </tr><tr>
         <td>
-          32
+          36
+        </td>
+        <td>
+          3917
+        </td>
+        <td>
+          1161
+          -
+          1205
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.+
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;Got response from geocoding api: &quot;.+(x.body)
+        </td>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          3916
+        </td>
+        <td>
+          1199
+          -
+          1205
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.libs.ws.WSResponse.body
+        </td>
+        <td style="background: #F0ADAD">
+          x.body
+        </td>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          3919
+        </td>
+        <td>
+          1151
+          -
+          1206
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          play.api.LoggerLike.debug
+        </td>
+        <td style="background: #F0ADAD">
+          GeocoderImpl.this.log.debug(&quot;Got response from geocoding api: &quot;.+(x.body))(api.this.MarkerContext.NoMarker)
+        </td>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          3918
+        </td>
+        <td>
+          1160
+          -
+          1160
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.LowPriorityMarkerContextImplicits.NoMarker
+        </td>
+        <td style="background: #F0ADAD">
+          api.this.MarkerContext.NoMarker
+        </td>
+      </tr><tr>
+        <td>
+          36
         </td>
         <td>
           3915
         </td>
         <td>
-          1077
+          1161
           -
-          1104
+          1196
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;Got response from geocoding api: &quot;
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          3920
+        </td>
+        <td>
+          1228
+          -
+          1228
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.service.geocoder.Result.resultFormat
+        </td>
+        <td style="background: #F0ADAD">
+          whatson.service.geocoder.Result.resultFormat
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          3921
+        </td>
+        <td>
+          1213
+          -
+          1240
         </td>
         <td>
           Select
@@ -180,15 +317,15 @@
         </td>
       </tr><tr>
         <td>
-          36
+          42
         </td>
         <td>
-          3922
+          3928
         </td>
         <td>
-          1184
+          1325
           -
-          1306
+          1447
         </td>
         <td>
           ApplyToImplicitArgs
@@ -197,22 +334,22 @@
           scala.concurrent.Future.map
         </td>
         <td style="background: #F0ADAD">
-          GeocoderImpl.this.geocode(address).map[Option[whatson.service.geocoder.Location]](((x0$1: whatson.service.geocoder.Result) =&gt; x0$1 match {
+          GeocoderImpl.this.geocode(address).map[Option[whatson.service.geocoder.Location]](((x0$2: whatson.service.geocoder.Result) =&gt; x0$2 match {
   case (results: List[whatson.service.geocoder.Address], status: String, error_message: Option[String])whatson.service.geocoder.Result((head: whatson.service.geocoder.Address, tl: List[whatson.service.geocoder.Address])scala.collection.immutable.::[whatson.service.geocoder.Address]((loc @ _), _), &quot;OK&quot;, _) =&gt; scala.Some.apply[whatson.service.geocoder.Location](loc.geometry.location)
   case _ =&gt; scala.None
 }))(GeocoderImpl.this.context)
         </td>
       </tr><tr>
         <td>
-          36
+          42
         </td>
         <td>
-          3921
+          3927
         </td>
         <td>
-          1210
+          1351
           -
-          1210
+          1351
         </td>
         <td>
           Select
@@ -225,15 +362,15 @@
         </td>
       </tr><tr>
         <td>
-          37
+          43
         </td>
         <td>
-          3919
+          3925
         </td>
         <td>
-          1252
+          1393
           -
-          1279
+          1420
         </td>
         <td>
           Apply
@@ -246,15 +383,15 @@
         </td>
       </tr><tr>
         <td>
-          37
+          43
         </td>
         <td>
-          3918
+          3924
         </td>
         <td>
-          1257
+          1398
           -
-          1278
+          1419
         </td>
         <td>
           Select
@@ -267,15 +404,15 @@
         </td>
       </tr><tr>
         <td>
-          38
+          44
         </td>
         <td>
-          3920
+          3926
         </td>
         <td>
-          1296
+          1437
           -
-          1300
+          1441
         </td>
         <td>
           Select
