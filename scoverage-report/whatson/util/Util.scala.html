@@ -2,7 +2,7 @@
       <head>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
         <title id="title">
-          whatson/model/Rating.scala.html
+          whatson/util/Util.scala.html
         </title>
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
         $(document).ready(function() {$(".tablesorter").tablesorter();});
@@ -22,22 +22,23 @@
         </ul>
         <div class="tab-content">
           <div class="tab-pane active" id="codegrid">
-            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package whatson.model
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package whatson.util
 </span>2 <span style=''>
-</span>3 <span style=''>import play.api.libs.json._
-</span>4 <span style=''>import whatson.model._
-</span>5 <span style=''>import whatson.model.EntityType._
-</span>6 <span style=''>
-</span>7 <span style=''>case class Rating(id: Option[Int], rating: Float, userId: Int, entityId: Int, entityType: EntityType.Value) extends HasCopy[Rating] {
-</span>8 <span style=''>  def cpy(i: Option[Int]) = </span><span style='background: #AEF1AE'>this.copy(id = i)</span><span style=''>
-</span>9 <span style=''>}
-</span>10 <span style=''>
-</span>11 <span style=''>object Rating {
-</span>12 <span style=''>  implicit val ratingReads = Json.reads[Rating]
-</span>13 <span style=''>  implicit val ratingWrites = Json.writes[Rating]
-</span>14 <span style=''>
-</span>15 <span style=''>  val tupled = (</span><span style='background: #F0ADAD'>this.apply</span><span style='background: #AEF1AE'> _).tupled</span><span style=''>
-</span>16 <span style=''>}
+</span>3 <span style=''>object Util {
+</span>4 <span style=''>  implicit class EitherSameUtil[A](either: Either[A,A]) {
+</span>5 <span style=''>    def get = </span><span style='background: #F0ADAD'>either</span><span style=''> match {
+</span>6 <span style=''>      case Left(a) =&gt; a
+</span>7 <span style=''>      case Right(b) =&gt; b
+</span>8 <span style=''>    }
+</span>9 <span style=''>  }
+</span>10 <span style=''>  
+</span>11 <span style=''>  implicit class EitherUtil[A,B](either: Either[A,B]) {
+</span>12 <span style=''>    def mapBoth[C,D](f: A =&gt; C, g: B =&gt; D) = </span><span style='background: #F0ADAD'>either</span><span style=''> match {
+</span>13 <span style=''>      case Left(a) =&gt; </span><span style='background: #F0ADAD'>Left(f(a))</span><span style=''>
+</span>14 <span style=''>      case Right(b) =&gt; </span><span style='background: #F0ADAD'>Right(g(b))</span><span style=''>
+</span>15 <span style=''>    }
+</span>16 <span style=''>  }
+</span>17 <span style=''>}
 </span></pre>
           </div>
           <div class="tab-pane" id="statementlist">
@@ -51,152 +52,129 @@
         <th>Code</th>
       </tr><tr>
         <td>
-          8
+          5
         </td>
         <td>
-          2855
+          4010
         </td>
         <td>
-          276
+          108
           -
-          276
+          114
         </td>
         <td>
           Select
         </td>
         <td>
-          whatson.model.Rating.copy$default$4
-        </td>
-        <td style="background: #AEF1AE">
-          this.copy$default$4
-        </td>
-      </tr><tr>
-        <td>
-          8
-        </td>
-        <td>
-          2857
-        </td>
-        <td>
-          271
-          -
-          288
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          whatson.model.Rating.copy
-        </td>
-        <td style="background: #AEF1AE">
-          this.copy(i, this.copy$default$2, this.copy$default$3, this.copy$default$4, this.copy$default$5)
-        </td>
-      </tr><tr>
-        <td>
-          8
-        </td>
-        <td>
-          2854
-        </td>
-        <td>
-          276
-          -
-          276
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          whatson.model.Rating.copy$default$3
-        </td>
-        <td style="background: #AEF1AE">
-          this.copy$default$3
-        </td>
-      </tr><tr>
-        <td>
-          8
-        </td>
-        <td>
-          2856
-        </td>
-        <td>
-          276
-          -
-          276
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          whatson.model.Rating.copy$default$5
-        </td>
-        <td style="background: #AEF1AE">
-          this.copy$default$5
-        </td>
-      </tr><tr>
-        <td>
-          8
-        </td>
-        <td>
-          2853
-        </td>
-        <td>
-          276
-          -
-          276
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          whatson.model.Rating.copy$default$2
-        </td>
-        <td style="background: #AEF1AE">
-          this.copy$default$2
-        </td>
-      </tr><tr>
-        <td>
-          15
-        </td>
-        <td>
-          2858
-        </td>
-        <td>
-          423
-          -
-          433
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          whatson.model.Rating.apply
+          whatson.util.Util.EitherSameUtil.either
         </td>
         <td style="background: #F0ADAD">
-          this.apply(id, rating, userId, entityId, entityType)
+          EitherSameUtil.this.either
         </td>
       </tr><tr>
         <td>
-          15
+          12
         </td>
         <td>
-          2859
+          4011
         </td>
         <td>
-          423
+          286
           -
-          443
+          292
         </td>
         <td>
           Select
         </td>
         <td>
-          scala.Function5.tupled
+          whatson.util.Util.EitherUtil.either
         </td>
-        <td style="background: #AEF1AE">
-          {
-  ((id: Option[Int], rating: Float, userId: Int, entityId: Int, entityType: whatson.model.EntityType.Value) =&gt; this.apply(id, rating, userId, entityId, entityType))
-}.tupled
+        <td style="background: #F0ADAD">
+          EitherUtil.this.either
+        </td>
+      </tr><tr>
+        <td>
+          13
+        </td>
+        <td>
+          4013
+        </td>
+        <td>
+          323
+          -
+          333
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.util.Left.apply
+        </td>
+        <td style="background: #F0ADAD">
+          scala.`package`.Left.apply[C, Nothing](f.apply(a))
+        </td>
+      </tr><tr>
+        <td>
+          13
+        </td>
+        <td>
+          4012
+        </td>
+        <td>
+          328
+          -
+          332
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Function1.apply
+        </td>
+        <td style="background: #F0ADAD">
+          f.apply(a)
+        </td>
+      </tr><tr>
+        <td>
+          14
+        </td>
+        <td>
+          4015
+        </td>
+        <td>
+          357
+          -
+          368
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.util.Right.apply
+        </td>
+        <td style="background: #F0ADAD">
+          scala.`package`.Right.apply[Nothing, D](g.apply(b))
+        </td>
+      </tr><tr>
+        <td>
+          14
+        </td>
+        <td>
+          4014
+        </td>
+        <td>
+          363
+          -
+          367
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Function1.apply
+        </td>
+        <td style="background: #F0ADAD">
+          g.apply(b)
         </td>
       </tr>
     </table>
