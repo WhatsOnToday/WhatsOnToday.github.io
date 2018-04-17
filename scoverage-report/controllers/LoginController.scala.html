@@ -202,7 +202,7 @@
 </span>178 <span style=''></span><span style='background: #F0ADAD'>                 case _ =&gt;
 </span>179 <span style=''></span><span style='background: #F0ADAD'>               }
 </span>180 <span style=''></span><span style='background: #F0ADAD'>               silhouette.env.eventBus.publish(LoginEvent(login, request))
-</span>181 <span style=''></span><span style='background: #F0ADAD'>               Redirect(&quot;http://&quot; + request.host + &quot;?token=&quot; + token + &quot;&amp;userType=&quot; + userType.getOrElse(&quot;user&quot;))
+</span>181 <span style=''></span><span style='background: #F0ADAD'>               Redirect(applicationConfig.url + &quot;web?token=&quot; + token + &quot;&amp;userType=&quot; + userType.getOrElse(&quot;user&quot;))
 </span>182 <span style=''></span><span style='background: #F0ADAD'>             }
 </span>183 <span style=''></span><span style='background: #F0ADAD'>           }
 </span>184 <span style=''></span><span style='background: #F0ADAD'>         case _ =&gt; Future.failed(new ProviderException(s&quot;Cannot authenticate with unexpected social provider $provider&quot;))
@@ -3179,7 +3179,7 @@
           159
         </td>
         <td>
-          1497
+          1496
         </td>
         <td>
           5825
@@ -3203,7 +3203,7 @@
         case _ =&gt; ()
       };
       LoginController.this.silhouette.env.eventBus.publish(com.mohiva.play.silhouette.api.LoginEvent.apply[whatson.model.Login](login, request));
-      LoginController.this.Redirect(&quot;http://&quot;.+(request.host).+(&quot;?token=&quot;).+(token).+(&quot;&amp;userType=&quot;).+(userType.getOrElse[String](&quot;user&quot;)), LoginController.this.Redirect$default$2, LoginController.this.Redirect$default$3)
+      LoginController.this.Redirect(LoginController.this.applicationConfig.url.+(&quot;web?token=&quot;).+(token).+(&quot;&amp;userType=&quot;).+(userType.getOrElse[String](&quot;user&quot;)), LoginController.this.Redirect$default$2, LoginController.this.Redirect$default$3)
     }))(LoginController.this.context)))(LoginController.this.context)))(LoginController.this.context)))(LoginController.this.context)))(LoginController.this.context)))(LoginController.this.context)
   }))(LoginController.this.context)
   case _ =&gt; scala.concurrent.Future.failed[Nothing](new com.mohiva.play.silhouette.api.exceptions.ProviderException(scala.StringContext.apply(&quot;Cannot authenticate with unexpected social provider &quot;, &quot;&quot;).s(provider), exceptions.this.ProviderException.&lt;init&gt;$default$2))
@@ -3233,7 +3233,7 @@
           160
         </td>
         <td>
-          1496
+          1495
         </td>
         <td>
           5849
@@ -3257,7 +3257,7 @@
         case _ =&gt; ()
       };
       LoginController.this.silhouette.env.eventBus.publish(com.mohiva.play.silhouette.api.LoginEvent.apply[whatson.model.Login](login, request));
-      LoginController.this.Redirect(&quot;http://&quot;.+(request.host).+(&quot;?token=&quot;).+(token).+(&quot;&amp;userType=&quot;).+(userType.getOrElse[String](&quot;user&quot;)), LoginController.this.Redirect$default$2, LoginController.this.Redirect$default$3)
+      LoginController.this.Redirect(LoginController.this.applicationConfig.url.+(&quot;web?token=&quot;).+(token).+(&quot;&amp;userType=&quot;).+(userType.getOrElse[String](&quot;user&quot;)), LoginController.this.Redirect$default$2, LoginController.this.Redirect$default$3)
     }))(LoginController.this.context)))(LoginController.this.context)))(LoginController.this.context)))(LoginController.this.context)))(LoginController.this.context)))(LoginController.this.context)
   }))(LoginController.this.context)
   case _ =&gt; scala.concurrent.Future.failed[Nothing](new com.mohiva.play.silhouette.api.exceptions.ProviderException(scala.StringContext.apply(&quot;Cannot authenticate with unexpected social provider &quot;, &quot;&quot;).s(provider), exceptions.this.ProviderException.&lt;init&gt;$default$2))
@@ -3374,18 +3374,29 @@
           1476
         </td>
         <td>
-          6136
+          6050
           -
-          6136
+          7413
         </td>
         <td>
-          Select
+          ApplyToImplicitArgs
         </td>
         <td>
-          controllers.LoginController.context
+          scala.concurrent.Future.flatMap
         </td>
         <td style="background: #F0ADAD">
-          LoginController.this.context
+          p.authenticate[com.mohiva.play.silhouette.impl.providers.state.UserStateItem, play.api.mvc.AnyContent](com.mohiva.play.silhouette.impl.providers.state.UserStateItem.apply(scala.collection.immutable.List.apply[(String, String)](scala.Predef.ArrowAssoc[String](&quot;type&quot;).-&gt;[String](userType.getOrElse[String](&quot;user&quot;))).toMap[String, String](scala.Predef.$conforms[(String, String)])))(state.this.UserStateItem.csrfFormat, util.this.ExtractableRequest.convertImplicit[play.api.mvc.AnyContent](request, util.this.RequestExtractor.anyContentExtractor), (ClassTag.apply[com.mohiva.play.silhouette.impl.providers.state.UserStateItem](classOf[com.mohiva.play.silhouette.impl.providers.state.UserStateItem]): scala.reflect.ClassTag[com.mohiva.play.silhouette.impl.providers.state.UserStateItem])).flatMap[play.api.mvc.Result](((x0$5: Either[play.api.mvc.Result,com.mohiva.play.silhouette.impl.providers.StatefulAuthInfo[p.A,com.mohiva.play.silhouette.impl.providers.state.UserStateItem]]) =&gt; x0$5 match {
+  case (value: play.api.mvc.Result)scala.util.Left[play.api.mvc.Result,com.mohiva.play.silhouette.impl.providers.StatefulAuthInfo[p.A,com.mohiva.play.silhouette.impl.providers.state.UserStateItem]]((result @ _)) =&gt; scala.concurrent.Future.successful[play.api.mvc.Result](result)
+  case (value: com.mohiva.play.silhouette.impl.providers.StatefulAuthInfo[p.A,com.mohiva.play.silhouette.impl.providers.state.UserStateItem])scala.util.Right[play.api.mvc.Result,com.mohiva.play.silhouette.impl.providers.StatefulAuthInfo[p.A,com.mohiva.play.silhouette.impl.providers.state.UserStateItem]]((authInfo: p.A, userState: com.mohiva.play.silhouette.impl.providers.state.UserStateItem)com.mohiva.play.silhouette.impl.providers.StatefulAuthInfo[p.A,com.mohiva.play.silhouette.impl.providers.state.UserStateItem]((authInfo @ _), (state @ _))) =&gt; p.retrieveProfile(authInfo).flatMap[play.api.mvc.Result](((profile: p.Profile) =&gt; LoginController.this.loginService.save(profile, userType.getOrElse[String](&quot;user&quot;)).flatMap[play.api.mvc.Result](((login: whatson.model.Login) =&gt; LoginController.this.authInfoRepository.save[p.A](profile.loginInfo, authInfo).flatMap[play.api.mvc.Result](((authInfo: p.A) =&gt; LoginController.this.silhouette.env.authenticatorService.create(profile.loginInfo)(request).flatMap[play.api.mvc.Result](((authenticator: whatson.auth.AuthEnv#A) =&gt; LoginController.this.silhouette.env.authenticatorService.init(authenticator)(request).flatMap[play.api.mvc.Result](((token: whatson.auth.AuthEnv#A#Value) =&gt; LoginController.this.avatarService.retrieveURL(profile.email.getOrElse[String](&quot;&quot;)).map[play.api.mvc.Result](((avatar: Option[String]) =&gt; {
+    state.state.get(&quot;type&quot;) match {
+      case (value: String)Some[String](&quot;user&quot;) =&gt; LoginController.this.userService.save(login, avatar)
+      case (value: String)Some[String](&quot;organizer&quot;) =&gt; LoginController.this.organizerService.save(login, profile.firstName.getOrElse[String](&quot;&quot;).+(&quot; &quot;).+(profile.lastName.getOrElse[String](&quot;&quot;)), avatar)
+      case _ =&gt; ()
+    };
+    LoginController.this.silhouette.env.eventBus.publish(com.mohiva.play.silhouette.api.LoginEvent.apply[whatson.model.Login](login, request));
+    LoginController.this.Redirect(LoginController.this.applicationConfig.url.+(&quot;web?token=&quot;).+(token).+(&quot;&amp;userType=&quot;).+(userType.getOrElse[String](&quot;user&quot;)), LoginController.this.Redirect$default$2, LoginController.this.Redirect$default$3)
+  }))(LoginController.this.context)))(LoginController.this.context)))(LoginController.this.context)))(LoginController.this.context)))(LoginController.this.context)))(LoginController.this.context)
+}))(LoginController.this.context)
         </td>
       </tr><tr>
         <td>
@@ -3455,6 +3466,27 @@
           163
         </td>
         <td>
+          1475
+        </td>
+        <td>
+          6136
+          -
+          6136
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          controllers.LoginController.context
+        </td>
+        <td style="background: #F0ADAD">
+          LoginController.this.context
+        </td>
+      </tr><tr>
+        <td>
+          163
+        </td>
+        <td>
           1433
         </td>
         <td>
@@ -3491,38 +3523,6 @@
         </td>
         <td style="background: #F0ADAD">
           scala.collection.immutable.List.apply[(String, String)](scala.Predef.ArrowAssoc[String](&quot;type&quot;).-&gt;[String](userType.getOrElse[String](&quot;user&quot;))).toMap[String, String](scala.Predef.$conforms[(String, String)])
-        </td>
-      </tr><tr>
-        <td>
-          163
-        </td>
-        <td>
-          1477
-        </td>
-        <td>
-          6050
-          -
-          7413
-        </td>
-        <td>
-          ApplyToImplicitArgs
-        </td>
-        <td>
-          scala.concurrent.Future.flatMap
-        </td>
-        <td style="background: #F0ADAD">
-          p.authenticate[com.mohiva.play.silhouette.impl.providers.state.UserStateItem, play.api.mvc.AnyContent](com.mohiva.play.silhouette.impl.providers.state.UserStateItem.apply(scala.collection.immutable.List.apply[(String, String)](scala.Predef.ArrowAssoc[String](&quot;type&quot;).-&gt;[String](userType.getOrElse[String](&quot;user&quot;))).toMap[String, String](scala.Predef.$conforms[(String, String)])))(state.this.UserStateItem.csrfFormat, util.this.ExtractableRequest.convertImplicit[play.api.mvc.AnyContent](request, util.this.RequestExtractor.anyContentExtractor), (ClassTag.apply[com.mohiva.play.silhouette.impl.providers.state.UserStateItem](classOf[com.mohiva.play.silhouette.impl.providers.state.UserStateItem]): scala.reflect.ClassTag[com.mohiva.play.silhouette.impl.providers.state.UserStateItem])).flatMap[play.api.mvc.Result](((x0$5: Either[play.api.mvc.Result,com.mohiva.play.silhouette.impl.providers.StatefulAuthInfo[p.A,com.mohiva.play.silhouette.impl.providers.state.UserStateItem]]) =&gt; x0$5 match {
-  case (value: play.api.mvc.Result)scala.util.Left[play.api.mvc.Result,com.mohiva.play.silhouette.impl.providers.StatefulAuthInfo[p.A,com.mohiva.play.silhouette.impl.providers.state.UserStateItem]]((result @ _)) =&gt; scala.concurrent.Future.successful[play.api.mvc.Result](result)
-  case (value: com.mohiva.play.silhouette.impl.providers.StatefulAuthInfo[p.A,com.mohiva.play.silhouette.impl.providers.state.UserStateItem])scala.util.Right[play.api.mvc.Result,com.mohiva.play.silhouette.impl.providers.StatefulAuthInfo[p.A,com.mohiva.play.silhouette.impl.providers.state.UserStateItem]]((authInfo: p.A, userState: com.mohiva.play.silhouette.impl.providers.state.UserStateItem)com.mohiva.play.silhouette.impl.providers.StatefulAuthInfo[p.A,com.mohiva.play.silhouette.impl.providers.state.UserStateItem]((authInfo @ _), (state @ _))) =&gt; p.retrieveProfile(authInfo).flatMap[play.api.mvc.Result](((profile: p.Profile) =&gt; LoginController.this.loginService.save(profile, userType.getOrElse[String](&quot;user&quot;)).flatMap[play.api.mvc.Result](((login: whatson.model.Login) =&gt; LoginController.this.authInfoRepository.save[p.A](profile.loginInfo, authInfo).flatMap[play.api.mvc.Result](((authInfo: p.A) =&gt; LoginController.this.silhouette.env.authenticatorService.create(profile.loginInfo)(request).flatMap[play.api.mvc.Result](((authenticator: whatson.auth.AuthEnv#A) =&gt; LoginController.this.silhouette.env.authenticatorService.init(authenticator)(request).flatMap[play.api.mvc.Result](((token: whatson.auth.AuthEnv#A#Value) =&gt; LoginController.this.avatarService.retrieveURL(profile.email.getOrElse[String](&quot;&quot;)).map[play.api.mvc.Result](((avatar: Option[String]) =&gt; {
-    state.state.get(&quot;type&quot;) match {
-      case (value: String)Some[String](&quot;user&quot;) =&gt; LoginController.this.userService.save(login, avatar)
-      case (value: String)Some[String](&quot;organizer&quot;) =&gt; LoginController.this.organizerService.save(login, profile.firstName.getOrElse[String](&quot;&quot;).+(&quot; &quot;).+(profile.lastName.getOrElse[String](&quot;&quot;)), avatar)
-      case _ =&gt; ()
-    };
-    LoginController.this.silhouette.env.eventBus.publish(com.mohiva.play.silhouette.api.LoginEvent.apply[whatson.model.Login](login, request));
-    LoginController.this.Redirect(&quot;http://&quot;.+(request.host).+(&quot;?token=&quot;).+(token).+(&quot;&amp;userType=&quot;).+(userType.getOrElse[String](&quot;user&quot;)), LoginController.this.Redirect$default$2, LoginController.this.Redirect$default$3)
-  }))(LoginController.this.context)))(LoginController.this.context)))(LoginController.this.context)))(LoginController.this.context)))(LoginController.this.context)))(LoginController.this.context)
-}))(LoginController.this.context)
         </td>
       </tr><tr>
         <td>
@@ -3574,27 +3574,6 @@
           1474
         </td>
         <td>
-          6288
-          -
-          6288
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          controllers.LoginController.context
-        </td>
-        <td style="background: #F0ADAD">
-          LoginController.this.context
-        </td>
-      </tr><tr>
-        <td>
-          166
-        </td>
-        <td>
-          1475
-        </td>
-        <td>
           6259
           -
           7400
@@ -3613,15 +3592,36 @@
     case _ =&gt; ()
   };
   LoginController.this.silhouette.env.eventBus.publish(com.mohiva.play.silhouette.api.LoginEvent.apply[whatson.model.Login](login, request));
-  LoginController.this.Redirect(&quot;http://&quot;.+(request.host).+(&quot;?token=&quot;).+(token).+(&quot;&amp;userType=&quot;).+(userType.getOrElse[String](&quot;user&quot;)), LoginController.this.Redirect$default$2, LoginController.this.Redirect$default$3)
+  LoginController.this.Redirect(LoginController.this.applicationConfig.url.+(&quot;web?token=&quot;).+(token).+(&quot;&amp;userType=&quot;).+(userType.getOrElse[String](&quot;user&quot;)), LoginController.this.Redirect$default$2, LoginController.this.Redirect$default$3)
 }))(LoginController.this.context)))(LoginController.this.context)))(LoginController.this.context)))(LoginController.this.context)))(LoginController.this.context)))(LoginController.this.context)
+        </td>
+      </tr><tr>
+        <td>
+          166
+        </td>
+        <td>
+          1473
+        </td>
+        <td>
+          6288
+          -
+          6288
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          controllers.LoginController.context
+        </td>
+        <td style="background: #F0ADAD">
+          LoginController.this.context
         </td>
       </tr><tr>
         <td>
           167
         </td>
         <td>
-          1473
+          1472
         </td>
         <td>
           6334
@@ -3642,29 +3642,8 @@
     case _ =&gt; ()
   };
   LoginController.this.silhouette.env.eventBus.publish(com.mohiva.play.silhouette.api.LoginEvent.apply[whatson.model.Login](login, request));
-  LoginController.this.Redirect(&quot;http://&quot;.+(request.host).+(&quot;?token=&quot;).+(token).+(&quot;&amp;userType=&quot;).+(userType.getOrElse[String](&quot;user&quot;)), LoginController.this.Redirect$default$2, LoginController.this.Redirect$default$3)
+  LoginController.this.Redirect(LoginController.this.applicationConfig.url.+(&quot;web?token=&quot;).+(token).+(&quot;&amp;userType=&quot;).+(userType.getOrElse[String](&quot;user&quot;)), LoginController.this.Redirect$default$2, LoginController.this.Redirect$default$3)
 }))(LoginController.this.context)))(LoginController.this.context)))(LoginController.this.context)))(LoginController.this.context)))(LoginController.this.context)
-        </td>
-      </tr><tr>
-        <td>
-          167
-        </td>
-        <td>
-          1472
-        </td>
-        <td>
-          6340
-          -
-          6340
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          controllers.LoginController.context
-        </td>
-        <td style="background: #F0ADAD">
-          LoginController.this.context
         </td>
       </tr><tr>
         <td>
@@ -3686,6 +3665,27 @@
         </td>
         <td style="background: #F0ADAD">
           userType.getOrElse[String](&quot;user&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          167
+        </td>
+        <td>
+          1471
+        </td>
+        <td>
+          6340
+          -
+          6340
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          controllers.LoginController.context
+        </td>
+        <td style="background: #F0ADAD">
+          LoginController.this.context
         </td>
       </tr><tr>
         <td>
@@ -3716,27 +3716,6 @@
           1470
         </td>
         <td>
-          6422
-          -
-          6422
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          controllers.LoginController.context
-        </td>
-        <td style="background: #F0ADAD">
-          LoginController.this.context
-        </td>
-      </tr><tr>
-        <td>
-          168
-        </td>
-        <td>
-          1471
-        </td>
-        <td>
           6413
           -
           7400
@@ -3755,20 +3734,20 @@
     case _ =&gt; ()
   };
   LoginController.this.silhouette.env.eventBus.publish(com.mohiva.play.silhouette.api.LoginEvent.apply[whatson.model.Login](login, request));
-  LoginController.this.Redirect(&quot;http://&quot;.+(request.host).+(&quot;?token=&quot;).+(token).+(&quot;&amp;userType=&quot;).+(userType.getOrElse[String](&quot;user&quot;)), LoginController.this.Redirect$default$2, LoginController.this.Redirect$default$3)
+  LoginController.this.Redirect(LoginController.this.applicationConfig.url.+(&quot;web?token=&quot;).+(token).+(&quot;&amp;userType=&quot;).+(userType.getOrElse[String](&quot;user&quot;)), LoginController.this.Redirect$default$2, LoginController.this.Redirect$default$3)
 }))(LoginController.this.context)))(LoginController.this.context)))(LoginController.this.context)))(LoginController.this.context)
         </td>
       </tr><tr>
         <td>
-          169
+          168
         </td>
         <td>
-          1468
+          1469
         </td>
         <td>
-          6507
+          6422
           -
-          6507
+          6422
         </td>
         <td>
           Select
@@ -3784,7 +3763,7 @@
           169
         </td>
         <td>
-          1469
+          1468
         </td>
         <td>
           6493
@@ -3805,8 +3784,29 @@
     case _ =&gt; ()
   };
   LoginController.this.silhouette.env.eventBus.publish(com.mohiva.play.silhouette.api.LoginEvent.apply[whatson.model.Login](login, request));
-  LoginController.this.Redirect(&quot;http://&quot;.+(request.host).+(&quot;?token=&quot;).+(token).+(&quot;&amp;userType=&quot;).+(userType.getOrElse[String](&quot;user&quot;)), LoginController.this.Redirect$default$2, LoginController.this.Redirect$default$3)
+  LoginController.this.Redirect(LoginController.this.applicationConfig.url.+(&quot;web?token=&quot;).+(token).+(&quot;&amp;userType=&quot;).+(userType.getOrElse[String](&quot;user&quot;)), LoginController.this.Redirect$default$2, LoginController.this.Redirect$default$3)
 }))(LoginController.this.context)))(LoginController.this.context)))(LoginController.this.context)
+        </td>
+      </tr><tr>
+        <td>
+          169
+        </td>
+        <td>
+          1467
+        </td>
+        <td>
+          6507
+          -
+          6507
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          controllers.LoginController.context
+        </td>
+        <td style="background: #F0ADAD">
+          LoginController.this.context
         </td>
       </tr><tr>
         <td>
@@ -3834,7 +3834,28 @@
           170
         </td>
         <td>
-          1467
+          1465
+        </td>
+        <td>
+          6593
+          -
+          6593
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          controllers.LoginController.context
+        </td>
+        <td style="background: #F0ADAD">
+          LoginController.this.context
+        </td>
+      </tr><tr>
+        <td>
+          170
+        </td>
+        <td>
+          1466
         </td>
         <td>
           6587
@@ -3855,36 +3876,15 @@
     case _ =&gt; ()
   };
   LoginController.this.silhouette.env.eventBus.publish(com.mohiva.play.silhouette.api.LoginEvent.apply[whatson.model.Login](login, request));
-  LoginController.this.Redirect(&quot;http://&quot;.+(request.host).+(&quot;?token=&quot;).+(token).+(&quot;&amp;userType=&quot;).+(userType.getOrElse[String](&quot;user&quot;)), LoginController.this.Redirect$default$2, LoginController.this.Redirect$default$3)
+  LoginController.this.Redirect(LoginController.this.applicationConfig.url.+(&quot;web?token=&quot;).+(token).+(&quot;&amp;userType=&quot;).+(userType.getOrElse[String](&quot;user&quot;)), LoginController.this.Redirect$default$2, LoginController.this.Redirect$default$3)
 }))(LoginController.this.context)))(LoginController.this.context)
-        </td>
-      </tr><tr>
-        <td>
-          170
-        </td>
-        <td>
-          1466
-        </td>
-        <td>
-          6593
-          -
-          6593
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          controllers.LoginController.context
-        </td>
-        <td style="background: #F0ADAD">
-          LoginController.this.context
         </td>
       </tr><tr>
         <td>
           171
         </td>
         <td>
-          1465
+          1464
         </td>
         <td>
           6667
@@ -3905,7 +3905,7 @@
     case _ =&gt; ()
   };
   LoginController.this.silhouette.env.eventBus.publish(com.mohiva.play.silhouette.api.LoginEvent.apply[whatson.model.Login](login, request));
-  LoginController.this.Redirect(&quot;http://&quot;.+(request.host).+(&quot;?token=&quot;).+(token).+(&quot;&amp;userType=&quot;).+(userType.getOrElse[String](&quot;user&quot;)), LoginController.this.Redirect$default$2, LoginController.this.Redirect$default$3)
+  LoginController.this.Redirect(LoginController.this.applicationConfig.url.+(&quot;web?token=&quot;).+(token).+(&quot;&amp;userType=&quot;).+(userType.getOrElse[String](&quot;user&quot;)), LoginController.this.Redirect$default$2, LoginController.this.Redirect$default$3)
 }))(LoginController.this.context)
         </td>
       </tr><tr>
@@ -3913,7 +3913,7 @@
           171
         </td>
         <td>
-          1464
+          1463
         </td>
         <td>
           6674
@@ -4168,9 +4168,9 @@
           1456
         </td>
         <td>
-          7296
+          7320
           -
-          7305
+          7332
         </td>
         <td>
           Literal
@@ -4179,7 +4179,7 @@
           &lt;nosymbol&gt;
         </td>
         <td style="background: #F0ADAD">
-          &quot;http://&quot;
+          &quot;web?token=&quot;
         </td>
       </tr><tr>
         <td>
@@ -4187,6 +4187,27 @@
         </td>
         <td>
           1459
+        </td>
+        <td>
+          7296
+          -
+          7384
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.+
+        </td>
+        <td style="background: #F0ADAD">
+          LoginController.this.applicationConfig.url.+(&quot;web?token=&quot;).+(token).+(&quot;&amp;userType=&quot;).+(userType.getOrElse[String](&quot;user&quot;))
+        </td>
+      </tr><tr>
+        <td>
+          181
+        </td>
+        <td>
+          1458
         </td>
         <td>
           7358
@@ -4207,7 +4228,28 @@
           181
         </td>
         <td>
-          1458
+          1461
+        </td>
+        <td>
+          7287
+          -
+          7287
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.mvc.Results.Redirect$default$3
+        </td>
+        <td style="background: #F0ADAD">
+          LoginController.this.Redirect$default$3
+        </td>
+      </tr><tr>
+        <td>
+          181
+        </td>
+        <td>
+          1457
         </td>
         <td>
           7343
@@ -4228,7 +4270,7 @@
           181
         </td>
         <td>
-          1461
+          1460
         </td>
         <td>
           7287
@@ -4249,7 +4291,7 @@
           181
         </td>
         <td>
-          1463
+          1462
         </td>
         <td>
           7287
@@ -4263,70 +4305,7 @@
           play.api.mvc.Results.Redirect
         </td>
         <td style="background: #F0ADAD">
-          LoginController.this.Redirect(&quot;http://&quot;.+(request.host).+(&quot;?token=&quot;).+(token).+(&quot;&amp;userType=&quot;).+(userType.getOrElse[String](&quot;user&quot;)), LoginController.this.Redirect$default$2, LoginController.this.Redirect$default$3)
-        </td>
-      </tr><tr>
-        <td>
-          181
-        </td>
-        <td>
-          1457
-        </td>
-        <td>
-          7323
-          -
-          7332
-        </td>
-        <td>
-          Literal
-        </td>
-        <td>
-          &lt;nosymbol&gt;
-        </td>
-        <td style="background: #F0ADAD">
-          &quot;?token=&quot;
-        </td>
-      </tr><tr>
-        <td>
-          181
-        </td>
-        <td>
-          1460
-        </td>
-        <td>
-          7296
-          -
-          7384
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          java.lang.String.+
-        </td>
-        <td style="background: #F0ADAD">
-          &quot;http://&quot;.+(request.host).+(&quot;?token=&quot;).+(token).+(&quot;&amp;userType=&quot;).+(userType.getOrElse[String](&quot;user&quot;))
-        </td>
-      </tr><tr>
-        <td>
-          181
-        </td>
-        <td>
-          1462
-        </td>
-        <td>
-          7287
-          -
-          7287
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          play.api.mvc.Results.Redirect$default$3
-        </td>
-        <td style="background: #F0ADAD">
-          LoginController.this.Redirect$default$3
+          LoginController.this.Redirect(LoginController.this.applicationConfig.url.+(&quot;web?token=&quot;).+(token).+(&quot;&amp;userType=&quot;).+(userType.getOrElse[String](&quot;user&quot;)), LoginController.this.Redirect$default$2, LoginController.this.Redirect$default$3)
         </td>
       </tr><tr>
         <td>
@@ -4334,6 +4313,27 @@
         </td>
         <td>
           1479
+        </td>
+        <td>
+          7447
+          -
+          7534
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.mohiva.play.silhouette.api.exceptions.ProviderException.&lt;init&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          new com.mohiva.play.silhouette.api.exceptions.ProviderException(scala.StringContext.apply(&quot;Cannot authenticate with unexpected social provider &quot;, &quot;&quot;).s(provider), exceptions.this.ProviderException.&lt;init&gt;$default$2)
+        </td>
+      </tr><tr>
+        <td>
+          184
+        </td>
+        <td>
+          1478
         </td>
         <td>
           7447
@@ -4354,28 +4354,7 @@
           184
         </td>
         <td>
-          1481
-        </td>
-        <td>
-          7433
-          -
-          7535
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          scala.concurrent.Future.failed
-        </td>
-        <td style="background: #F0ADAD">
-          scala.concurrent.Future.failed[Nothing](new com.mohiva.play.silhouette.api.exceptions.ProviderException(scala.StringContext.apply(&quot;Cannot authenticate with unexpected social provider &quot;, &quot;&quot;).s(provider), exceptions.this.ProviderException.&lt;init&gt;$default$2))
-        </td>
-      </tr><tr>
-        <td>
-          184
-        </td>
-        <td>
-          1478
+          1477
         </td>
         <td>
           7469
@@ -4399,46 +4378,25 @@
           1480
         </td>
         <td>
-          7447
+          7433
           -
-          7534
+          7535
         </td>
         <td>
           Apply
         </td>
         <td>
-          com.mohiva.play.silhouette.api.exceptions.ProviderException.&lt;init&gt;
+          scala.concurrent.Future.failed
         </td>
         <td style="background: #F0ADAD">
-          new com.mohiva.play.silhouette.api.exceptions.ProviderException(scala.StringContext.apply(&quot;Cannot authenticate with unexpected social provider &quot;, &quot;&quot;).s(provider), exceptions.this.ProviderException.&lt;init&gt;$default$2)
+          scala.concurrent.Future.failed[Nothing](new com.mohiva.play.silhouette.api.exceptions.ProviderException(scala.StringContext.apply(&quot;Cannot authenticate with unexpected social provider &quot;, &quot;&quot;).s(provider), exceptions.this.ProviderException.&lt;init&gt;$default$2))
         </td>
       </tr><tr>
         <td>
           185
         </td>
         <td>
-          1494
-        </td>
-        <td>
-          7554
-          -
-          7554
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          controllers.LoginController.context
-        </td>
-        <td style="background: #F0ADAD">
-          LoginController.this.context
-        </td>
-      </tr><tr>
-        <td>
-          185
-        </td>
-        <td>
-          1493
+          1492
         </td>
         <td>
           7554
@@ -4459,7 +4417,7 @@
           185
         </td>
         <td>
-          1495
+          1494
         </td>
         <td>
           5905
@@ -4483,7 +4441,7 @@
         case _ =&gt; ()
       };
       LoginController.this.silhouette.env.eventBus.publish(com.mohiva.play.silhouette.api.LoginEvent.apply[whatson.model.Login](login, request));
-      LoginController.this.Redirect(&quot;http://&quot;.+(request.host).+(&quot;?token=&quot;).+(token).+(&quot;&amp;userType=&quot;).+(userType.getOrElse[String](&quot;user&quot;)), LoginController.this.Redirect$default$2, LoginController.this.Redirect$default$3)
+      LoginController.this.Redirect(LoginController.this.applicationConfig.url.+(&quot;web?token=&quot;).+(token).+(&quot;&amp;userType=&quot;).+(userType.getOrElse[String](&quot;user&quot;)), LoginController.this.Redirect$default$2, LoginController.this.Redirect$default$3)
     }))(LoginController.this.context)))(LoginController.this.context)))(LoginController.this.context)))(LoginController.this.context)))(LoginController.this.context)))(LoginController.this.context)
   }))(LoginController.this.context)
   case _ =&gt; scala.concurrent.Future.failed[Nothing](new com.mohiva.play.silhouette.api.exceptions.ProviderException(scala.StringContext.apply(&quot;Cannot authenticate with unexpected social provider &quot;, &quot;&quot;).s(provider), exceptions.this.ProviderException.&lt;init&gt;$default$2))
@@ -4510,10 +4468,52 @@
         </td>
       </tr><tr>
         <td>
+          185
+        </td>
+        <td>
+          1493
+        </td>
+        <td>
+          7554
+          -
+          7554
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          controllers.LoginController.context
+        </td>
+        <td style="background: #F0ADAD">
+          LoginController.this.context
+        </td>
+      </tr><tr>
+        <td>
           187
         </td>
         <td>
           1483
+        </td>
+        <td>
+          7603
+          -
+          7644
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          play.api.LoggerLike.debug
+        </td>
+        <td style="background: #F0ADAD">
+          LoginController.this.log.debug(&quot;Unexpected provider error&quot;, e)(api.this.MarkerContext.NoMarker)
+        </td>
+      </tr><tr>
+        <td>
+          187
+        </td>
+        <td>
+          1482
         </td>
         <td>
           7612
@@ -4534,7 +4534,7 @@
           187
         </td>
         <td>
-          1482
+          1481
         </td>
         <td>
           7613
@@ -4552,157 +4552,10 @@
         </td>
       </tr><tr>
         <td>
-          187
-        </td>
-        <td>
-          1484
-        </td>
-        <td>
-          7603
-          -
-          7644
-        </td>
-        <td>
-          ApplyToImplicitArgs
-        </td>
-        <td>
-          play.api.LoggerLike.debug
-        </td>
-        <td style="background: #F0ADAD">
-          LoginController.this.log.debug(&quot;Unexpected provider error&quot;, e)(api.this.MarkerContext.NoMarker)
-        </td>
-      </tr><tr>
-        <td>
-          188
-        </td>
-        <td>
-          1492
-        </td>
-        <td>
-          7655
-          -
-          7716
-        </td>
-        <td>
-          ApplyToImplicitArgs
-        </td>
-        <td>
-          play.api.mvc.Results.Status.apply
-        </td>
-        <td style="background: #F0ADAD">
-          LoginController.this.Unauthorized.apply[play.api.libs.json.JsObject](play.api.libs.json.Json.obj(scala.Predef.ArrowAssoc[String](&quot;message&quot;).-&gt;[play.api.libs.json.Json.JsValueWrapper](json.this.Json.toJsFieldJsValueWrapper[String](&quot;could.not.authenticate&quot;)(json.this.Writes.StringWrites))))(http.this.Writeable.writeableOf_JsValue)
-        </td>
-      </tr><tr>
-        <td>
           188
         </td>
         <td>
           1485
-        </td>
-        <td>
-          7677
-          -
-          7686
-        </td>
-        <td>
-          Literal
-        </td>
-        <td>
-          &lt;nosymbol&gt;
-        </td>
-        <td style="background: #F0ADAD">
-          &quot;message&quot;
-        </td>
-      </tr><tr>
-        <td>
-          188
-        </td>
-        <td>
-          1488
-        </td>
-        <td>
-          7690
-          -
-          7714
-        </td>
-        <td>
-          ApplyToImplicitArgs
-        </td>
-        <td>
-          play.api.libs.json.Json.toJsFieldJsValueWrapper
-        </td>
-        <td style="background: #F0ADAD">
-          json.this.Json.toJsFieldJsValueWrapper[String](&quot;could.not.authenticate&quot;)(json.this.Writes.StringWrites)
-        </td>
-      </tr><tr>
-        <td>
-          188
-        </td>
-        <td>
-          1491
-        </td>
-        <td>
-          7667
-          -
-          7667
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          play.api.http.DefaultWriteables.writeableOf_JsValue
-        </td>
-        <td style="background: #F0ADAD">
-          http.this.Writeable.writeableOf_JsValue
-        </td>
-      </tr><tr>
-        <td>
-          188
-        </td>
-        <td>
-          1490
-        </td>
-        <td>
-          7668
-          -
-          7715
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          play.api.libs.json.Json.obj
-        </td>
-        <td style="background: #F0ADAD">
-          play.api.libs.json.Json.obj(scala.Predef.ArrowAssoc[String](&quot;message&quot;).-&gt;[play.api.libs.json.Json.JsValueWrapper](json.this.Json.toJsFieldJsValueWrapper[String](&quot;could.not.authenticate&quot;)(json.this.Writes.StringWrites)))
-        </td>
-      </tr><tr>
-        <td>
-          188
-        </td>
-        <td>
-          1487
-        </td>
-        <td>
-          7690
-          -
-          7690
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          play.api.libs.json.DefaultWrites.StringWrites
-        </td>
-        <td style="background: #F0ADAD">
-          json.this.Writes.StringWrites
-        </td>
-      </tr><tr>
-        <td>
-          188
-        </td>
-        <td>
-          1486
         </td>
         <td>
           7690
@@ -4723,7 +4576,7 @@
           188
         </td>
         <td>
-          1489
+          1488
         </td>
         <td>
           7677
@@ -4741,10 +4594,157 @@
         </td>
       </tr><tr>
         <td>
+          188
+        </td>
+        <td>
+          1491
+        </td>
+        <td>
+          7655
+          -
+          7716
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          play.api.mvc.Results.Status.apply
+        </td>
+        <td style="background: #F0ADAD">
+          LoginController.this.Unauthorized.apply[play.api.libs.json.JsObject](play.api.libs.json.Json.obj(scala.Predef.ArrowAssoc[String](&quot;message&quot;).-&gt;[play.api.libs.json.Json.JsValueWrapper](json.this.Json.toJsFieldJsValueWrapper[String](&quot;could.not.authenticate&quot;)(json.this.Writes.StringWrites))))(http.this.Writeable.writeableOf_JsValue)
+        </td>
+      </tr><tr>
+        <td>
+          188
+        </td>
+        <td>
+          1490
+        </td>
+        <td>
+          7667
+          -
+          7667
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.http.DefaultWriteables.writeableOf_JsValue
+        </td>
+        <td style="background: #F0ADAD">
+          http.this.Writeable.writeableOf_JsValue
+        </td>
+      </tr><tr>
+        <td>
+          188
+        </td>
+        <td>
+          1484
+        </td>
+        <td>
+          7677
+          -
+          7686
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;message&quot;
+        </td>
+      </tr><tr>
+        <td>
+          188
+        </td>
+        <td>
+          1487
+        </td>
+        <td>
+          7690
+          -
+          7714
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          play.api.libs.json.Json.toJsFieldJsValueWrapper
+        </td>
+        <td style="background: #F0ADAD">
+          json.this.Json.toJsFieldJsValueWrapper[String](&quot;could.not.authenticate&quot;)(json.this.Writes.StringWrites)
+        </td>
+      </tr><tr>
+        <td>
+          188
+        </td>
+        <td>
+          1486
+        </td>
+        <td>
+          7690
+          -
+          7690
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.libs.json.DefaultWrites.StringWrites
+        </td>
+        <td style="background: #F0ADAD">
+          json.this.Writes.StringWrites
+        </td>
+      </tr><tr>
+        <td>
+          188
+        </td>
+        <td>
+          1489
+        </td>
+        <td>
+          7668
+          -
+          7715
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          play.api.libs.json.Json.obj
+        </td>
+        <td style="background: #F0ADAD">
+          play.api.libs.json.Json.obj(scala.Predef.ArrowAssoc[String](&quot;message&quot;).-&gt;[play.api.libs.json.Json.JsValueWrapper](json.this.Json.toJsFieldJsValueWrapper[String](&quot;could.not.authenticate&quot;)(json.this.Writes.StringWrites)))
+        </td>
+      </tr><tr>
+        <td>
           206
         </td>
         <td>
-          1500
+          1497
+        </td>
+        <td>
+          8332
+          -
+          8369
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          play.api.mvc.RequestHeader.getQueryString
+        </td>
+        <td style="background: #F0ADAD">
+          request.getQueryString(&quot;oauth_token&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          206
+        </td>
+        <td>
+          1499
         </td>
         <td>
           8332
@@ -4765,7 +4765,7 @@
           206
         </td>
         <td>
-          1499
+          1498
         </td>
         <td>
           8373
@@ -4783,73 +4783,10 @@
         </td>
       </tr><tr>
         <td>
-          206
-        </td>
-        <td>
-          1498
-        </td>
-        <td>
-          8332
-          -
-          8369
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          play.api.mvc.RequestHeader.getQueryString
-        </td>
-        <td style="background: #F0ADAD">
-          request.getQueryString(&quot;oauth_token&quot;)
-        </td>
-      </tr><tr>
-        <td>
-          207
-        </td>
-        <td>
-          1501
-        </td>
-        <td>
-          8484
-          -
-          8506
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          java.lang.String.+
-        </td>
-        <td style="background: #F0ADAD">
-          token.+(&quot;-&quot;).+(verifier)
-        </td>
-      </tr><tr>
-        <td>
           207
         </td>
         <td>
           1510
-        </td>
-        <td>
-          8516
-          -
-          8516
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          controllers.LoginController.context
-        </td>
-        <td style="background: #F0ADAD">
-          LoginController.this.context
-        </td>
-      </tr><tr>
-        <td>
-          207
-        </td>
-        <td>
-          1511
         </td>
         <td>
           8466
@@ -4873,31 +4810,52 @@
         </td>
       </tr><tr>
         <td>
-          208
+          207
         </td>
         <td>
-          1503
+          1509
         </td>
         <td>
-          8542
+          8516
           -
-          8551
+          8516
         </td>
         <td>
-          ApplyToImplicitArgs
+          Select
         </td>
         <td>
-          scala.concurrent.Future.apply
+          controllers.LoginController.context
         </td>
         <td style="background: #F0ADAD">
-          scala.concurrent.Future.apply[play.api.mvc.Result](r)(LoginController.this.context)
+          LoginController.this.context
+        </td>
+      </tr><tr>
+        <td>
+          207
+        </td>
+        <td>
+          1500
+        </td>
+        <td>
+          8484
+          -
+          8506
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.+
+        </td>
+        <td style="background: #F0ADAD">
+          token.+(&quot;-&quot;).+(verifier)
         </td>
       </tr><tr>
         <td>
           208
         </td>
         <td>
-          1502
+          1501
         </td>
         <td>
           8548
@@ -4915,10 +4873,31 @@
         </td>
       </tr><tr>
         <td>
+          208
+        </td>
+        <td>
+          1502
+        </td>
+        <td>
+          8542
+          -
+          8551
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.concurrent.Future.apply
+        </td>
+        <td style="background: #F0ADAD">
+          scala.concurrent.Future.apply[play.api.mvc.Result](r)(LoginController.this.context)
+        </td>
+      </tr><tr>
+        <td>
           209
         </td>
         <td>
-          1509
+          1508
         </td>
         <td>
           8573
@@ -4942,7 +4921,7 @@
           209
         </td>
         <td>
-          1508
+          1507
         </td>
         <td>
           8588
@@ -4963,49 +4942,7 @@
           210
         </td>
         <td>
-          1506
-        </td>
-        <td>
-          8652
-          -
-          8660
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          scala.concurrent.duration.DurationConversions.minute
-        </td>
-        <td style="background: #F0ADAD">
-          scala.concurrent.duration.`package`.DurationInt(1).minute
-        </td>
-      </tr><tr>
-        <td>
-          210
-        </td>
-        <td>
-          1505
-        </td>
-        <td>
-          8652
-          -
-          8653
-        </td>
-        <td>
-          Literal
-        </td>
-        <td>
-          &lt;nosymbol&gt;
-        </td>
-        <td style="background: #F0ADAD">
-          1
-        </td>
-      </tr><tr>
-        <td>
-          210
-        </td>
-        <td>
-          1504
+          1503
         </td>
         <td>
           8620
@@ -5026,7 +4963,7 @@
           210
         </td>
         <td>
-          1507
+          1506
         </td>
         <td>
           8610
@@ -5044,10 +4981,52 @@
         </td>
       </tr><tr>
         <td>
+          210
+        </td>
+        <td>
+          1505
+        </td>
+        <td>
+          8652
+          -
+          8660
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.concurrent.duration.DurationConversions.minute
+        </td>
+        <td style="background: #F0ADAD">
+          scala.concurrent.duration.`package`.DurationInt(1).minute
+        </td>
+      </tr><tr>
+        <td>
+          210
+        </td>
+        <td>
+          1504
+        </td>
+        <td>
+          8652
+          -
+          8653
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          1
+        </td>
+      </tr><tr>
+        <td>
           214
         </td>
         <td>
-          1512
+          1511
         </td>
         <td>
           8713
