@@ -1,0 +1,1481 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          whatson/service/external/fgraph/FGraphImpl.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package whatson.service.external.fgraph
+</span>2 <span style=''>
+</span>3 <span style=''>import scala.concurrent.{ExecutionContext, Future}
+</span>4 <span style=''>
+</span>5 <span style=''>import javax.inject._
+</span>6 <span style=''>import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
+</span>7 <span style=''>import slick.jdbc.JdbcProfile
+</span>8 <span style=''>import slick.jdbc.PostgresProfile.api._
+</span>9 <span style=''>import whatson.db._
+</span>10 <span style=''>import whatson.util._
+</span>11 <span style=''>import play.api.libs.ws._
+</span>12 <span style=''>import play.api.libs.json.Json
+</span>13 <span style=''>import play.api._
+</span>14 <span style=''>import whatson.service.external.fgraph._
+</span>15 <span style=''>import java.text.SimpleDateFormat
+</span>16 <span style=''>import whatson.model.detail.EventDetail
+</span>17 <span style=''>import whatson.model.{Organizer, Location, Login}
+</span>18 <span style=''>import java.sql.Timestamp
+</span>19 <span style=''>import java.net._
+</span>20 <span style=''>
+</span>21 <span style=''>
+</span>22 <span style=''>class FGraphImpl @Inject()(protected val dbConfigProvider: DatabaseConfigProvider,
+</span>23 <span style=''>                           applicationConfig: ApplicationConfig,
+</span>24 <span style=''>                           ws: WSClient,
+</span>25 <span style=''>                           config: FGraphConfig)
+</span>26 <span style=''>                          (implicit context: ExecutionContext)
+</span>27 <span style=''>    extends FGraph {
+</span>28 <span style=''>
+</span>29 <span style=''>  val log = </span><span style='background: #AEF1AE'>Logger(&quot;service.fgraph&quot;)</span><span style=''>
+</span>30 <span style=''>
+</span>31 <span style=''>  val format = </span><span style='background: #AEF1AE'>new SimpleDateFormat(&quot;yyyy-MM-dd HH:mm:ss&quot;)</span><span style=''>
+</span>32 <span style=''>
+</span>33 <span style=''>  def getEventData(id: String, token: String): Future[Option[Model.Event]] = {
+</span>34 <span style=''>    val result = </span><span style='background: #F0ADAD'>ws.url(config.url + id)
+</span>35 <span style=''></span><span style='background: #F0ADAD'>      .addQueryStringParameters(&quot;access_token&quot; -&gt; token)
+</span>36 <span style=''></span><span style='background: #F0ADAD'>      .get()</span><span style=''>
+</span>37 <span style=''>
+</span>38 <span style=''>    </span><span style='background: #F0ADAD'>result.map { case x =&gt;
+</span>39 <span style=''></span><span style='background: #F0ADAD'>      log.debug(&quot;Got response from facebook graph api: &quot; + x.body)
+</span>40 <span style=''></span><span style='background: #F0ADAD'>      x.json.validate[Model.Event].asOpt
+</span>41 <span style=''></span><span style='background: #F0ADAD'>    }</span><span style=''>
+</span>42 <span style=''>  }
+</span>43 <span style=''>
+</span>44 <span style=''>  def getEvent(url: String, login: Login): Future[Option[EventDetail]] =
+</span>45 <span style=''>    </span><span style='background: #F0ADAD'>login.oauthToken.map(token =&gt; getEventData(url,token).map(_.map(x =&gt; toEventDetail(x))))
+</span>46 <span style=''></span><span style='background: #F0ADAD'>      .getOrElse(Future.successful(None))</span><span style=''>
+</span>47 <span style=''>
+</span>48 <span style=''>      
+</span>49 <span style=''>  def canImport(url: String, login: Login) = {
+</span>50 <span style=''>    val uri = </span><span style='background: #F0ADAD'>new URI(url)</span><span style=''>
+</span>51 <span style=''>    val split = </span><span style='background: #F0ADAD'>uri.getPath.split(&quot;/&quot;)</span><span style=''>
+</span>52 <span style=''>    val ev = </span><span style='background: #F0ADAD'>split.indexOf(&quot;events&quot;)</span><span style=''>
+</span>53 <span style=''>    </span><span style='background: #F0ADAD'>(uri.getHost.equals(&quot;www.facebook.com&quot;) || uri.getHost.equals(&quot;www.facebook.de&quot;)) &amp;&amp; ev &gt;= 0 &amp;&amp; split.length-1 &gt; ev &amp;&amp; login.oauthToken.isDefined</span><span style=''>
+</span>54 <span style=''>  }
+</span>55 <span style=''>
+</span>56 <span style=''>  def toEventDetail(eventData: Model.Event): EventDetail = {
+</span>57 <span style=''>    val location = </span><span style='background: #F0ADAD'>Location(None, eventData.place.name, Some(eventData.place.location.latitude),
+</span>58 <span style=''></span><span style='background: #F0ADAD'>                            Some(eventData.place.location.longitude),
+</span>59 <span style=''></span><span style='background: #F0ADAD'>                            eventData.place.location.country, eventData.place.location.city,
+</span>60 <span style=''></span><span style='background: #F0ADAD'>                            eventData.place.location.street, None, None, None, None,
+</span>61 <span style=''></span><span style='background: #F0ADAD'>                            Some(eventData.place.location.zip))</span><span style=''>
+</span>62 <span style=''>
+</span>63 <span style=''>    </span><span style='background: #F0ADAD'>EventDetail(None, eventData.name, new Timestamp(format.parse(eventData.start_time).getTime),
+</span>64 <span style=''></span><span style='background: #F0ADAD'>                Some(new Timestamp(format.parse(eventData.end_time).getTime)), eventData.description, &quot;&quot;,
+</span>65 <span style=''></span><span style='background: #F0ADAD'>                Organizer(None,&quot;Organizer&quot;,-1,None), List(), //TODO Categories
+</span>66 <span style=''></span><span style='background: #F0ADAD'>                None, location,
+</span>67 <span style=''></span><span style='background: #F0ADAD'>                List(/*TODO Pictures*/), 0,
+</span>68 <span style=''></span><span style='background: #F0ADAD'>                None, None)</span><span style=''>
+</span>69 <span style=''>  }
+</span>70 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          4085
+        </td>
+        <td>
+          925
+          -
+          949
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          play.api.Logger.apply
+        </td>
+        <td style="background: #AEF1AE">
+          play.api.Logger.apply(&quot;service.fgraph&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          31
+        </td>
+        <td>
+          4086
+        </td>
+        <td>
+          966
+          -
+          1009
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.text.SimpleDateFormat.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new java.text.SimpleDateFormat(&quot;yyyy-MM-dd HH:mm:ss&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          4087
+        </td>
+        <td>
+          1107
+          -
+          1200
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          play.api.libs.ws.WSRequest.get
+        </td>
+        <td style="background: #F0ADAD">
+          FGraphImpl.this.ws.url(FGraphImpl.this.config.url.+(id)).addQueryStringParameters(scala.Predef.ArrowAssoc[String](&quot;access_token&quot;).-&gt;[String](token)).get()
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          4096
+        </td>
+        <td>
+          1206
+          -
+          1342
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.concurrent.Future.map
+        </td>
+        <td style="background: #F0ADAD">
+          result.map[Option[whatson.service.external.fgraph.Model.Event]](((x0$1: play.api.libs.ws.WSResponse) =&gt; x0$1 match {
+  case (x @ _) =&gt; {
+    FGraphImpl.this.log.debug(&quot;Got response from facebook graph api: &quot;.+(x.body))(api.this.MarkerContext.NoMarker);
+    x.json.validate[whatson.service.external.fgraph.Model.Event](fgraph.this.Model.eventFormat).asOpt
+  }
+}))(FGraphImpl.this.context)
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          4095
+        </td>
+        <td>
+          1217
+          -
+          1217
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.service.external.fgraph.FGraphImpl.context
+        </td>
+        <td style="background: #F0ADAD">
+          FGraphImpl.this.context
+        </td>
+      </tr><tr>
+        <td>
+          39
+        </td>
+        <td>
+          4090
+        </td>
+        <td>
+          1245
+          -
+          1294
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.+
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;Got response from facebook graph api: &quot;.+(x.body)
+        </td>
+      </tr><tr>
+        <td>
+          39
+        </td>
+        <td>
+          4089
+        </td>
+        <td>
+          1288
+          -
+          1294
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.libs.ws.WSResponse.body
+        </td>
+        <td style="background: #F0ADAD">
+          x.body
+        </td>
+      </tr><tr>
+        <td>
+          39
+        </td>
+        <td>
+          4092
+        </td>
+        <td>
+          1235
+          -
+          1295
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          play.api.LoggerLike.debug
+        </td>
+        <td style="background: #F0ADAD">
+          FGraphImpl.this.log.debug(&quot;Got response from facebook graph api: &quot;.+(x.body))(api.this.MarkerContext.NoMarker)
+        </td>
+      </tr><tr>
+        <td>
+          39
+        </td>
+        <td>
+          4088
+        </td>
+        <td>
+          1245
+          -
+          1285
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;Got response from facebook graph api: &quot;
+        </td>
+      </tr><tr>
+        <td>
+          39
+        </td>
+        <td>
+          4091
+        </td>
+        <td>
+          1244
+          -
+          1244
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.LowPriorityMarkerContextImplicits.NoMarker
+        </td>
+        <td style="background: #F0ADAD">
+          api.this.MarkerContext.NoMarker
+        </td>
+      </tr><tr>
+        <td>
+          40
+        </td>
+        <td>
+          4093
+        </td>
+        <td>
+          1317
+          -
+          1317
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.service.external.fgraph.Model.eventFormat
+        </td>
+        <td style="background: #F0ADAD">
+          fgraph.this.Model.eventFormat
+        </td>
+      </tr><tr>
+        <td>
+          40
+        </td>
+        <td>
+          4094
+        </td>
+        <td>
+          1302
+          -
+          1336
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.libs.json.JsResult.asOpt
+        </td>
+        <td style="background: #F0ADAD">
+          x.json.validate[whatson.service.external.fgraph.Model.Event](fgraph.this.Model.eventFormat).asOpt
+        </td>
+      </tr><tr>
+        <td>
+          45
+        </td>
+        <td>
+          4099
+        </td>
+        <td>
+          1482
+          -
+          1482
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.service.external.fgraph.FGraphImpl.context
+        </td>
+        <td style="background: #F0ADAD">
+          FGraphImpl.this.context
+        </td>
+      </tr><tr>
+        <td>
+          45
+        </td>
+        <td>
+          4098
+        </td>
+        <td>
+          1483
+          -
+          1511
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Option.map
+        </td>
+        <td style="background: #F0ADAD">
+          x$1.map[whatson.model.detail.EventDetail](((x: whatson.service.external.fgraph.Model.Event) =&gt; FGraphImpl.this.toEventDetail(x)))
+        </td>
+      </tr><tr>
+        <td>
+          45
+        </td>
+        <td>
+          4097
+        </td>
+        <td>
+          1494
+          -
+          1510
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          whatson.service.external.fgraph.FGraphImpl.toEventDetail
+        </td>
+        <td style="background: #F0ADAD">
+          FGraphImpl.this.toEventDetail(x)
+        </td>
+      </tr><tr>
+        <td>
+          45
+        </td>
+        <td>
+          4100
+        </td>
+        <td>
+          1455
+          -
+          1512
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.concurrent.Future.map
+        </td>
+        <td style="background: #F0ADAD">
+          FGraphImpl.this.getEventData(url, token).map[Option[whatson.model.detail.EventDetail]](((x$1: Option[whatson.service.external.fgraph.Model.Event]) =&gt; x$1.map[whatson.model.detail.EventDetail](((x: whatson.service.external.fgraph.Model.Event) =&gt; FGraphImpl.this.toEventDetail(x)))))(FGraphImpl.this.context)
+        </td>
+      </tr><tr>
+        <td>
+          46
+        </td>
+        <td>
+          4102
+        </td>
+        <td>
+          1531
+          -
+          1554
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.concurrent.Future.successful
+        </td>
+        <td style="background: #F0ADAD">
+          scala.concurrent.Future.successful[None.type](scala.None)
+        </td>
+      </tr><tr>
+        <td>
+          46
+        </td>
+        <td>
+          4101
+        </td>
+        <td>
+          1549
+          -
+          1553
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #F0ADAD">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          46
+        </td>
+        <td>
+          4103
+        </td>
+        <td>
+          1425
+          -
+          1555
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Option.getOrElse
+        </td>
+        <td style="background: #F0ADAD">
+          login.oauthToken.map[scala.concurrent.Future[Option[whatson.model.detail.EventDetail]]](((token: String) =&gt; FGraphImpl.this.getEventData(url, token).map[Option[whatson.model.detail.EventDetail]](((x$1: Option[whatson.service.external.fgraph.Model.Event]) =&gt; x$1.map[whatson.model.detail.EventDetail](((x: whatson.service.external.fgraph.Model.Event) =&gt; FGraphImpl.this.toEventDetail(x)))))(FGraphImpl.this.context))).getOrElse[scala.concurrent.Future[Option[whatson.model.detail.EventDetail]]](scala.concurrent.Future.successful[None.type](scala.None))
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          4104
+        </td>
+        <td>
+          1625
+          -
+          1637
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.net.URI.&lt;init&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          new java.net.URI(url)
+        </td>
+      </tr><tr>
+        <td>
+          51
+        </td>
+        <td>
+          4105
+        </td>
+        <td>
+          1654
+          -
+          1676
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.split
+        </td>
+        <td style="background: #F0ADAD">
+          uri.getPath().split(&quot;/&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          52
+        </td>
+        <td>
+          4106
+        </td>
+        <td>
+          1690
+          -
+          1713
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.GenSeqLike.indexOf
+        </td>
+        <td style="background: #F0ADAD">
+          scala.Predef.refArrayOps[String](split).indexOf[String](&quot;events&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          53
+        </td>
+        <td>
+          4108
+        </td>
+        <td>
+          1761
+          -
+          1798
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.equals
+        </td>
+        <td style="background: #F0ADAD">
+          uri.getHost().equals(&quot;www.facebook.de&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          53
+        </td>
+        <td>
+          4111
+        </td>
+        <td>
+          1837
+          -
+          1863
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Option.isDefined
+        </td>
+        <td style="background: #F0ADAD">
+          login.oauthToken.isDefined
+        </td>
+      </tr><tr>
+        <td>
+          53
+        </td>
+        <td>
+          4107
+        </td>
+        <td>
+          1738
+          -
+          1756
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;www.facebook.com&quot;
+        </td>
+      </tr><tr>
+        <td>
+          53
+        </td>
+        <td>
+          4110
+        </td>
+        <td>
+          1814
+          -
+          1833
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          split.length.-(1).&gt;(ev)
+        </td>
+      </tr><tr>
+        <td>
+          53
+        </td>
+        <td>
+          4112
+        </td>
+        <td>
+          1718
+          -
+          1863
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Boolean.&amp;&amp;
+        </td>
+        <td style="background: #F0ADAD">
+          uri.getHost().equals(&quot;www.facebook.com&quot;).||(uri.getHost().equals(&quot;www.facebook.de&quot;)).&amp;&amp;(ev.&gt;=(0)).&amp;&amp;(split.length.-(1).&gt;(ev)).&amp;&amp;(login.oauthToken.isDefined)
+        </td>
+      </tr><tr>
+        <td>
+          53
+        </td>
+        <td>
+          4109
+        </td>
+        <td>
+          1803
+          -
+          1810
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.&gt;=
+        </td>
+        <td style="background: #F0ADAD">
+          ev.&gt;=(0)
+        </td>
+      </tr><tr>
+        <td>
+          57
+        </td>
+        <td>
+          4114
+        </td>
+        <td>
+          1964
+          -
+          1984
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.service.external.fgraph.Model.Place.name
+        </td>
+        <td style="background: #F0ADAD">
+          eventData.place.name
+        </td>
+      </tr><tr>
+        <td>
+          57
+        </td>
+        <td>
+          4116
+        </td>
+        <td>
+          1986
+          -
+          2025
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #F0ADAD">
+          scala.Some.apply[Float](eventData.place.location.latitude)
+        </td>
+      </tr><tr>
+        <td>
+          57
+        </td>
+        <td>
+          4128
+        </td>
+        <td>
+          1949
+          -
+          2338
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          whatson.model.Location.apply
+        </td>
+        <td style="background: #F0ADAD">
+          whatson.model.Location.apply(scala.None, eventData.place.name, scala.Some.apply[Float](eventData.place.location.latitude), scala.Some.apply[Float](eventData.place.location.longitude), eventData.place.location.country, eventData.place.location.city, eventData.place.location.street, scala.None, scala.None, scala.None, scala.None, scala.Some.apply[String](eventData.place.location.zip))
+        </td>
+      </tr><tr>
+        <td>
+          57
+        </td>
+        <td>
+          4113
+        </td>
+        <td>
+          1958
+          -
+          1962
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #F0ADAD">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          57
+        </td>
+        <td>
+          4115
+        </td>
+        <td>
+          1991
+          -
+          2024
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.service.external.fgraph.Model.Location.latitude
+        </td>
+        <td style="background: #F0ADAD">
+          eventData.place.location.latitude
+        </td>
+      </tr><tr>
+        <td>
+          58
+        </td>
+        <td>
+          4117
+        </td>
+        <td>
+          2060
+          -
+          2094
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.service.external.fgraph.Model.Location.longitude
+        </td>
+        <td style="background: #F0ADAD">
+          eventData.place.location.longitude
+        </td>
+      </tr><tr>
+        <td>
+          58
+        </td>
+        <td>
+          4118
+        </td>
+        <td>
+          2055
+          -
+          2095
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #F0ADAD">
+          scala.Some.apply[Float](eventData.place.location.longitude)
+        </td>
+      </tr><tr>
+        <td>
+          59
+        </td>
+        <td>
+          4120
+        </td>
+        <td>
+          2159
+          -
+          2188
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.service.external.fgraph.Model.Location.city
+        </td>
+        <td style="background: #F0ADAD">
+          eventData.place.location.city
+        </td>
+      </tr><tr>
+        <td>
+          59
+        </td>
+        <td>
+          4119
+        </td>
+        <td>
+          2125
+          -
+          2157
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.service.external.fgraph.Model.Location.country
+        </td>
+        <td style="background: #F0ADAD">
+          eventData.place.location.country
+        </td>
+      </tr><tr>
+        <td>
+          60
+        </td>
+        <td>
+          4123
+        </td>
+        <td>
+          2257
+          -
+          2261
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #F0ADAD">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          60
+        </td>
+        <td>
+          4122
+        </td>
+        <td>
+          2251
+          -
+          2255
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #F0ADAD">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          60
+        </td>
+        <td>
+          4125
+        </td>
+        <td>
+          2269
+          -
+          2273
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #F0ADAD">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          60
+        </td>
+        <td>
+          4121
+        </td>
+        <td>
+          2218
+          -
+          2249
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.service.external.fgraph.Model.Location.street
+        </td>
+        <td style="background: #F0ADAD">
+          eventData.place.location.street
+        </td>
+      </tr><tr>
+        <td>
+          60
+        </td>
+        <td>
+          4124
+        </td>
+        <td>
+          2263
+          -
+          2267
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #F0ADAD">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          61
+        </td>
+        <td>
+          4126
+        </td>
+        <td>
+          2308
+          -
+          2336
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.service.external.fgraph.Model.Location.zip
+        </td>
+        <td style="background: #F0ADAD">
+          eventData.place.location.zip
+        </td>
+      </tr><tr>
+        <td>
+          61
+        </td>
+        <td>
+          4127
+        </td>
+        <td>
+          2303
+          -
+          2337
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #F0ADAD">
+          scala.Some.apply[String](eventData.place.location.zip)
+        </td>
+      </tr><tr>
+        <td>
+          63
+        </td>
+        <td>
+          4129
+        </td>
+        <td>
+          2356
+          -
+          2360
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #F0ADAD">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          63
+        </td>
+        <td>
+          4132
+        </td>
+        <td>
+          2378
+          -
+          2435
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.sql.Timestamp.&lt;init&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          new java.sql.Timestamp(FGraphImpl.this.format.parse(eventData.start_time).getTime())
+        </td>
+      </tr><tr>
+        <td>
+          63
+        </td>
+        <td>
+          4131
+        </td>
+        <td>
+          2392
+          -
+          2434
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.Date.getTime
+        </td>
+        <td style="background: #F0ADAD">
+          FGraphImpl.this.format.parse(eventData.start_time).getTime()
+        </td>
+      </tr><tr>
+        <td>
+          63
+        </td>
+        <td>
+          4149
+        </td>
+        <td>
+          2344
+          -
+          2725
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          whatson.model.detail.EventDetail.apply
+        </td>
+        <td style="background: #F0ADAD">
+          whatson.model.detail.EventDetail.apply(scala.None, eventData.name, new java.sql.Timestamp(FGraphImpl.this.format.parse(eventData.start_time).getTime()), scala.Some.apply[java.sql.Timestamp](new java.sql.Timestamp(FGraphImpl.this.format.parse(eventData.end_time).getTime())), eventData.description, &quot;&quot;, whatson.model.Organizer.apply(scala.None, &quot;Organizer&quot;, -1, scala.None), scala.collection.immutable.Nil, scala.None, location, scala.collection.immutable.Nil, 0, scala.None, scala.None)
+        </td>
+      </tr><tr>
+        <td>
+          63
+        </td>
+        <td>
+          4130
+        </td>
+        <td>
+          2362
+          -
+          2376
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.service.external.fgraph.Model.Event.name
+        </td>
+        <td style="background: #F0ADAD">
+          eventData.name
+        </td>
+      </tr><tr>
+        <td>
+          64
+        </td>
+        <td>
+          4135
+        </td>
+        <td>
+          2453
+          -
+          2514
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #F0ADAD">
+          scala.Some.apply[java.sql.Timestamp](new java.sql.Timestamp(FGraphImpl.this.format.parse(eventData.end_time).getTime()))
+        </td>
+      </tr><tr>
+        <td>
+          64
+        </td>
+        <td>
+          4134
+        </td>
+        <td>
+          2458
+          -
+          2513
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.sql.Timestamp.&lt;init&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          new java.sql.Timestamp(FGraphImpl.this.format.parse(eventData.end_time).getTime())
+        </td>
+      </tr><tr>
+        <td>
+          64
+        </td>
+        <td>
+          4137
+        </td>
+        <td>
+          2539
+          -
+          2541
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          64
+        </td>
+        <td>
+          4133
+        </td>
+        <td>
+          2472
+          -
+          2512
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.Date.getTime
+        </td>
+        <td style="background: #F0ADAD">
+          FGraphImpl.this.format.parse(eventData.end_time).getTime()
+        </td>
+      </tr><tr>
+        <td>
+          64
+        </td>
+        <td>
+          4136
+        </td>
+        <td>
+          2516
+          -
+          2537
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.service.external.fgraph.Model.Event.description
+        </td>
+        <td style="background: #F0ADAD">
+          eventData.description
+        </td>
+      </tr><tr>
+        <td>
+          65
+        </td>
+        <td>
+          4138
+        </td>
+        <td>
+          2569
+          -
+          2573
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #F0ADAD">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          65
+        </td>
+        <td>
+          4141
+        </td>
+        <td>
+          2589
+          -
+          2593
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #F0ADAD">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          65
+        </td>
+        <td>
+          4140
+        </td>
+        <td>
+          2587
+          -
+          2588
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          -1
+        </td>
+      </tr><tr>
+        <td>
+          65
+        </td>
+        <td>
+          4143
+        </td>
+        <td>
+          2596
+          -
+          2602
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.immutable.Nil
+        </td>
+        <td style="background: #F0ADAD">
+          scala.collection.immutable.Nil
+        </td>
+      </tr><tr>
+        <td>
+          65
+        </td>
+        <td>
+          4139
+        </td>
+        <td>
+          2574
+          -
+          2585
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;Organizer&quot;
+        </td>
+      </tr><tr>
+        <td>
+          65
+        </td>
+        <td>
+          4142
+        </td>
+        <td>
+          2559
+          -
+          2594
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          whatson.model.Organizer.apply
+        </td>
+        <td style="background: #F0ADAD">
+          whatson.model.Organizer.apply(scala.None, &quot;Organizer&quot;, -1, scala.None)
+        </td>
+      </tr><tr>
+        <td>
+          66
+        </td>
+        <td>
+          4144
+        </td>
+        <td>
+          2638
+          -
+          2642
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #F0ADAD">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          67
+        </td>
+        <td>
+          4146
+        </td>
+        <td>
+          2695
+          -
+          2696
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          0
+        </td>
+      </tr><tr>
+        <td>
+          67
+        </td>
+        <td>
+          4145
+        </td>
+        <td>
+          2670
+          -
+          2693
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.immutable.Nil
+        </td>
+        <td style="background: #F0ADAD">
+          scala.collection.immutable.Nil
+        </td>
+      </tr><tr>
+        <td>
+          68
+        </td>
+        <td>
+          4147
+        </td>
+        <td>
+          2714
+          -
+          2718
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #F0ADAD">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          68
+        </td>
+        <td>
+          4148
+        </td>
+        <td>
+          2720
+          -
+          2724
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #F0ADAD">
+          scala.None
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

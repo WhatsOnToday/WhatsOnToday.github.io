@@ -92,7 +92,7 @@
 </span>68 <span style=''></span><span style='background: #AEF1AE'>            Future.successful(BadRequest(Json.obj(&quot;message&quot; -&gt; &quot;user.exists&quot;)))
 </span>69 <span style=''></span><span style='background: #AEF1AE'>          case None =&gt;
 </span>70 <span style=''></span><span style='background: #AEF1AE'>            val authInfo = passwordHasher.hash(data.password)
-</span>71 <span style=''></span><span style='background: #AEF1AE'>            val login = Login(None, data.email, None, None, None, loginInfo.providerID, loginInfo.providerKey, false, &quot;user&quot;)
+</span>71 <span style=''></span><span style='background: #AEF1AE'>            val login = Login(None, data.email, None, None, None, loginInfo.providerID, loginInfo.providerKey, false, &quot;user&quot;, None)
 </span>72 <span style=''></span><span style='background: #AEF1AE'>            for {
 </span>73 <span style=''></span><span style='background: #AEF1AE'>              login &lt;- loginService.save(login)
 </span>74 <span style=''></span><span style='background: #AEF1AE'>              authInfo &lt;- authInfoRepository.add(loginInfo, authInfo)
@@ -136,7 +136,7 @@
           52
         </td>
         <td>
-          1669
+          1690
         </td>
         <td>
           1762
@@ -157,12 +157,12 @@
           59
         </td>
         <td>
-          1730
+          1752
         </td>
         <td>
           1888
           -
-          3263
+          3269
         </td>
         <td>
           Apply
@@ -177,7 +177,7 @@
     case (value: whatson.model.Login)Some[whatson.model.Login]((login @ _)) =&gt; scala.concurrent.Future.successful[play.api.mvc.Result](UserController.this.BadRequest.apply[play.api.libs.json.JsObject](play.api.libs.json.Json.obj(scala.Predef.ArrowAssoc[String](&quot;message&quot;).-&gt;[play.api.libs.json.Json.JsValueWrapper](json.this.Json.toJsFieldJsValueWrapper[String](&quot;user.exists&quot;)(json.this.Writes.StringWrites))))(http.this.Writeable.writeableOf_JsValue))
     case scala.None =&gt; {
       val authInfo: com.mohiva.play.silhouette.api.util.PasswordInfo = UserController.this.passwordHasher.hash(data.password);
-      val login: whatson.model.Login = whatson.model.Login.apply(scala.None, data.email, scala.None, scala.None, scala.None, loginInfo.providerID, loginInfo.providerKey, false, &quot;user&quot;);
+      val login: whatson.model.Login = whatson.model.Login.apply(scala.None, data.email, scala.None, scala.None, scala.None, loginInfo.providerID, loginInfo.providerKey, false, &quot;user&quot;, scala.None);
       UserController.this.loginService.save(login).flatMap[play.api.mvc.Result](((login: whatson.model.Login) =&gt; UserController.this.authInfoRepository.add[com.mohiva.play.silhouette.api.util.PasswordInfo](loginInfo, authInfo).flatMap[play.api.mvc.Result](((authInfo: com.mohiva.play.silhouette.api.util.PasswordInfo) =&gt; UserController.this.silhouette.env.authenticatorService.create(loginInfo)(request).flatMap[play.api.mvc.Result](((authenticator: whatson.auth.AuthEnv#A) =&gt; UserController.this.silhouette.env.authenticatorService.init(authenticator)(request).flatMap[play.api.mvc.Result](((token: whatson.auth.AuthEnv#A#Value) =&gt; UserController.this.avatarService.retrieveURL(data.email).map[play.api.mvc.Result](((avatar: Option[String]) =&gt; {
         UserController.this.silhouette.env.eventBus.publish(com.mohiva.play.silhouette.api.SignUpEvent.apply[whatson.model.Login](login, request));
         UserController.this.silhouette.env.eventBus.publish(com.mohiva.play.silhouette.api.LoginEvent.apply[whatson.model.Login](login, request));
@@ -194,7 +194,7 @@
           59
         </td>
         <td>
-          1670
+          1691
         </td>
         <td>
           1901
@@ -215,12 +215,12 @@
           60
         </td>
         <td>
-          1729
+          1751
         </td>
         <td>
           1939
           -
-          3259
+          3265
         </td>
         <td>
           Apply
@@ -235,7 +235,7 @@
     case (value: whatson.model.Login)Some[whatson.model.Login]((login @ _)) =&gt; scala.concurrent.Future.successful[play.api.mvc.Result](UserController.this.BadRequest.apply[play.api.libs.json.JsObject](play.api.libs.json.Json.obj(scala.Predef.ArrowAssoc[String](&quot;message&quot;).-&gt;[play.api.libs.json.Json.JsValueWrapper](json.this.Json.toJsFieldJsValueWrapper[String](&quot;user.exists&quot;)(json.this.Writes.StringWrites))))(http.this.Writeable.writeableOf_JsValue))
     case scala.None =&gt; {
       val authInfo: com.mohiva.play.silhouette.api.util.PasswordInfo = UserController.this.passwordHasher.hash(data.password);
-      val login: whatson.model.Login = whatson.model.Login.apply(scala.None, data.email, scala.None, scala.None, scala.None, loginInfo.providerID, loginInfo.providerKey, false, &quot;user&quot;);
+      val login: whatson.model.Login = whatson.model.Login.apply(scala.None, data.email, scala.None, scala.None, scala.None, loginInfo.providerID, loginInfo.providerKey, false, &quot;user&quot;, scala.None);
       UserController.this.loginService.save(login).flatMap[play.api.mvc.Result](((login: whatson.model.Login) =&gt; UserController.this.authInfoRepository.add[com.mohiva.play.silhouette.api.util.PasswordInfo](loginInfo, authInfo).flatMap[play.api.mvc.Result](((authInfo: com.mohiva.play.silhouette.api.util.PasswordInfo) =&gt; UserController.this.silhouette.env.authenticatorService.create(loginInfo)(request).flatMap[play.api.mvc.Result](((authenticator: whatson.auth.AuthEnv#A) =&gt; UserController.this.silhouette.env.authenticatorService.init(authenticator)(request).flatMap[play.api.mvc.Result](((token: whatson.auth.AuthEnv#A#Value) =&gt; UserController.this.avatarService.retrieveURL(data.email).map[play.api.mvc.Result](((avatar: Option[String]) =&gt; {
         UserController.this.silhouette.env.eventBus.publish(com.mohiva.play.silhouette.api.SignUpEvent.apply[whatson.model.Login](login, request));
         UserController.this.silhouette.env.eventBus.publish(com.mohiva.play.silhouette.api.LoginEvent.apply[whatson.model.Login](login, request));
@@ -252,28 +252,7 @@
           62
         </td>
         <td>
-          1674
-        </td>
-        <td>
-          2033
-          -
-          2033
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          play.api.http.DefaultWriteables.writeableOf_JsValue
-        </td>
-        <td style="background: #AEF1AE">
-          http.this.Writeable.writeableOf_JsValue
-        </td>
-      </tr><tr>
-        <td>
-          62
-        </td>
-        <td>
-          1671
+          1692
         </td>
         <td>
           2046
@@ -294,7 +273,28 @@
           62
         </td>
         <td>
-          1673
+          1695
+        </td>
+        <td>
+          2033
+          -
+          2033
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.http.DefaultWriteables.writeableOf_JsValue
+        </td>
+        <td style="background: #AEF1AE">
+          http.this.Writeable.writeableOf_JsValue
+        </td>
+      </tr><tr>
+        <td>
+          62
+        </td>
+        <td>
+          1694
         </td>
         <td>
           2034
@@ -315,7 +315,7 @@
           62
         </td>
         <td>
-          1676
+          1697
         </td>
         <td>
           2005
@@ -336,28 +336,7 @@
           62
         </td>
         <td>
-          1675
-        </td>
-        <td>
-          2023
-          -
-          2059
-        </td>
-        <td>
-          ApplyToImplicitArgs
-        </td>
-        <td>
-          play.api.mvc.Results.Status.apply
-        </td>
-        <td style="background: #AEF1AE">
-          UserController.this.BadRequest.apply[play.api.libs.json.JsValue](play.api.libs.json.Json.toJson[Seq[play.api.data.FormError]](form.errors)(whatson.util.FormErrorJson.formErrorFormat))(http.this.Writeable.writeableOf_JsValue)
-        </td>
-      </tr><tr>
-        <td>
-          62
-        </td>
-        <td>
-          1672
+          1693
         </td>
         <td>
           2045
@@ -375,10 +354,31 @@
         </td>
       </tr><tr>
         <td>
+          62
+        </td>
+        <td>
+          1696
+        </td>
+        <td>
+          2023
+          -
+          2059
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          play.api.mvc.Results.Status.apply
+        </td>
+        <td style="background: #AEF1AE">
+          UserController.this.BadRequest.apply[play.api.libs.json.JsValue](play.api.libs.json.Json.toJson[Seq[play.api.data.FormError]](form.errors)(whatson.util.FormErrorJson.formErrorFormat))(http.this.Writeable.writeableOf_JsValue)
+        </td>
+      </tr><tr>
+        <td>
           65
         </td>
         <td>
-          1677
+          1698
         </td>
         <td>
           2120
@@ -399,7 +399,7 @@
           65
         </td>
         <td>
-          1679
+          1700
         </td>
         <td>
           2110
@@ -420,7 +420,7 @@
           65
         </td>
         <td>
-          1678
+          1699
         </td>
         <td>
           2144
@@ -441,12 +441,12 @@
           66
         </td>
         <td>
-          1728
+          1750
         </td>
         <td>
           2164
           -
-          3250
+          3256
         </td>
         <td>
           ApplyToImplicitArgs
@@ -459,7 +459,7 @@
   case (value: whatson.model.Login)Some[whatson.model.Login]((login @ _)) =&gt; scala.concurrent.Future.successful[play.api.mvc.Result](UserController.this.BadRequest.apply[play.api.libs.json.JsObject](play.api.libs.json.Json.obj(scala.Predef.ArrowAssoc[String](&quot;message&quot;).-&gt;[play.api.libs.json.Json.JsValueWrapper](json.this.Json.toJsFieldJsValueWrapper[String](&quot;user.exists&quot;)(json.this.Writes.StringWrites))))(http.this.Writeable.writeableOf_JsValue))
   case scala.None =&gt; {
     val authInfo: com.mohiva.play.silhouette.api.util.PasswordInfo = UserController.this.passwordHasher.hash(data.password);
-    val login: whatson.model.Login = whatson.model.Login.apply(scala.None, data.email, scala.None, scala.None, scala.None, loginInfo.providerID, loginInfo.providerKey, false, &quot;user&quot;);
+    val login: whatson.model.Login = whatson.model.Login.apply(scala.None, data.email, scala.None, scala.None, scala.None, loginInfo.providerID, loginInfo.providerKey, false, &quot;user&quot;, scala.None);
     UserController.this.loginService.save(login).flatMap[play.api.mvc.Result](((login: whatson.model.Login) =&gt; UserController.this.authInfoRepository.add[com.mohiva.play.silhouette.api.util.PasswordInfo](loginInfo, authInfo).flatMap[play.api.mvc.Result](((authInfo: com.mohiva.play.silhouette.api.util.PasswordInfo) =&gt; UserController.this.silhouette.env.authenticatorService.create(loginInfo)(request).flatMap[play.api.mvc.Result](((authenticator: whatson.auth.AuthEnv#A) =&gt; UserController.this.silhouette.env.authenticatorService.init(authenticator)(request).flatMap[play.api.mvc.Result](((token: whatson.auth.AuthEnv#A#Value) =&gt; UserController.this.avatarService.retrieveURL(data.email).map[play.api.mvc.Result](((avatar: Option[String]) =&gt; {
       UserController.this.silhouette.env.eventBus.publish(com.mohiva.play.silhouette.api.SignUpEvent.apply[whatson.model.Login](login, request));
       UserController.this.silhouette.env.eventBus.publish(com.mohiva.play.silhouette.api.LoginEvent.apply[whatson.model.Login](login, request));
@@ -475,7 +475,7 @@
           66
         </td>
         <td>
-          1727
+          1749
         </td>
         <td>
           2208
@@ -496,49 +496,7 @@
           68
         </td>
         <td>
-          1680
-        </td>
-        <td>
-          2290
-          -
-          2299
-        </td>
-        <td>
-          Literal
-        </td>
-        <td>
-          &lt;nosymbol&gt;
-        </td>
-        <td style="background: #AEF1AE">
-          &quot;message&quot;
-        </td>
-      </tr><tr>
-        <td>
-          68
-        </td>
-        <td>
-          1683
-        </td>
-        <td>
-          2303
-          -
-          2316
-        </td>
-        <td>
-          ApplyToImplicitArgs
-        </td>
-        <td>
-          play.api.libs.json.Json.toJsFieldJsValueWrapper
-        </td>
-        <td style="background: #AEF1AE">
-          json.this.Json.toJsFieldJsValueWrapper[String](&quot;user.exists&quot;)(json.this.Writes.StringWrites)
-        </td>
-      </tr><tr>
-        <td>
-          68
-        </td>
-        <td>
-          1686
+          1707
         </td>
         <td>
           2280
@@ -559,28 +517,49 @@
           68
         </td>
         <td>
-          1688
+          1701
         </td>
         <td>
-          2252
+          2290
           -
-          2319
+          2299
         </td>
         <td>
-          Apply
+          Literal
         </td>
         <td>
-          scala.concurrent.Future.successful
+          &lt;nosymbol&gt;
         </td>
         <td style="background: #AEF1AE">
-          scala.concurrent.Future.successful[play.api.mvc.Result](UserController.this.BadRequest.apply[play.api.libs.json.JsObject](play.api.libs.json.Json.obj(scala.Predef.ArrowAssoc[String](&quot;message&quot;).-&gt;[play.api.libs.json.Json.JsValueWrapper](json.this.Json.toJsFieldJsValueWrapper[String](&quot;user.exists&quot;)(json.this.Writes.StringWrites))))(http.this.Writeable.writeableOf_JsValue))
+          &quot;message&quot;
         </td>
       </tr><tr>
         <td>
           68
         </td>
         <td>
-          1682
+          1704
+        </td>
+        <td>
+          2303
+          -
+          2316
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          play.api.libs.json.Json.toJsFieldJsValueWrapper
+        </td>
+        <td style="background: #AEF1AE">
+          json.this.Json.toJsFieldJsValueWrapper[String](&quot;user.exists&quot;)(json.this.Writes.StringWrites)
+        </td>
+      </tr><tr>
+        <td>
+          68
+        </td>
+        <td>
+          1703
         </td>
         <td>
           2303
@@ -601,7 +580,7 @@
           68
         </td>
         <td>
-          1685
+          1706
         </td>
         <td>
           2281
@@ -622,7 +601,49 @@
           68
         </td>
         <td>
-          1684
+          1709
+        </td>
+        <td>
+          2252
+          -
+          2319
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.concurrent.Future.successful
+        </td>
+        <td style="background: #AEF1AE">
+          scala.concurrent.Future.successful[play.api.mvc.Result](UserController.this.BadRequest.apply[play.api.libs.json.JsObject](play.api.libs.json.Json.obj(scala.Predef.ArrowAssoc[String](&quot;message&quot;).-&gt;[play.api.libs.json.Json.JsValueWrapper](json.this.Json.toJsFieldJsValueWrapper[String](&quot;user.exists&quot;)(json.this.Writes.StringWrites))))(http.this.Writeable.writeableOf_JsValue))
+        </td>
+      </tr><tr>
+        <td>
+          68
+        </td>
+        <td>
+          1702
+        </td>
+        <td>
+          2303
+          -
+          2316
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;user.exists&quot;
+        </td>
+      </tr><tr>
+        <td>
+          68
+        </td>
+        <td>
+          1705
         </td>
         <td>
           2290
@@ -643,7 +664,7 @@
           68
         </td>
         <td>
-          1687
+          1708
         </td>
         <td>
           2270
@@ -661,31 +682,10 @@
         </td>
       </tr><tr>
         <td>
-          68
-        </td>
-        <td>
-          1681
-        </td>
-        <td>
-          2303
-          -
-          2316
-        </td>
-        <td>
-          Literal
-        </td>
-        <td>
-          &lt;nosymbol&gt;
-        </td>
-        <td style="background: #AEF1AE">
-          &quot;user.exists&quot;
-        </td>
-      </tr><tr>
-        <td>
           70
         </td>
         <td>
-          1689
+          1710
         </td>
         <td>
           2390
@@ -706,7 +706,7 @@
           70
         </td>
         <td>
-          1690
+          1711
         </td>
         <td>
           2370
@@ -727,49 +727,7 @@
           71
         </td>
         <td>
-          1698
-        </td>
-        <td>
-          2516
-          -
-          2521
-        </td>
-        <td>
-          Literal
-        </td>
-        <td>
-          &lt;nosymbol&gt;
-        </td>
-        <td style="background: #AEF1AE">
-          false
-        </td>
-      </tr><tr>
-        <td>
-          71
-        </td>
-        <td>
-          1692
-        </td>
-        <td>
-          2441
-          -
-          2451
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          whatson.model.forms.UserSignUpForm.Data.email
-        </td>
-        <td style="background: #AEF1AE">
-          data.email
-        </td>
-      </tr><tr>
-        <td>
-          71
-        </td>
-        <td>
-          1695
+          1716
         </td>
         <td>
           2465
@@ -790,54 +748,54 @@
           71
         </td>
         <td>
-          1694
+          1719
         </td>
         <td>
-          2459
+          2516
           -
-          2463
+          2521
         </td>
         <td>
-          Select
+          Literal
         </td>
         <td>
-          scala.None
+          &lt;nosymbol&gt;
         </td>
         <td style="background: #AEF1AE">
-          scala.None
+          false
         </td>
       </tr><tr>
         <td>
           71
         </td>
         <td>
-          1697
+          1713
         </td>
         <td>
-          2493
+          2441
           -
-          2514
+          2451
         </td>
         <td>
           Select
         </td>
         <td>
-          com.mohiva.play.silhouette.api.LoginInfo.providerKey
+          whatson.model.forms.UserSignUpForm.Data.email
         </td>
         <td style="background: #AEF1AE">
-          loginInfo.providerKey
+          data.email
         </td>
       </tr><tr>
         <td>
           71
         </td>
         <td>
-          1700
+          1722
         </td>
         <td>
           2429
           -
-          2530
+          2536
         </td>
         <td>
           Apply
@@ -846,14 +804,14 @@
           whatson.model.Login.apply
         </td>
         <td style="background: #AEF1AE">
-          whatson.model.Login.apply(scala.None, data.email, scala.None, scala.None, scala.None, loginInfo.providerID, loginInfo.providerKey, false, &quot;user&quot;)
+          whatson.model.Login.apply(scala.None, data.email, scala.None, scala.None, scala.None, loginInfo.providerID, loginInfo.providerKey, false, &quot;user&quot;, scala.None)
         </td>
       </tr><tr>
         <td>
           71
         </td>
         <td>
-          1691
+          1712
         </td>
         <td>
           2435
@@ -874,12 +832,12 @@
           71
         </td>
         <td>
-          1693
+          1721
         </td>
         <td>
-          2453
+          2531
           -
-          2457
+          2535
         </td>
         <td>
           Select
@@ -895,7 +853,49 @@
           71
         </td>
         <td>
-          1696
+          1715
+        </td>
+        <td>
+          2459
+          -
+          2463
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #AEF1AE">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          71
+        </td>
+        <td>
+          1718
+        </td>
+        <td>
+          2493
+          -
+          2514
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.mohiva.play.silhouette.api.LoginInfo.providerKey
+        </td>
+        <td style="background: #AEF1AE">
+          loginInfo.providerKey
+        </td>
+      </tr><tr>
+        <td>
+          71
+        </td>
+        <td>
+          1717
         </td>
         <td>
           2471
@@ -916,7 +916,7 @@
           71
         </td>
         <td>
-          1699
+          1720
         </td>
         <td>
           2523
@@ -934,36 +934,36 @@
         </td>
       </tr><tr>
         <td>
-          73
+          71
         </td>
         <td>
-          1725
+          1714
         </td>
         <td>
-          2569
+          2453
           -
-          2569
+          2457
         </td>
         <td>
           Select
         </td>
         <td>
-          play.api.libs.concurrent.Execution.Implicits.defaultContext
+          scala.None
         </td>
         <td style="background: #AEF1AE">
-          play.api.libs.concurrent.Execution.Implicits.defaultContext
+          scala.None
         </td>
       </tr><tr>
         <td>
           73
         </td>
         <td>
-          1726
+          1748
         </td>
         <td>
-          2543
+          2549
           -
-          3240
+          3246
         </td>
         <td>
           ApplyToImplicitArgs
@@ -982,15 +982,36 @@
         </td>
       </tr><tr>
         <td>
+          73
+        </td>
+        <td>
+          1747
+        </td>
+        <td>
+          2575
+          -
+          2575
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.libs.concurrent.Execution.Implicits.defaultContext
+        </td>
+        <td style="background: #AEF1AE">
+          play.api.libs.concurrent.Execution.Implicits.defaultContext
+        </td>
+      </tr><tr>
+        <td>
           74
         </td>
         <td>
-          1724
+          1746
         </td>
         <td>
-          2611
+          2617
           -
-          3240
+          3246
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1012,12 +1033,12 @@
           74
         </td>
         <td>
-          1723
+          1745
         </td>
         <td>
-          2620
+          2626
           -
-          2620
+          2626
         </td>
         <td>
           Select
@@ -1033,12 +1054,33 @@
           75
         </td>
         <td>
-          1722
+          1743
         </td>
         <td>
-          2681
+          2701
           -
-          3240
+          2701
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.libs.concurrent.Execution.Implicits.defaultContext
+        </td>
+        <td style="background: #AEF1AE">
+          play.api.libs.concurrent.Execution.Implicits.defaultContext
+        </td>
+      </tr><tr>
+        <td>
+          75
+        </td>
+        <td>
+          1744
+        </td>
+        <td>
+          2687
+          -
+          3246
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1057,57 +1099,15 @@
         </td>
       </tr><tr>
         <td>
-          75
-        </td>
-        <td>
-          1721
-        </td>
-        <td>
-          2695
-          -
-          2695
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          play.api.libs.concurrent.Execution.Implicits.defaultContext
-        </td>
-        <td style="background: #AEF1AE">
-          play.api.libs.concurrent.Execution.Implicits.defaultContext
-        </td>
-      </tr><tr>
-        <td>
           76
         </td>
         <td>
-          1719
+          1742
         </td>
         <td>
           2772
           -
-          2772
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          play.api.libs.concurrent.Execution.Implicits.defaultContext
-        </td>
-        <td style="background: #AEF1AE">
-          play.api.libs.concurrent.Execution.Implicits.defaultContext
-        </td>
-      </tr><tr>
-        <td>
-          76
-        </td>
-        <td>
-          1720
-        </td>
-        <td>
-          2766
-          -
-          3240
+          3246
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1126,15 +1126,57 @@
         </td>
       </tr><tr>
         <td>
+          76
+        </td>
+        <td>
+          1741
+        </td>
+        <td>
+          2778
+          -
+          2778
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.libs.concurrent.Execution.Implicits.defaultContext
+        </td>
+        <td style="background: #AEF1AE">
+          play.api.libs.concurrent.Execution.Implicits.defaultContext
+        </td>
+      </tr><tr>
+        <td>
           77
         </td>
         <td>
-          1701
+          1739
         </td>
         <td>
-          2881
+          2858
           -
-          2891
+          2858
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.libs.concurrent.Execution.Implicits.defaultContext
+        </td>
+        <td style="background: #AEF1AE">
+          play.api.libs.concurrent.Execution.Implicits.defaultContext
+        </td>
+      </tr><tr>
+        <td>
+          77
+        </td>
+        <td>
+          1723
+        </td>
+        <td>
+          2887
+          -
+          2897
         </td>
         <td>
           Select
@@ -1150,12 +1192,12 @@
           77
         </td>
         <td>
-          1718
+          1740
         </td>
         <td>
-          2845
+          2851
           -
-          3240
+          3246
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1174,36 +1216,15 @@
         </td>
       </tr><tr>
         <td>
-          77
-        </td>
-        <td>
-          1717
-        </td>
-        <td>
-          2852
-          -
-          2852
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          play.api.libs.concurrent.Execution.Implicits.defaultContext
-        </td>
-        <td style="background: #AEF1AE">
-          play.api.libs.concurrent.Execution.Implicits.defaultContext
-        </td>
-      </tr><tr>
-        <td>
           79
         </td>
         <td>
-          1703
+          1725
         </td>
         <td>
-          2929
+          2935
           -
-          2989
+          2995
         </td>
         <td>
           Apply
@@ -1219,12 +1240,12 @@
           79
         </td>
         <td>
-          1702
+          1724
         </td>
         <td>
-          2961
+          2967
           -
-          2988
+          2994
         </td>
         <td>
           Apply
@@ -1240,33 +1261,12 @@
           80
         </td>
         <td>
-          1704
+          1727
         </td>
         <td>
-          3036
+          3010
           -
-          3062
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          com.mohiva.play.silhouette.api.LoginEvent.apply
-        </td>
-        <td style="background: #AEF1AE">
-          com.mohiva.play.silhouette.api.LoginEvent.apply[whatson.model.Login](login, request)
-        </td>
-      </tr><tr>
-        <td>
-          80
-        </td>
-        <td>
-          1705
-        </td>
-        <td>
-          3004
-          -
-          3063
+          3069
         </td>
         <td>
           Apply
@@ -1279,15 +1279,36 @@
         </td>
       </tr><tr>
         <td>
+          80
+        </td>
+        <td>
+          1726
+        </td>
+        <td>
+          3042
+          -
+          3068
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.mohiva.play.silhouette.api.LoginEvent.apply
+        </td>
+        <td style="background: #AEF1AE">
+          com.mohiva.play.silhouette.api.LoginEvent.apply[whatson.model.Login](login, request)
+        </td>
+      </tr><tr>
+        <td>
           81
         </td>
         <td>
-          1706
+          1728
         </td>
         <td>
-          3078
+          3084
           -
-          3108
+          3114
         </td>
         <td>
           Apply
@@ -1303,33 +1324,12 @@
           82
         </td>
         <td>
-          1707
+          1730
         </td>
         <td>
-          3156
+          3129
           -
-          3166
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          whatson.model.forms.UserSignUpForm.Data.email
-        </td>
-        <td style="background: #AEF1AE">
-          data.email
-        </td>
-      </tr><tr>
-        <td>
-          82
-        </td>
-        <td>
-          1708
-        </td>
-        <td>
-          3123
-          -
-          3173
+          3179
         </td>
         <td>
           Apply
@@ -1342,78 +1342,36 @@
         </td>
       </tr><tr>
         <td>
-          83
+          82
         </td>
         <td>
-          1716
+          1729
         </td>
         <td>
-          3188
+          3162
           -
-          3226
+          3172
         </td>
         <td>
-          ApplyToImplicitArgs
+          Select
         </td>
         <td>
-          play.api.mvc.Results.Status.apply
+          whatson.model.forms.UserSignUpForm.Data.email
         </td>
         <td style="background: #AEF1AE">
-          UserController.this.Ok.apply[play.api.libs.json.JsObject](play.api.libs.json.Json.obj(scala.Predef.ArrowAssoc[String](&quot;message&quot;).-&gt;[play.api.libs.json.Json.JsValueWrapper](json.this.Json.toJsFieldJsValueWrapper[String](&quot;mail.sent&quot;)(json.this.Writes.StringWrites))))(http.this.Writeable.writeableOf_JsValue)
+          data.email
         </td>
       </tr><tr>
         <td>
           83
         </td>
         <td>
-          1710
+          1734
         </td>
         <td>
-          3213
+          3219
           -
-          3224
-        </td>
-        <td>
-          Literal
-        </td>
-        <td>
-          &lt;nosymbol&gt;
-        </td>
-        <td style="background: #AEF1AE">
-          &quot;mail.sent&quot;
-        </td>
-      </tr><tr>
-        <td>
-          83
-        </td>
-        <td>
-          1713
-        </td>
-        <td>
-          3200
-          -
-          3224
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          scala.Predef.ArrowAssoc.-&gt;
-        </td>
-        <td style="background: #AEF1AE">
-          scala.Predef.ArrowAssoc[String](&quot;message&quot;).-&gt;[play.api.libs.json.Json.JsValueWrapper](json.this.Json.toJsFieldJsValueWrapper[String](&quot;mail.sent&quot;)(json.this.Writes.StringWrites))
-        </td>
-      </tr><tr>
-        <td>
-          83
-        </td>
-        <td>
-          1712
-        </td>
-        <td>
-          3213
-          -
-          3224
+          3230
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1429,12 +1387,12 @@
           83
         </td>
         <td>
-          1715
+          1737
         </td>
         <td>
-          3190
+          3196
           -
-          3190
+          3196
         </td>
         <td>
           Select
@@ -1450,12 +1408,12 @@
           83
         </td>
         <td>
-          1709
+          1731
         </td>
         <td>
-          3200
+          3206
           -
-          3209
+          3215
         </td>
         <td>
           Literal
@@ -1471,12 +1429,12 @@
           83
         </td>
         <td>
-          1711
+          1733
         </td>
         <td>
-          3213
+          3219
           -
-          3213
+          3219
         </td>
         <td>
           Select
@@ -1492,12 +1450,12 @@
           83
         </td>
         <td>
-          1714
+          1736
         </td>
         <td>
-          3191
+          3197
           -
-          3225
+          3231
         </td>
         <td>
           Apply
@@ -1510,15 +1468,99 @@
         </td>
       </tr><tr>
         <td>
+          83
+        </td>
+        <td>
+          1735
+        </td>
+        <td>
+          3206
+          -
+          3230
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Predef.ArrowAssoc.-&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Predef.ArrowAssoc[String](&quot;message&quot;).-&gt;[play.api.libs.json.Json.JsValueWrapper](json.this.Json.toJsFieldJsValueWrapper[String](&quot;mail.sent&quot;)(json.this.Writes.StringWrites))
+        </td>
+      </tr><tr>
+        <td>
+          83
+        </td>
+        <td>
+          1738
+        </td>
+        <td>
+          3194
+          -
+          3232
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          play.api.mvc.Results.Status.apply
+        </td>
+        <td style="background: #AEF1AE">
+          UserController.this.Ok.apply[play.api.libs.json.JsObject](play.api.libs.json.Json.obj(scala.Predef.ArrowAssoc[String](&quot;message&quot;).-&gt;[play.api.libs.json.Json.JsValueWrapper](json.this.Json.toJsFieldJsValueWrapper[String](&quot;mail.sent&quot;)(json.this.Writes.StringWrites))))(http.this.Writeable.writeableOf_JsValue)
+        </td>
+      </tr><tr>
+        <td>
+          83
+        </td>
+        <td>
+          1732
+        </td>
+        <td>
+          3219
+          -
+          3230
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;mail.sent&quot;
+        </td>
+      </tr><tr>
+        <td>
           89
         </td>
         <td>
-          1731
+          1775
         </td>
         <td>
-          3308
+          3329
           -
-          3321
+          3329
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.libs.concurrent.Execution.Implicits.defaultContext
+        </td>
+        <td style="background: #AEF1AE">
+          play.api.libs.concurrent.Execution.Implicits.defaultContext
+        </td>
+      </tr><tr>
+        <td>
+          89
+        </td>
+        <td>
+          1753
+        </td>
+        <td>
+          3314
+          -
+          3327
         </td>
         <td>
           Select
@@ -1534,12 +1576,12 @@
           89
         </td>
         <td>
-          1754
+          1776
         </td>
         <td>
-          3296
+          3302
           -
-          3594
+          3600
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1560,57 +1602,15 @@
         </td>
       </tr><tr>
         <td>
-          89
-        </td>
-        <td>
-          1753
-        </td>
-        <td>
-          3323
-          -
-          3323
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          play.api.libs.concurrent.Execution.Implicits.defaultContext
-        </td>
-        <td style="background: #AEF1AE">
-          play.api.libs.concurrent.Execution.Implicits.defaultContext
-        </td>
-      </tr><tr>
-        <td>
           90
         </td>
         <td>
-          1734
+          1755
         </td>
         <td>
-          3352
+          3367
           -
-          3408
-        </td>
-        <td>
-          ApplyToImplicitArgs
-        </td>
-        <td>
-          play.api.LoggerLike.debug
-        </td>
-        <td style="background: #AEF1AE">
-          UserController.this.log.debug(&quot;Rest request to get events participating in&quot;)(api.this.MarkerContext.NoMarker)
-        </td>
-      </tr><tr>
-        <td>
-          90
-        </td>
-        <td>
-          1733
-        </td>
-        <td>
-          3361
-          -
-          3361
+          3367
         </td>
         <td>
           Select
@@ -1626,12 +1626,12 @@
           90
         </td>
         <td>
-          1732
+          1754
         </td>
         <td>
-          3362
+          3368
           -
-          3407
+          3413
         </td>
         <td>
           Literal
@@ -1644,57 +1644,36 @@
         </td>
       </tr><tr>
         <td>
-          93
+          90
         </td>
         <td>
-          1743
+          1756
         </td>
         <td>
-          3472
+          3358
           -
-          3472
+          3414
         </td>
         <td>
-          Select
+          ApplyToImplicitArgs
         </td>
         <td>
-          slick.lifted.CanBeQueryCondition.BooleanColumnCanBeQueryCondition
+          play.api.LoggerLike.debug
         </td>
         <td style="background: #AEF1AE">
-          lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition
+          UserController.this.log.debug(&quot;Rest request to get events participating in&quot;)(api.this.MarkerContext.NoMarker)
         </td>
       </tr><tr>
         <td>
           93
         </td>
         <td>
-          1737
+          1761
         </td>
         <td>
-          3482
+          3488
           -
-          3503
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          scala.Option.getOrElse
-        </td>
-        <td style="background: #AEF1AE">
-          user.id.getOrElse[Int](-1)
-        </td>
-      </tr><tr>
-        <td>
-          93
-        </td>
-        <td>
-          1739
-        </td>
-        <td>
-          3482
-          -
-          3503
+          3509
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1710,12 +1689,12 @@
           93
         </td>
         <td>
-          1742
+          1764
         </td>
         <td>
-          3473
+          3479
           -
-          3503
+          3509
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1731,117 +1710,12 @@
           93
         </td>
         <td>
-          1736
+          1763
         </td>
         <td>
-          3475
+          3484
           -
-          3475
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
-        </td>
-        <td style="background: #AEF1AE">
-          slick.jdbc.PostgresProfile.api.intColumnType
-        </td>
-      </tr><tr>
-        <td>
-          93
-        </td>
-        <td>
-          1745
-        </td>
-        <td>
-          3451
-          -
-          3522
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          slick.lifted.Query.flatMap
-        </td>
-        <td style="background: #AEF1AE">
-          whatson.db.UserTable.user.filter[slick.lifted.Rep[Boolean]](((x$1: whatson.db.UserTable) =&gt; slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](x$1.id)(slick.jdbc.PostgresProfile.api.intColumnType).===[Int, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[Int](user.id.getOrElse[Int](-1))(slick.jdbc.PostgresProfile.api.intColumnType))(lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType))))(lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition).flatMap[whatson.db.EventTable, whatson.model.Event, Seq](((x$2: whatson.db.UserTable) =&gt; x$2.events))
-        </td>
-      </tr><tr>
-        <td>
-          93
-        </td>
-        <td>
-          1744
-        </td>
-        <td>
-          3513
-          -
-          3521
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          whatson.db.UserTable.events
-        </td>
-        <td style="background: #AEF1AE">
-          x$2.events
-        </td>
-      </tr><tr>
-        <td>
-          93
-        </td>
-        <td>
-          1735
-        </td>
-        <td>
-          3473
-          -
-          3477
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          whatson.db.UserTable.id
-        </td>
-        <td style="background: #AEF1AE">
-          x$1.id
-        </td>
-      </tr><tr>
-        <td>
-          93
-        </td>
-        <td>
-          1738
-        </td>
-        <td>
-          3499
-          -
-          3499
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
-        </td>
-        <td style="background: #AEF1AE">
-          slick.jdbc.PostgresProfile.api.intColumnType
-        </td>
-      </tr><tr>
-        <td>
-          93
-        </td>
-        <td>
-          1741
-        </td>
-        <td>
-          3478
-          -
-          3478
+          3484
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1857,12 +1731,54 @@
           93
         </td>
         <td>
-          1740
+          1757
         </td>
         <td>
-          3478
+          3479
           -
-          3478
+          3483
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.db.UserTable.id
+        </td>
+        <td style="background: #AEF1AE">
+          x$1.id
+        </td>
+      </tr><tr>
+        <td>
+          93
+        </td>
+        <td>
+          1766
+        </td>
+        <td>
+          3519
+          -
+          3527
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.db.UserTable.events
+        </td>
+        <td style="background: #AEF1AE">
+          x$2.events
+        </td>
+      </tr><tr>
+        <td>
+          93
+        </td>
+        <td>
+          1760
+        </td>
+        <td>
+          3505
+          -
+          3505
         </td>
         <td>
           Select
@@ -1875,36 +1791,120 @@
         </td>
       </tr><tr>
         <td>
-          94
+          93
         </td>
         <td>
-          1746
+          1762
         </td>
         <td>
-          3535
+          3484
           -
-          3556
+          3484
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
+        </td>
+        <td style="background: #AEF1AE">
+          slick.jdbc.PostgresProfile.api.intColumnType
+        </td>
+      </tr><tr>
+        <td>
+          93
+        </td>
+        <td>
+          1765
+        </td>
+        <td>
+          3478
+          -
+          3478
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.lifted.CanBeQueryCondition.BooleanColumnCanBeQueryCondition
+        </td>
+        <td style="background: #AEF1AE">
+          lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition
+        </td>
+      </tr><tr>
+        <td>
+          93
+        </td>
+        <td>
+          1759
+        </td>
+        <td>
+          3488
+          -
+          3509
         </td>
         <td>
           Apply
         </td>
         <td>
-          whatson.db.Util.QueryUtils.queryPaged
+          scala.Option.getOrElse
         </td>
         <td style="background: #AEF1AE">
-          whatson.db.Util.QueryUtils[whatson.db.EventTable, whatson.model.Event](q).queryPaged[play.api.mvc.AnyContent, Nothing, Nothing](request)
+          user.id.getOrElse[Int](-1)
+        </td>
+      </tr><tr>
+        <td>
+          93
+        </td>
+        <td>
+          1758
+        </td>
+        <td>
+          3481
+          -
+          3481
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
+        </td>
+        <td style="background: #AEF1AE">
+          slick.jdbc.PostgresProfile.api.intColumnType
+        </td>
+      </tr><tr>
+        <td>
+          93
+        </td>
+        <td>
+          1767
+        </td>
+        <td>
+          3457
+          -
+          3528
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          slick.lifted.Query.flatMap
+        </td>
+        <td style="background: #AEF1AE">
+          whatson.db.UserTable.user.filter[slick.lifted.Rep[Boolean]](((x$1: whatson.db.UserTable) =&gt; slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](x$1.id)(slick.jdbc.PostgresProfile.api.intColumnType).===[Int, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[Int](user.id.getOrElse[Int](-1))(slick.jdbc.PostgresProfile.api.intColumnType))(lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType))))(lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition).flatMap[whatson.db.EventTable, whatson.model.Event, Seq](((x$2: whatson.db.UserTable) =&gt; x$2.events))
         </td>
       </tr><tr>
         <td>
           94
         </td>
         <td>
-          1748
+          1770
         </td>
         <td>
-          3535
+          3541
           -
-          3565
+          3571
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1920,12 +1920,12 @@
           94
         </td>
         <td>
-          1747
+          1769
         </td>
         <td>
-          3557
+          3563
           -
-          3557
+          3563
         </td>
         <td>
           Select
@@ -1938,36 +1938,36 @@
         </td>
       </tr><tr>
         <td>
-          96
+          94
         </td>
         <td>
-          1752
+          1768
         </td>
         <td>
-          3571
+          3541
           -
-          3590
+          3562
         </td>
         <td>
-          ApplyToImplicitArgs
+          Apply
         </td>
         <td>
-          whatson.db.Util.returnPaged
+          whatson.db.Util.QueryUtils.queryPaged
         </td>
         <td style="background: #AEF1AE">
-          whatson.db.Util.returnPaged[whatson.model.detail.EventDetail, whatson.db.EventTable, whatson.model.Event](s, q, UserController.this.db)(r, play.api.libs.concurrent.Execution.Implicits.defaultContext, whatson.model.detail.EventDetail.eventDetailWrites)
+          whatson.db.Util.QueryUtils[whatson.db.EventTable, whatson.model.Event](q).queryPaged[play.api.mvc.AnyContent, Nothing, Nothing](request)
         </td>
       </tr><tr>
         <td>
           96
         </td>
         <td>
-          1751
+          1773
         </td>
         <td>
-          3582
+          3588
           -
-          3582
+          3588
         </td>
         <td>
           Select
@@ -1983,12 +1983,12 @@
           96
         </td>
         <td>
-          1750
+          1772
         </td>
         <td>
-          3582
+          3588
           -
-          3582
+          3588
         </td>
         <td>
           Select
@@ -2004,12 +2004,12 @@
           96
         </td>
         <td>
-          1749
+          1771
         </td>
         <td>
-          3587
+          3593
           -
-          3589
+          3595
         </td>
         <td>
           Select
@@ -2019,6 +2019,27 @@
         </td>
         <td style="background: #AEF1AE">
           UserController.this.db
+        </td>
+      </tr><tr>
+        <td>
+          96
+        </td>
+        <td>
+          1774
+        </td>
+        <td>
+          3577
+          -
+          3596
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          whatson.db.Util.returnPaged
+        </td>
+        <td style="background: #AEF1AE">
+          whatson.db.Util.returnPaged[whatson.model.detail.EventDetail, whatson.db.EventTable, whatson.model.Event](s, q, UserController.this.db)(r, play.api.libs.concurrent.Execution.Implicits.defaultContext, whatson.model.detail.EventDetail.eventDetailWrites)
         </td>
       </tr>
     </table>
