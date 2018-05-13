@@ -1,0 +1,456 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          whatson/service/CatServiceImpl.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package whatson.service
+</span>2 <span style=''>
+</span>3 <span style=''>import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
+</span>4 <span style=''>import slick.jdbc.JdbcProfile
+</span>5 <span style=''>import whatson.db._
+</span>6 <span style=''>import whatson.db.Util._
+</span>7 <span style=''>import whatson.model._
+</span>8 <span style=''>import javax.inject._
+</span>9 <span style=''>import slick.jdbc.PostgresProfile.api._
+</span>10 <span style=''>import scala.concurrent.{ ExecutionContext, Future }
+</span>11 <span style=''>import java.io._
+</span>12 <span style=''>import com.github.tototoshi.csv._
+</span>13 <span style=''>import play.api._
+</span>14 <span style=''>import scala.collection.Map._
+</span>15 <span style=''>import whatson.util.ListUtil._
+</span>16 <span style=''>import java.text.SimpleDateFormat
+</span>17 <span style=''>import java.sql.Timestamp
+</span>18 <span style=''>import whatson.model.detail.EventDetail._
+</span>19 <span style=''>import whatson.model.detail._
+</span>20 <span style=''>import whatson.util.StringUtil._
+</span>21 <span style=''>import whatson.model.detail.CategoryDetail._
+</span>22 <span style=''>import scala.concurrent.duration.Duration
+</span>23 <span style=''>import scala.concurrent.Await
+</span>24 <span style=''>
+</span>25 <span style=''>class CatServiceImpl @Inject()(protected val dbConfigProvider: DatabaseConfigProvider)
+</span>26 <span style=''>                              (implicit context: ExecutionContext)
+</span>27 <span style=''>    extends CatService with HasDatabaseConfigProvider[JdbcProfile] {
+</span>28 <span style=''>  
+</span>29 <span style=''>  def getByName(name: String) = </span><span style='background: #F0ADAD'>db.run(CategoryTable.category.filter(_.name === name).detailed).map(_(0))</span><span style=''>
+</span>30 <span style=''>  
+</span>31 <span style=''>  def getByNameWait(name: String) = </span><span style='background: #F0ADAD'>Await.result(getByName(name), Duration.Inf)</span><span style=''>
+</span>32 <span style=''>  
+</span>33 <span style=''>  lazy val all = getByNameWait(&quot;all&quot;)
+</span>34 <span style=''>	lazy val sport = getByNameWait(&quot;sport&quot;)
+</span>35 <span style=''>	lazy val tech = getByNameWait(&quot;tech&quot;)
+</span>36 <span style=''>	lazy val culture = getByNameWait(&quot;culture&quot;)
+</span>37 <span style=''>	lazy val startup = getByNameWait(&quot;startup&quot;)
+</span>38 <span style=''>	lazy val club = getByNameWait(&quot;club&quot;)
+</span>39 <span style=''>	lazy val dance = getByNameWait(&quot;dance&quot;)
+</span>40 <span style=''>	lazy val festivals = getByNameWait(&quot;festivals&quot;)
+</span>41 <span style=''>	lazy val rock = getByNameWait(&quot;rock&quot;)
+</span>42 <span style=''>	lazy val heavy_metall = getByNameWait(&quot;heavy metall&quot;)
+</span>43 <span style=''>	lazy val hiphop = getByNameWait(&quot;hiphop&quot;)
+</span>44 <span style=''>	lazy val rnb = getByNameWait(&quot;rnb&quot;)
+</span>45 <span style=''>	lazy val jazz = getByNameWait(&quot;jazz&quot;)
+</span>46 <span style=''>	lazy val pop = getByNameWait(&quot;pop&quot;)
+</span>47 <span style=''>	lazy val folk_music = getByNameWait(&quot;folk music&quot;)
+</span>48 <span style=''>	lazy val classic = getByNameWait(&quot;classic&quot;)
+</span>49 <span style=''>	lazy val reading = getByNameWait(&quot;reading&quot;)
+</span>50 <span style=''>	lazy val opera = getByNameWait(&quot;opera&quot;)
+</span>51 <span style=''>	lazy val theater = getByNameWait(&quot;theater&quot;)
+</span>52 <span style=''>	lazy val musical = getByNameWait(&quot;music&quot;)
+</span>53 <span style=''>	lazy val show = getByNameWait(&quot;show&quot;)
+</span>54 <span style=''>	lazy val exhibition = getByNameWait(&quot;exhibition&quot;)
+</span>55 <span style=''>	lazy val science = getByNameWait(&quot;science&quot;)
+</span>56 <span style=''>	lazy val lecture = getByNameWait(&quot;lecture&quot;)
+</span>57 <span style=''>	lazy val meetup = getByNameWait(&quot;meetup&quot;)
+</span>58 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          3498
+        </td>
+        <td>
+          1023
+          -
+          1029
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.db.CategoryTable.name
+        </td>
+        <td style="background: #F0ADAD">
+          x$1.name
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          3507
+        </td>
+        <td>
+          1040
+          -
+          1040
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.service.CatServiceImpl.context
+        </td>
+        <td style="background: #F0ADAD">
+          CatServiceImpl.this.context
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          3501
+        </td>
+        <td>
+          1034
+          -
+          1038
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.relational.RelationalProfile.API.valueToConstColumn
+        </td>
+        <td style="background: #F0ADAD">
+          slick.jdbc.PostgresProfile.api.valueToConstColumn[String](name)(slick.jdbc.PostgresProfile.api.stringColumnType)
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          3510
+        </td>
+        <td>
+          1053
+          -
+          1053
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.service.CatServiceImpl.context
+        </td>
+        <td style="background: #F0ADAD">
+          CatServiceImpl.this.context
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          3504
+        </td>
+        <td>
+          1023
+          -
+          1038
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.ColumnExtensionMethods.===
+        </td>
+        <td style="background: #F0ADAD">
+          slick.jdbc.PostgresProfile.api.columnExtensionMethods[String](x$1.name)(slick.jdbc.PostgresProfile.api.stringColumnType).===[String, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[String](name)(slick.jdbc.PostgresProfile.api.stringColumnType))(lifted.this.OptionMapper2.getOptionMapper2TT[String, String, Boolean](slick.jdbc.PostgresProfile.api.stringColumnType))
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          3503
+        </td>
+        <td>
+          1030
+          -
+          1030
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.OptionMapper2.getOptionMapper2TT
+        </td>
+        <td style="background: #F0ADAD">
+          lifted.this.OptionMapper2.getOptionMapper2TT[String, String, Boolean](slick.jdbc.PostgresProfile.api.stringColumnType)
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          3506
+        </td>
+        <td>
+          993
+          -
+          1039
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.Query.filter
+        </td>
+        <td style="background: #F0ADAD">
+          whatson.db.CategoryTable.category.filter[slick.lifted.Rep[Boolean]](((x$1: whatson.db.CategoryTable) =&gt; slick.jdbc.PostgresProfile.api.columnExtensionMethods[String](x$1.name)(slick.jdbc.PostgresProfile.api.stringColumnType).===[String, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[String](name)(slick.jdbc.PostgresProfile.api.stringColumnType))(lifted.this.OptionMapper2.getOptionMapper2TT[String, String, Boolean](slick.jdbc.PostgresProfile.api.stringColumnType))))(lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition)
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          3500
+        </td>
+        <td>
+          1034
+          -
+          1034
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.stringColumnType
+        </td>
+        <td style="background: #F0ADAD">
+          slick.jdbc.PostgresProfile.api.stringColumnType
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          3509
+        </td>
+        <td>
+          1054
+          -
+          1058
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.SeqLike.apply
+        </td>
+        <td style="background: #F0ADAD">
+          x$2.apply(0)
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          3508
+        </td>
+        <td>
+          993
+          -
+          1048
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          whatson.model.detail.CategoryDetail.CategoryDetailQuery.detailed
+        </td>
+        <td style="background: #F0ADAD">
+          whatson.model.detail.CategoryDetail.CategoryDetailQuery(whatson.db.CategoryTable.category.filter[slick.lifted.Rep[Boolean]](((x$1: whatson.db.CategoryTable) =&gt; slick.jdbc.PostgresProfile.api.columnExtensionMethods[String](x$1.name)(slick.jdbc.PostgresProfile.api.stringColumnType).===[String, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[String](name)(slick.jdbc.PostgresProfile.api.stringColumnType))(lifted.this.OptionMapper2.getOptionMapper2TT[String, String, Boolean](slick.jdbc.PostgresProfile.api.stringColumnType))))(lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition)).detailed(CatServiceImpl.this.context)
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          3511
+        </td>
+        <td>
+          986
+          -
+          1059
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.concurrent.Future.map
+        </td>
+        <td style="background: #F0ADAD">
+          CatServiceImpl.this.db.run[Seq[whatson.model.detail.CategoryDetail]](whatson.model.detail.CategoryDetail.CategoryDetailQuery(whatson.db.CategoryTable.category.filter[slick.lifted.Rep[Boolean]](((x$1: whatson.db.CategoryTable) =&gt; slick.jdbc.PostgresProfile.api.columnExtensionMethods[String](x$1.name)(slick.jdbc.PostgresProfile.api.stringColumnType).===[String, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[String](name)(slick.jdbc.PostgresProfile.api.stringColumnType))(lifted.this.OptionMapper2.getOptionMapper2TT[String, String, Boolean](slick.jdbc.PostgresProfile.api.stringColumnType))))(lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition)).detailed(CatServiceImpl.this.context)).map[whatson.model.detail.CategoryDetail](((x$2: Seq[whatson.model.detail.CategoryDetail]) =&gt; x$2.apply(0)))(CatServiceImpl.this.context)
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          3502
+        </td>
+        <td>
+          1030
+          -
+          1030
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.stringColumnType
+        </td>
+        <td style="background: #F0ADAD">
+          slick.jdbc.PostgresProfile.api.stringColumnType
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          3505
+        </td>
+        <td>
+          1022
+          -
+          1022
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.lifted.CanBeQueryCondition.BooleanColumnCanBeQueryCondition
+        </td>
+        <td style="background: #F0ADAD">
+          lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          3499
+        </td>
+        <td>
+          1025
+          -
+          1025
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.stringColumnType
+        </td>
+        <td style="background: #F0ADAD">
+          slick.jdbc.PostgresProfile.api.stringColumnType
+        </td>
+      </tr><tr>
+        <td>
+          31
+        </td>
+        <td>
+          3513
+        </td>
+        <td>
+          1129
+          -
+          1141
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.concurrent.duration.Duration.Inf
+        </td>
+        <td style="background: #F0ADAD">
+          scala.concurrent.duration.Duration.Inf
+        </td>
+      </tr><tr>
+        <td>
+          31
+        </td>
+        <td>
+          3512
+        </td>
+        <td>
+          1112
+          -
+          1127
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          whatson.service.CatServiceImpl.getByName
+        </td>
+        <td style="background: #F0ADAD">
+          CatServiceImpl.this.getByName(name)
+        </td>
+      </tr><tr>
+        <td>
+          31
+        </td>
+        <td>
+          3514
+        </td>
+        <td>
+          1099
+          -
+          1142
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.concurrent.Await.result
+        </td>
+        <td style="background: #F0ADAD">
+          scala.concurrent.Await.result[whatson.model.detail.CategoryDetail](CatServiceImpl.this.getByName(name), scala.concurrent.duration.Duration.Inf)
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

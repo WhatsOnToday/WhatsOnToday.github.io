@@ -53,7 +53,7 @@
 </span>29 <span style=''>
 </span>30 <span style=''>  val log = </span><span style='background: #AEF1AE'>Logger(&quot;service.eventbrite&quot;)</span><span style=''>
 </span>31 <span style=''>
-</span>32 <span style=''>  val format = </span><span style='background: #AEF1AE'>new SimpleDateFormat(&quot;yyyy-MM-dd'T'HH:mm:ss'Z'&quot;)</span><span style=''>
+</span>32 <span style=''>  val format = </span><span style='background: #AEF1AE'>new SimpleDateFormat(&quot;yyyy-MM-dd'T'HH:mm:ss&quot;)</span><span style=''>
 </span>33 <span style=''>
 </span>34 <span style=''>  def getEventData(id: String): Future[Option[Model.Event]] = {
 </span>35 <span style=''>    val request = </span><span style='background: #F0ADAD'>ws.url(config.url + &quot;/events/&quot; + id + &quot;?expand=venue,category,subcategory,logo&quot;)
@@ -86,10 +86,10 @@
 </span>62 <span style=''>  def toEventDetail(data: Model.Event): EventDetail = {
 </span>63 <span style=''>    val loc = </span><span style='background: #F0ADAD'>Location(None, data.venue.name.getOrElse(data.venue.address.address_1), Some(data.venue.address.latitude.toFloat), Some(data.venue.address.longitude.toFloat),
 </span>64 <span style=''></span><span style='background: #F0ADAD'>                            data.venue.address.country, data.venue.address.city, data.venue.address.address_1, None,
-</span>65 <span style=''></span><span style='background: #F0ADAD'>                            None, None, None, Some(data.venue.address.postal_code))</span><span style=''>
+</span>65 <span style=''></span><span style='background: #F0ADAD'>                            None, None, None, data.venue.address.postal_code)</span><span style=''>
 </span>66 <span style=''>
-</span>67 <span style=''>    val from = </span><span style='background: #F0ADAD'>new Timestamp(format.parse(data.start.utc).getTime)</span><span style=''>
-</span>68 <span style=''>    val to = </span><span style='background: #F0ADAD'>new Timestamp(format.parse(data.end.utc).getTime)</span><span style=''>
+</span>67 <span style=''>    val from = </span><span style='background: #F0ADAD'>new Timestamp(format.parse(data.start.local).getTime)</span><span style=''>
+</span>68 <span style=''>    val to = </span><span style='background: #F0ADAD'>new Timestamp(format.parse(data.end.local).getTime)</span><span style=''>
 </span>69 <span style=''>
 </span>70 <span style=''>    </span><span style='background: #F0ADAD'>EventDetail(None, data.name.text, from,
 </span>71 <span style=''></span><span style='background: #F0ADAD'>                Some(to), data.description.text,
@@ -115,7 +115,7 @@
           30
         </td>
         <td>
-          3979
+          3999
         </td>
         <td>
           999
@@ -136,12 +136,12 @@
           32
         </td>
         <td>
-          3980
+          4000
         </td>
         <td>
           1044
           -
-          1092
+          1089
         </td>
         <td>
           Apply
@@ -150,19 +150,19 @@
           java.text.SimpleDateFormat.&lt;init&gt;
         </td>
         <td style="background: #AEF1AE">
-          new java.text.SimpleDateFormat(&quot;yyyy-MM-dd\'T\'HH:mm:ss\'Z\'&quot;)
+          new java.text.SimpleDateFormat(&quot;yyyy-MM-dd\'T\'HH:mm:ss&quot;)
         </td>
       </tr><tr>
         <td>
           35
         </td>
         <td>
-          3981
+          4001
         </td>
         <td>
-          1183
+          1180
           -
-          1255
+          1252
         </td>
         <td>
           Apply
@@ -178,96 +178,12 @@
           36
         </td>
         <td>
-          3986
+          4004
         </td>
         <td>
-          1279
+          1308
           -
-          1325
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          scala.Predef.ArrowAssoc.-&gt;
-        </td>
-        <td style="background: #F0ADAD">
-          scala.Predef.ArrowAssoc[String](&quot;Authorization&quot;).-&gt;[String](&quot;Bearer &quot;.+(EventbriteServiceImpl.this.config.apiKey))
-        </td>
-      </tr><tr>
-        <td>
-          36
-        </td>
-        <td>
-          3982
-        </td>
-        <td>
-          1279
-          -
-          1294
-        </td>
-        <td>
-          Literal
-        </td>
-        <td>
-          &lt;nosymbol&gt;
-        </td>
-        <td style="background: #F0ADAD">
-          &quot;Authorization&quot;
-        </td>
-      </tr><tr>
-        <td>
-          36
-        </td>
-        <td>
-          3985
-        </td>
-        <td>
-          1299
-          -
-          1324
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          java.lang.String.+
-        </td>
-        <td style="background: #F0ADAD">
-          &quot;Bearer &quot;.+(EventbriteServiceImpl.this.config.apiKey)
-        </td>
-      </tr><tr>
-        <td>
-          36
-        </td>
-        <td>
-          3987
-        </td>
-        <td>
-          1176
-          -
-          1326
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          play.api.libs.ws.StandaloneWSRequest.addHttpHeaders
-        </td>
-        <td style="background: #F0ADAD">
-          EventbriteServiceImpl.this.ws.url(EventbriteServiceImpl.this.config.url.+(&quot;/events/&quot;).+(id).+(&quot;?expand=venue,category,subcategory,logo&quot;)).addHttpHeaders(scala.Predef.ArrowAssoc[String](&quot;Authorization&quot;).-&gt;[String](&quot;Bearer &quot;.+(EventbriteServiceImpl.this.config.apiKey)))
-        </td>
-      </tr><tr>
-        <td>
-          36
-        </td>
-        <td>
-          3984
-        </td>
-        <td>
-          1311
-          -
-          1324
+          1321
         </td>
         <td>
           Select
@@ -283,12 +199,54 @@
           36
         </td>
         <td>
-          3983
+          4007
         </td>
         <td>
-          1299
+          1173
           -
-          1308
+          1323
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          play.api.libs.ws.StandaloneWSRequest.addHttpHeaders
+        </td>
+        <td style="background: #F0ADAD">
+          EventbriteServiceImpl.this.ws.url(EventbriteServiceImpl.this.config.url.+(&quot;/events/&quot;).+(id).+(&quot;?expand=venue,category,subcategory,logo&quot;)).addHttpHeaders(scala.Predef.ArrowAssoc[String](&quot;Authorization&quot;).-&gt;[String](&quot;Bearer &quot;.+(EventbriteServiceImpl.this.config.apiKey)))
+        </td>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          4006
+        </td>
+        <td>
+          1276
+          -
+          1322
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Predef.ArrowAssoc.-&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          scala.Predef.ArrowAssoc[String](&quot;Authorization&quot;).-&gt;[String](&quot;Bearer &quot;.+(EventbriteServiceImpl.this.config.apiKey))
+        </td>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          4003
+        </td>
+        <td>
+          1296
+          -
+          1305
         </td>
         <td>
           Literal
@@ -301,15 +259,57 @@
         </td>
       </tr><tr>
         <td>
+          36
+        </td>
+        <td>
+          4002
+        </td>
+        <td>
+          1276
+          -
+          1291
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;Authorization&quot;
+        </td>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          4005
+        </td>
+        <td>
+          1296
+          -
+          1321
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.+
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;Bearer &quot;.+(EventbriteServiceImpl.this.config.apiKey)
+        </td>
+      </tr><tr>
+        <td>
           38
         </td>
         <td>
-          3988
+          4008
         </td>
         <td>
-          1351
+          1348
           -
-          1364
+          1361
         </td>
         <td>
           Apply
@@ -325,33 +325,12 @@
           40
         </td>
         <td>
-          4000
+          4021
         </td>
         <td>
-          1381
+          1367
           -
-          1381
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          whatson.service.external.eventbrite.EventbriteServiceImpl.context
-        </td>
-        <td style="background: #F0ADAD">
-          EventbriteServiceImpl.this.context
-        </td>
-      </tr><tr>
-        <td>
-          40
-        </td>
-        <td>
-          4001
-        </td>
-        <td>
-          1370
-          -
-          1554
+          1551
         </td>
         <td>
           ApplyToImplicitArgs
@@ -371,78 +350,36 @@
         </td>
       </tr><tr>
         <td>
-          41
+          40
         </td>
         <td>
-          3989
+          4020
         </td>
         <td>
-          1409
+          1378
           -
-          1445
-        </td>
-        <td>
-          Literal
-        </td>
-        <td>
-          &lt;nosymbol&gt;
-        </td>
-        <td style="background: #F0ADAD">
-          &quot;Got response from eventbrite api: &quot;
-        </td>
-      </tr><tr>
-        <td>
-          41
-        </td>
-        <td>
-          3991
-        </td>
-        <td>
-          1409
-          -
-          1454
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          java.lang.String.+
-        </td>
-        <td style="background: #F0ADAD">
-          &quot;Got response from eventbrite api: &quot;.+(x.body)
-        </td>
-      </tr><tr>
-        <td>
-          41
-        </td>
-        <td>
-          3990
-        </td>
-        <td>
-          1448
-          -
-          1454
+          1378
         </td>
         <td>
           Select
         </td>
         <td>
-          play.api.libs.ws.WSResponse.body
+          whatson.service.external.eventbrite.EventbriteServiceImpl.context
         </td>
         <td style="background: #F0ADAD">
-          x.body
+          EventbriteServiceImpl.this.context
         </td>
       </tr><tr>
         <td>
           41
         </td>
         <td>
-          3993
+          4013
         </td>
         <td>
-          1399
+          1396
           -
-          1455
+          1452
         </td>
         <td>
           ApplyToImplicitArgs
@@ -458,12 +395,33 @@
           41
         </td>
         <td>
-          3992
+          4009
         </td>
         <td>
-          1408
+          1406
           -
-          1408
+          1442
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;Got response from eventbrite api: &quot;
+        </td>
+      </tr><tr>
+        <td>
+          41
+        </td>
+        <td>
+          4012
+        </td>
+        <td>
+          1405
+          -
+          1405
         </td>
         <td>
           Select
@@ -476,15 +434,57 @@
         </td>
       </tr><tr>
         <td>
+          41
+        </td>
+        <td>
+          4011
+        </td>
+        <td>
+          1406
+          -
+          1451
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.+
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;Got response from eventbrite api: &quot;.+(x.body)
+        </td>
+      </tr><tr>
+        <td>
+          41
+        </td>
+        <td>
+          4010
+        </td>
+        <td>
+          1445
+          -
+          1451
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.libs.ws.WSResponse.body
+        </td>
+        <td style="background: #F0ADAD">
+          x.body
+        </td>
+      </tr><tr>
+        <td>
           42
         </td>
         <td>
-          3995
+          4015
         </td>
         <td>
-          1472
+          1469
           -
-          1500
+          1497
         </td>
         <td>
           ApplyToImplicitArgs
@@ -500,12 +500,12 @@
           42
         </td>
         <td>
-          3994
+          4014
         </td>
         <td>
-          1487
+          1484
           -
-          1487
+          1484
         </td>
         <td>
           Select
@@ -521,12 +521,33 @@
           43
         </td>
         <td>
-          3998
+          4016
         </td>
         <td>
-          1507
+          1514
           -
-          1532
+          1528
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.toString
+        </td>
+        <td style="background: #F0ADAD">
+          res.toString()
+        </td>
+      </tr><tr>
+        <td>
+          43
+        </td>
+        <td>
+          4018
+        </td>
+        <td>
+          1504
+          -
+          1529
         </td>
         <td>
           ApplyToImplicitArgs
@@ -542,12 +563,12 @@
           43
         </td>
         <td>
-          3997
+          4017
         </td>
         <td>
-          1516
+          1513
           -
-          1516
+          1513
         </td>
         <td>
           Select
@@ -560,36 +581,15 @@
         </td>
       </tr><tr>
         <td>
-          43
-        </td>
-        <td>
-          3996
-        </td>
-        <td>
-          1517
-          -
-          1531
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          java.lang.Object.toString
-        </td>
-        <td style="background: #F0ADAD">
-          res.toString()
-        </td>
-      </tr><tr>
-        <td>
           44
         </td>
         <td>
-          3999
+          4019
         </td>
         <td>
-          1539
+          1536
           -
-          1548
+          1545
         </td>
         <td>
           Select
@@ -605,12 +605,12 @@
           49
         </td>
         <td>
-          4002
+          4022
         </td>
         <td>
-          1647
+          1644
           -
-          1678
+          1675
         </td>
         <td>
           Apply
@@ -626,12 +626,12 @@
           50
         </td>
         <td>
-          4003
+          4023
         </td>
         <td>
-          1691
+          1688
           -
-          1705
+          1702
         </td>
         <td>
           Apply
@@ -647,12 +647,12 @@
           51
         </td>
         <td>
-          4004
+          4024
         </td>
         <td>
-          1721
+          1718
           -
-          1738
+          1735
         </td>
         <td>
           Apply
@@ -668,12 +668,12 @@
           52
         </td>
         <td>
-          4005
+          4025
         </td>
         <td>
-          1752
+          1749
           -
-          1761
+          1758
         </td>
         <td>
           Select
@@ -689,12 +689,12 @@
           53
         </td>
         <td>
-          4007
+          4027
         </td>
         <td>
-          1787
+          1784
           -
-          1815
+          1812
         </td>
         <td>
           Apply
@@ -710,33 +710,12 @@
           53
         </td>
         <td>
-          4006
+          4029
         </td>
         <td>
-          1798
+          1763
           -
-          1814
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          whatson.service.external.eventbrite.EventbriteServiceImpl.toEventDetail
-        </td>
-        <td style="background: #F0ADAD">
-          EventbriteServiceImpl.this.toEventDetail(x)
-        </td>
-      </tr><tr>
-        <td>
-          53
-        </td>
-        <td>
-          4009
-        </td>
-        <td>
-          1766
-          -
-          1816
+          1813
         </td>
         <td>
           ApplyToImplicitArgs
@@ -752,12 +731,33 @@
           53
         </td>
         <td>
-          4008
+          4026
         </td>
         <td>
-          1786
+          1795
           -
-          1786
+          1811
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          whatson.service.external.eventbrite.EventbriteServiceImpl.toEventDetail
+        </td>
+        <td style="background: #F0ADAD">
+          EventbriteServiceImpl.this.toEventDetail(x)
+        </td>
+      </tr><tr>
+        <td>
+          53
+        </td>
+        <td>
+          4028
+        </td>
+        <td>
+          1783
+          -
+          1783
         </td>
         <td>
           Select
@@ -773,12 +773,12 @@
           57
         </td>
         <td>
-          4010
+          4030
         </td>
         <td>
-          1883
+          1880
           -
-          1895
+          1892
         </td>
         <td>
           Apply
@@ -794,12 +794,12 @@
           58
         </td>
         <td>
-          4011
+          4031
         </td>
         <td>
-          1912
+          1909
           -
-          1947
+          1944
         </td>
         <td>
           Apply
@@ -815,12 +815,12 @@
           59
         </td>
         <td>
-          4013
+          4033
         </td>
         <td>
-          1997
+          1994
           -
-          2036
+          2033
         </td>
         <td>
           Apply
@@ -836,33 +836,12 @@
           59
         </td>
         <td>
-          4015
+          4032
         </td>
         <td>
-          1952
+          1969
           -
-          2051
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          scala.Boolean.&amp;&amp;
-        </td>
-        <td style="background: #F0ADAD">
-          uri.getHost().equals(&quot;www.eventbrite.com&quot;).||(uri.getHost().equals(&quot;www.eventbrite.de&quot;)).&amp;&amp;(split.&gt;=(0))
-        </td>
-      </tr><tr>
-        <td>
-          59
-        </td>
-        <td>
-          4012
-        </td>
-        <td>
-          1972
-          -
-          1992
+          1989
         </td>
         <td>
           Literal
@@ -878,12 +857,33 @@
           59
         </td>
         <td>
-          4014
+          4035
         </td>
         <td>
-          2041
+          1949
           -
-          2051
+          2048
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Boolean.&amp;&amp;
+        </td>
+        <td style="background: #F0ADAD">
+          uri.getHost().equals(&quot;www.eventbrite.com&quot;).||(uri.getHost().equals(&quot;www.eventbrite.de&quot;)).&amp;&amp;(split.&gt;=(0))
+        </td>
+      </tr><tr>
+        <td>
+          59
+        </td>
+        <td>
+          4034
+        </td>
+        <td>
+          2038
+          -
+          2048
         </td>
         <td>
           Apply
@@ -899,117 +899,12 @@
           63
         </td>
         <td>
-          4022
+          4040
         </td>
         <td>
-          2247
+          2201
           -
-          2275
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          whatson.service.external.eventbrite.Model.Address.longitude
-        </td>
-        <td style="background: #F0ADAD">
-          data.venue.address.longitude
-        </td>
-      </tr><tr>
-        <td>
-          63
-        </td>
-        <td>
-          4016
-        </td>
-        <td>
-          2136
-          -
-          2140
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          scala.None
-        </td>
-        <td style="background: #F0ADAD">
-          scala.None
-        </td>
-      </tr><tr>
-        <td>
-          63
-        </td>
-        <td>
-          4024
-        </td>
-        <td>
-          2242
-          -
-          2284
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          scala.Some.apply
-        </td>
-        <td style="background: #F0ADAD">
-          scala.Some.apply[Float](scala.Predef.augmentString(data.venue.address.longitude).toFloat)
-        </td>
-      </tr><tr>
-        <td>
-          63
-        </td>
-        <td>
-          4018
-        </td>
-        <td>
-          2142
-          -
-          2197
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          scala.Option.getOrElse
-        </td>
-        <td style="background: #F0ADAD">
-          data.venue.name.getOrElse[String](data.venue.address.address_1)
-        </td>
-      </tr><tr>
-        <td>
-          63
-        </td>
-        <td>
-          4021
-        </td>
-        <td>
-          2199
-          -
-          2240
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          scala.Some.apply
-        </td>
-        <td style="background: #F0ADAD">
-          scala.Some.apply[Float](scala.Predef.augmentString(data.venue.address.latitude).toFloat)
-        </td>
-      </tr><tr>
-        <td>
-          63
-        </td>
-        <td>
-          4020
-        </td>
-        <td>
-          2204
-          -
-          2239
+          2236
         </td>
         <td>
           Select
@@ -1025,12 +920,159 @@
           63
         </td>
         <td>
-          4023
+          4042
         </td>
         <td>
-          2247
+          2244
           -
-          2283
+          2272
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.service.external.eventbrite.Model.Address.longitude
+        </td>
+        <td style="background: #F0ADAD">
+          data.venue.address.longitude
+        </td>
+      </tr><tr>
+        <td>
+          63
+        </td>
+        <td>
+          4036
+        </td>
+        <td>
+          2133
+          -
+          2137
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #F0ADAD">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          63
+        </td>
+        <td>
+          4039
+        </td>
+        <td>
+          2201
+          -
+          2228
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.service.external.eventbrite.Model.Address.latitude
+        </td>
+        <td style="background: #F0ADAD">
+          data.venue.address.latitude
+        </td>
+      </tr><tr>
+        <td>
+          63
+        </td>
+        <td>
+          4038
+        </td>
+        <td>
+          2139
+          -
+          2194
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Option.getOrElse
+        </td>
+        <td style="background: #F0ADAD">
+          data.venue.name.getOrElse[String](data.venue.address.address_1)
+        </td>
+      </tr><tr>
+        <td>
+          63
+        </td>
+        <td>
+          4041
+        </td>
+        <td>
+          2196
+          -
+          2237
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #F0ADAD">
+          scala.Some.apply[Float](scala.Predef.augmentString(data.venue.address.latitude).toFloat)
+        </td>
+      </tr><tr>
+        <td>
+          63
+        </td>
+        <td>
+          4044
+        </td>
+        <td>
+          2239
+          -
+          2281
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #F0ADAD">
+          scala.Some.apply[Float](scala.Predef.augmentString(data.venue.address.longitude).toFloat)
+        </td>
+      </tr><tr>
+        <td>
+          63
+        </td>
+        <td>
+          4053
+        </td>
+        <td>
+          2124
+          -
+          2477
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          whatson.model.Location.apply
+        </td>
+        <td style="background: #F0ADAD">
+          whatson.model.Location.apply(scala.None, data.venue.name.getOrElse[String](data.venue.address.address_1), scala.Some.apply[Float](scala.Predef.augmentString(data.venue.address.latitude).toFloat), scala.Some.apply[Float](scala.Predef.augmentString(data.venue.address.longitude).toFloat), data.venue.address.country, data.venue.address.city, data.venue.address.address_1, scala.None, scala.None, scala.None, scala.None, data.venue.address.postal_code)
+        </td>
+      </tr><tr>
+        <td>
+          63
+        </td>
+        <td>
+          4043
+        </td>
+        <td>
+          2244
+          -
+          2280
         </td>
         <td>
           Select
@@ -1046,75 +1088,12 @@
           63
         </td>
         <td>
-          4017
+          4037
         </td>
         <td>
-          2168
+          2165
           -
-          2196
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          whatson.service.external.eventbrite.Model.Address.address_1
-        </td>
-        <td style="background: #F0ADAD">
-          data.venue.address.address_1
-        </td>
-      </tr><tr>
-        <td>
-          63
-        </td>
-        <td>
-          4034
-        </td>
-        <td>
-          2127
-          -
-          2486
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          whatson.model.Location.apply
-        </td>
-        <td style="background: #F0ADAD">
-          whatson.model.Location.apply(scala.None, data.venue.name.getOrElse[String](data.venue.address.address_1), scala.Some.apply[Float](scala.Predef.augmentString(data.venue.address.latitude).toFloat), scala.Some.apply[Float](scala.Predef.augmentString(data.venue.address.longitude).toFloat), data.venue.address.country, data.venue.address.city, data.venue.address.address_1, scala.None, scala.None, scala.None, scala.None, scala.Some.apply[String](data.venue.address.postal_code))
-        </td>
-      </tr><tr>
-        <td>
-          63
-        </td>
-        <td>
-          4019
-        </td>
-        <td>
-          2204
-          -
-          2231
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          whatson.service.external.eventbrite.Model.Address.latitude
-        </td>
-        <td style="background: #F0ADAD">
-          data.venue.address.latitude
-        </td>
-      </tr><tr>
-        <td>
-          64
-        </td>
-        <td>
-          4027
-        </td>
-        <td>
-          2367
-          -
-          2395
+          2193
         </td>
         <td>
           Select
@@ -1130,33 +1109,33 @@
           64
         </td>
         <td>
-          4026
+          4048
         </td>
         <td>
-          2342
+          2394
           -
-          2365
+          2398
         </td>
         <td>
           Select
         </td>
         <td>
-          whatson.service.external.eventbrite.Model.Address.city
+          scala.None
         </td>
         <td style="background: #F0ADAD">
-          data.venue.address.city
+          scala.None
         </td>
       </tr><tr>
         <td>
           64
         </td>
         <td>
-          4025
+          4045
         </td>
         <td>
-          2314
+          2311
           -
-          2340
+          2337
         </td>
         <td>
           Select
@@ -1172,12 +1151,54 @@
           64
         </td>
         <td>
-          4028
+          4047
         </td>
         <td>
-          2397
+          2364
           -
-          2401
+          2392
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.service.external.eventbrite.Model.Address.address_1
+        </td>
+        <td style="background: #F0ADAD">
+          data.venue.address.address_1
+        </td>
+      </tr><tr>
+        <td>
+          64
+        </td>
+        <td>
+          4046
+        </td>
+        <td>
+          2339
+          -
+          2362
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.service.external.eventbrite.Model.Address.city
+        </td>
+        <td style="background: #F0ADAD">
+          data.venue.address.city
+        </td>
+      </tr><tr>
+        <td>
+          65
+        </td>
+        <td>
+          4049
+        </td>
+        <td>
+          2428
+          -
+          2432
         </td>
         <td>
           Select
@@ -1193,12 +1214,12 @@
           65
         </td>
         <td>
-          4031
+          4051
         </td>
         <td>
-          2443
+          2440
           -
-          2447
+          2444
         </td>
         <td>
           Select
@@ -1214,33 +1235,12 @@
           65
         </td>
         <td>
-          4033
+          4050
         </td>
         <td>
-          2449
+          2434
           -
-          2485
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          scala.Some.apply
-        </td>
-        <td style="background: #F0ADAD">
-          scala.Some.apply[String](data.venue.address.postal_code)
-        </td>
-      </tr><tr>
-        <td>
-          65
-        </td>
-        <td>
-          4030
-        </td>
-        <td>
-          2437
-          -
-          2441
+          2438
         </td>
         <td>
           Select
@@ -1256,33 +1256,12 @@
           65
         </td>
         <td>
-          4029
+          4052
         </td>
         <td>
-          2431
+          2446
           -
-          2435
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          scala.None
-        </td>
-        <td style="background: #F0ADAD">
-          scala.None
-        </td>
-      </tr><tr>
-        <td>
-          65
-        </td>
-        <td>
-          4032
-        </td>
-        <td>
-          2454
-          -
-          2484
+          2476
         </td>
         <td>
           Select
@@ -1298,54 +1277,33 @@
           67
         </td>
         <td>
-          4036
+          4054
         </td>
         <td>
-          2503
+          2508
           -
-          2554
+          2546
         </td>
         <td>
           Apply
         </td>
         <td>
-          java.sql.Timestamp.&lt;init&gt;
+          java.util.Date.getTime
         </td>
         <td style="background: #F0ADAD">
-          new java.sql.Timestamp(EventbriteServiceImpl.this.format.parse(data.start.utc).getTime())
+          EventbriteServiceImpl.this.format.parse(data.start.local).getTime()
         </td>
       </tr><tr>
         <td>
           67
         </td>
         <td>
-          4035
+          4055
         </td>
         <td>
-          2517
+          2494
           -
-          2553
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          java.util.Date.getTime
-        </td>
-        <td style="background: #F0ADAD">
-          EventbriteServiceImpl.this.format.parse(data.start.utc).getTime()
-        </td>
-      </tr><tr>
-        <td>
-          68
-        </td>
-        <td>
-          4038
-        </td>
-        <td>
-          2568
-          -
-          2617
+          2547
         </td>
         <td>
           Apply
@@ -1354,19 +1312,40 @@
           java.sql.Timestamp.&lt;init&gt;
         </td>
         <td style="background: #F0ADAD">
-          new java.sql.Timestamp(EventbriteServiceImpl.this.format.parse(data.end.utc).getTime())
+          new java.sql.Timestamp(EventbriteServiceImpl.this.format.parse(data.start.local).getTime())
         </td>
       </tr><tr>
         <td>
           68
         </td>
         <td>
-          4037
+          4057
         </td>
         <td>
-          2582
+          2561
           -
-          2616
+          2612
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.sql.Timestamp.&lt;init&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          new java.sql.Timestamp(EventbriteServiceImpl.this.format.parse(data.end.local).getTime())
+        </td>
+      </tr><tr>
+        <td>
+          68
+        </td>
+        <td>
+          4056
+        </td>
+        <td>
+          2575
+          -
+          2611
         </td>
         <td>
           Apply
@@ -1375,19 +1354,40 @@
           java.util.Date.getTime
         </td>
         <td style="background: #F0ADAD">
-          EventbriteServiceImpl.this.format.parse(data.end.utc).getTime()
+          EventbriteServiceImpl.this.format.parse(data.end.local).getTime()
         </td>
       </tr><tr>
         <td>
           70
         </td>
         <td>
-          4040
+          4058
         </td>
         <td>
-          2641
+          2630
           -
-          2655
+          2634
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #F0ADAD">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          70
+        </td>
+        <td>
+          4059
+        </td>
+        <td>
+          2636
+          -
+          2650
         </td>
         <td>
           Select
@@ -1403,12 +1403,12 @@
           70
         </td>
         <td>
-          4060
+          4079
         </td>
         <td>
-          2623
+          2618
           -
-          2920
+          2915
         </td>
         <td>
           Apply
@@ -1421,57 +1421,15 @@
         </td>
       </tr><tr>
         <td>
-          70
-        </td>
-        <td>
-          4039
-        </td>
-        <td>
-          2635
-          -
-          2639
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          scala.None
-        </td>
-        <td style="background: #F0ADAD">
-          scala.None
-        </td>
-      </tr><tr>
-        <td>
           71
         </td>
         <td>
-          4042
+          4060
         </td>
         <td>
-          2689
+          2674
           -
-          2710
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          whatson.service.external.eventbrite.Model.MPText.text
-        </td>
-        <td style="background: #F0ADAD">
-          data.description.text
-        </td>
-      </tr><tr>
-        <td>
-          71
-        </td>
-        <td>
-          4041
-        </td>
-        <td>
-          2679
-          -
-          2687
+          2682
         </td>
         <td>
           Apply
@@ -1484,15 +1442,36 @@
         </td>
       </tr><tr>
         <td>
+          71
+        </td>
+        <td>
+          4061
+        </td>
+        <td>
+          2684
+          -
+          2705
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.service.external.eventbrite.Model.MPText.text
+        </td>
+        <td style="background: #F0ADAD">
+          data.description.text
+        </td>
+      </tr><tr>
+        <td>
           72
         </td>
         <td>
-          4048
+          4067
         </td>
         <td>
-          2765
+          2760
           -
-          2790
+          2785
         </td>
         <td>
           Select
@@ -1508,33 +1487,12 @@
           72
         </td>
         <td>
-          4045
+          4066
         </td>
         <td>
-          2756
+          2723
           -
-          2757
-        </td>
-        <td>
-          Literal
-        </td>
-        <td>
-          &lt;nosymbol&gt;
-        </td>
-        <td style="background: #F0ADAD">
-          -1
-        </td>
-      </tr><tr>
-        <td>
-          72
-        </td>
-        <td>
-          4047
-        </td>
-        <td>
-          2728
-          -
-          2763
+          2758
         </td>
         <td>
           Apply
@@ -1550,12 +1508,12 @@
           72
         </td>
         <td>
-          4044
+          4063
         </td>
         <td>
-          2743
+          2738
           -
-          2754
+          2749
         </td>
         <td>
           Literal
@@ -1571,12 +1529,12 @@
           72
         </td>
         <td>
-          4043
+          4062
         </td>
         <td>
-          2738
+          2733
           -
-          2742
+          2737
         </td>
         <td>
           Select
@@ -1592,12 +1550,12 @@
           72
         </td>
         <td>
-          4046
+          4065
         </td>
         <td>
-          2758
+          2753
           -
-          2762
+          2757
         </td>
         <td>
           Select
@@ -1610,15 +1568,36 @@
         </td>
       </tr><tr>
         <td>
+          72
+        </td>
+        <td>
+          4064
+        </td>
+        <td>
+          2751
+          -
+          2752
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          -1
+        </td>
+      </tr><tr>
+        <td>
           73
         </td>
         <td>
-          4049
+          4068
         </td>
         <td>
-          2808
+          2803
           -
-          2812
+          2807
         </td>
         <td>
           Select
@@ -1634,12 +1613,12 @@
           74
         </td>
         <td>
-          4057
+          4076
         </td>
         <td>
-          2890
+          2885
           -
-          2891
+          2886
         </td>
         <td>
           Literal
@@ -1655,7 +1634,70 @@
           74
         </td>
         <td>
-          4051
+          4075
+        </td>
+        <td>
+          2830
+          -
+          2883
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.immutable.List.apply
+        </td>
+        <td style="background: #F0ADAD">
+          scala.collection.immutable.List.apply[whatson.model.detail.TaggedImage](whatson.model.detail.TaggedImage.apply(scala.None, scala.None, scala.None, scala.Some.apply[String](data.logo.url)))
+        </td>
+      </tr><tr>
+        <td>
+          74
+        </td>
+        <td>
+          4069
+        </td>
+        <td>
+          2847
+          -
+          2851
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #F0ADAD">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          74
+        </td>
+        <td>
+          4072
+        </td>
+        <td>
+          2867
+          -
+          2880
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.service.external.eventbrite.Model.Image.url
+        </td>
+        <td style="background: #F0ADAD">
+          data.logo.url
+        </td>
+      </tr><tr>
+        <td>
+          74
+        </td>
+        <td>
+          4071
         </td>
         <td>
           2857
@@ -1676,49 +1718,28 @@
           74
         </td>
         <td>
-          4054
-        </td>
-        <td>
-          2867
-          -
-          2886
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          scala.Some.apply
-        </td>
-        <td style="background: #F0ADAD">
-          scala.Some.apply[String](data.logo.url)
-        </td>
-      </tr><tr>
-        <td>
-          74
-        </td>
-        <td>
-          4056
+          4074
         </td>
         <td>
           2835
           -
-          2888
+          2882
         </td>
         <td>
           Apply
         </td>
         <td>
-          scala.collection.immutable.List.apply
+          whatson.model.detail.TaggedImage.apply
         </td>
         <td style="background: #F0ADAD">
-          scala.collection.immutable.List.apply[whatson.model.detail.TaggedImage](whatson.model.detail.TaggedImage.apply(scala.None, scala.None, scala.None, scala.Some.apply[String](data.logo.url)))
+          whatson.model.detail.TaggedImage.apply(scala.None, scala.None, scala.None, scala.Some.apply[String](data.logo.url))
         </td>
       </tr><tr>
         <td>
           74
         </td>
         <td>
-          4050
+          4070
         </td>
         <td>
           2852
@@ -1739,75 +1760,33 @@
           74
         </td>
         <td>
-          4053
-        </td>
-        <td>
-          2872
-          -
-          2885
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          whatson.service.external.eventbrite.Model.Image.url
-        </td>
-        <td style="background: #F0ADAD">
-          data.logo.url
-        </td>
-      </tr><tr>
-        <td>
-          74
-        </td>
-        <td>
-          4052
+          4073
         </td>
         <td>
           2862
           -
-          2866
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          scala.None
-        </td>
-        <td style="background: #F0ADAD">
-          scala.None
-        </td>
-      </tr><tr>
-        <td>
-          74
-        </td>
-        <td>
-          4055
-        </td>
-        <td>
-          2840
-          -
-          2887
+          2881
         </td>
         <td>
           Apply
         </td>
         <td>
-          whatson.model.detail.TaggedImage.apply
+          scala.Some.apply
         </td>
         <td style="background: #F0ADAD">
-          whatson.model.detail.TaggedImage.apply(scala.None, scala.None, scala.None, scala.Some.apply[String](data.logo.url))
+          scala.Some.apply[String](data.logo.url)
         </td>
       </tr><tr>
         <td>
           75
         </td>
         <td>
-          4058
+          4078
         </td>
         <td>
-          2909
+          2910
           -
-          2913
+          2914
         </td>
         <td>
           Select
@@ -1823,12 +1802,12 @@
           75
         </td>
         <td>
-          4059
+          4077
         </td>
         <td>
-          2915
+          2904
           -
-          2919
+          2908
         </td>
         <td>
           Select
