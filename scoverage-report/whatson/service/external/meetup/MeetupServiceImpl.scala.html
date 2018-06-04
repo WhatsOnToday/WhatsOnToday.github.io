@@ -66,8 +66,8 @@
 </span>42 <span style=''>  lazy val categoryMap = Map(
 </span>43 <span style=''>      &quot;movements&quot; -&gt; List(),
 </span>44 <span style=''>      &quot;education&quot; -&gt; List(c.science),
-</span>45 <span style=''>      &quot;book-clubs&quot; -&gt; List(c.lecture,c.reading),
-</span>46 <span style=''>      &quot;food&quot; -&gt; List(),
+</span>45 <span style=''>      &quot;book-clubs&quot; -&gt; List(c.lecture),
+</span>46 <span style=''>      &quot;food&quot; -&gt; List(c.food),
 </span>47 <span style=''>      &quot;parents-family&quot; -&gt; List(),
 </span>48 <span style=''>      &quot;fashion-beauty&quot; -&gt; List(),
 </span>49 <span style=''>      &quot;film&quot; -&gt; List(c.culture),
@@ -75,7 +75,7 @@
 </span>51 <span style=''>      &quot;health-wellness&quot; -&gt; List(),
 </span>52 <span style=''>      &quot;beliefs&quot; -&gt; List(),
 </span>53 <span style=''>      &quot;career-business&quot; -&gt; List(),
-</span>54 <span style=''>      &quot;arts-culture&quot; -&gt; List(c.culture),
+</span>54 <span style=''>      &quot;arts-culture&quot; -&gt; List(c.culture,c.art),
 </span>55 <span style=''>      &quot;lgbtq&quot; -&gt; List(),
 </span>56 <span style=''>      &quot;music&quot; -&gt; List(c.culture),
 </span>57 <span style=''>      &quot;outdoors-adventure&quot; -&gt; List(),
@@ -86,54 +86,54 @@
 </span>62 <span style=''>      &quot;language&quot; -&gt; List(),
 </span>63 <span style=''>      &quot;dancing&quot; -&gt; List(),
 </span>64 <span style=''>      &quot;tech&quot; -&gt; List(c.tech))
-</span>65 <span style=''>      
+</span>65 <span style=''>
 </span>66 <span style=''>  def getEventData(group: String, id: String): Future[Option[Model.Event]] = {
-</span>67 <span style=''>    val request = </span><span style='background: #F0ADAD'>ws.url(config.url + group + &quot;/events/&quot; + id)
-</span>68 <span style=''></span><span style='background: #F0ADAD'>      .addQueryStringParameters(&quot;key&quot; -&gt; config.apiKey, &quot;fields&quot; -&gt; &quot;time,photo_album,group_category&quot;)</span><span style=''>
+</span>67 <span style=''>    val request = </span><span style='background: #AEF1AE'>ws.url(config.url + group + &quot;/events/&quot; + id)
+</span>68 <span style=''></span><span style='background: #AEF1AE'>      .addQueryStringParameters(&quot;key&quot; -&gt; config.apiKey, &quot;fields&quot; -&gt; &quot;time,photo_album,group_category&quot;)</span><span style=''>
 </span>69 <span style=''>      
-</span>70 <span style=''>    val result = </span><span style='background: #F0ADAD'>request.get()</span><span style=''>
+</span>70 <span style=''>    val result = </span><span style='background: #AEF1AE'>request.get()</span><span style=''>
 </span>71 <span style=''>
-</span>72 <span style=''>    </span><span style='background: #F0ADAD'>result.map { case x =&gt;
-</span>73 <span style=''></span><span style='background: #F0ADAD'>      log.debug(&quot;Got response from meetup api: &quot; + x.body)
-</span>74 <span style=''></span><span style='background: #F0ADAD'>      val res = x.json.validate[Model.Event]
-</span>75 <span style=''></span><span style='background: #F0ADAD'>      log.debug(res.toString())
-</span>76 <span style=''></span><span style='background: #F0ADAD'>      res.asOpt
-</span>77 <span style=''></span><span style='background: #F0ADAD'>    }</span><span style=''>
+</span>72 <span style=''>    </span><span style='background: #AEF1AE'>result.map { case x =&gt;
+</span>73 <span style=''></span><span style='background: #AEF1AE'>      log.debug(&quot;Got response from meetup api: &quot; + x.body)
+</span>74 <span style=''></span><span style='background: #AEF1AE'>      val res = x.json.validate[Model.Event]
+</span>75 <span style=''></span><span style='background: #AEF1AE'>      log.debug(res.toString())
+</span>76 <span style=''></span><span style='background: #AEF1AE'>      res.asOpt
+</span>77 <span style=''></span><span style='background: #AEF1AE'>    }</span><span style=''>
 </span>78 <span style=''>  }
 </span>79 <span style=''>
 </span>80 <span style=''>  def getEvent(url: String, login: Login): Future[Option[EventDetail]] = {
-</span>81 <span style=''>    val t = </span><span style='background: #F0ADAD'>new URI(url).getPath.split(&quot;/&quot;)</span><span style=''>
-</span>82 <span style=''>    val i = </span><span style='background: #F0ADAD'>t.indexOf(&quot;events&quot;)</span><span style=''>
-</span>83 <span style=''>    </span><span style='background: #F0ADAD'>getEventData(t(i-1),t(i+1)).map(_.map(x =&gt; toEventDetail(x)))</span><span style=''>
+</span>81 <span style=''>    val t = </span><span style='background: #AEF1AE'>new URI(url).getPath.split(&quot;/&quot;)</span><span style=''>
+</span>82 <span style=''>    val i = </span><span style='background: #AEF1AE'>t.indexOf(&quot;events&quot;)</span><span style=''>
+</span>83 <span style=''>    </span><span style='background: #AEF1AE'>getEventData(t(i-1),t(i+1)).map(_.map(x =&gt; toEventDetail(x)))</span><span style=''>
 </span>84 <span style=''>  }
 </span>85 <span style=''>
 </span>86 <span style=''>  def canImport(url: String, login: Login) = {
-</span>87 <span style=''>    val uri = </span><span style='background: #F0ADAD'>new URI(url)</span><span style=''>
-</span>88 <span style=''>    val split = </span><span style='background: #F0ADAD'>uri.getPath.split(&quot;/&quot;).indexOf(&quot;events&quot;)</span><span style=''>
-</span>89 <span style=''>    </span><span style='background: #F0ADAD'>(uri.getHost.equals(&quot;www.meetup.com&quot;) || uri.getHost.equals(&quot;www.meetup.de&quot;)) &amp;&amp; split &gt;= 0</span><span style=''>
+</span>87 <span style=''>    val uri = </span><span style='background: #AEF1AE'>new URI(url)</span><span style=''>
+</span>88 <span style=''>    val split = </span><span style='background: #AEF1AE'>uri.getPath.split(&quot;/&quot;).indexOf(&quot;events&quot;)</span><span style=''>
+</span>89 <span style=''>    </span><span style='background: #AEF1AE'>(uri.getHost.equals(&quot;www.meetup.com&quot;) || </span><span style='background: #F0ADAD'>uri.getHost.equals(&quot;www.meetup.de&quot;)</span><span style='background: #AEF1AE'>) &amp;&amp; split &gt;= 0</span><span style=''>
 </span>90 <span style=''>  }
 </span>91 <span style=''>
 </span>92 <span style=''>  def toEventDetail(data: Model.Event): EventDetail = {    
-</span>93 <span style=''>    val loc = </span><span style='background: #F0ADAD'>data.venue.map(x =&gt; Location(None, x.name, Some(x.lat), Some(x.lon),
-</span>94 <span style=''></span><span style='background: #F0ADAD'>                            x.country, x.city, x.street.getOrElse(x.address_1.getOrElse(&quot;&quot;)), None,
-</span>95 <span style=''></span><span style='background: #F0ADAD'>                            x.phone, None, None, x.zip))</span><span style=''>
+</span>93 <span style=''>    val loc = </span><span style='background: #AEF1AE'>data.venue.map(x =&gt; Location(None, x.name, Some(x.lat), Some(x.lon),
+</span>94 <span style=''></span><span style='background: #AEF1AE'>                            x.country, x.city, x.street.getOrElse(x.address_1.getOrElse(&quot;&quot;)), None,
+</span>95 <span style=''></span><span style='background: #AEF1AE'>                            x.phone, None, None, x.zip))</span><span style=''>
 </span>96 <span style=''>
-</span>97 <span style=''>    val from = </span><span style='background: #F0ADAD'>new Timestamp(data.time)</span><span style=''>
+</span>97 <span style=''>    val from = </span><span style='background: #AEF1AE'>new Timestamp(data.time)</span><span style=''>
 </span>98 <span style=''>
 </span>99 <span style=''>    lazy val descText = XhtmlParser(new BufferedSource(new ByteArrayInputStream((&quot;&lt;p&gt;&quot; ++ data.description ++ &quot;&lt;/p&gt;&quot;).getBytes))).text
 </span>100 <span style=''>    
-</span>101 <span style=''>    val description = </span><span style='background: #F0ADAD'>data.plain_text_no_images_description
-</span>102 <span style=''></span><span style='background: #F0ADAD'>      .orElse(data.plain_text_description)
-</span>103 <span style=''></span><span style='background: #F0ADAD'>      .getOrElse(descText)</span><span style=''>
+</span>101 <span style=''>    val description = </span><span style='background: #AEF1AE'>data.plain_text_no_images_description
+</span>102 <span style=''></span><span style='background: #AEF1AE'>      .orElse(data.plain_text_description)
+</span>103 <span style=''></span><span style='background: #AEF1AE'>      .getOrElse(descText)</span><span style=''>
 </span>104 <span style=''>    
-</span>105 <span style=''>    val categories = </span><span style='background: #F0ADAD'>categoryMap.getOrElse(data.group.category.shortname,List()) ++ List(c.meetup)</span><span style=''>
+</span>105 <span style=''>    val categories = </span><span style='background: #AEF1AE'>categoryMap.getOrElse(data.group.category.shortname,List()) ++ List(c.meetup)</span><span style=''>
 </span>106 <span style=''>    
-</span>107 <span style=''>    </span><span style='background: #F0ADAD'>EventDetail(None, data.name, from,
-</span>108 <span style=''></span><span style='background: #F0ADAD'>                None, description,
-</span>109 <span style=''></span><span style='background: #F0ADAD'>                Organizer(None,&quot;Organizer&quot;,-1,None), categories,
-</span>110 <span style=''></span><span style='background: #F0ADAD'>                None, loc.getOrElse(Location(None,&quot;&quot;,None,None,&quot;&quot;,&quot;&quot;,&quot;&quot;,None,None,None,None,None)),
-</span>111 <span style=''></span><span style='background: #F0ADAD'>                data.photo_album.map(_.photo_sample).getOrElse(List()).map(x =&gt; TaggedImage(None,None,None,Some(x.photo_link))), 0,
-</span>112 <span style=''></span><span style='background: #F0ADAD'>                None, None)</span><span style=''> //TODO Prices
+</span>107 <span style=''>    </span><span style='background: #AEF1AE'>EventDetail(None, data.name, from,
+</span>108 <span style=''></span><span style='background: #AEF1AE'>                None, description,
+</span>109 <span style=''></span><span style='background: #AEF1AE'>                Organizer(None,&quot;Organizer&quot;,-1,None), categories,
+</span>110 <span style=''></span><span style='background: #AEF1AE'>                None, loc.getOrElse(</span><span style='background: #F0ADAD'>Location(None,&quot;&quot;,None,None,&quot;&quot;,&quot;&quot;,&quot;&quot;,None,None,None,None,None)</span><span style='background: #AEF1AE'>),
+</span>111 <span style=''></span><span style='background: #AEF1AE'>                data.photo_album.map(</span><span style='background: #F0ADAD'>_.photo_sample</span><span style='background: #AEF1AE'>).getOrElse(List()).map(x =&gt; </span><span style='background: #F0ADAD'>TaggedImage(None,None,None,Some(x.photo_link))</span><span style='background: #AEF1AE'>), 0,
+</span>112 <span style=''></span><span style='background: #AEF1AE'>                None, None)</span><span style=''> //TODO Prices
 </span>113 <span style=''>  }
 </span>114 <span style=''>}
 </span></pre>
@@ -218,9 +218,9 @@
           4261
         </td>
         <td>
-          2160
+          2156
           -
-          2196
+          2192
         </td>
         <td>
           Apply
@@ -228,7 +228,7 @@
         <td>
           java.lang.String.+
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           MeetupServiceImpl.this.config.url.+(group).+(&quot;/events/&quot;).+(id)
         </td>
       </tr><tr>
@@ -239,9 +239,9 @@
           4264
         </td>
         <td>
-          2230
+          2226
           -
-          2252
+          2248
         </td>
         <td>
           Apply
@@ -249,7 +249,7 @@
         <td>
           scala.Predef.ArrowAssoc.-&gt;
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           scala.Predef.ArrowAssoc[String](&quot;key&quot;).-&gt;[String](MeetupServiceImpl.this.config.apiKey)
         </td>
       </tr><tr>
@@ -260,9 +260,9 @@
           4263
         </td>
         <td>
-          2239
+          2235
           -
-          2252
+          2248
         </td>
         <td>
           Select
@@ -270,7 +270,7 @@
         <td>
           whatson.service.external.meetup.MeetupConfig.apiKey
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           MeetupServiceImpl.this.config.apiKey
         </td>
       </tr><tr>
@@ -281,9 +281,9 @@
           4266
         </td>
         <td>
-          2153
+          2149
           -
-          2300
+          2296
         </td>
         <td>
           Apply
@@ -291,7 +291,7 @@
         <td>
           play.api.libs.ws.StandaloneWSRequest.addQueryStringParameters
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           MeetupServiceImpl.this.ws.url(MeetupServiceImpl.this.config.url.+(group).+(&quot;/events/&quot;).+(id)).addQueryStringParameters(scala.Predef.ArrowAssoc[String](&quot;key&quot;).-&gt;[String](MeetupServiceImpl.this.config.apiKey), scala.Predef.ArrowAssoc[String](&quot;fields&quot;).-&gt;[String](&quot;time,photo_album,group_category&quot;))
         </td>
       </tr><tr>
@@ -302,9 +302,9 @@
           4265
         </td>
         <td>
-          2254
+          2250
           -
-          2299
+          2295
         </td>
         <td>
           Apply
@@ -312,7 +312,7 @@
         <td>
           scala.Predef.ArrowAssoc.-&gt;
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           scala.Predef.ArrowAssoc[String](&quot;fields&quot;).-&gt;[String](&quot;time,photo_album,group_category&quot;)
         </td>
       </tr><tr>
@@ -323,9 +323,9 @@
           4262
         </td>
         <td>
-          2230
+          2226
           -
-          2235
+          2231
         </td>
         <td>
           Literal
@@ -333,7 +333,7 @@
         <td>
           &lt;nosymbol&gt;
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           &quot;key&quot;
         </td>
       </tr><tr>
@@ -344,9 +344,9 @@
           4267
         </td>
         <td>
-          2325
+          2321
           -
-          2338
+          2334
         </td>
         <td>
           Apply
@@ -354,7 +354,7 @@
         <td>
           play.api.libs.ws.WSRequest.get
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           request.get()
         </td>
       </tr><tr>
@@ -365,9 +365,9 @@
           4279
         </td>
         <td>
-          2355
+          2351
           -
-          2355
+          2351
         </td>
         <td>
           Select
@@ -375,7 +375,7 @@
         <td>
           whatson.service.external.meetup.MeetupServiceImpl.context
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           MeetupServiceImpl.this.context
         </td>
       </tr><tr>
@@ -386,9 +386,9 @@
           4280
         </td>
         <td>
-          2344
+          2340
           -
-          2524
+          2520
         </td>
         <td>
           ApplyToImplicitArgs
@@ -396,7 +396,7 @@
         <td>
           scala.concurrent.Future.map
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           result.map[Option[whatson.service.external.meetup.Model.Event]](((x0$1: request.Response) =&gt; x0$1 match {
   case (x @ _) =&gt; {
     MeetupServiceImpl.this.log.debug(&quot;Got response from meetup api: &quot;.+(x.body))(api.this.MarkerContext.NoMarker);
@@ -414,9 +414,9 @@
           4270
         </td>
         <td>
-          2383
+          2379
           -
-          2424
+          2420
         </td>
         <td>
           Apply
@@ -424,7 +424,7 @@
         <td>
           java.lang.String.+
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           &quot;Got response from meetup api: &quot;.+(x.body)
         </td>
       </tr><tr>
@@ -435,9 +435,9 @@
           4269
         </td>
         <td>
-          2418
+          2414
           -
-          2424
+          2420
         </td>
         <td>
           Select
@@ -445,7 +445,7 @@
         <td>
           play.api.libs.ws.WSResponse.body
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           x.body
         </td>
       </tr><tr>
@@ -456,9 +456,9 @@
           4272
         </td>
         <td>
-          2373
+          2369
           -
-          2425
+          2421
         </td>
         <td>
           ApplyToImplicitArgs
@@ -466,7 +466,7 @@
         <td>
           play.api.LoggerLike.debug
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           MeetupServiceImpl.this.log.debug(&quot;Got response from meetup api: &quot;.+(x.body))(api.this.MarkerContext.NoMarker)
         </td>
       </tr><tr>
@@ -477,9 +477,9 @@
           4268
         </td>
         <td>
-          2383
+          2379
           -
-          2415
+          2411
         </td>
         <td>
           Literal
@@ -487,7 +487,7 @@
         <td>
           &lt;nosymbol&gt;
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           &quot;Got response from meetup api: &quot;
         </td>
       </tr><tr>
@@ -498,9 +498,9 @@
           4271
         </td>
         <td>
-          2382
+          2378
           -
-          2382
+          2378
         </td>
         <td>
           Select
@@ -508,7 +508,7 @@
         <td>
           play.api.LowPriorityMarkerContextImplicits.NoMarker
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           api.this.MarkerContext.NoMarker
         </td>
       </tr><tr>
@@ -519,9 +519,9 @@
           4273
         </td>
         <td>
-          2457
+          2453
           -
-          2457
+          2453
         </td>
         <td>
           Select
@@ -529,7 +529,7 @@
         <td>
           whatson.service.external.meetup.Model.eventFormat
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           meetup.this.Model.eventFormat
         </td>
       </tr><tr>
@@ -540,9 +540,9 @@
           4274
         </td>
         <td>
-          2442
+          2438
           -
-          2470
+          2466
         </td>
         <td>
           ApplyToImplicitArgs
@@ -550,7 +550,7 @@
         <td>
           play.api.libs.json.JsValue.validate
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           x.json.validate[whatson.service.external.meetup.Model.Event](meetup.this.Model.eventFormat)
         </td>
       </tr><tr>
@@ -561,9 +561,9 @@
           4276
         </td>
         <td>
-          2486
+          2482
           -
-          2486
+          2482
         </td>
         <td>
           Select
@@ -571,7 +571,7 @@
         <td>
           play.api.LowPriorityMarkerContextImplicits.NoMarker
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           api.this.MarkerContext.NoMarker
         </td>
       </tr><tr>
@@ -582,9 +582,9 @@
           4275
         </td>
         <td>
-          2487
+          2483
           -
-          2501
+          2497
         </td>
         <td>
           Apply
@@ -592,7 +592,7 @@
         <td>
           java.lang.Object.toString
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           res.toString()
         </td>
       </tr><tr>
@@ -603,9 +603,9 @@
           4277
         </td>
         <td>
-          2477
+          2473
           -
-          2502
+          2498
         </td>
         <td>
           ApplyToImplicitArgs
@@ -613,7 +613,7 @@
         <td>
           play.api.LoggerLike.debug
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           MeetupServiceImpl.this.log.debug(res.toString())(api.this.MarkerContext.NoMarker)
         </td>
       </tr><tr>
@@ -624,9 +624,9 @@
           4278
         </td>
         <td>
-          2509
+          2505
           -
-          2518
+          2514
         </td>
         <td>
           Select
@@ -634,7 +634,7 @@
         <td>
           play.api.libs.json.JsResult.asOpt
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           res.asOpt
         </td>
       </tr><tr>
@@ -645,9 +645,9 @@
           4281
         </td>
         <td>
-          2617
+          2613
           -
-          2648
+          2644
         </td>
         <td>
           Apply
@@ -655,7 +655,7 @@
         <td>
           java.lang.String.split
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           new java.net.URI(url).getPath().split(&quot;/&quot;)
         </td>
       </tr><tr>
@@ -666,9 +666,9 @@
           4282
         </td>
         <td>
-          2661
+          2657
           -
-          2680
+          2676
         </td>
         <td>
           Apply
@@ -676,7 +676,7 @@
         <td>
           scala.collection.GenSeqLike.indexOf
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           scala.Predef.refArrayOps[String](t).indexOf[String](&quot;events&quot;)
         </td>
       </tr><tr>
@@ -687,9 +687,9 @@
           4285
         </td>
         <td>
-          2707
+          2703
           -
-          2710
+          2706
         </td>
         <td>
           Apply
@@ -697,7 +697,7 @@
         <td>
           scala.Int.+
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           i.+(1)
         </td>
       </tr><tr>
@@ -708,9 +708,9 @@
           4287
         </td>
         <td>
-          2728
+          2724
           -
-          2744
+          2740
         </td>
         <td>
           Apply
@@ -718,7 +718,7 @@
         <td>
           whatson.service.external.meetup.MeetupServiceImpl.toEventDetail
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           MeetupServiceImpl.this.toEventDetail(x)
         </td>
       </tr><tr>
@@ -729,9 +729,9 @@
           4290
         </td>
         <td>
-          2685
+          2681
           -
-          2746
+          2742
         </td>
         <td>
           ApplyToImplicitArgs
@@ -739,7 +739,7 @@
         <td>
           scala.concurrent.Future.map
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           MeetupServiceImpl.this.getEventData(t.apply(i.-(1)), t.apply(i.+(1))).map[Option[whatson.model.detail.EventDetail]](((x$1: Option[whatson.service.external.meetup.Model.Event]) =&gt; x$1.map[whatson.model.detail.EventDetail](((x: whatson.service.external.meetup.Model.Event) =&gt; MeetupServiceImpl.this.toEventDetail(x)))))(MeetupServiceImpl.this.context)
         </td>
       </tr><tr>
@@ -750,9 +750,9 @@
           4284
         </td>
         <td>
-          2698
+          2694
           -
-          2704
+          2700
         </td>
         <td>
           Apply
@@ -760,7 +760,7 @@
         <td>
           scala.Array.apply
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           t.apply(i.-(1))
         </td>
       </tr><tr>
@@ -771,9 +771,9 @@
           4283
         </td>
         <td>
-          2700
+          2696
           -
-          2703
+          2699
         </td>
         <td>
           Apply
@@ -781,7 +781,7 @@
         <td>
           scala.Int.-
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           i.-(1)
         </td>
       </tr><tr>
@@ -792,9 +792,9 @@
           4286
         </td>
         <td>
-          2705
+          2701
           -
-          2711
+          2707
         </td>
         <td>
           Apply
@@ -802,7 +802,7 @@
         <td>
           scala.Array.apply
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           t.apply(i.+(1))
         </td>
       </tr><tr>
@@ -813,9 +813,9 @@
           4289
         </td>
         <td>
-          2716
+          2712
           -
-          2716
+          2712
         </td>
         <td>
           Select
@@ -823,7 +823,7 @@
         <td>
           whatson.service.external.meetup.MeetupServiceImpl.context
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           MeetupServiceImpl.this.context
         </td>
       </tr><tr>
@@ -834,9 +834,9 @@
           4288
         </td>
         <td>
-          2717
+          2713
           -
-          2745
+          2741
         </td>
         <td>
           Apply
@@ -844,7 +844,7 @@
         <td>
           scala.Option.map
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           x$1.map[whatson.model.detail.EventDetail](((x: whatson.service.external.meetup.Model.Event) =&gt; MeetupServiceImpl.this.toEventDetail(x)))
         </td>
       </tr><tr>
@@ -855,9 +855,9 @@
           4291
         </td>
         <td>
-          2813
+          2809
           -
-          2825
+          2821
         </td>
         <td>
           Apply
@@ -865,7 +865,7 @@
         <td>
           java.net.URI.&lt;init&gt;
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           new java.net.URI(url)
         </td>
       </tr><tr>
@@ -876,9 +876,9 @@
           4292
         </td>
         <td>
-          2842
+          2838
           -
-          2882
+          2878
         </td>
         <td>
           Apply
@@ -886,7 +886,7 @@
         <td>
           scala.collection.GenSeqLike.indexOf
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           scala.Predef.refArrayOps[String](uri.getPath().split(&quot;/&quot;)).indexOf[String](&quot;events&quot;)
         </td>
       </tr><tr>
@@ -897,9 +897,9 @@
           4294
         </td>
         <td>
-          2928
+          2924
           -
-          2963
+          2959
         </td>
         <td>
           Apply
@@ -918,9 +918,9 @@
           4296
         </td>
         <td>
-          2887
+          2883
           -
-          2978
+          2974
         </td>
         <td>
           Apply
@@ -928,7 +928,7 @@
         <td>
           scala.Boolean.&amp;&amp;
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           uri.getHost().equals(&quot;www.meetup.com&quot;).||(uri.getHost().equals(&quot;www.meetup.de&quot;)).&amp;&amp;(split.&gt;=(0))
         </td>
       </tr><tr>
@@ -939,9 +939,9 @@
           4293
         </td>
         <td>
-          2907
+          2903
           -
-          2923
+          2919
         </td>
         <td>
           Literal
@@ -949,7 +949,7 @@
         <td>
           &lt;nosymbol&gt;
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           &quot;www.meetup.com&quot;
         </td>
       </tr><tr>
@@ -960,9 +960,9 @@
           4295
         </td>
         <td>
-          2968
+          2964
           -
-          2978
+          2974
         </td>
         <td>
           Apply
@@ -970,7 +970,7 @@
         <td>
           scala.Int.&gt;=
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           split.&gt;=(0)
         </td>
       </tr><tr>
@@ -981,9 +981,9 @@
           4300
         </td>
         <td>
-          3101
+          3097
           -
-          3112
+          3108
         </td>
         <td>
           Apply
@@ -991,7 +991,7 @@
         <td>
           scala.Some.apply
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           scala.Some.apply[Float](x.lat)
         </td>
       </tr><tr>
@@ -1002,9 +1002,9 @@
           4312
         </td>
         <td>
-          3078
+          3074
           -
-          3282
+          3278
         </td>
         <td>
           Apply
@@ -1012,7 +1012,7 @@
         <td>
           whatson.model.Location.apply
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           whatson.model.Location.apply(scala.None, x.name, scala.Some.apply[Float](x.lat), scala.Some.apply[Float](x.lon), x.country, x.city, x.street.getOrElse[String](x.address_1.getOrElse[String](&quot;&quot;)), scala.None, x.phone, scala.None, scala.None, x.zip)
         </td>
       </tr><tr>
@@ -1023,9 +1023,9 @@
           4302
         </td>
         <td>
-          3114
+          3110
           -
-          3125
+          3121
         </td>
         <td>
           Apply
@@ -1033,7 +1033,7 @@
         <td>
           scala.Some.apply
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           scala.Some.apply[Float](x.lon)
         </td>
       </tr><tr>
@@ -1044,9 +1044,9 @@
           4299
         </td>
         <td>
-          3106
+          3102
           -
-          3111
+          3107
         </td>
         <td>
           Select
@@ -1054,7 +1054,7 @@
         <td>
           whatson.service.external.meetup.Model.Location.lat
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           x.lat
         </td>
       </tr><tr>
@@ -1065,9 +1065,9 @@
           4301
         </td>
         <td>
-          3119
+          3115
           -
-          3124
+          3120
         </td>
         <td>
           Select
@@ -1075,7 +1075,7 @@
         <td>
           whatson.service.external.meetup.Model.Location.lon
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           x.lon
         </td>
       </tr><tr>
@@ -1086,9 +1086,9 @@
           4313
         </td>
         <td>
-          3058
+          3054
           -
-          3283
+          3279
         </td>
         <td>
           Apply
@@ -1096,7 +1096,7 @@
         <td>
           scala.Option.map
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           data.venue.map[whatson.model.Location](((x: whatson.service.external.meetup.Model.Location) =&gt; whatson.model.Location.apply(scala.None, x.name, scala.Some.apply[Float](x.lat), scala.Some.apply[Float](x.lon), x.country, x.city, x.street.getOrElse[String](x.address_1.getOrElse[String](&quot;&quot;)), scala.None, x.phone, scala.None, scala.None, x.zip)))
         </td>
       </tr><tr>
@@ -1107,9 +1107,9 @@
           4298
         </td>
         <td>
-          3093
+          3089
           -
-          3099
+          3095
         </td>
         <td>
           Select
@@ -1117,7 +1117,7 @@
         <td>
           whatson.service.external.meetup.Model.Location.name
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           x.name
         </td>
       </tr><tr>
@@ -1128,9 +1128,9 @@
           4297
         </td>
         <td>
-          3087
+          3083
           -
-          3091
+          3087
         </td>
         <td>
           Select
@@ -1138,7 +1138,7 @@
         <td>
           scala.None
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           scala.None
         </td>
       </tr><tr>
@@ -1149,9 +1149,9 @@
           4303
         </td>
         <td>
-          3155
+          3151
           -
-          3164
+          3160
         </td>
         <td>
           Select
@@ -1159,7 +1159,7 @@
         <td>
           whatson.service.external.meetup.Model.Location.country
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           x.country
         </td>
       </tr><tr>
@@ -1170,9 +1170,9 @@
           4305
         </td>
         <td>
-          3193
+          3189
           -
-          3218
+          3214
         </td>
         <td>
           Apply
@@ -1180,7 +1180,7 @@
         <td>
           scala.Option.getOrElse
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           x.address_1.getOrElse[String](&quot;&quot;)
         </td>
       </tr><tr>
@@ -1191,9 +1191,9 @@
           4304
         </td>
         <td>
-          3166
+          3162
           -
-          3172
+          3168
         </td>
         <td>
           Select
@@ -1201,7 +1201,7 @@
         <td>
           whatson.service.external.meetup.Model.Location.city
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           x.city
         </td>
       </tr><tr>
@@ -1212,9 +1212,9 @@
           4307
         </td>
         <td>
-          3221
+          3217
           -
-          3225
+          3221
         </td>
         <td>
           Select
@@ -1222,7 +1222,7 @@
         <td>
           scala.None
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           scala.None
         </td>
       </tr><tr>
@@ -1233,9 +1233,9 @@
           4306
         </td>
         <td>
-          3174
+          3170
           -
-          3219
+          3215
         </td>
         <td>
           Apply
@@ -1243,7 +1243,7 @@
         <td>
           scala.Option.getOrElse
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           x.street.getOrElse[String](x.address_1.getOrElse[String](&quot;&quot;))
         </td>
       </tr><tr>
@@ -1254,9 +1254,9 @@
           4309
         </td>
         <td>
-          3264
+          3260
           -
-          3268
+          3264
         </td>
         <td>
           Select
@@ -1264,7 +1264,7 @@
         <td>
           scala.None
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           scala.None
         </td>
       </tr><tr>
@@ -1275,9 +1275,9 @@
           4311
         </td>
         <td>
-          3276
+          3272
           -
-          3281
+          3277
         </td>
         <td>
           Select
@@ -1285,7 +1285,7 @@
         <td>
           whatson.service.external.meetup.Model.Location.zip
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           x.zip
         </td>
       </tr><tr>
@@ -1296,9 +1296,9 @@
           4308
         </td>
         <td>
-          3255
+          3251
           -
-          3262
+          3258
         </td>
         <td>
           Select
@@ -1306,7 +1306,7 @@
         <td>
           whatson.service.external.meetup.Model.Location.phone
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           x.phone
         </td>
       </tr><tr>
@@ -1317,9 +1317,9 @@
           4310
         </td>
         <td>
-          3270
+          3266
           -
-          3274
+          3270
         </td>
         <td>
           Select
@@ -1327,7 +1327,7 @@
         <td>
           scala.None
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           scala.None
         </td>
       </tr><tr>
@@ -1338,9 +1338,9 @@
           4314
         </td>
         <td>
-          3314
+          3310
           -
-          3323
+          3319
         </td>
         <td>
           Select
@@ -1348,7 +1348,7 @@
         <td>
           whatson.service.external.meetup.Model.Event.time
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           data.time
         </td>
       </tr><tr>
@@ -1359,9 +1359,9 @@
           4315
         </td>
         <td>
-          3300
+          3296
           -
-          3324
+          3320
         </td>
         <td>
           Apply
@@ -1369,7 +1369,7 @@
         <td>
           java.sql.Timestamp.&lt;init&gt;
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           new java.sql.Timestamp(data.time)
         </td>
       </tr><tr>
@@ -1380,9 +1380,9 @@
           4316
         </td>
         <td>
-          3488
+          3484
           -
-          3595
+          3591
         </td>
         <td>
           Apply
@@ -1390,7 +1390,7 @@
         <td>
           scala.Option.getOrElse
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           data.plain_text_no_images_description.orElse[String](data.plain_text_description).getOrElse[String](descText)
         </td>
       </tr><tr>
@@ -1401,9 +1401,9 @@
           4318
         </td>
         <td>
-          3674
+          3670
           -
-          3680
+          3676
         </td>
         <td>
           Select
@@ -1411,7 +1411,7 @@
         <td>
           scala.collection.immutable.Nil
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           scala.collection.immutable.Nil
         </td>
       </tr><tr>
@@ -1422,9 +1422,9 @@
           4321
         </td>
         <td>
-          3682
+          3678
           -
-          3682
+          3678
         </td>
         <td>
           TypeApply
@@ -1432,7 +1432,7 @@
         <td>
           scala.collection.immutable.List.canBuildFrom
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           immutable.this.List.canBuildFrom[whatson.model.detail.CategoryDetail]
         </td>
       </tr><tr>
@@ -1443,9 +1443,9 @@
           4320
         </td>
         <td>
-          3685
+          3681
           -
-          3699
+          3695
         </td>
         <td>
           Apply
@@ -1453,7 +1453,7 @@
         <td>
           scala.collection.immutable.List.apply
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           scala.collection.immutable.List.apply[whatson.model.detail.CategoryDetail](MeetupServiceImpl.this.c.meetup)
         </td>
       </tr><tr>
@@ -1464,9 +1464,9 @@
           4317
         </td>
         <td>
-          3644
+          3640
           -
-          3673
+          3669
         </td>
         <td>
           Select
@@ -1474,7 +1474,7 @@
         <td>
           whatson.service.external.meetup.Model.Category.shortname
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           data.group.category.shortname
         </td>
       </tr><tr>
@@ -1485,9 +1485,9 @@
           4319
         </td>
         <td>
-          3690
+          3686
           -
-          3698
+          3694
         </td>
         <td>
           Select
@@ -1495,7 +1495,7 @@
         <td>
           whatson.service.CatService.meetup
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           MeetupServiceImpl.this.c.meetup
         </td>
       </tr><tr>
@@ -1506,9 +1506,9 @@
           4322
         </td>
         <td>
-          3622
+          3618
           -
-          3699
+          3695
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1516,7 +1516,7 @@
         <td>
           scala.collection.immutable.List.++
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           MeetupServiceImpl.this.categoryMap.getOrElse[List[whatson.model.detail.CategoryDetail]](data.group.category.shortname, scala.collection.immutable.Nil).++[whatson.model.detail.CategoryDetail, List[whatson.model.detail.CategoryDetail]](scala.collection.immutable.List.apply[whatson.model.detail.CategoryDetail](MeetupServiceImpl.this.c.meetup))(immutable.this.List.canBuildFrom[whatson.model.detail.CategoryDetail])
         </td>
       </tr><tr>
@@ -1527,9 +1527,9 @@
           4323
         </td>
         <td>
-          3721
+          3717
           -
-          3725
+          3721
         </td>
         <td>
           Select
@@ -1537,7 +1537,7 @@
         <td>
           scala.None
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           scala.None
         </td>
       </tr><tr>
@@ -1548,9 +1548,9 @@
           4359
         </td>
         <td>
-          3709
+          3705
           -
-          4103
+          4099
         </td>
         <td>
           Apply
@@ -1558,7 +1558,7 @@
         <td>
           whatson.model.detail.EventDetail.apply
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           whatson.model.detail.EventDetail.apply(scala.None, data.name, from, scala.None, description, whatson.model.Organizer.apply(scala.None, &quot;Organizer&quot;, -1, scala.None), categories, scala.None, loc.getOrElse[whatson.model.Location](whatson.model.Location.apply(scala.None, &quot;&quot;, scala.None, scala.None, &quot;&quot;, &quot;&quot;, &quot;&quot;, scala.None, scala.None, scala.None, scala.None, scala.None)), data.photo_album.map[List[whatson.service.external.meetup.Model.Photo]](((x$2: whatson.service.external.meetup.Model.Album) =&gt; x$2.photo_sample)).getOrElse[List[whatson.service.external.meetup.Model.Photo]](scala.collection.immutable.Nil).map[whatson.model.detail.TaggedImage, List[whatson.model.detail.TaggedImage]](((x: whatson.service.external.meetup.Model.Photo) =&gt; whatson.model.detail.TaggedImage.apply(scala.None, scala.None, scala.None, scala.Some.apply[String](x.photo_link))))(immutable.this.List.canBuildFrom[whatson.model.detail.TaggedImage]), 0, scala.None, scala.None)
         </td>
       </tr><tr>
@@ -1569,9 +1569,9 @@
           4324
         </td>
         <td>
-          3727
+          3723
           -
-          3736
+          3732
         </td>
         <td>
           Select
@@ -1579,7 +1579,7 @@
         <td>
           whatson.service.external.meetup.Model.Event.name
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           data.name
         </td>
       </tr><tr>
@@ -1590,9 +1590,9 @@
           4325
         </td>
         <td>
-          3760
+          3756
           -
-          3764
+          3760
         </td>
         <td>
           Select
@@ -1600,7 +1600,7 @@
         <td>
           scala.None
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           scala.None
         </td>
       </tr><tr>
@@ -1611,9 +1611,9 @@
           4327
         </td>
         <td>
-          3810
+          3806
           -
-          3821
+          3817
         </td>
         <td>
           Literal
@@ -1621,7 +1621,7 @@
         <td>
           &lt;nosymbol&gt;
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           &quot;Organizer&quot;
         </td>
       </tr><tr>
@@ -1632,9 +1632,9 @@
           4330
         </td>
         <td>
-          3795
+          3791
           -
-          3830
+          3826
         </td>
         <td>
           Apply
@@ -1642,7 +1642,7 @@
         <td>
           whatson.model.Organizer.apply
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           whatson.model.Organizer.apply(scala.None, &quot;Organizer&quot;, -1, scala.None)
         </td>
       </tr><tr>
@@ -1653,9 +1653,9 @@
           4329
         </td>
         <td>
-          3825
+          3821
           -
-          3829
+          3825
         </td>
         <td>
           Select
@@ -1663,7 +1663,7 @@
         <td>
           scala.None
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           scala.None
         </td>
       </tr><tr>
@@ -1674,9 +1674,9 @@
           4326
         </td>
         <td>
-          3805
+          3801
           -
-          3809
+          3805
         </td>
         <td>
           Select
@@ -1684,7 +1684,7 @@
         <td>
           scala.None
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           scala.None
         </td>
       </tr><tr>
@@ -1695,9 +1695,9 @@
           4328
         </td>
         <td>
-          3823
+          3819
           -
-          3824
+          3820
         </td>
         <td>
           Literal
@@ -1705,7 +1705,7 @@
         <td>
           &lt;nosymbol&gt;
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           -1
         </td>
       </tr><tr>
@@ -1716,9 +1716,9 @@
           4336
         </td>
         <td>
-          3907
+          3903
           -
-          3909
+          3905
         </td>
         <td>
           Literal
@@ -1737,9 +1737,9 @@
           4345
         </td>
         <td>
-          3866
+          3862
           -
-          3942
+          3938
         </td>
         <td>
           Apply
@@ -1747,7 +1747,7 @@
         <td>
           scala.Option.getOrElse
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           loc.getOrElse[whatson.model.Location](whatson.model.Location.apply(scala.None, &quot;&quot;, scala.None, scala.None, &quot;&quot;, &quot;&quot;, &quot;&quot;, scala.None, scala.None, scala.None, scala.None, scala.None))
         </td>
       </tr><tr>
@@ -1758,9 +1758,9 @@
           4339
         </td>
         <td>
-          3916
+          3912
           -
-          3920
+          3916
         </td>
         <td>
           Select
@@ -1779,9 +1779,9 @@
           4338
         </td>
         <td>
-          3913
+          3909
           -
-          3915
+          3911
         </td>
         <td>
           Literal
@@ -1800,9 +1800,9 @@
           4332
         </td>
         <td>
-          3889
+          3885
           -
-          3893
+          3889
         </td>
         <td>
           Select
@@ -1821,9 +1821,9 @@
           4341
         </td>
         <td>
-          3926
+          3922
           -
-          3930
+          3926
         </td>
         <td>
           Select
@@ -1842,9 +1842,9 @@
           4344
         </td>
         <td>
-          3880
+          3876
           -
-          3941
+          3937
         </td>
         <td>
           Apply
@@ -1863,9 +1863,9 @@
           4335
         </td>
         <td>
-          3902
+          3898
           -
-          3906
+          3902
         </td>
         <td>
           Select
@@ -1884,9 +1884,9 @@
           4334
         </td>
         <td>
-          3897
+          3893
           -
-          3901
+          3897
         </td>
         <td>
           Select
@@ -1905,9 +1905,9 @@
           4343
         </td>
         <td>
-          3936
+          3932
           -
-          3940
+          3936
         </td>
         <td>
           Select
@@ -1926,9 +1926,9 @@
           4337
         </td>
         <td>
-          3910
+          3906
           -
-          3912
+          3908
         </td>
         <td>
           Literal
@@ -1947,9 +1947,9 @@
           4331
         </td>
         <td>
-          3860
+          3856
           -
-          3864
+          3860
         </td>
         <td>
           Select
@@ -1957,7 +1957,7 @@
         <td>
           scala.None
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           scala.None
         </td>
       </tr><tr>
@@ -1968,9 +1968,9 @@
           4340
         </td>
         <td>
-          3921
+          3917
           -
-          3925
+          3921
         </td>
         <td>
           Select
@@ -1989,9 +1989,9 @@
           4342
         </td>
         <td>
-          3931
+          3927
           -
-          3935
+          3931
         </td>
         <td>
           Select
@@ -2010,9 +2010,9 @@
           4333
         </td>
         <td>
-          3894
+          3890
           -
-          3896
+          3892
         </td>
         <td>
           Literal
@@ -2031,9 +2031,9 @@
           4354
         </td>
         <td>
-          4018
+          4014
           -
-          4018
+          4014
         </td>
         <td>
           TypeApply
@@ -2041,7 +2041,7 @@
         <td>
           scala.collection.immutable.List.canBuildFrom
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           immutable.this.List.canBuildFrom[whatson.model.detail.TaggedImage]
         </td>
       </tr><tr>
@@ -2052,9 +2052,9 @@
           4347
         </td>
         <td>
-          4007
+          4003
           -
-          4013
+          4009
         </td>
         <td>
           Select
@@ -2062,7 +2062,7 @@
         <td>
           scala.collection.immutable.Nil
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           scala.collection.immutable.Nil
         </td>
       </tr><tr>
@@ -2073,9 +2073,9 @@
           4356
         </td>
         <td>
-          4073
+          4069
           -
-          4074
+          4070
         </td>
         <td>
           Literal
@@ -2083,7 +2083,7 @@
         <td>
           &lt;nosymbol&gt;
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           0
         </td>
       </tr><tr>
@@ -2094,9 +2094,9 @@
           4350
         </td>
         <td>
-          4046
+          4042
           -
-          4050
+          4046
         </td>
         <td>
           Select
@@ -2115,9 +2115,9 @@
           4353
         </td>
         <td>
-          4024
+          4020
           -
-          4070
+          4066
         </td>
         <td>
           Apply
@@ -2136,9 +2136,9 @@
           4352
         </td>
         <td>
-          4051
+          4047
           -
-          4069
+          4065
         </td>
         <td>
           Apply
@@ -2157,9 +2157,9 @@
           4346
         </td>
         <td>
-          3981
+          3977
           -
-          3995
+          3991
         </td>
         <td>
           Select
@@ -2178,9 +2178,9 @@
           4355
         </td>
         <td>
-          3960
+          3956
           -
-          4071
+          4067
         </td>
         <td>
           ApplyToImplicitArgs
@@ -2188,7 +2188,7 @@
         <td>
           scala.collection.immutable.List.map
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           data.photo_album.map[List[whatson.service.external.meetup.Model.Photo]](((x$2: whatson.service.external.meetup.Model.Album) =&gt; x$2.photo_sample)).getOrElse[List[whatson.service.external.meetup.Model.Photo]](scala.collection.immutable.Nil).map[whatson.model.detail.TaggedImage, List[whatson.model.detail.TaggedImage]](((x: whatson.service.external.meetup.Model.Photo) =&gt; whatson.model.detail.TaggedImage.apply(scala.None, scala.None, scala.None, scala.Some.apply[String](x.photo_link))))(immutable.this.List.canBuildFrom[whatson.model.detail.TaggedImage])
         </td>
       </tr><tr>
@@ -2199,9 +2199,9 @@
           4349
         </td>
         <td>
-          4041
+          4037
           -
-          4045
+          4041
         </td>
         <td>
           Select
@@ -2220,9 +2220,9 @@
           4348
         </td>
         <td>
-          4036
+          4032
           -
-          4040
+          4036
         </td>
         <td>
           Select
@@ -2241,9 +2241,9 @@
           4351
         </td>
         <td>
-          4056
+          4052
           -
-          4068
+          4064
         </td>
         <td>
           Select
@@ -2262,9 +2262,9 @@
           4358
         </td>
         <td>
-          4098
+          4094
           -
-          4102
+          4098
         </td>
         <td>
           Select
@@ -2272,7 +2272,7 @@
         <td>
           scala.None
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           scala.None
         </td>
       </tr><tr>
@@ -2283,9 +2283,9 @@
           4357
         </td>
         <td>
-          4092
+          4088
           -
-          4096
+          4092
         </td>
         <td>
           Select
@@ -2293,7 +2293,7 @@
         <td>
           scala.None
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           scala.None
         </td>
       </tr>
