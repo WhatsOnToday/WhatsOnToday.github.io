@@ -55,7 +55,18 @@
 </span>31 <span style=''>      case Some(id) =&gt; </span><span style='background: #AEF1AE'>db.run(LocationTable.location.filter(_.id === id).result).map(_.headOption)</span><span style=''>
 </span>32 <span style=''>    }
 </span>33 <span style=''>  }
-</span>34 <span style=''>}
+</span>34 <span style=''>
+</span>35 <span style=''>  def geocode(location: Location): Future[Location] = {
+</span>36 <span style=''>    </span><span style='background: #AEF1AE'>geocoder.getPosition(Geocoder.Address(location.country, location.city, location.street)).map {
+</span>37 <span style=''></span><span style='background: #AEF1AE'>      case Some(r) =&gt; {
+</span>38 <span style=''></span><span style='background: #AEF1AE'>        val copy = location.copy(latitude = Some(r.lat), longitude = Some(r.lng))
+</span>39 <span style=''></span><span style='background: #AEF1AE'>        db.run(LocationTable.location.filter(_.id === location.id).update(copy))
+</span>40 <span style=''></span><span style='background: #AEF1AE'>        copy
+</span>41 <span style=''></span><span style='background: #AEF1AE'>      }
+</span>42 <span style=''></span><span style='background: #AEF1AE'>      case None =&gt; location
+</span>43 <span style=''></span><span style='background: #AEF1AE'>    }</span><span style=''>
+</span>44 <span style=''>  }
+</span>45 <span style=''>}
 </span></pre>
           </div>
           <div class="tab-pane" id="statementlist">
@@ -72,7 +83,7 @@
           24
         </td>
         <td>
-          3780
+          3807
         </td>
         <td>
           865
@@ -93,7 +104,7 @@
           26
         </td>
         <td>
-          3782
+          3809
         </td>
         <td>
           961
@@ -114,7 +125,28 @@
           26
         </td>
         <td>
-          3784
+          3808
+        </td>
+        <td>
+          948
+          -
+          960
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.model.forms.LocationForm.Data.country
+        </td>
+        <td style="background: #AEF1AE">
+          form.country
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          3811
         </td>
         <td>
           931
@@ -135,7 +167,7 @@
           26
         </td>
         <td>
-          3796
+          3823
         </td>
         <td>
           910
@@ -158,28 +190,7 @@
           26
         </td>
         <td>
-          3781
-        </td>
-        <td>
-          948
-          -
-          960
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          whatson.model.forms.LocationForm.Data.country
-        </td>
-        <td style="background: #AEF1AE">
-          form.country
-        </td>
-      </tr><tr>
-        <td>
-          26
-        </td>
-        <td>
-          3783
+          3810
         </td>
         <td>
           971
@@ -200,7 +211,7 @@
           26
         </td>
         <td>
-          3795
+          3822
         </td>
         <td>
           993
@@ -221,28 +232,7 @@
           28
         </td>
         <td>
-          3794
-        </td>
-        <td>
-          1015
-          -
-          1179
-        </td>
-        <td>
-          ApplyToImplicitArgs
-        </td>
-        <td>
-          scala.concurrent.Future.map
-        </td>
-        <td style="background: #AEF1AE">
-          LocationServiceImpl.this.db.run[whatson.model.Location](whatson.db.Util.insertAndReturn[whatson.model.Location, whatson.db.LocationTable](whatson.db.LocationTable.location, form.toLocation(x.map[Float](((x$1: whatson.service.geocoder.Location) =&gt; x$1.lat)), x.map[Float](((x$2: whatson.service.geocoder.Location) =&gt; x$2.lng))))).map[Some[whatson.model.Location]](((x$3: whatson.model.Location) =&gt; scala.Some.apply[whatson.model.Location](x$3)))(LocationServiceImpl.this.context)
-        </td>
-      </tr><tr>
-        <td>
-          28
-        </td>
-        <td>
-          3785
+          3812
         </td>
         <td>
           1099
@@ -263,7 +253,28 @@
           28
         </td>
         <td>
-          3788
+          3821
+        </td>
+        <td>
+          1015
+          -
+          1179
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.concurrent.Future.map
+        </td>
+        <td style="background: #AEF1AE">
+          LocationServiceImpl.this.db.run[whatson.model.Location](whatson.db.Util.insertAndReturn[whatson.model.Location, whatson.db.LocationTable](whatson.db.LocationTable.location, form.toLocation(x.map[Float](((x$1: whatson.service.geocoder.Location) =&gt; x$1.lat)), x.map[Float](((x$2: whatson.service.geocoder.Location) =&gt; x$2.lng))))).map[Some[whatson.model.Location]](((x$3: whatson.model.Location) =&gt; scala.Some.apply[whatson.model.Location](x$3)))(LocationServiceImpl.this.context)
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          3815
         </td>
         <td>
           1157
@@ -284,7 +295,7 @@
           28
         </td>
         <td>
-          3791
+          3818
         </td>
         <td>
           1022
@@ -305,49 +316,7 @@
           28
         </td>
         <td>
-          3793
-        </td>
-        <td>
-          1170
-          -
-          1170
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          whatson.service.LocationServiceImpl.context
-        </td>
-        <td style="background: #AEF1AE">
-          LocationServiceImpl.this.context
-        </td>
-      </tr><tr>
-        <td>
-          28
-        </td>
-        <td>
-          3787
-        </td>
-        <td>
-          1138
-          -
-          1150
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          scala.Option.map
-        </td>
-        <td style="background: #AEF1AE">
-          x.map[Float](((x$1: whatson.service.geocoder.Location) =&gt; x$1.lat))
-        </td>
-      </tr><tr>
-        <td>
-          28
-        </td>
-        <td>
-          3790
+          3817
         </td>
         <td>
           1122
@@ -368,7 +337,49 @@
           28
         </td>
         <td>
-          3789
+          3820
+        </td>
+        <td>
+          1170
+          -
+          1170
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.service.LocationServiceImpl.context
+        </td>
+        <td style="background: #AEF1AE">
+          LocationServiceImpl.this.context
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          3814
+        </td>
+        <td>
+          1138
+          -
+          1150
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Option.map
+        </td>
+        <td style="background: #AEF1AE">
+          x.map[Float](((x$1: whatson.service.geocoder.Location) =&gt; x$1.lat))
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          3816
         </td>
         <td>
           1151
@@ -389,7 +400,7 @@
           28
         </td>
         <td>
-          3792
+          3819
         </td>
         <td>
           1171
@@ -410,7 +421,7 @@
           28
         </td>
         <td>
-          3786
+          3813
         </td>
         <td>
           1144
@@ -431,7 +442,7 @@
           31
         </td>
         <td>
-          3803
+          3830
         </td>
         <td>
           1258
@@ -452,28 +463,7 @@
           31
         </td>
         <td>
-          3797
-        </td>
-        <td>
-          1258
-          -
-          1262
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          whatson.db.LocationTable.id
-        </td>
-        <td style="background: #AEF1AE">
-          x$4.id
-        </td>
-      </tr><tr>
-        <td>
-          31
-        </td>
-        <td>
-          3806
+          3833
         </td>
         <td>
           1228
@@ -494,7 +484,28 @@
           31
         </td>
         <td>
-          3800
+          3824
+        </td>
+        <td>
+          1258
+          -
+          1262
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.db.LocationTable.id
+        </td>
+        <td style="background: #AEF1AE">
+          x$4.id
+        </td>
+      </tr><tr>
+        <td>
+          31
+        </td>
+        <td>
+          3827
         </td>
         <td>
           1267
@@ -515,7 +526,7 @@
           31
         </td>
         <td>
-          3809
+          3836
         </td>
         <td>
           1221
@@ -536,7 +547,28 @@
           31
         </td>
         <td>
-          3808
+          3826
+        </td>
+        <td>
+          1267
+          -
+          1267
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
+        </td>
+        <td style="background: #AEF1AE">
+          slick.jdbc.PostgresProfile.api.intColumnType
+        </td>
+      </tr><tr>
+        <td>
+          31
+        </td>
+        <td>
+          3835
         </td>
         <td>
           1282
@@ -557,7 +589,7 @@
           31
         </td>
         <td>
-          3802
+          3829
         </td>
         <td>
           1263
@@ -578,7 +610,7 @@
           31
         </td>
         <td>
-          3805
+          3832
         </td>
         <td>
           1228
@@ -599,28 +631,28 @@
           31
         </td>
         <td>
-          3799
+          3831
         </td>
         <td>
-          1267
+          1257
           -
-          1267
+          1257
         </td>
         <td>
           Select
         </td>
         <td>
-          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
+          slick.lifted.CanBeQueryCondition.BooleanColumnCanBeQueryCondition
         </td>
         <td style="background: #AEF1AE">
-          slick.jdbc.PostgresProfile.api.intColumnType
+          lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition
         </td>
       </tr><tr>
         <td>
           31
         </td>
         <td>
-          3798
+          3825
         </td>
         <td>
           1260
@@ -641,7 +673,7 @@
           31
         </td>
         <td>
-          3807
+          3834
         </td>
         <td>
           1283
@@ -662,7 +694,7 @@
           31
         </td>
         <td>
-          3801
+          3828
         </td>
         <td>
           1263
@@ -680,24 +712,507 @@
         </td>
       </tr><tr>
         <td>
-          31
+          36
         </td>
         <td>
-          3804
+          3839
         </td>
         <td>
-          1257
+          1439
           -
-          1257
+          1454
         </td>
         <td>
           Select
         </td>
         <td>
-          slick.lifted.CanBeQueryCondition.BooleanColumnCanBeQueryCondition
+          whatson.model.Location.street
         </td>
         <td style="background: #AEF1AE">
-          lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition
+          location.street
+        </td>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          3838
+        </td>
+        <td>
+          1424
+          -
+          1437
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.model.Location.city
+        </td>
+        <td style="background: #AEF1AE">
+          location.city
+        </td>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          3859
+        </td>
+        <td>
+          1368
+          -
+          1704
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.concurrent.Future.map
+        </td>
+        <td style="background: #AEF1AE">
+          LocationServiceImpl.this.geocoder.getPosition(whatson.service.geocoder.Geocoder.Address.apply(location.country, location.city, location.street)).map[whatson.model.Location](((x0$2: Option[whatson.service.geocoder.Location]) =&gt; x0$2 match {
+  case (value: whatson.service.geocoder.Location)Some[whatson.service.geocoder.Location]((r @ _)) =&gt; {
+    val copy: whatson.model.Location = {
+      &lt;artifact&gt; val x$7: Some[Float] @scala.reflect.internal.annotations.uncheckedBounds = scala.Some.apply[Float](r.lat);
+      &lt;artifact&gt; val x$8: Some[Float] @scala.reflect.internal.annotations.uncheckedBounds = scala.Some.apply[Float](r.lng);
+      &lt;artifact&gt; val x$9: Option[Int] @scala.reflect.internal.annotations.uncheckedBounds = location.copy$default$1;
+      &lt;artifact&gt; val x$10: String = location.copy$default$2;
+      &lt;artifact&gt; val x$11: String = location.copy$default$5;
+      &lt;artifact&gt; val x$12: String = location.copy$default$6;
+      &lt;artifact&gt; val x$13: String = location.copy$default$7;
+      &lt;artifact&gt; val x$14: Option[String] @scala.reflect.internal.annotations.uncheckedBounds = location.copy$default$8;
+      &lt;artifact&gt; val x$15: Option[String] @scala.reflect.internal.annotations.uncheckedBounds = location.copy$default$9;
+      &lt;artifact&gt; val x$16: Option[String] @scala.reflect.internal.annotations.uncheckedBounds = location.copy$default$10;
+      &lt;artifact&gt; val x$17: Option[String] @scala.reflect.internal.annotations.uncheckedBounds = location.copy$default$11;
+      &lt;artifact&gt; val x$18: Option[String] @scala.reflect.internal.annotations.uncheckedBounds = location.copy$default$12;
+      location.copy(x$9, x$10, x$7, x$8, x$11, x$12, x$13, x$14, x$15, x$16, x$17, x$18)
+    };
+    LocationServiceImpl.this.db.run[Int](slick.jdbc.PostgresProfile.api.queryUpdateActionExtensionMethods[whatson.db.LocationTable#TableElementType, Seq](whatson.db.LocationTable.location.filter[slick.lifted.Rep[Option[Boolean]]](((x$6: whatson.db.LocationTable) =&gt; slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](x$6.id)(slick.jdbc.PostgresProfile.api.intColumnType).===[Option[Int], Option[Boolean]](slick.jdbc.PostgresProfile.api.valueToConstColumn[Option[Int]](location.id)(ast.this.TypedType.typedTypeToOptionTypedType[Int](slick.jdbc.PostgresProfile.api.intColumnType)))(lifted.this.OptionMapper2.getOptionMapper2TO[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType))))(lifted.this.CanBeQueryCondition.BooleanOptionColumnCanBeQueryCondition)).update(copy));
+    copy
+  }
+  case scala.None =&gt; location
+}))(LocationServiceImpl.this.context)
+        </td>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          3858
+        </td>
+        <td>
+          1461
+          -
+          1461
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.service.LocationServiceImpl.context
+        </td>
+        <td style="background: #AEF1AE">
+          LocationServiceImpl.this.context
+        </td>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          3840
+        </td>
+        <td>
+          1389
+          -
+          1455
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          whatson.service.geocoder.Geocoder.Address.apply
+        </td>
+        <td style="background: #AEF1AE">
+          whatson.service.geocoder.Geocoder.Address.apply(location.country, location.city, location.street)
+        </td>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          3837
+        </td>
+        <td>
+          1406
+          -
+          1422
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.model.Location.country
+        </td>
+        <td style="background: #AEF1AE">
+          location.country
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          3854
+        </td>
+        <td>
+          1515
+          -
+          1515
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.model.Location.copy$default$12
+        </td>
+        <td style="background: #AEF1AE">
+          location.copy$default$12
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          3845
+        </td>
+        <td>
+          1515
+          -
+          1515
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.model.Location.copy$default$1
+        </td>
+        <td style="background: #AEF1AE">
+          location.copy$default$1
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          3848
+        </td>
+        <td>
+          1515
+          -
+          1515
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.model.Location.copy$default$6
+        </td>
+        <td style="background: #AEF1AE">
+          location.copy$default$6
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          3842
+        </td>
+        <td>
+          1531
+          -
+          1542
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Some.apply[Float](r.lat)
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          3851
+        </td>
+        <td>
+          1515
+          -
+          1515
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.model.Location.copy$default$9
+        </td>
+        <td style="background: #AEF1AE">
+          location.copy$default$9
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          3844
+        </td>
+        <td>
+          1556
+          -
+          1567
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Some.apply[Float](r.lng)
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          3853
+        </td>
+        <td>
+          1515
+          -
+          1515
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.model.Location.copy$default$11
+        </td>
+        <td style="background: #AEF1AE">
+          location.copy$default$11
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          3847
+        </td>
+        <td>
+          1515
+          -
+          1515
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.model.Location.copy$default$5
+        </td>
+        <td style="background: #AEF1AE">
+          location.copy$default$5
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          3850
+        </td>
+        <td>
+          1515
+          -
+          1515
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.model.Location.copy$default$8
+        </td>
+        <td style="background: #AEF1AE">
+          location.copy$default$8
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          3841
+        </td>
+        <td>
+          1536
+          -
+          1541
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.service.geocoder.Location.lat
+        </td>
+        <td style="background: #AEF1AE">
+          r.lat
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          3849
+        </td>
+        <td>
+          1515
+          -
+          1515
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.model.Location.copy$default$7
+        </td>
+        <td style="background: #AEF1AE">
+          location.copy$default$7
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          3852
+        </td>
+        <td>
+          1515
+          -
+          1515
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.model.Location.copy$default$10
+        </td>
+        <td style="background: #AEF1AE">
+          location.copy$default$10
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          3843
+        </td>
+        <td>
+          1561
+          -
+          1566
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.service.geocoder.Location.lng
+        </td>
+        <td style="background: #AEF1AE">
+          r.lng
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          3855
+        </td>
+        <td>
+          1506
+          -
+          1568
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          whatson.model.Location.copy
+        </td>
+        <td style="background: #AEF1AE">
+          location.copy(x$9, x$10, x$7, x$8, x$11, x$12, x$13, x$14, x$15, x$16, x$17, x$18)
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          3846
+        </td>
+        <td>
+          1515
+          -
+          1515
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.model.Location.copy$default$2
+        </td>
+        <td style="background: #AEF1AE">
+          location.copy$default$2
+        </td>
+      </tr><tr>
+        <td>
+          39
+        </td>
+        <td>
+          3857
+        </td>
+        <td>
+          1577
+          -
+          1649
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          slick.basic.BasicBackend.DatabaseDef.run
+        </td>
+        <td style="background: #AEF1AE">
+          LocationServiceImpl.this.db.run[Int](slick.jdbc.PostgresProfile.api.queryUpdateActionExtensionMethods[whatson.db.LocationTable#TableElementType, Seq](whatson.db.LocationTable.location.filter[slick.lifted.Rep[Option[Boolean]]](((x$6: whatson.db.LocationTable) =&gt; slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](x$6.id)(slick.jdbc.PostgresProfile.api.intColumnType).===[Option[Int], Option[Boolean]](slick.jdbc.PostgresProfile.api.valueToConstColumn[Option[Int]](location.id)(ast.this.TypedType.typedTypeToOptionTypedType[Int](slick.jdbc.PostgresProfile.api.intColumnType)))(lifted.this.OptionMapper2.getOptionMapper2TO[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType))))(lifted.this.CanBeQueryCondition.BooleanOptionColumnCanBeQueryCondition)).update(copy))
+        </td>
+      </tr><tr>
+        <td>
+          39
+        </td>
+        <td>
+          3856
+        </td>
+        <td>
+          1584
+          -
+          1648
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          slick.jdbc.JdbcActionComponent.UpdateActionExtensionMethodsImpl.update
+        </td>
+        <td style="background: #AEF1AE">
+          slick.jdbc.PostgresProfile.api.queryUpdateActionExtensionMethods[whatson.db.LocationTable#TableElementType, Seq](whatson.db.LocationTable.location.filter[slick.lifted.Rep[Option[Boolean]]](((x$6: whatson.db.LocationTable) =&gt; slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](x$6.id)(slick.jdbc.PostgresProfile.api.intColumnType).===[Option[Int], Option[Boolean]](slick.jdbc.PostgresProfile.api.valueToConstColumn[Option[Int]](location.id)(ast.this.TypedType.typedTypeToOptionTypedType[Int](slick.jdbc.PostgresProfile.api.intColumnType)))(lifted.this.OptionMapper2.getOptionMapper2TO[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType))))(lifted.this.CanBeQueryCondition.BooleanOptionColumnCanBeQueryCondition)).update(copy)
         </td>
       </tr>
     </table>
