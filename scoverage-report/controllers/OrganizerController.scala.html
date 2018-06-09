@@ -98,54 +98,55 @@
 </span>74 <span style=''></span><span style='background: #AEF1AE'>    returnPaged(s,q,db)
 </span>75 <span style=''></span><span style='background: #AEF1AE'>  }</span><span style=''>
 </span>76 <span style=''>
-</span>77 <span style=''>  def getLoggedInEvents = </span><span style='background: #F0ADAD'>organizerRequest(parse.default) { case (request,organizer) =&gt;
+</span>77 <span style=''>  def getLoggedInEvents(search: Option[String]) = </span><span style='background: #F0ADAD'>organizerRequest(parse.default) { case (request,organizer) =&gt;
 </span>78 <span style=''></span><span style='background: #F0ADAD'>    log.debug(&quot;Rest request to get events of currently logged in organizer&quot;)
 </span>79 <span style=''></span><span style='background: #F0ADAD'>
 </span>80 <span style=''></span><span style='background: #F0ADAD'>    implicit val r = request
 </span>81 <span style=''></span><span style='background: #F0ADAD'>
 </span>82 <span style=''></span><span style='background: #F0ADAD'>    val q = for {
 </span>83 <span style=''></span><span style='background: #F0ADAD'>      e &lt;- EventTable.event if e.creatorId === organizer.id.getOrElse(-1l)
-</span>84 <span style=''></span><span style='background: #F0ADAD'>    } yield e
-</span>85 <span style=''></span><span style='background: #F0ADAD'>
-</span>86 <span style=''></span><span style='background: #F0ADAD'>    val s = q.queryPaged.detailed
-</span>87 <span style=''></span><span style='background: #F0ADAD'>    returnPaged(s,q,db)
-</span>88 <span style=''></span><span style='background: #F0ADAD'>  }</span><span style=''>
-</span>89 <span style=''>
-</span>90 <span style=''>  /**
-</span>91 <span style=''>   * Handles the submitted JSON data.
-</span>92 <span style=''>   *
-</span>93 <span style=''>   * @return The result to display.
-</span>94 <span style=''>   */
-</span>95 <span style=''>  def signUp = </span><span style='background: #AEF1AE'>organizerRequest(parse.json) { case (request,organizer) =&gt;
-</span>96 <span style=''></span><span style='background: #AEF1AE'>    implicit val req = request
-</span>97 <span style=''></span><span style='background: #AEF1AE'>    OrganizerSignUpForm.form.bindFromRequest.fold(
-</span>98 <span style=''></span><span style='background: #AEF1AE'>      form =&gt; {
-</span>99 <span style=''></span><span style='background: #AEF1AE'>        Future.successful(BadRequest(Json.toJson(form.errors)))
-</span>100 <span style=''></span><span style='background: #AEF1AE'>      }, { data =&gt;
-</span>101 <span style=''></span><span style='background: #AEF1AE'>      val loginInfo = LoginInfo(CredentialsProvider.ID, data.email)
-</span>102 <span style=''></span><span style='background: #AEF1AE'>      loginService.retrieveAll(loginInfo).flatMap {
-</span>103 <span style=''></span><span style='background: #AEF1AE'>        case Some(login) =&gt;
-</span>104 <span style=''></span><span style='background: #AEF1AE'>          Future.successful(BadRequest(Json.obj(&quot;message&quot; -&gt; &quot;user.exists&quot;)))
-</span>105 <span style=''></span><span style='background: #AEF1AE'>        case None =&gt;
-</span>106 <span style=''></span><span style='background: #AEF1AE'>          val authInfo = passwordHasher.hash(data.password)
-</span>107 <span style=''></span><span style='background: #AEF1AE'>          val login = Login(None, data.email, None, None, None, loginInfo.providerID, loginInfo.providerKey, false, &quot;organizer&quot;, None)
-</span>108 <span style=''></span><span style='background: #AEF1AE'>          for {
-</span>109 <span style=''></span><span style='background: #AEF1AE'>            login &lt;- loginService.save(login)
-</span>110 <span style=''></span><span style='background: #AEF1AE'>            authInfo &lt;- authInfoRepository.add(loginInfo, authInfo)
-</span>111 <span style=''></span><span style='background: #AEF1AE'>            authenticator &lt;- silhouette.env.authenticatorService.create(loginInfo)
-</span>112 <span style=''></span><span style='background: #AEF1AE'>            token &lt;- silhouette.env.authenticatorService.init(authenticator)
-</span>113 <span style=''></span><span style='background: #AEF1AE'>            avatar &lt;- avatarService.retrieveURL(data.email)
-</span>114 <span style=''></span><span style='background: #AEF1AE'>          } yield {
-</span>115 <span style=''></span><span style='background: #AEF1AE'>            silhouette.env.eventBus.publish(SignUpEvent(login, request))
-</span>116 <span style=''></span><span style='background: #AEF1AE'>            silhouette.env.eventBus.publish(LoginEvent(login, request))
-</span>117 <span style=''></span><span style='background: #AEF1AE'>            organizerService.save(login,data.name,avatar)
-</span>118 <span style=''></span><span style='background: #AEF1AE'>            mailService.sendOrganizerConfirmation(data.email,data.name,token)
-</span>119 <span style=''></span><span style='background: #AEF1AE'>            Ok(Json.obj(&quot;message&quot; -&gt; &quot;mail.sent&quot;))
-</span>120 <span style=''></span><span style='background: #AEF1AE'>          }
-</span>121 <span style=''></span><span style='background: #AEF1AE'>      }
-</span>122 <span style=''></span><span style='background: #AEF1AE'>    })
-</span>123 <span style=''></span><span style='background: #AEF1AE'>  }</span><span style=''>
-</span>124 <span style=''>}
+</span>84 <span style=''></span><span style='background: #F0ADAD'>                            if upper(e.name) like upper(search.map(y =&gt; &quot;%&quot;++y++&quot;%&quot;).getOrElse(&quot;%%&quot;).bind)
+</span>85 <span style=''></span><span style='background: #F0ADAD'>    } yield e
+</span>86 <span style=''></span><span style='background: #F0ADAD'>
+</span>87 <span style=''></span><span style='background: #F0ADAD'>    val s = q.queryPaged.detailed
+</span>88 <span style=''></span><span style='background: #F0ADAD'>    returnPaged(s,q,db)
+</span>89 <span style=''></span><span style='background: #F0ADAD'>  }</span><span style=''>
+</span>90 <span style=''>
+</span>91 <span style=''>  /**
+</span>92 <span style=''>   * Handles the submitted JSON data.
+</span>93 <span style=''>   *
+</span>94 <span style=''>   * @return The result to display.
+</span>95 <span style=''>   */
+</span>96 <span style=''>  def signUp = </span><span style='background: #AEF1AE'>organizerRequest(parse.json) { case (request,organizer) =&gt;
+</span>97 <span style=''></span><span style='background: #AEF1AE'>    implicit val req = request
+</span>98 <span style=''></span><span style='background: #AEF1AE'>    OrganizerSignUpForm.form.bindFromRequest.fold(
+</span>99 <span style=''></span><span style='background: #AEF1AE'>      form =&gt; {
+</span>100 <span style=''></span><span style='background: #AEF1AE'>        Future.successful(BadRequest(Json.toJson(form.errors)))
+</span>101 <span style=''></span><span style='background: #AEF1AE'>      }, { data =&gt;
+</span>102 <span style=''></span><span style='background: #AEF1AE'>      val loginInfo = LoginInfo(CredentialsProvider.ID, data.email)
+</span>103 <span style=''></span><span style='background: #AEF1AE'>      loginService.retrieveAll(loginInfo).flatMap {
+</span>104 <span style=''></span><span style='background: #AEF1AE'>        case Some(login) =&gt;
+</span>105 <span style=''></span><span style='background: #AEF1AE'>          Future.successful(BadRequest(Json.obj(&quot;message&quot; -&gt; &quot;user.exists&quot;)))
+</span>106 <span style=''></span><span style='background: #AEF1AE'>        case None =&gt;
+</span>107 <span style=''></span><span style='background: #AEF1AE'>          val authInfo = passwordHasher.hash(data.password)
+</span>108 <span style=''></span><span style='background: #AEF1AE'>          val login = Login(None, data.email, None, None, None, loginInfo.providerID, loginInfo.providerKey, false, &quot;organizer&quot;, None)
+</span>109 <span style=''></span><span style='background: #AEF1AE'>          for {
+</span>110 <span style=''></span><span style='background: #AEF1AE'>            login &lt;- loginService.save(login)
+</span>111 <span style=''></span><span style='background: #AEF1AE'>            authInfo &lt;- authInfoRepository.add(loginInfo, authInfo)
+</span>112 <span style=''></span><span style='background: #AEF1AE'>            authenticator &lt;- silhouette.env.authenticatorService.create(loginInfo)
+</span>113 <span style=''></span><span style='background: #AEF1AE'>            token &lt;- silhouette.env.authenticatorService.init(authenticator)
+</span>114 <span style=''></span><span style='background: #AEF1AE'>            avatar &lt;- avatarService.retrieveURL(data.email)
+</span>115 <span style=''></span><span style='background: #AEF1AE'>          } yield {
+</span>116 <span style=''></span><span style='background: #AEF1AE'>            silhouette.env.eventBus.publish(SignUpEvent(login, request))
+</span>117 <span style=''></span><span style='background: #AEF1AE'>            silhouette.env.eventBus.publish(LoginEvent(login, request))
+</span>118 <span style=''></span><span style='background: #AEF1AE'>            organizerService.save(login,data.name,avatar)
+</span>119 <span style=''></span><span style='background: #AEF1AE'>            mailService.sendOrganizerConfirmation(data.email,data.name,token)
+</span>120 <span style=''></span><span style='background: #AEF1AE'>            Ok(Json.obj(&quot;message&quot; -&gt; &quot;mail.sent&quot;))
+</span>121 <span style=''></span><span style='background: #AEF1AE'>          }
+</span>122 <span style=''></span><span style='background: #AEF1AE'>      }
+</span>123 <span style=''></span><span style='background: #AEF1AE'>    })
+</span>124 <span style=''></span><span style='background: #AEF1AE'>  }</span><span style=''>
+</span>125 <span style=''>}
 </span></pre>
           </div>
           <div class="tab-pane" id="statementlist">
@@ -1185,12 +1186,12 @@
           77
         </td>
         <td>
-          1604
+          1616
         </td>
         <td>
-          2599
+          2623
           -
-          2938
+          3069
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1203,7 +1204,12 @@
   case (_1: com.mohiva.play.silhouette.api.actions.SecuredRequest[whatson.auth.AuthEnv,play.api.mvc.AnyContent], _2: whatson.model.Organizer)(com.mohiva.play.silhouette.api.actions.SecuredRequest[whatson.auth.AuthEnv,play.api.mvc.AnyContent], whatson.model.Organizer)((request @ _), (organizer @ _)) =&gt; {
     OrganizerController.this.log.debug(&quot;Rest request to get events of currently logged in organizer&quot;)(api.this.MarkerContext.NoMarker);
     implicit val r: com.mohiva.play.silhouette.api.actions.SecuredRequest[whatson.auth.AuthEnv,play.api.mvc.AnyContent] = request;
-    val q: slick.lifted.Query[whatson.db.EventTable,whatson.model.Event,Seq] = whatson.db.EventTable.event.withFilter[slick.lifted.Rep[Option[Boolean]]](((e: whatson.db.EventTable) =&gt; slick.jdbc.PostgresProfile.api.optionColumnExtensionMethods[Long](e.creatorId)(slick.jdbc.PostgresProfile.api.longColumnType).===[Long, Option[Boolean]](slick.jdbc.PostgresProfile.api.valueToConstColumn[Long](organizer.id.getOrElse[Long](-1L))(slick.jdbc.PostgresProfile.api.longColumnType))(lifted.this.OptionMapper2.getOptionMapper2OT[Long, Long, Boolean](slick.jdbc.PostgresProfile.api.longColumnType))))(lifted.this.CanBeQueryCondition.BooleanOptionColumnCanBeQueryCondition).map[whatson.db.EventTable, whatson.db.EventTable, whatson.model.Event](((e: whatson.db.EventTable) =&gt; e))(lifted.this.Shape.tableShape[slick.lifted.FlatShapeLevel, whatson.model.Event, whatson.db.EventTable](scala.Predef.$conforms[whatson.db.EventTable]));
+    val q: slick.lifted.Query[whatson.db.EventTable,whatson.model.Event,Seq] = whatson.db.EventTable.event.withFilter[slick.lifted.Rep[Option[Boolean]]](((e: whatson.db.EventTable) =&gt; slick.jdbc.PostgresProfile.api.optionColumnExtensionMethods[Long](e.creatorId)(slick.jdbc.PostgresProfile.api.longColumnType).===[Long, Option[Boolean]](slick.jdbc.PostgresProfile.api.valueToConstColumn[Long](organizer.id.getOrElse[Long](-1L))(slick.jdbc.PostgresProfile.api.longColumnType))(lifted.this.OptionMapper2.getOptionMapper2OT[Long, Long, Boolean](slick.jdbc.PostgresProfile.api.longColumnType))))(lifted.this.CanBeQueryCondition.BooleanOptionColumnCanBeQueryCondition).withFilter[slick.lifted.Rep[Boolean]](((e: whatson.db.EventTable) =&gt; {
+  &lt;artifact&gt; val qual$1: slick.lifted.StringColumnExtensionMethods[String] @scala.reflect.internal.annotations.uncheckedBounds = slick.jdbc.PostgresProfile.api.stringColumnExtensionMethods(whatson.db.Util.upper(e.name));
+  &lt;artifact&gt; val x$1: slick.lifted.Rep[String] @scala.reflect.internal.annotations.uncheckedBounds = whatson.db.Util.upper(slick.jdbc.PostgresProfile.api.valueToConstColumn[String](search.map[String](((y: String) =&gt; scala.Predef.augmentString(scala.Predef.augmentString(&quot;%&quot;).++[Char, String](scala.Predef.augmentString(y))(scala.Predef.StringCanBuildFrom)).++[Char, String](scala.Predef.augmentString(&quot;%&quot;))(scala.Predef.StringCanBuildFrom))).getOrElse[String](&quot;%%&quot;))(slick.jdbc.PostgresProfile.api.stringColumnType).bind);
+  &lt;artifact&gt; val x$2: Char = qual$1.like$default$2[Nothing, Nothing];
+  qual$1.like[String, Boolean](x$1, x$2)(lifted.this.OptionMapper2.getOptionMapper2TT[String, String, Boolean](slick.jdbc.PostgresProfile.api.stringColumnType))
+}))(lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition).map[whatson.db.EventTable, whatson.db.EventTable, whatson.model.Event](((e: whatson.db.EventTable) =&gt; e))(lifted.this.Shape.tableShape[slick.lifted.FlatShapeLevel, whatson.model.Event, whatson.db.EventTable](scala.Predef.$conforms[whatson.db.EventTable]));
     val s: slick.dbio.DBIOAction[Seq[whatson.model.detail.EventDetail],slick.dbio.NoStream,slick.dbio.Effect.Read with slick.dbio.Effect.Read with slick.dbio.Effect.Read with slick.dbio.Effect.Read] = whatson.model.detail.EventDetail.EventDetailQuery(whatson.db.Util.QueryUtils[whatson.db.EventTable, whatson.model.Event](q).queryPaged[Any, Nothing, Nothing](r)).detailed(play.api.libs.concurrent.Execution.Implicits.defaultContext);
     whatson.db.Util.returnPaged[whatson.model.detail.EventDetail, whatson.db.EventTable, whatson.model.Event](s, q, OrganizerController.this.db)(r, play.api.libs.concurrent.Execution.Implicits.defaultContext, whatson.model.detail.EventDetail.eventDetailWrites)
   }
@@ -1217,9 +1223,9 @@
           1580
         </td>
         <td>
-          2616
+          2640
           -
-          2629
+          2653
         </td>
         <td>
           Select
@@ -1235,12 +1241,12 @@
           77
         </td>
         <td>
-          1603
+          1615
         </td>
         <td>
-          2631
+          2655
           -
-          2631
+          2655
         </td>
         <td>
           Select
@@ -1259,9 +1265,9 @@
           1581
         </td>
         <td>
-          2675
+          2699
           -
-          2736
+          2760
         </td>
         <td>
           Literal
@@ -1280,9 +1286,9 @@
           1583
         </td>
         <td>
-          2665
+          2689
           -
-          2737
+          2761
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1301,9 +1307,9 @@
           1582
         </td>
         <td>
-          2674
+          2698
           -
-          2674
+          2698
         </td>
         <td>
           Select
@@ -1322,9 +1328,9 @@
           1587
         </td>
         <td>
-          2856
+          2880
           -
-          2856
+          2880
         </td>
         <td>
           Select
@@ -1340,12 +1346,33 @@
           83
         </td>
         <td>
+          1605
+        </td>
+        <td>
+          2819
+          -
+          2819
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Predef.$conforms
+        </td>
+        <td style="background: #F0ADAD">
+          scala.Predef.$conforms[whatson.db.EventTable]
+        </td>
+      </tr><tr>
+        <td>
+          83
+        </td>
+        <td>
           1590
         </td>
         <td>
-          2830
+          2854
           -
-          2830
+          2854
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1364,9 +1391,9 @@
           1584
         </td>
         <td>
-          2818
+          2842
           -
-          2829
+          2853
         </td>
         <td>
           Select
@@ -1382,33 +1409,12 @@
           83
         </td>
         <td>
-          1593
-        </td>
-        <td>
-          2795
-          -
-          2795
-        </td>
-        <td>
-          TypeApply
-        </td>
-        <td>
-          scala.Predef.$conforms
-        </td>
-        <td style="background: #F0ADAD">
-          scala.Predef.$conforms[whatson.db.EventTable]
-        </td>
-      </tr><tr>
-        <td>
-          83
-        </td>
-        <td>
           1592
         </td>
         <td>
-          2809
+          2833
           -
-          2809
+          2833
         </td>
         <td>
           Select
@@ -1427,9 +1433,9 @@
           1586
         </td>
         <td>
-          2834
+          2858
           -
-          2861
+          2885
         </td>
         <td>
           Apply
@@ -1445,12 +1451,33 @@
           83
         </td>
         <td>
-          1595
+          1604
         </td>
         <td>
-          2781
+          2833
           -
-          2875
+          2833
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.lifted.CanBeQueryCondition.BooleanColumnCanBeQueryCondition
+        </td>
+        <td style="background: #F0ADAD">
+          lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition
+        </td>
+      </tr><tr>
+        <td>
+          83
+        </td>
+        <td>
+          1607
+        </td>
+        <td>
+          2805
+          -
+          3006
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1459,7 +1486,12 @@
           slick.lifted.Query.map
         </td>
         <td style="background: #F0ADAD">
-          whatson.db.EventTable.event.withFilter[slick.lifted.Rep[Option[Boolean]]](((e: whatson.db.EventTable) =&gt; slick.jdbc.PostgresProfile.api.optionColumnExtensionMethods[Long](e.creatorId)(slick.jdbc.PostgresProfile.api.longColumnType).===[Long, Option[Boolean]](slick.jdbc.PostgresProfile.api.valueToConstColumn[Long](organizer.id.getOrElse[Long](-1L))(slick.jdbc.PostgresProfile.api.longColumnType))(lifted.this.OptionMapper2.getOptionMapper2OT[Long, Long, Boolean](slick.jdbc.PostgresProfile.api.longColumnType))))(lifted.this.CanBeQueryCondition.BooleanOptionColumnCanBeQueryCondition).map[whatson.db.EventTable, whatson.db.EventTable, whatson.model.Event](((e: whatson.db.EventTable) =&gt; e))(lifted.this.Shape.tableShape[slick.lifted.FlatShapeLevel, whatson.model.Event, whatson.db.EventTable](scala.Predef.$conforms[whatson.db.EventTable]))
+          whatson.db.EventTable.event.withFilter[slick.lifted.Rep[Option[Boolean]]](((e: whatson.db.EventTable) =&gt; slick.jdbc.PostgresProfile.api.optionColumnExtensionMethods[Long](e.creatorId)(slick.jdbc.PostgresProfile.api.longColumnType).===[Long, Option[Boolean]](slick.jdbc.PostgresProfile.api.valueToConstColumn[Long](organizer.id.getOrElse[Long](-1L))(slick.jdbc.PostgresProfile.api.longColumnType))(lifted.this.OptionMapper2.getOptionMapper2OT[Long, Long, Boolean](slick.jdbc.PostgresProfile.api.longColumnType))))(lifted.this.CanBeQueryCondition.BooleanOptionColumnCanBeQueryCondition).withFilter[slick.lifted.Rep[Boolean]](((e: whatson.db.EventTable) =&gt; {
+  &lt;artifact&gt; val qual$1: slick.lifted.StringColumnExtensionMethods[String] @scala.reflect.internal.annotations.uncheckedBounds = slick.jdbc.PostgresProfile.api.stringColumnExtensionMethods(whatson.db.Util.upper(e.name));
+  &lt;artifact&gt; val x$1: slick.lifted.Rep[String] @scala.reflect.internal.annotations.uncheckedBounds = whatson.db.Util.upper(slick.jdbc.PostgresProfile.api.valueToConstColumn[String](search.map[String](((y: String) =&gt; scala.Predef.augmentString(scala.Predef.augmentString(&quot;%&quot;).++[Char, String](scala.Predef.augmentString(y))(scala.Predef.StringCanBuildFrom)).++[Char, String](scala.Predef.augmentString(&quot;%&quot;))(scala.Predef.StringCanBuildFrom))).getOrElse[String](&quot;%%&quot;))(slick.jdbc.PostgresProfile.api.stringColumnType).bind);
+  &lt;artifact&gt; val x$2: Char = qual$1.like$default$2[Nothing, Nothing];
+  qual$1.like[String, Boolean](x$1, x$2)(lifted.this.OptionMapper2.getOptionMapper2TT[String, String, Boolean](slick.jdbc.PostgresProfile.api.stringColumnType))
+}))(lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition).map[whatson.db.EventTable, whatson.db.EventTable, whatson.model.Event](((e: whatson.db.EventTable) =&gt; e))(lifted.this.Shape.tableShape[slick.lifted.FlatShapeLevel, whatson.model.Event, whatson.db.EventTable](scala.Predef.$conforms[whatson.db.EventTable]))
         </td>
       </tr><tr>
         <td>
@@ -1469,9 +1501,9 @@
           1589
         </td>
         <td>
-          2830
+          2854
           -
-          2830
+          2854
         </td>
         <td>
           Select
@@ -1487,12 +1519,33 @@
           83
         </td>
         <td>
+          1606
+        </td>
+        <td>
+          2819
+          -
+          2819
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.AbstractTableShapeImplicits.tableShape
+        </td>
+        <td style="background: #F0ADAD">
+          lifted.this.Shape.tableShape[slick.lifted.FlatShapeLevel, whatson.model.Event, whatson.db.EventTable](scala.Predef.$conforms[whatson.db.EventTable])
+        </td>
+      </tr><tr>
+        <td>
+          83
+        </td>
+        <td>
           1591
         </td>
         <td>
-          2818
+          2842
           -
-          2861
+          2885
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1511,9 +1564,9 @@
           1585
         </td>
         <td>
-          2820
+          2844
           -
-          2820
+          2844
         </td>
         <td>
           Select
@@ -1529,33 +1582,12 @@
           83
         </td>
         <td>
-          1594
-        </td>
-        <td>
-          2795
-          -
-          2795
-        </td>
-        <td>
-          ApplyToImplicitArgs
-        </td>
-        <td>
-          slick.lifted.AbstractTableShapeImplicits.tableShape
-        </td>
-        <td style="background: #F0ADAD">
-          lifted.this.Shape.tableShape[slick.lifted.FlatShapeLevel, whatson.model.Event, whatson.db.EventTable](scala.Predef.$conforms[whatson.db.EventTable])
-        </td>
-      </tr><tr>
-        <td>
-          83
-        </td>
-        <td>
           1588
         </td>
         <td>
-          2834
+          2858
           -
-          2861
+          2885
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1568,15 +1600,246 @@
         </td>
       </tr><tr>
         <td>
-          86
+          84
         </td>
         <td>
           1596
         </td>
         <td>
-          2889
+          2942
           -
-          2901
+          2986
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Option.getOrElse
+        </td>
+        <td style="background: #F0ADAD">
+          search.map[String](((y: String) =&gt; scala.Predef.augmentString(scala.Predef.augmentString(&quot;%&quot;).++[Char, String](scala.Predef.augmentString(y))(scala.Predef.StringCanBuildFrom)).++[Char, String](scala.Predef.augmentString(&quot;%&quot;))(scala.Predef.StringCanBuildFrom))).getOrElse[String](&quot;%%&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          84
+        </td>
+        <td>
+          1599
+        </td>
+        <td>
+          2936
+          -
+          2992
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          whatson.db.Util.upper
+        </td>
+        <td style="background: #F0ADAD">
+          whatson.db.Util.upper(slick.jdbc.PostgresProfile.api.valueToConstColumn[String](search.map[String](((y: String) =&gt; scala.Predef.augmentString(scala.Predef.augmentString(&quot;%&quot;).++[Char, String](scala.Predef.augmentString(y))(scala.Predef.StringCanBuildFrom)).++[Char, String](scala.Predef.augmentString(&quot;%&quot;))(scala.Predef.StringCanBuildFrom))).getOrElse[String](&quot;%%&quot;))(slick.jdbc.PostgresProfile.api.stringColumnType).bind)
+        </td>
+      </tr><tr>
+        <td>
+          84
+        </td>
+        <td>
+          1593
+        </td>
+        <td>
+          2923
+          -
+          2929
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.db.EventTable.name
+        </td>
+        <td style="background: #F0ADAD">
+          e.name
+        </td>
+      </tr><tr>
+        <td>
+          84
+        </td>
+        <td>
+          1602
+        </td>
+        <td>
+          2931
+          -
+          2931
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.OptionMapper2.getOptionMapper2TT
+        </td>
+        <td style="background: #F0ADAD">
+          lifted.this.OptionMapper2.getOptionMapper2TT[String, String, Boolean](slick.jdbc.PostgresProfile.api.stringColumnType)
+        </td>
+      </tr><tr>
+        <td>
+          84
+        </td>
+        <td>
+          1601
+        </td>
+        <td>
+          2931
+          -
+          2931
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.stringColumnType
+        </td>
+        <td style="background: #F0ADAD">
+          slick.jdbc.PostgresProfile.api.stringColumnType
+        </td>
+      </tr><tr>
+        <td>
+          84
+        </td>
+        <td>
+          1595
+        </td>
+        <td>
+          2917
+          -
+          2930
+        </td>
+        <td>
+          ApplyImplicitView
+        </td>
+        <td>
+          slick.lifted.ExtensionMethodConversions.stringColumnExtensionMethods
+        </td>
+        <td style="background: #F0ADAD">
+          slick.jdbc.PostgresProfile.api.stringColumnExtensionMethods(whatson.db.Util.upper(e.name))
+        </td>
+      </tr><tr>
+        <td>
+          84
+        </td>
+        <td>
+          1598
+        </td>
+        <td>
+          2942
+          -
+          2991
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.lifted.LiteralColumn.bind
+        </td>
+        <td style="background: #F0ADAD">
+          slick.jdbc.PostgresProfile.api.valueToConstColumn[String](search.map[String](((y: String) =&gt; scala.Predef.augmentString(scala.Predef.augmentString(&quot;%&quot;).++[Char, String](scala.Predef.augmentString(y))(scala.Predef.StringCanBuildFrom)).++[Char, String](scala.Predef.augmentString(&quot;%&quot;))(scala.Predef.StringCanBuildFrom))).getOrElse[String](&quot;%%&quot;))(slick.jdbc.PostgresProfile.api.stringColumnType).bind
+        </td>
+      </tr><tr>
+        <td>
+          84
+        </td>
+        <td>
+          1597
+        </td>
+        <td>
+          2980
+          -
+          2980
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.stringColumnType
+        </td>
+        <td style="background: #F0ADAD">
+          slick.jdbc.PostgresProfile.api.stringColumnType
+        </td>
+      </tr><tr>
+        <td>
+          84
+        </td>
+        <td>
+          1600
+        </td>
+        <td>
+          2931
+          -
+          2931
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          slick.lifted.StringColumnExtensionMethods.like$default$2
+        </td>
+        <td style="background: #F0ADAD">
+          qual$1.like$default$2[Nothing, Nothing]
+        </td>
+      </tr><tr>
+        <td>
+          84
+        </td>
+        <td>
+          1603
+        </td>
+        <td>
+          2917
+          -
+          2992
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          slick.lifted.StringColumnExtensionMethods.like
+        </td>
+        <td style="background: #F0ADAD">
+          qual$1.like[String, Boolean](x$1, x$2)(lifted.this.OptionMapper2.getOptionMapper2TT[String, String, Boolean](slick.jdbc.PostgresProfile.api.stringColumnType))
+        </td>
+      </tr><tr>
+        <td>
+          84
+        </td>
+        <td>
+          1594
+        </td>
+        <td>
+          2917
+          -
+          2930
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          whatson.db.Util.upper
+        </td>
+        <td style="background: #F0ADAD">
+          whatson.db.Util.upper(e.name)
+        </td>
+      </tr><tr>
+        <td>
+          87
+        </td>
+        <td>
+          1608
+        </td>
+        <td>
+          3020
+          -
+          3032
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1589,15 +1852,15 @@
         </td>
       </tr><tr>
         <td>
-          86
+          87
         </td>
         <td>
-          1598
+          1610
         </td>
         <td>
-          2889
+          3020
           -
-          2910
+          3041
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1610,15 +1873,15 @@
         </td>
       </tr><tr>
         <td>
-          86
+          87
         </td>
         <td>
-          1597
+          1609
         </td>
         <td>
-          2902
+          3033
           -
-          2902
+          3033
         </td>
         <td>
           Select
@@ -1631,36 +1894,15 @@
         </td>
       </tr><tr>
         <td>
-          87
+          88
         </td>
         <td>
-          1599
+          1614
         </td>
         <td>
-          2931
+          3046
           -
-          2933
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          play.api.db.slick.HasDatabaseConfig.db
-        </td>
-        <td style="background: #F0ADAD">
-          OrganizerController.this.db
-        </td>
-      </tr><tr>
-        <td>
-          87
-        </td>
-        <td>
-          1602
-        </td>
-        <td>
-          2915
-          -
-          2934
+          3065
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1673,15 +1915,36 @@
         </td>
       </tr><tr>
         <td>
-          87
+          88
         </td>
         <td>
-          1601
+          1611
         </td>
         <td>
-          2926
+          3062
           -
-          2926
+          3064
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.db.slick.HasDatabaseConfig.db
+        </td>
+        <td style="background: #F0ADAD">
+          OrganizerController.this.db
+        </td>
+      </tr><tr>
+        <td>
+          88
+        </td>
+        <td>
+          1613
+        </td>
+        <td>
+          3057
+          -
+          3057
         </td>
         <td>
           Select
@@ -1694,15 +1957,15 @@
         </td>
       </tr><tr>
         <td>
-          87
+          88
         </td>
         <td>
-          1600
+          1612
         </td>
         <td>
-          2926
+          3057
           -
-          2926
+          3057
         </td>
         <td>
           Select
@@ -1715,15 +1978,15 @@
         </td>
       </tr><tr>
         <td>
-          95
+          96
         </td>
         <td>
-          1668
+          1680
         </td>
         <td>
-          3075
+          3206
           -
-          3075
+          3206
         </td>
         <td>
           Select
@@ -1736,15 +1999,15 @@
         </td>
       </tr><tr>
         <td>
-          95
+          96
         </td>
         <td>
-          1605
+          1617
         </td>
         <td>
-          3063
+          3194
           -
-          3073
+          3204
         </td>
         <td>
           Select
@@ -1757,15 +2020,15 @@
         </td>
       </tr><tr>
         <td>
-          95
+          96
         </td>
         <td>
-          1669
+          1681
         </td>
         <td>
-          3046
+          3177
           -
-          4460
+          4591
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1799,15 +2062,15 @@
         </td>
       </tr><tr>
         <td>
-          97
+          98
         </td>
         <td>
-          1667
+          1679
         </td>
         <td>
-          3140
+          3271
           -
-          4456
+          4587
         </td>
         <td>
           Apply
@@ -1836,15 +2099,15 @@
         </td>
       </tr><tr>
         <td>
-          99
+          100
         </td>
         <td>
-          1608
+          1620
         </td>
         <td>
-          3240
+          3371
           -
-          3264
+          3395
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1857,15 +2120,15 @@
         </td>
       </tr><tr>
         <td>
-          99
+          100
         </td>
         <td>
-          1611
+          1623
         </td>
         <td>
-          3211
+          3342
           -
-          3266
+          3397
         </td>
         <td>
           Apply
@@ -1878,15 +2141,36 @@
         </td>
       </tr><tr>
         <td>
-          99
+          100
         </td>
         <td>
-          1610
+          1619
         </td>
         <td>
-          3229
+          3382
           -
-          3265
+          3382
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.util.FormErrorJson.formErrorFormat
+        </td>
+        <td style="background: #AEF1AE">
+          whatson.util.FormErrorJson.formErrorFormat
+        </td>
+      </tr><tr>
+        <td>
+          100
+        </td>
+        <td>
+          1622
+        </td>
+        <td>
+          3360
+          -
+          3396
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1899,36 +2183,15 @@
         </td>
       </tr><tr>
         <td>
-          99
+          100
         </td>
         <td>
-          1607
+          1618
         </td>
         <td>
-          3251
+          3383
           -
-          3251
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          whatson.util.FormErrorJson.formErrorFormat
-        </td>
-        <td style="background: #AEF1AE">
-          whatson.util.FormErrorJson.formErrorFormat
-        </td>
-      </tr><tr>
-        <td>
-          99
-        </td>
-        <td>
-          1606
-        </td>
-        <td>
-          3252
-          -
-          3263
+          3394
         </td>
         <td>
           Select
@@ -1941,15 +2204,15 @@
         </td>
       </tr><tr>
         <td>
-          99
+          100
         </td>
         <td>
-          1609
+          1621
         </td>
         <td>
-          3239
+          3370
           -
-          3239
+          3370
         </td>
         <td>
           Select
@@ -1962,15 +2225,15 @@
         </td>
       </tr><tr>
         <td>
-          101
+          102
         </td>
         <td>
-          1614
+          1626
         </td>
         <td>
-          3308
+          3439
           -
-          3353
+          3484
         </td>
         <td>
           Apply
@@ -1983,15 +2246,15 @@
         </td>
       </tr><tr>
         <td>
-          101
+          102
         </td>
         <td>
-          1613
+          1625
         </td>
         <td>
-          3342
+          3473
           -
-          3352
+          3483
         </td>
         <td>
           Select
@@ -2004,15 +2267,15 @@
         </td>
       </tr><tr>
         <td>
-          101
+          102
         </td>
         <td>
-          1612
+          1624
         </td>
         <td>
-          3318
+          3449
           -
-          3340
+          3471
         </td>
         <td>
           Select
@@ -2025,15 +2288,15 @@
         </td>
       </tr><tr>
         <td>
-          102
+          103
         </td>
         <td>
-          1665
+          1677
         </td>
         <td>
-          3404
+          3535
           -
-          3404
+          3535
         </td>
         <td>
           Select
@@ -2046,15 +2309,15 @@
         </td>
       </tr><tr>
         <td>
-          102
+          103
         </td>
         <td>
-          1666
+          1678
         </td>
         <td>
-          3360
+          3491
           -
-          4449
+          4580
         </td>
         <td>
           ApplyToImplicitArgs
@@ -2080,57 +2343,15 @@
         </td>
       </tr><tr>
         <td>
-          104
+          105
         </td>
         <td>
-          1620
+          1629
         </td>
         <td>
-          3473
+          3626
           -
-          3509
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          play.api.libs.json.Json.obj
-        </td>
-        <td style="background: #AEF1AE">
-          play.api.libs.json.Json.obj(scala.Predef.ArrowAssoc[String](&quot;message&quot;).-&gt;[play.api.libs.json.Json.JsValueWrapper](json.this.Json.toJsFieldJsValueWrapper[String](&quot;user.exists&quot;)(json.this.Writes.StringWrites)))
-        </td>
-      </tr><tr>
-        <td>
-          104
-        </td>
-        <td>
-          1623
-        </td>
-        <td>
-          3444
-          -
-          3511
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          scala.concurrent.Future.successful
-        </td>
-        <td style="background: #AEF1AE">
-          scala.concurrent.Future.successful[play.api.mvc.Result](OrganizerController.this.BadRequest.apply[play.api.libs.json.JsObject](play.api.libs.json.Json.obj(scala.Predef.ArrowAssoc[String](&quot;message&quot;).-&gt;[play.api.libs.json.Json.JsValueWrapper](json.this.Json.toJsFieldJsValueWrapper[String](&quot;user.exists&quot;)(json.this.Writes.StringWrites))))(http.this.Writeable.writeableOf_JsValue))
-        </td>
-      </tr><tr>
-        <td>
-          104
-        </td>
-        <td>
-          1617
-        </td>
-        <td>
-          3495
-          -
-          3495
+          3626
         </td>
         <td>
           Select
@@ -2143,36 +2364,57 @@
         </td>
       </tr><tr>
         <td>
-          104
+          105
         </td>
         <td>
-          1619
+          1632
         </td>
         <td>
-          3482
+          3604
           -
-          3508
+          3640
         </td>
         <td>
           Apply
         </td>
         <td>
-          scala.Predef.ArrowAssoc.-&gt;
+          play.api.libs.json.Json.obj
         </td>
         <td style="background: #AEF1AE">
-          scala.Predef.ArrowAssoc[String](&quot;message&quot;).-&gt;[play.api.libs.json.Json.JsValueWrapper](json.this.Json.toJsFieldJsValueWrapper[String](&quot;user.exists&quot;)(json.this.Writes.StringWrites))
+          play.api.libs.json.Json.obj(scala.Predef.ArrowAssoc[String](&quot;message&quot;).-&gt;[play.api.libs.json.Json.JsValueWrapper](json.this.Json.toJsFieldJsValueWrapper[String](&quot;user.exists&quot;)(json.this.Writes.StringWrites)))
         </td>
       </tr><tr>
         <td>
-          104
+          105
         </td>
         <td>
-          1622
+          1635
         </td>
         <td>
-          3462
+          3575
           -
-          3510
+          3642
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.concurrent.Future.successful
+        </td>
+        <td style="background: #AEF1AE">
+          scala.concurrent.Future.successful[play.api.mvc.Result](OrganizerController.this.BadRequest.apply[play.api.libs.json.JsObject](play.api.libs.json.Json.obj(scala.Predef.ArrowAssoc[String](&quot;message&quot;).-&gt;[play.api.libs.json.Json.JsValueWrapper](json.this.Json.toJsFieldJsValueWrapper[String](&quot;user.exists&quot;)(json.this.Writes.StringWrites))))(http.this.Writeable.writeableOf_JsValue))
+        </td>
+      </tr><tr>
+        <td>
+          105
+        </td>
+        <td>
+          1634
+        </td>
+        <td>
+          3593
+          -
+          3641
         </td>
         <td>
           ApplyToImplicitArgs
@@ -2185,15 +2427,15 @@
         </td>
       </tr><tr>
         <td>
-          104
+          105
         </td>
         <td>
-          1616
+          1628
         </td>
         <td>
-          3495
+          3626
           -
-          3508
+          3639
         </td>
         <td>
           Literal
@@ -2206,57 +2448,36 @@
         </td>
       </tr><tr>
         <td>
-          104
+          105
         </td>
         <td>
-          1615
+          1631
         </td>
         <td>
-          3482
+          3613
           -
-          3491
+          3639
         </td>
         <td>
-          Literal
+          Apply
         </td>
         <td>
-          &lt;nosymbol&gt;
+          scala.Predef.ArrowAssoc.-&gt;
         </td>
         <td style="background: #AEF1AE">
-          &quot;message&quot;
+          scala.Predef.ArrowAssoc[String](&quot;message&quot;).-&gt;[play.api.libs.json.Json.JsValueWrapper](json.this.Json.toJsFieldJsValueWrapper[String](&quot;user.exists&quot;)(json.this.Writes.StringWrites))
         </td>
       </tr><tr>
         <td>
-          104
+          105
         </td>
         <td>
-          1618
+          1633
         </td>
         <td>
-          3495
+          3603
           -
-          3508
-        </td>
-        <td>
-          ApplyToImplicitArgs
-        </td>
-        <td>
-          play.api.libs.json.Json.toJsFieldJsValueWrapper
-        </td>
-        <td style="background: #AEF1AE">
-          json.this.Json.toJsFieldJsValueWrapper[String](&quot;user.exists&quot;)(json.this.Writes.StringWrites)
-        </td>
-      </tr><tr>
-        <td>
-          104
-        </td>
-        <td>
-          1621
-        </td>
-        <td>
-          3472
-          -
-          3472
+          3603
         </td>
         <td>
           Select
@@ -2269,15 +2490,57 @@
         </td>
       </tr><tr>
         <td>
-          106
+          105
         </td>
         <td>
-          1625
+          1627
         </td>
         <td>
-          3558
+          3613
           -
-          3592
+          3622
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;message&quot;
+        </td>
+      </tr><tr>
+        <td>
+          105
+        </td>
+        <td>
+          1630
+        </td>
+        <td>
+          3626
+          -
+          3639
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          play.api.libs.json.Json.toJsFieldJsValueWrapper
+        </td>
+        <td style="background: #AEF1AE">
+          json.this.Json.toJsFieldJsValueWrapper[String](&quot;user.exists&quot;)(json.this.Writes.StringWrites)
+        </td>
+      </tr><tr>
+        <td>
+          107
+        </td>
+        <td>
+          1637
+        </td>
+        <td>
+          3689
+          -
+          3723
         </td>
         <td>
           Apply
@@ -2290,15 +2553,15 @@
         </td>
       </tr><tr>
         <td>
-          106
+          107
         </td>
         <td>
-          1624
+          1636
         </td>
         <td>
-          3578
+          3709
           -
-          3591
+          3722
         </td>
         <td>
           Select
@@ -2311,15 +2574,15 @@
         </td>
       </tr><tr>
         <td>
-          107
+          108
         </td>
         <td>
-          1629
+          1638
         </td>
         <td>
-          3645
+          3752
           -
-          3649
+          3756
         </td>
         <td>
           Select
@@ -2332,15 +2595,57 @@
         </td>
       </tr><tr>
         <td>
-          107
+          108
         </td>
         <td>
-          1632
+          1647
         </td>
         <td>
-          3679
+          3853
           -
-          3700
+          3857
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #AEF1AE">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          108
+        </td>
+        <td>
+          1641
+        </td>
+        <td>
+          3776
+          -
+          3780
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #AEF1AE">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          108
+        </td>
+        <td>
+          1644
+        </td>
+        <td>
+          3810
+          -
+          3831
         </td>
         <td>
           Select
@@ -2353,99 +2658,15 @@
         </td>
       </tr><tr>
         <td>
-          107
+          108
         </td>
         <td>
-          1626
+          1643
         </td>
         <td>
-          3621
+          3788
           -
-          3625
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          scala.None
-        </td>
-        <td style="background: #AEF1AE">
-          scala.None
-        </td>
-      </tr><tr>
-        <td>
-          107
-        </td>
-        <td>
-          1635
-        </td>
-        <td>
-          3722
-          -
-          3726
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          scala.None
-        </td>
-        <td style="background: #AEF1AE">
-          scala.None
-        </td>
-      </tr><tr>
-        <td>
-          107
-        </td>
-        <td>
-          1634
-        </td>
-        <td>
-          3709
-          -
-          3720
-        </td>
-        <td>
-          Literal
-        </td>
-        <td>
-          &lt;nosymbol&gt;
-        </td>
-        <td style="background: #AEF1AE">
-          &quot;organizer&quot;
-        </td>
-      </tr><tr>
-        <td>
-          107
-        </td>
-        <td>
-          1628
-        </td>
-        <td>
-          3639
-          -
-          3643
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          scala.None
-        </td>
-        <td style="background: #AEF1AE">
-          scala.None
-        </td>
-      </tr><tr>
-        <td>
-          107
-        </td>
-        <td>
-          1631
-        </td>
-        <td>
-          3657
-          -
-          3677
+          3808
         </td>
         <td>
           Select
@@ -2458,15 +2679,78 @@
         </td>
       </tr><tr>
         <td>
-          107
+          108
         </td>
         <td>
-          1633
+          1646
         </td>
         <td>
-          3702
+          3840
           -
-          3707
+          3851
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;organizer&quot;
+        </td>
+      </tr><tr>
+        <td>
+          108
+        </td>
+        <td>
+          1640
+        </td>
+        <td>
+          3770
+          -
+          3774
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #AEF1AE">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          108
+        </td>
+        <td>
+          1642
+        </td>
+        <td>
+          3782
+          -
+          3786
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #AEF1AE">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          108
+        </td>
+        <td>
+          1645
+        </td>
+        <td>
+          3833
+          -
+          3838
         </td>
         <td>
           Literal
@@ -2479,15 +2763,15 @@
         </td>
       </tr><tr>
         <td>
-          107
+          108
         </td>
         <td>
-          1627
+          1639
         </td>
         <td>
-          3627
+          3758
           -
-          3637
+          3768
         </td>
         <td>
           Select
@@ -2500,15 +2784,15 @@
         </td>
       </tr><tr>
         <td>
-          107
+          108
         </td>
         <td>
-          1636
+          1648
         </td>
         <td>
-          3615
+          3746
           -
-          3727
+          3858
         </td>
         <td>
           Apply
@@ -2521,36 +2805,15 @@
         </td>
       </tr><tr>
         <td>
-          107
+          110
         </td>
         <td>
-          1630
+          1676
         </td>
         <td>
-          3651
+          3869
           -
-          3655
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          scala.None
-        </td>
-        <td style="background: #AEF1AE">
-          scala.None
-        </td>
-      </tr><tr>
-        <td>
-          109
-        </td>
-        <td>
-          1664
-        </td>
-        <td>
-          3738
-          -
-          4441
+          4572
         </td>
         <td>
           ApplyToImplicitArgs
@@ -2569,15 +2832,15 @@
         </td>
       </tr><tr>
         <td>
-          109
+          110
         </td>
         <td>
-          1663
+          1675
         </td>
         <td>
-          3762
+          3893
           -
-          3762
+          3893
         </td>
         <td>
           Select
@@ -2590,15 +2853,15 @@
         </td>
       </tr><tr>
         <td>
-          110
+          111
         </td>
         <td>
-          1662
+          1674
         </td>
         <td>
-          3802
+          3933
           -
-          4441
+          4572
         </td>
         <td>
           ApplyToImplicitArgs
@@ -2617,15 +2880,15 @@
         </td>
       </tr><tr>
         <td>
-          110
+          111
         </td>
         <td>
-          1661
+          1673
         </td>
         <td>
-          3811
+          3942
           -
-          3811
+          3942
         </td>
         <td>
           Select
@@ -2638,15 +2901,15 @@
         </td>
       </tr><tr>
         <td>
-          111
+          112
         </td>
         <td>
-          1659
+          1671
         </td>
         <td>
-          3884
+          4015
           -
-          3884
+          4015
         </td>
         <td>
           Select
@@ -2659,15 +2922,15 @@
         </td>
       </tr><tr>
         <td>
-          111
+          112
         </td>
         <td>
-          1660
+          1672
         </td>
         <td>
-          3870
+          4001
           -
-          4441
+          4572
         </td>
         <td>
           ApplyToImplicitArgs
@@ -2686,15 +2949,15 @@
         </td>
       </tr><tr>
         <td>
-          112
+          113
         </td>
         <td>
-          1658
+          1670
         </td>
         <td>
-          3953
+          4084
           -
-          4441
+          4572
         </td>
         <td>
           ApplyToImplicitArgs
@@ -2713,15 +2976,15 @@
         </td>
       </tr><tr>
         <td>
-          112
+          113
         </td>
         <td>
-          1657
+          1669
         </td>
         <td>
-          3959
+          4090
           -
-          3959
+          4090
         </td>
         <td>
           Select
@@ -2734,15 +2997,15 @@
         </td>
       </tr><tr>
         <td>
-          113
+          114
         </td>
         <td>
-          1656
+          1668
         </td>
         <td>
-          4030
+          4161
           -
-          4441
+          4572
         </td>
         <td>
           ApplyToImplicitArgs
@@ -2761,15 +3024,15 @@
         </td>
       </tr><tr>
         <td>
-          113
+          114
         </td>
         <td>
-          1655
+          1667
         </td>
         <td>
-          4037
+          4168
           -
-          4037
+          4168
         </td>
         <td>
           Select
@@ -2782,15 +3045,15 @@
         </td>
       </tr><tr>
         <td>
-          113
+          114
         </td>
         <td>
-          1637
+          1649
         </td>
         <td>
-          4066
+          4197
           -
-          4076
+          4207
         </td>
         <td>
           Select
@@ -2803,15 +3066,15 @@
         </td>
       </tr><tr>
         <td>
-          115
+          116
         </td>
         <td>
-          1638
+          1650
         </td>
         <td>
-          4142
+          4273
           -
-          4169
+          4300
         </td>
         <td>
           Apply
@@ -2824,15 +3087,15 @@
         </td>
       </tr><tr>
         <td>
-          115
+          116
         </td>
         <td>
-          1639
+          1651
         </td>
         <td>
-          4110
+          4241
           -
-          4170
+          4301
         </td>
         <td>
           Apply
@@ -2845,15 +3108,15 @@
         </td>
       </tr><tr>
         <td>
-          116
+          117
         </td>
         <td>
-          1641
+          1653
         </td>
         <td>
-          4183
+          4314
           -
-          4242
+          4373
         </td>
         <td>
           Apply
@@ -2866,15 +3129,15 @@
         </td>
       </tr><tr>
         <td>
-          116
+          117
         </td>
         <td>
-          1640
+          1652
         </td>
         <td>
-          4215
+          4346
           -
-          4241
+          4372
         </td>
         <td>
           Apply
@@ -2887,15 +3150,15 @@
         </td>
       </tr><tr>
         <td>
-          117
+          118
         </td>
         <td>
-          1643
+          1655
         </td>
         <td>
-          4255
+          4386
           -
-          4300
+          4431
         </td>
         <td>
           Apply
@@ -2908,15 +3171,15 @@
         </td>
       </tr><tr>
         <td>
-          117
+          118
         </td>
         <td>
-          1642
+          1654
         </td>
         <td>
-          4283
+          4414
           -
-          4292
+          4423
         </td>
         <td>
           Select
@@ -2929,15 +3192,15 @@
         </td>
       </tr><tr>
         <td>
-          118
+          119
         </td>
         <td>
-          1644
+          1656
         </td>
         <td>
-          4351
+          4482
           -
-          4361
+          4492
         </td>
         <td>
           Select
@@ -2950,15 +3213,15 @@
         </td>
       </tr><tr>
         <td>
-          118
+          119
         </td>
         <td>
-          1646
+          1658
         </td>
         <td>
-          4313
+          4444
           -
-          4378
+          4509
         </td>
         <td>
           Apply
@@ -2971,15 +3234,15 @@
         </td>
       </tr><tr>
         <td>
-          118
+          119
         </td>
         <td>
-          1645
+          1657
         </td>
         <td>
-          4362
+          4493
           -
-          4371
+          4502
         </td>
         <td>
           Select
@@ -2992,57 +3255,15 @@
         </td>
       </tr><tr>
         <td>
-          119
+          120
         </td>
         <td>
-          1647
+          1665
         </td>
         <td>
-          4403
+          4524
           -
-          4412
-        </td>
-        <td>
-          Literal
-        </td>
-        <td>
-          &lt;nosymbol&gt;
-        </td>
-        <td style="background: #AEF1AE">
-          &quot;message&quot;
-        </td>
-      </tr><tr>
-        <td>
-          119
-        </td>
-        <td>
-          1650
-        </td>
-        <td>
-          4416
-          -
-          4427
-        </td>
-        <td>
-          ApplyToImplicitArgs
-        </td>
-        <td>
-          play.api.libs.json.Json.toJsFieldJsValueWrapper
-        </td>
-        <td style="background: #AEF1AE">
-          json.this.Json.toJsFieldJsValueWrapper[String](&quot;mail.sent&quot;)(json.this.Writes.StringWrites)
-        </td>
-      </tr><tr>
-        <td>
-          119
-        </td>
-        <td>
-          1653
-        </td>
-        <td>
-          4393
-          -
-          4393
+          4524
         </td>
         <td>
           Select
@@ -3055,36 +3276,57 @@
         </td>
       </tr><tr>
         <td>
-          119
+          120
         </td>
         <td>
-          1652
+          1659
         </td>
         <td>
-          4394
+          4534
           -
-          4428
+          4543
         </td>
         <td>
-          Apply
+          Literal
         </td>
         <td>
-          play.api.libs.json.Json.obj
+          &lt;nosymbol&gt;
         </td>
         <td style="background: #AEF1AE">
-          play.api.libs.json.Json.obj(scala.Predef.ArrowAssoc[String](&quot;message&quot;).-&gt;[play.api.libs.json.Json.JsValueWrapper](json.this.Json.toJsFieldJsValueWrapper[String](&quot;mail.sent&quot;)(json.this.Writes.StringWrites)))
+          &quot;message&quot;
         </td>
       </tr><tr>
         <td>
-          119
+          120
         </td>
         <td>
-          1649
+          1662
         </td>
         <td>
-          4416
+          4547
           -
-          4416
+          4558
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          play.api.libs.json.Json.toJsFieldJsValueWrapper
+        </td>
+        <td style="background: #AEF1AE">
+          json.this.Json.toJsFieldJsValueWrapper[String](&quot;mail.sent&quot;)(json.this.Writes.StringWrites)
+        </td>
+      </tr><tr>
+        <td>
+          120
+        </td>
+        <td>
+          1661
+        </td>
+        <td>
+          4547
+          -
+          4547
         </td>
         <td>
           Select
@@ -3097,36 +3339,36 @@
         </td>
       </tr><tr>
         <td>
-          119
+          120
         </td>
         <td>
-          1651
+          1664
         </td>
         <td>
-          4403
+          4525
           -
-          4427
+          4559
         </td>
         <td>
           Apply
         </td>
         <td>
-          scala.Predef.ArrowAssoc.-&gt;
+          play.api.libs.json.Json.obj
         </td>
         <td style="background: #AEF1AE">
-          scala.Predef.ArrowAssoc[String](&quot;message&quot;).-&gt;[play.api.libs.json.Json.JsValueWrapper](json.this.Json.toJsFieldJsValueWrapper[String](&quot;mail.sent&quot;)(json.this.Writes.StringWrites))
+          play.api.libs.json.Json.obj(scala.Predef.ArrowAssoc[String](&quot;message&quot;).-&gt;[play.api.libs.json.Json.JsValueWrapper](json.this.Json.toJsFieldJsValueWrapper[String](&quot;mail.sent&quot;)(json.this.Writes.StringWrites)))
         </td>
       </tr><tr>
         <td>
-          119
+          120
         </td>
         <td>
-          1654
+          1666
         </td>
         <td>
-          4391
+          4522
           -
-          4429
+          4560
         </td>
         <td>
           ApplyToImplicitArgs
@@ -3139,15 +3381,15 @@
         </td>
       </tr><tr>
         <td>
-          119
+          120
         </td>
         <td>
-          1648
+          1660
         </td>
         <td>
-          4416
+          4547
           -
-          4427
+          4558
         </td>
         <td>
           Literal
@@ -3157,6 +3399,27 @@
         </td>
         <td style="background: #AEF1AE">
           &quot;mail.sent&quot;
+        </td>
+      </tr><tr>
+        <td>
+          120
+        </td>
+        <td>
+          1663
+        </td>
+        <td>
+          4534
+          -
+          4558
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Predef.ArrowAssoc.-&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Predef.ArrowAssoc[String](&quot;message&quot;).-&gt;[play.api.libs.json.Json.JsValueWrapper](json.this.Json.toJsFieldJsValueWrapper[String](&quot;mail.sent&quot;)(json.this.Writes.StringWrites))
         </td>
       </tr>
     </table>
