@@ -24,21 +24,33 @@
           <div class="tab-pane active" id="codegrid">
             <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package whatson.util
 </span>2 <span style=''>
-</span>3 <span style=''>object Util {
-</span>4 <span style=''>  implicit class EitherSameUtil[A](either: Either[A,A]) {
-</span>5 <span style=''>    def get = </span><span style='background: #F0ADAD'>either</span><span style=''> match {
-</span>6 <span style=''>      case Left(a) =&gt; a
-</span>7 <span style=''>      case Right(b) =&gt; b
-</span>8 <span style=''>    }
-</span>9 <span style=''>  }
-</span>10 <span style=''>  
-</span>11 <span style=''>  implicit class EitherUtil[A,B](either: Either[A,B]) {
-</span>12 <span style=''>    def mapBoth[C,D](f: A =&gt; C, g: B =&gt; D) = </span><span style='background: #F0ADAD'>either</span><span style=''> match {
-</span>13 <span style=''>      case Left(a) =&gt; </span><span style='background: #F0ADAD'>Left(f(a))</span><span style=''>
-</span>14 <span style=''>      case Right(b) =&gt; </span><span style='background: #F0ADAD'>Right(g(b))</span><span style=''>
-</span>15 <span style=''>    }
-</span>16 <span style=''>  }
-</span>17 <span style=''>}
+</span>3 <span style=''>import play.api.libs.json._
+</span>4 <span style=''>
+</span>5 <span style=''>object Util {
+</span>6 <span style=''>  implicit class EitherSameUtil[A](either: Either[A,A]) {
+</span>7 <span style=''>    def get = </span><span style='background: #F0ADAD'>either</span><span style=''> match {
+</span>8 <span style=''>      case Left(a) =&gt; a
+</span>9 <span style=''>      case Right(b) =&gt; b
+</span>10 <span style=''>    }
+</span>11 <span style=''>  }
+</span>12 <span style=''>  
+</span>13 <span style=''>  implicit class EitherUtil[A,B](either: Either[A,B]) {
+</span>14 <span style=''>    def mapBoth[C,D](f: A =&gt; C, g: B =&gt; D) = </span><span style='background: #F0ADAD'>either</span><span style=''> match {
+</span>15 <span style=''>      case Left(a) =&gt; </span><span style='background: #F0ADAD'>Left(f(a))</span><span style=''>
+</span>16 <span style=''>      case Right(b) =&gt; </span><span style='background: #F0ADAD'>Right(g(b))</span><span style=''>
+</span>17 <span style=''>    }
+</span>18 <span style=''>  }
+</span>19 <span style=''>
+</span>20 <span style=''>  implicit val BigIntWrite: Writes[BigInt] = </span><span style='background: #F0ADAD'>new</span><span style=''> Writes[BigInt] {
+</span>21 <span style=''>    override def writes(bigInt: BigInt): JsValue = </span><span style='background: #F0ADAD'>JsString(bigInt.toString())</span><span style=''>
+</span>22 <span style=''>  }
+</span>23 <span style=''>
+</span>24 <span style=''>  implicit val BigIntRead: Reads[BigInt] = </span><span style='background: #F0ADAD'>Reads {
+</span>25 <span style=''></span><span style='background: #F0ADAD'>    case JsString(value) =&gt; JsSuccess(scala.math.BigInt(value))
+</span>26 <span style=''></span><span style='background: #F0ADAD'>    case JsNumber(value) =&gt; JsSuccess(value.toBigInt())
+</span>27 <span style=''></span><span style='background: #F0ADAD'>    case unknown =&gt; JsError(s&quot;Invalid BigInt&quot;)
+</span>28 <span style=''></span><span style='background: #F0ADAD'>  }</span><span style=''>
+</span>29 <span style=''>}
 </span></pre>
           </div>
           <div class="tab-pane" id="statementlist">
@@ -52,15 +64,15 @@
         <th>Code</th>
       </tr><tr>
         <td>
-          5
+          7
         </td>
         <td>
           4480
         </td>
         <td>
-          108
+          137
           -
-          114
+          143
         </td>
         <td>
           Select
@@ -73,15 +85,15 @@
         </td>
       </tr><tr>
         <td>
-          12
+          14
         </td>
         <td>
           4481
         </td>
         <td>
-          286
+          315
           -
-          292
+          321
         </td>
         <td>
           Select
@@ -94,15 +106,15 @@
         </td>
       </tr><tr>
         <td>
-          13
+          15
         </td>
         <td>
           4482
         </td>
         <td>
-          328
+          357
           -
-          332
+          361
         </td>
         <td>
           Apply
@@ -115,15 +127,15 @@
         </td>
       </tr><tr>
         <td>
-          13
+          15
         </td>
         <td>
           4483
         </td>
         <td>
-          323
+          352
           -
-          333
+          362
         </td>
         <td>
           Apply
@@ -136,15 +148,15 @@
         </td>
       </tr><tr>
         <td>
-          14
+          16
         </td>
         <td>
           4485
         </td>
         <td>
-          357
+          386
           -
-          368
+          397
         </td>
         <td>
           Apply
@@ -157,15 +169,15 @@
         </td>
       </tr><tr>
         <td>
-          14
+          16
         </td>
         <td>
           4484
         </td>
         <td>
-          363
+          392
           -
-          367
+          396
         </td>
         <td>
           Apply
@@ -175,6 +187,262 @@
         </td>
         <td style="background: #F0ADAD">
           g.apply(b)
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          4488
+        </td>
+        <td>
+          454
+          -
+          457
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          whatson.util.Util.$anon.&lt;init&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          new $anon()
+        </td>
+      </tr><tr>
+        <td>
+          21
+        </td>
+        <td>
+          4487
+        </td>
+        <td>
+          526
+          -
+          553
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          play.api.libs.json.JsString.apply
+        </td>
+        <td style="background: #F0ADAD">
+          play.api.libs.json.JsString.apply(bigInt.toString())
+        </td>
+      </tr><tr>
+        <td>
+          21
+        </td>
+        <td>
+          4486
+        </td>
+        <td>
+          535
+          -
+          552
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.math.BigInt.toString
+        </td>
+        <td style="background: #F0ADAD">
+          bigInt.toString()
+        </td>
+      </tr><tr>
+        <td>
+          24
+        </td>
+        <td>
+          4497
+        </td>
+        <td>
+          602
+          -
+          780
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          play.api.libs.json.Reads.apply
+        </td>
+        <td style="background: #F0ADAD">
+          play.api.libs.json.Reads.apply[BigInt](((x0$1: play.api.libs.json.JsValue) =&gt; x0$1 match {
+  case (value: String)play.api.libs.json.JsString((value @ _)) =&gt; play.api.libs.json.JsSuccess.apply[scala.math.BigInt](scala.math.BigInt.apply(value), play.api.libs.json.JsSuccess.apply$default$2[Nothing])
+  case (value: BigDecimal)play.api.libs.json.JsNumber((value @ _)) =&gt; play.api.libs.json.JsSuccess.apply[scala.math.BigInt](value.toBigInt(), play.api.libs.json.JsSuccess.apply$default$2[Nothing])
+  case (unknown @ _) =&gt; play.api.libs.json.JsError.apply(scala.StringContext.apply(&quot;Invalid BigInt&quot;).s())
+}))
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          4491
+        </td>
+        <td>
+          638
+          -
+          673
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          play.api.libs.json.JsSuccess.apply
+        </td>
+        <td style="background: #F0ADAD">
+          play.api.libs.json.JsSuccess.apply[scala.math.BigInt](scala.math.BigInt.apply(value), play.api.libs.json.JsSuccess.apply$default$2[Nothing])
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          4490
+        </td>
+        <td>
+          638
+          -
+          638
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          play.api.libs.json.JsSuccess.apply$default$2
+        </td>
+        <td style="background: #F0ADAD">
+          play.api.libs.json.JsSuccess.apply$default$2[Nothing]
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          4489
+        </td>
+        <td>
+          648
+          -
+          672
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.math.BigInt.apply
+        </td>
+        <td style="background: #F0ADAD">
+          scala.math.BigInt.apply(value)
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          4494
+        </td>
+        <td>
+          702
+          -
+          729
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          play.api.libs.json.JsSuccess.apply
+        </td>
+        <td style="background: #F0ADAD">
+          play.api.libs.json.JsSuccess.apply[scala.math.BigInt](value.toBigInt(), play.api.libs.json.JsSuccess.apply$default$2[Nothing])
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          4493
+        </td>
+        <td>
+          702
+          -
+          702
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          play.api.libs.json.JsSuccess.apply$default$2
+        </td>
+        <td style="background: #F0ADAD">
+          play.api.libs.json.JsSuccess.apply$default$2[Nothing]
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          4492
+        </td>
+        <td>
+          712
+          -
+          728
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.math.BigDecimal.toBigInt
+        </td>
+        <td style="background: #F0ADAD">
+          value.toBigInt()
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          4496
+        </td>
+        <td>
+          750
+          -
+          776
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          play.api.libs.json.JsError.apply
+        </td>
+        <td style="background: #F0ADAD">
+          play.api.libs.json.JsError.apply(scala.StringContext.apply(&quot;Invalid BigInt&quot;).s())
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          4495
+        </td>
+        <td>
+          758
+          -
+          775
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #F0ADAD">
+          scala.StringContext.apply(&quot;Invalid BigInt&quot;).s()
         </td>
       </tr>
     </table>

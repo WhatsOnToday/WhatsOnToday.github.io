@@ -70,7 +70,7 @@
 </span>46 <span style=''></span><span style='background: #AEF1AE'>    returnPaged(s,q,db)
 </span>47 <span style=''></span><span style='background: #AEF1AE'>  }</span><span style=''>
 </span>48 <span style=''>
-</span>49 <span style=''>  def getLocation(id: Int) = </span><span style='background: #AEF1AE'>Action.async { implicit request: Request[AnyContent] =&gt;
+</span>49 <span style=''>  def getLocation(id: Long) = </span><span style='background: #AEF1AE'>Action.async { implicit request: Request[AnyContent] =&gt;
 </span>50 <span style=''></span><span style='background: #AEF1AE'>    log.debug(&quot;Rest request to get location&quot;)
 </span>51 <span style=''></span><span style='background: #AEF1AE'>
 </span>52 <span style=''></span><span style='background: #AEF1AE'>    val q = for(l &lt;- location if l.id === id.bind) yield l;
@@ -81,7 +81,7 @@
 </span>57 <span style=''></span><span style='background: #AEF1AE'>    })
 </span>58 <span style=''></span><span style='background: #AEF1AE'>  }</span><span style=''>
 </span>59 <span style=''>
-</span>60 <span style=''>  def getNearby(id: Int) = </span><span style='background: #AEF1AE'>Action.async { implicit request: Request[AnyContent] =&gt;
+</span>60 <span style=''>  def getNearby(id: Long) = </span><span style='background: #AEF1AE'>Action.async { implicit request: Request[AnyContent] =&gt;
 </span>61 <span style=''></span><span style='background: #AEF1AE'>    log.debug(&quot;Rest request to get location close to another location&quot;)
 </span>62 <span style=''></span><span style='background: #AEF1AE'>
 </span>63 <span style=''></span><span style='background: #AEF1AE'>    val q = for(l &lt;- location if l.id === id.bind) yield l;
@@ -850,9 +850,9 @@
           1228
         </td>
         <td>
-          1613
+          1614
           -
-          1906
+          1907
         </td>
         <td>
           Apply
@@ -863,7 +863,7 @@
         <td style="background: #AEF1AE">
           LocationController.this.Action.async(((implicit request: play.api.mvc.Request[play.api.mvc.AnyContent]) =&gt; {
   LocationController.this.log.debug(&quot;Rest request to get location&quot;)(api.this.MarkerContext.NoMarker);
-  val q: slick.lifted.Query[whatson.db.LocationTable,whatson.model.Location,Seq] = whatson.db.LocationTable.location.withFilter[slick.lifted.Rep[Boolean]](((l: whatson.db.LocationTable) =&gt; slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](l.id)(slick.jdbc.PostgresProfile.api.intColumnType).===[Int, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[Int](id)(slick.jdbc.PostgresProfile.api.intColumnType).bind)(lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType))))(lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition).map[whatson.db.LocationTable, whatson.db.LocationTable, whatson.model.Location](((l: whatson.db.LocationTable) =&gt; l))(lifted.this.Shape.tableShape[slick.lifted.FlatShapeLevel, whatson.model.Location, whatson.db.LocationTable](scala.Predef.$conforms[whatson.db.LocationTable]));
+  val q: slick.lifted.Query[whatson.db.LocationTable,whatson.model.Location,Seq] = whatson.db.LocationTable.location.withFilter[slick.lifted.Rep[Boolean]](((l: whatson.db.LocationTable) =&gt; slick.jdbc.PostgresProfile.api.columnExtensionMethods[Long](l.id)(slick.jdbc.PostgresProfile.api.longColumnType).===[Long, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[Long](id)(slick.jdbc.PostgresProfile.api.longColumnType).bind)(lifted.this.OptionMapper2.getOptionMapper2TT[Long, Long, Boolean](slick.jdbc.PostgresProfile.api.longColumnType))))(lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition).map[whatson.db.LocationTable, whatson.db.LocationTable, whatson.model.Location](((l: whatson.db.LocationTable) =&gt; l))(lifted.this.Shape.tableShape[slick.lifted.FlatShapeLevel, whatson.model.Location, whatson.db.LocationTable](scala.Predef.$conforms[whatson.db.LocationTable]));
   LocationController.this.db.run[Seq[whatson.model.detail.LocationDetail]](whatson.model.detail.LocationDetail.LocationDetailQuery(q).detailed(LocationController.this.context)).map[play.api.mvc.Result](((x: Seq[whatson.model.detail.LocationDetail]) =&gt; x.headOption match {
     case (value: whatson.model.detail.LocationDetail)Some[whatson.model.detail.LocationDetail]((r @ _)) =&gt; LocationController.this.Ok.apply[play.api.libs.json.JsValue](play.api.libs.json.Json.toJson[whatson.model.detail.LocationDetail](r)(whatson.model.detail.LocationDetail.locationDetailWrites))(http.this.Writeable.writeableOf_JsValue)
     case _ =&gt; LocationController.this.NotFound
@@ -878,9 +878,9 @@
           1205
         </td>
         <td>
-          1682
+          1683
           -
-          1682
+          1683
         </td>
         <td>
           Select
@@ -899,9 +899,9 @@
           1204
         </td>
         <td>
-          1683
+          1684
           -
-          1713
+          1714
         </td>
         <td>
           Literal
@@ -920,9 +920,9 @@
           1206
         </td>
         <td>
-          1673
+          1674
           -
-          1714
+          1715
         </td>
         <td>
           ApplyToImplicitArgs
@@ -941,9 +941,9 @@
           1214
         </td>
         <td>
-          1737
+          1738
           -
-          1737
+          1738
         </td>
         <td>
           Select
@@ -962,9 +962,9 @@
           1213
         </td>
         <td>
-          1749
+          1750
           -
-          1765
+          1766
         </td>
         <td>
           ApplyToImplicitArgs
@@ -973,7 +973,7 @@
           slick.lifted.ColumnExtensionMethods.===
         </td>
         <td style="background: #AEF1AE">
-          slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](l.id)(slick.jdbc.PostgresProfile.api.intColumnType).===[Int, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[Int](id)(slick.jdbc.PostgresProfile.api.intColumnType).bind)(lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType))
+          slick.jdbc.PostgresProfile.api.columnExtensionMethods[Long](l.id)(slick.jdbc.PostgresProfile.api.longColumnType).===[Long, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[Long](id)(slick.jdbc.PostgresProfile.api.longColumnType).bind)(lifted.this.OptionMapper2.getOptionMapper2TT[Long, Long, Boolean](slick.jdbc.PostgresProfile.api.longColumnType))
         </td>
       </tr><tr>
         <td>
@@ -983,9 +983,9 @@
           1207
         </td>
         <td>
-          1749
+          1750
           -
-          1753
+          1754
         </td>
         <td>
           Select
@@ -1004,9 +1004,9 @@
           1216
         </td>
         <td>
-          1734
+          1735
           -
-          1734
+          1735
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1025,9 +1025,9 @@
           1210
         </td>
         <td>
-          1758
+          1759
           -
-          1765
+          1766
         </td>
         <td>
           Select
@@ -1036,7 +1036,7 @@
           slick.lifted.LiteralColumn.bind
         </td>
         <td style="background: #AEF1AE">
-          slick.jdbc.PostgresProfile.api.valueToConstColumn[Int](id)(slick.jdbc.PostgresProfile.api.intColumnType).bind
+          slick.jdbc.PostgresProfile.api.valueToConstColumn[Long](id)(slick.jdbc.PostgresProfile.api.longColumnType).bind
         </td>
       </tr><tr>
         <td>
@@ -1046,18 +1046,18 @@
           1209
         </td>
         <td>
-          1758
+          1759
           -
-          1758
+          1759
         </td>
         <td>
           Select
         </td>
         <td>
-          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.longColumnType
         </td>
         <td style="background: #AEF1AE">
-          slick.jdbc.PostgresProfile.api.intColumnType
+          slick.jdbc.PostgresProfile.api.longColumnType
         </td>
       </tr><tr>
         <td>
@@ -1067,9 +1067,9 @@
           1212
         </td>
         <td>
-          1754
+          1755
           -
-          1754
+          1755
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1078,7 +1078,7 @@
           slick.lifted.OptionMapper2.getOptionMapper2TT
         </td>
         <td style="background: #AEF1AE">
-          lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType)
+          lifted.this.OptionMapper2.getOptionMapper2TT[Long, Long, Boolean](slick.jdbc.PostgresProfile.api.longColumnType)
         </td>
       </tr><tr>
         <td>
@@ -1088,9 +1088,9 @@
           1215
         </td>
         <td>
-          1734
+          1735
           -
-          1734
+          1735
         </td>
         <td>
           TypeApply
@@ -1109,18 +1109,18 @@
           1208
         </td>
         <td>
-          1751
+          1752
           -
-          1751
+          1752
         </td>
         <td>
           Select
         </td>
         <td>
-          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.longColumnType
         </td>
         <td style="background: #AEF1AE">
-          slick.jdbc.PostgresProfile.api.intColumnType
+          slick.jdbc.PostgresProfile.api.longColumnType
         </td>
       </tr><tr>
         <td>
@@ -1130,9 +1130,9 @@
           1217
         </td>
         <td>
-          1728
+          1729
           -
-          1774
+          1775
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1141,7 +1141,7 @@
           slick.lifted.Query.map
         </td>
         <td style="background: #AEF1AE">
-          whatson.db.LocationTable.location.withFilter[slick.lifted.Rep[Boolean]](((l: whatson.db.LocationTable) =&gt; slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](l.id)(slick.jdbc.PostgresProfile.api.intColumnType).===[Int, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[Int](id)(slick.jdbc.PostgresProfile.api.intColumnType).bind)(lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType))))(lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition).map[whatson.db.LocationTable, whatson.db.LocationTable, whatson.model.Location](((l: whatson.db.LocationTable) =&gt; l))(lifted.this.Shape.tableShape[slick.lifted.FlatShapeLevel, whatson.model.Location, whatson.db.LocationTable](scala.Predef.$conforms[whatson.db.LocationTable]))
+          whatson.db.LocationTable.location.withFilter[slick.lifted.Rep[Boolean]](((l: whatson.db.LocationTable) =&gt; slick.jdbc.PostgresProfile.api.columnExtensionMethods[Long](l.id)(slick.jdbc.PostgresProfile.api.longColumnType).===[Long, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[Long](id)(slick.jdbc.PostgresProfile.api.longColumnType).bind)(lifted.this.OptionMapper2.getOptionMapper2TT[Long, Long, Boolean](slick.jdbc.PostgresProfile.api.longColumnType))))(lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition).map[whatson.db.LocationTable, whatson.db.LocationTable, whatson.model.Location](((l: whatson.db.LocationTable) =&gt; l))(lifted.this.Shape.tableShape[slick.lifted.FlatShapeLevel, whatson.model.Location, whatson.db.LocationTable](scala.Predef.$conforms[whatson.db.LocationTable]))
         </td>
       </tr><tr>
         <td>
@@ -1151,18 +1151,18 @@
           1211
         </td>
         <td>
-          1754
+          1755
           -
-          1754
+          1755
         </td>
         <td>
           Select
         </td>
         <td>
-          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.longColumnType
         </td>
         <td style="background: #AEF1AE">
-          slick.jdbc.PostgresProfile.api.intColumnType
+          slick.jdbc.PostgresProfile.api.longColumnType
         </td>
       </tr><tr>
         <td>
@@ -1172,9 +1172,9 @@
           1219
         </td>
         <td>
-          1788
+          1789
           -
-          1798
+          1799
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1193,9 +1193,9 @@
           1218
         </td>
         <td>
-          1790
+          1791
           -
-          1790
+          1791
         </td>
         <td>
           Select
@@ -1214,9 +1214,9 @@
           1227
         </td>
         <td>
-          1781
+          1782
           -
-          1902
+          1903
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1238,9 +1238,9 @@
           1226
         </td>
         <td>
-          1803
+          1804
           -
-          1803
+          1804
         </td>
         <td>
           Select
@@ -1259,9 +1259,9 @@
           1220
         </td>
         <td>
-          1809
+          1810
           -
-          1821
+          1822
         </td>
         <td>
           Select
@@ -1280,9 +1280,9 @@
           1222
         </td>
         <td>
-          1855
+          1856
           -
-          1869
+          1870
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1301,9 +1301,9 @@
           1221
         </td>
         <td>
-          1866
+          1867
           -
-          1866
+          1867
         </td>
         <td>
           Select
@@ -1322,9 +1322,9 @@
           1224
         </td>
         <td>
-          1852
+          1853
           -
-          1870
+          1871
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1343,9 +1343,9 @@
           1223
         </td>
         <td>
-          1854
+          1855
           -
-          1854
+          1855
         </td>
         <td>
           Select
@@ -1364,9 +1364,9 @@
           1225
         </td>
         <td>
-          1887
+          1888
           -
-          1895
+          1896
         </td>
         <td>
           Select
@@ -1385,9 +1385,9 @@
           1291
         </td>
         <td>
-          1935
+          1937
           -
-          2506
+          2508
         </td>
         <td>
           Apply
@@ -1398,7 +1398,7 @@
         <td style="background: #AEF1AE">
           LocationController.this.Action.async(((implicit request: play.api.mvc.Request[play.api.mvc.AnyContent]) =&gt; {
   LocationController.this.log.debug(&quot;Rest request to get location close to another location&quot;)(api.this.MarkerContext.NoMarker);
-  val q: slick.lifted.Query[whatson.db.LocationTable,whatson.model.Location,Seq] = whatson.db.LocationTable.location.withFilter[slick.lifted.Rep[Boolean]](((l: whatson.db.LocationTable) =&gt; slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](l.id)(slick.jdbc.PostgresProfile.api.intColumnType).===[Int, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[Int](id)(slick.jdbc.PostgresProfile.api.intColumnType).bind)(lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType))))(lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition).map[whatson.db.LocationTable, whatson.db.LocationTable, whatson.model.Location](((l: whatson.db.LocationTable) =&gt; l))(lifted.this.Shape.tableShape[slick.lifted.FlatShapeLevel, whatson.model.Location, whatson.db.LocationTable](scala.Predef.$conforms[whatson.db.LocationTable]));
+  val q: slick.lifted.Query[whatson.db.LocationTable,whatson.model.Location,Seq] = whatson.db.LocationTable.location.withFilter[slick.lifted.Rep[Boolean]](((l: whatson.db.LocationTable) =&gt; slick.jdbc.PostgresProfile.api.columnExtensionMethods[Long](l.id)(slick.jdbc.PostgresProfile.api.longColumnType).===[Long, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[Long](id)(slick.jdbc.PostgresProfile.api.longColumnType).bind)(lifted.this.OptionMapper2.getOptionMapper2TT[Long, Long, Boolean](slick.jdbc.PostgresProfile.api.longColumnType))))(lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition).map[whatson.db.LocationTable, whatson.db.LocationTable, whatson.model.Location](((l: whatson.db.LocationTable) =&gt; l))(lifted.this.Shape.tableShape[slick.lifted.FlatShapeLevel, whatson.model.Location, whatson.db.LocationTable](scala.Predef.$conforms[whatson.db.LocationTable]));
   LocationController.this.db.run[Seq[whatson.model.detail.LocationDetail]](whatson.model.detail.LocationDetail.LocationDetailQuery(q).detailed(LocationController.this.context)).map[Option[whatson.model.detail.LocationDetail]](((x$1: Seq[whatson.model.detail.LocationDetail]) =&gt; x$1.headOption))(LocationController.this.context).flatMap[play.api.mvc.Result](((x0$1: Option[whatson.model.detail.LocationDetail]) =&gt; x0$1 match {
     case (value: whatson.model.detail.LocationDetail)Some[whatson.model.detail.LocationDetail]((r @ _)) =&gt; {
       val q: slick.lifted.Query[whatson.db.LocationTable,whatson.db.LocationTable#TableElementType,Seq] = whatson.db.LocationTable.location.sortBy[slick.lifted.Rep[Float]](((y: whatson.db.LocationTable) =&gt; whatson.db.Util.geoDistance(slick.jdbc.PostgresProfile.api.valueToConstColumn[Float](r.latitude.getOrElse[Float](0.0))(slick.jdbc.PostgresProfile.api.floatColumnType).bind, slick.jdbc.PostgresProfile.api.valueToConstColumn[Float](r.longitude.getOrElse[Float](0.0))(slick.jdbc.PostgresProfile.api.floatColumnType).bind, slick.jdbc.PostgresProfile.api.anyOptionExtensionMethods[Float, slick.lifted.Rep[Float]](y.latitude)(lifted.this.OptionLift.repOptionLift[slick.lifted.Rep[Float], Float](lifted.this.Shape.repColumnShape[Float, Nothing](slick.jdbc.PostgresProfile.api.floatColumnType))).getOrElse[Float, slick.lifted.ConstColumn[Float]](0.0)(lifted.this.Shape.primitiveShape[Float, slick.lifted.FlatShapeLevel](slick.jdbc.PostgresProfile.api.floatColumnType), lifted.this.OptionLift.repOptionLift[slick.lifted.ConstColumn[Float], Float](lifted.this.Shape.repColumnShape[Float, Nothing](slick.jdbc.PostgresProfile.api.floatColumnType))), slick.jdbc.PostgresProfile.api.anyOptionExtensionMethods[Float, slick.lifted.Rep[Float]](y.longitude)(lifted.this.OptionLift.repOptionLift[slick.lifted.Rep[Float], Float](lifted.this.Shape.repColumnShape[Float, Nothing](slick.jdbc.PostgresProfile.api.floatColumnType))).getOrElse[Float, slick.lifted.ConstColumn[Float]](0.0)(lifted.this.Shape.primitiveShape[Float, slick.lifted.FlatShapeLevel](slick.jdbc.PostgresProfile.api.floatColumnType), lifted.this.OptionLift.repOptionLift[slick.lifted.ConstColumn[Float], Float](lifted.this.Shape.repColumnShape[Float, Nothing](slick.jdbc.PostgresProfile.api.floatColumnType))))))({
@@ -1419,9 +1419,9 @@
           1231
         </td>
         <td>
-          1995
+          1997
           -
-          2062
+          2064
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1440,9 +1440,9 @@
           1230
         </td>
         <td>
-          2004
+          2006
           -
-          2004
+          2006
         </td>
         <td>
           Select
@@ -1461,9 +1461,9 @@
           1229
         </td>
         <td>
-          2005
+          2007
           -
-          2061
+          2063
         </td>
         <td>
           Literal
@@ -1482,9 +1482,9 @@
           1237
         </td>
         <td>
-          2102
+          2104
           -
-          2102
+          2104
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1493,7 +1493,7 @@
           slick.lifted.OptionMapper2.getOptionMapper2TT
         </td>
         <td style="background: #AEF1AE">
-          lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType)
+          lifted.this.OptionMapper2.getOptionMapper2TT[Long, Long, Boolean](slick.jdbc.PostgresProfile.api.longColumnType)
         </td>
       </tr><tr>
         <td>
@@ -1503,9 +1503,9 @@
           1240
         </td>
         <td>
-          2082
+          2084
           -
-          2082
+          2084
         </td>
         <td>
           TypeApply
@@ -1524,18 +1524,18 @@
           1234
         </td>
         <td>
-          2106
+          2108
           -
-          2106
+          2108
         </td>
         <td>
           Select
         </td>
         <td>
-          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.longColumnType
         </td>
         <td style="background: #AEF1AE">
-          slick.jdbc.PostgresProfile.api.intColumnType
+          slick.jdbc.PostgresProfile.api.longColumnType
         </td>
       </tr><tr>
         <td>
@@ -1545,18 +1545,18 @@
           1236
         </td>
         <td>
-          2102
+          2104
           -
-          2102
+          2104
         </td>
         <td>
           Select
         </td>
         <td>
-          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.longColumnType
         </td>
         <td style="background: #AEF1AE">
-          slick.jdbc.PostgresProfile.api.intColumnType
+          slick.jdbc.PostgresProfile.api.longColumnType
         </td>
       </tr><tr>
         <td>
@@ -1566,9 +1566,9 @@
           1239
         </td>
         <td>
-          2085
+          2087
           -
-          2085
+          2087
         </td>
         <td>
           Select
@@ -1587,9 +1587,9 @@
           1242
         </td>
         <td>
-          2076
+          2078
           -
-          2122
+          2124
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1598,7 +1598,7 @@
           slick.lifted.Query.map
         </td>
         <td style="background: #AEF1AE">
-          whatson.db.LocationTable.location.withFilter[slick.lifted.Rep[Boolean]](((l: whatson.db.LocationTable) =&gt; slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](l.id)(slick.jdbc.PostgresProfile.api.intColumnType).===[Int, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[Int](id)(slick.jdbc.PostgresProfile.api.intColumnType).bind)(lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType))))(lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition).map[whatson.db.LocationTable, whatson.db.LocationTable, whatson.model.Location](((l: whatson.db.LocationTable) =&gt; l))(lifted.this.Shape.tableShape[slick.lifted.FlatShapeLevel, whatson.model.Location, whatson.db.LocationTable](scala.Predef.$conforms[whatson.db.LocationTable]))
+          whatson.db.LocationTable.location.withFilter[slick.lifted.Rep[Boolean]](((l: whatson.db.LocationTable) =&gt; slick.jdbc.PostgresProfile.api.columnExtensionMethods[Long](l.id)(slick.jdbc.PostgresProfile.api.longColumnType).===[Long, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[Long](id)(slick.jdbc.PostgresProfile.api.longColumnType).bind)(lifted.this.OptionMapper2.getOptionMapper2TT[Long, Long, Boolean](slick.jdbc.PostgresProfile.api.longColumnType))))(lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition).map[whatson.db.LocationTable, whatson.db.LocationTable, whatson.model.Location](((l: whatson.db.LocationTable) =&gt; l))(lifted.this.Shape.tableShape[slick.lifted.FlatShapeLevel, whatson.model.Location, whatson.db.LocationTable](scala.Predef.$conforms[whatson.db.LocationTable]))
         </td>
       </tr><tr>
         <td>
@@ -1608,18 +1608,18 @@
           1233
         </td>
         <td>
-          2099
+          2101
           -
-          2099
+          2101
         </td>
         <td>
           Select
         </td>
         <td>
-          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.longColumnType
         </td>
         <td style="background: #AEF1AE">
-          slick.jdbc.PostgresProfile.api.intColumnType
+          slick.jdbc.PostgresProfile.api.longColumnType
         </td>
       </tr><tr>
         <td>
@@ -1629,9 +1629,9 @@
           1241
         </td>
         <td>
-          2082
+          2084
           -
-          2082
+          2084
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1650,9 +1650,9 @@
           1232
         </td>
         <td>
-          2097
+          2099
           -
-          2101
+          2103
         </td>
         <td>
           Select
@@ -1671,9 +1671,9 @@
           1235
         </td>
         <td>
-          2106
+          2108
           -
-          2113
+          2115
         </td>
         <td>
           Select
@@ -1682,7 +1682,7 @@
           slick.lifted.LiteralColumn.bind
         </td>
         <td style="background: #AEF1AE">
-          slick.jdbc.PostgresProfile.api.valueToConstColumn[Int](id)(slick.jdbc.PostgresProfile.api.intColumnType).bind
+          slick.jdbc.PostgresProfile.api.valueToConstColumn[Long](id)(slick.jdbc.PostgresProfile.api.longColumnType).bind
         </td>
       </tr><tr>
         <td>
@@ -1692,9 +1692,9 @@
           1238
         </td>
         <td>
-          2097
+          2099
           -
-          2113
+          2115
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1703,7 +1703,7 @@
           slick.lifted.ColumnExtensionMethods.===
         </td>
         <td style="background: #AEF1AE">
-          slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](l.id)(slick.jdbc.PostgresProfile.api.intColumnType).===[Int, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[Int](id)(slick.jdbc.PostgresProfile.api.intColumnType).bind)(lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType))
+          slick.jdbc.PostgresProfile.api.columnExtensionMethods[Long](l.id)(slick.jdbc.PostgresProfile.api.longColumnType).===[Long, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[Long](id)(slick.jdbc.PostgresProfile.api.longColumnType).bind)(lifted.this.OptionMapper2.getOptionMapper2TT[Long, Long, Boolean](slick.jdbc.PostgresProfile.api.longColumnType))
         </td>
       </tr><tr>
         <td>
@@ -1713,9 +1713,9 @@
           1246
         </td>
         <td>
-          2151
+          2153
           -
-          2151
+          2153
         </td>
         <td>
           Select
@@ -1734,9 +1734,9 @@
           1243
         </td>
         <td>
-          2138
+          2140
           -
-          2138
+          2140
         </td>
         <td>
           Select
@@ -1755,9 +1755,9 @@
           1245
         </td>
         <td>
-          2152
+          2154
           -
-          2164
+          2166
         </td>
         <td>
           Select
@@ -1776,9 +1776,9 @@
           1290
         </td>
         <td>
-          2129
+          2131
           -
-          2502
+          2504
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1806,9 +1806,9 @@
           1289
         </td>
         <td>
-          2174
+          2176
           -
-          2174
+          2176
         </td>
         <td>
           Select
@@ -1827,9 +1827,9 @@
           1244
         </td>
         <td>
-          2136
+          2138
           -
-          2146
+          2148
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1848,9 +1848,9 @@
           1276
         </td>
         <td>
-          2231
+          2233
           -
-          2231
+          2233
         </td>
         <td>
           Select
@@ -1869,9 +1869,9 @@
           1249
         </td>
         <td>
-          2249
+          2251
           -
-          2280
+          2282
         </td>
         <td>
           Select
@@ -1890,9 +1890,9 @@
           1252
         </td>
         <td>
-          2282
+          2284
           -
-          2314
+          2316
         </td>
         <td>
           Select
@@ -1911,9 +1911,9 @@
           1278
         </td>
         <td>
-          2216
+          2218
           -
-          2386
+          2388
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1934,9 +1934,9 @@
           1275
         </td>
         <td>
-          2237
+          2239
           -
-          2385
+          2387
         </td>
         <td>
           Apply
@@ -1955,9 +1955,9 @@
           1248
         </td>
         <td>
-          2269
+          2271
           -
-          2269
+          2271
         </td>
         <td>
           Select
@@ -1976,9 +1976,9 @@
           1251
         </td>
         <td>
-          2303
+          2305
           -
-          2303
+          2305
         </td>
         <td>
           Select
@@ -1997,9 +1997,9 @@
           1250
         </td>
         <td>
-          2282
+          2284
           -
-          2309
+          2311
         </td>
         <td>
           Apply
@@ -2018,9 +2018,9 @@
           1277
         </td>
         <td>
-          2231
+          2233
           -
-          2231
+          2233
         </td>
         <td>
           ApplyToImplicitArgs
@@ -2039,9 +2039,9 @@
           1247
         </td>
         <td>
-          2249
+          2251
           -
-          2275
+          2277
         </td>
         <td>
           Apply
@@ -2060,9 +2060,9 @@
           1255
         </td>
         <td>
-          2331
+          2333
           -
-          2331
+          2333
         </td>
         <td>
           ApplyToImplicitArgs
@@ -2081,9 +2081,9 @@
           1273
         </td>
         <td>
-          2378
+          2380
           -
-          2378
+          2380
         </td>
         <td>
           ApplyToImplicitArgs
@@ -2102,9 +2102,9 @@
           1264
         </td>
         <td>
-          2357
+          2359
           -
-          2368
+          2370
         </td>
         <td>
           Select
@@ -2123,9 +2123,9 @@
           1267
         </td>
         <td>
-          2359
+          2361
           -
-          2359
+          2361
         </td>
         <td>
           ApplyToImplicitArgs
@@ -2144,9 +2144,9 @@
           1258
         </td>
         <td>
-          2349
+          2351
           -
-          2349
+          2351
         </td>
         <td>
           Select
@@ -2165,9 +2165,9 @@
           1270
         </td>
         <td>
-          2378
+          2380
           -
-          2378
+          2380
         </td>
         <td>
           ApplyToImplicitArgs
@@ -2186,9 +2186,9 @@
           1261
         </td>
         <td>
-          2349
+          2351
           -
-          2349
+          2351
         </td>
         <td>
           ApplyToImplicitArgs
@@ -2207,9 +2207,9 @@
           1260
         </td>
         <td>
-          2349
+          2351
           -
-          2349
+          2351
         </td>
         <td>
           Select
@@ -2228,9 +2228,9 @@
           1269
         </td>
         <td>
-          2378
+          2380
           -
-          2378
+          2380
         </td>
         <td>
           Select
@@ -2249,9 +2249,9 @@
           1263
         </td>
         <td>
-          2329
+          2331
           -
-          2355
+          2357
         </td>
         <td>
           ApplyToImplicitArgs
@@ -2270,9 +2270,9 @@
           1272
         </td>
         <td>
-          2378
+          2380
           -
-          2378
+          2380
         </td>
         <td>
           ApplyToImplicitArgs
@@ -2291,9 +2291,9 @@
           1254
         </td>
         <td>
-          2331
+          2333
           -
-          2331
+          2333
         </td>
         <td>
           Select
@@ -2312,9 +2312,9 @@
           1257
         </td>
         <td>
-          2350
+          2352
           -
-          2354
+          2356
         </td>
         <td>
           Literal
@@ -2333,9 +2333,9 @@
           1266
         </td>
         <td>
-          2359
+          2361
           -
-          2359
+          2361
         </td>
         <td>
           ApplyToImplicitArgs
@@ -2354,9 +2354,9 @@
           1268
         </td>
         <td>
-          2379
+          2381
           -
-          2383
+          2385
         </td>
         <td>
           Literal
@@ -2375,9 +2375,9 @@
           1259
         </td>
         <td>
-          2349
+          2351
           -
-          2349
+          2351
         </td>
         <td>
           ApplyToImplicitArgs
@@ -2396,9 +2396,9 @@
           1262
         </td>
         <td>
-          2349
+          2351
           -
-          2349
+          2351
         </td>
         <td>
           ApplyToImplicitArgs
@@ -2417,9 +2417,9 @@
           1271
         </td>
         <td>
-          2378
+          2380
           -
-          2378
+          2380
         </td>
         <td>
           Select
@@ -2438,9 +2438,9 @@
           1253
         </td>
         <td>
-          2329
+          2331
           -
-          2339
+          2341
         </td>
         <td>
           Select
@@ -2459,9 +2459,9 @@
           1274
         </td>
         <td>
-          2357
+          2359
           -
-          2384
+          2386
         </td>
         <td>
           ApplyToImplicitArgs
@@ -2480,9 +2480,9 @@
           1256
         </td>
         <td>
-          2331
+          2333
           -
-          2331
+          2333
         </td>
         <td>
           ApplyToImplicitArgs
@@ -2501,9 +2501,9 @@
           1265
         </td>
         <td>
-          2359
+          2361
           -
-          2359
+          2361
         </td>
         <td>
           Select
@@ -2522,9 +2522,9 @@
           1279
         </td>
         <td>
-          2403
+          2405
           -
-          2415
+          2417
         </td>
         <td>
           ApplyToImplicitArgs
@@ -2543,9 +2543,9 @@
           1281
         </td>
         <td>
-          2403
+          2405
           -
-          2424
+          2426
         </td>
         <td>
           ApplyToImplicitArgs
@@ -2564,9 +2564,9 @@
           1280
         </td>
         <td>
-          2416
+          2418
           -
-          2416
+          2418
         </td>
         <td>
           Select
@@ -2585,9 +2585,9 @@
           1282
         </td>
         <td>
-          2449
-          -
           2451
+          -
+          2453
         </td>
         <td>
           Select
@@ -2606,9 +2606,9 @@
           1285
         </td>
         <td>
-          2433
+          2435
           -
-          2452
+          2454
         </td>
         <td>
           ApplyToImplicitArgs
@@ -2627,9 +2627,9 @@
           1284
         </td>
         <td>
-          2444
+          2446
           -
-          2444
+          2446
         </td>
         <td>
           Select
@@ -2648,9 +2648,9 @@
           1283
         </td>
         <td>
-          2444
+          2446
           -
-          2444
+          2446
         </td>
         <td>
           Select
@@ -2669,9 +2669,9 @@
           1288
         </td>
         <td>
-          2480
+          2482
           -
-          2496
+          2498
         </td>
         <td>
           ApplyToImplicitArgs
@@ -2690,9 +2690,9 @@
           1287
         </td>
         <td>
-          2486
+          2488
           -
-          2486
+          2488
         </td>
         <td>
           Select
@@ -2711,9 +2711,9 @@
           1286
         </td>
         <td>
-          2487
+          2489
           -
-          2495
+          2497
         </td>
         <td>
           Select
@@ -2732,9 +2732,9 @@
           1292
         </td>
         <td>
-          2564
+          2566
           -
-          2574
+          2576
         </td>
         <td>
           Select
@@ -2753,9 +2753,9 @@
           1310
         </td>
         <td>
-          2533
+          2535
           -
-          2965
+          2967
         </td>
         <td>
           Apply
@@ -2780,9 +2780,9 @@
           1309
         </td>
         <td>
-          2602
+          2604
           -
-          2961
+          2963
         </td>
         <td>
           Apply
@@ -2807,9 +2807,9 @@
           1297
         </td>
         <td>
-          2695
+          2697
           -
-          2731
+          2733
         </td>
         <td>
           ApplyToImplicitArgs
@@ -2828,9 +2828,9 @@
           1294
         </td>
         <td>
-          2717
+          2719
           -
-          2717
+          2719
         </td>
         <td>
           Select
@@ -2849,9 +2849,9 @@
           1296
         </td>
         <td>
-          2705
+          2707
           -
-          2705
+          2707
         </td>
         <td>
           Select
@@ -2870,9 +2870,9 @@
           1293
         </td>
         <td>
-          2718
+          2720
           -
-          2729
+          2731
         </td>
         <td>
           Select
@@ -2891,9 +2891,9 @@
           1295
         </td>
         <td>
-          2706
+          2708
           -
-          2730
+          2732
         </td>
         <td>
           ApplyToImplicitArgs
@@ -2912,9 +2912,9 @@
           1298
         </td>
         <td>
-          2677
+          2679
           -
-          2732
+          2734
         </td>
         <td>
           Apply
@@ -2933,9 +2933,9 @@
           1300
         </td>
         <td>
-          2775
+          2777
           -
-          2775
+          2777
         </td>
         <td>
           Select
@@ -2954,9 +2954,9 @@
           1299
         </td>
         <td>
-          2776
+          2778
           -
-          2809
+          2811
         </td>
         <td>
           Literal
@@ -2975,9 +2975,9 @@
           1301
         </td>
         <td>
-          2766
+          2768
           -
-          2810
+          2812
         </td>
         <td>
           ApplyToImplicitArgs
@@ -2996,9 +2996,9 @@
           1308
         </td>
         <td>
-          2820
+          2822
           -
-          2952
+          2954
         </td>
         <td>
           ApplyToImplicitArgs
@@ -3020,9 +3020,9 @@
           1307
         </td>
         <td>
-          2858
+          2860
           -
-          2858
+          2860
         </td>
         <td>
           Select
@@ -3041,9 +3041,9 @@
           1303
         </td>
         <td>
-          2891
+          2893
           -
-          2907
+          2909
         </td>
         <td>
           ApplyToImplicitArgs
@@ -3062,9 +3062,9 @@
           1305
         </td>
         <td>
-          2888
+          2890
           -
-          2908
+          2910
         </td>
         <td>
           ApplyToImplicitArgs
@@ -3083,9 +3083,9 @@
           1302
         </td>
         <td>
-          2902
+          2904
           -
-          2902
+          2904
         </td>
         <td>
           Select
@@ -3104,9 +3104,9 @@
           1304
         </td>
         <td>
-          2890
+          2892
           -
-          2890
+          2892
         </td>
         <td>
           Select
@@ -3125,9 +3125,9 @@
           1306
         </td>
         <td>
-          2932
+          2934
           -
-          2942
+          2944
         </td>
         <td>
           Select

@@ -114,7 +114,7 @@
 </span>90 <span style=''></span><span style='background: #AEF1AE'>    log.debug(&quot;Rest request to get events participating in&quot;)
 </span>91 <span style=''></span><span style='background: #AEF1AE'>
 </span>92 <span style=''></span><span style='background: #AEF1AE'>    implicit val r = request
-</span>93 <span style=''></span><span style='background: #AEF1AE'>    val q = UserTable.user.filter(_.id === user.id.getOrElse(-1)).flatMap(_.events)
+</span>93 <span style=''></span><span style='background: #AEF1AE'>    val q = UserTable.user.filter(_.id === user.id.getOrElse(-1l)).flatMap(_.events)
 </span>94 <span style=''></span><span style='background: #AEF1AE'>    val s = q.queryPaged(request).detailed
 </span>95 <span style=''></span><span style='background: #AEF1AE'>
 </span>96 <span style=''></span><span style='background: #AEF1AE'>    returnPaged(s,q,db)
@@ -1581,7 +1581,7 @@
         <td>
           3302
           -
-          3600
+          3601
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1594,7 +1594,7 @@
   case (_1: com.mohiva.play.silhouette.api.actions.SecuredRequest[whatson.auth.AuthEnv,play.api.mvc.AnyContent], _2: whatson.model.User)(com.mohiva.play.silhouette.api.actions.SecuredRequest[whatson.auth.AuthEnv,play.api.mvc.AnyContent], whatson.model.User)((request @ _), (user @ _)) =&gt; {
     UserController.this.log.debug(&quot;Rest request to get events participating in&quot;)(api.this.MarkerContext.NoMarker);
     implicit val r: com.mohiva.play.silhouette.api.actions.SecuredRequest[whatson.auth.AuthEnv,play.api.mvc.AnyContent] = request;
-    val q: slick.lifted.Query[whatson.db.EventTable,whatson.model.Event,Seq] = whatson.db.UserTable.user.filter[slick.lifted.Rep[Boolean]](((x$1: whatson.db.UserTable) =&gt; slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](x$1.id)(slick.jdbc.PostgresProfile.api.intColumnType).===[Int, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[Int](user.id.getOrElse[Int](-1))(slick.jdbc.PostgresProfile.api.intColumnType))(lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType))))(lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition).flatMap[whatson.db.EventTable, whatson.model.Event, Seq](((x$2: whatson.db.UserTable) =&gt; x$2.events));
+    val q: slick.lifted.Query[whatson.db.EventTable,whatson.model.Event,Seq] = whatson.db.UserTable.user.filter[slick.lifted.Rep[Boolean]](((x$1: whatson.db.UserTable) =&gt; slick.jdbc.PostgresProfile.api.columnExtensionMethods[Long](x$1.id)(slick.jdbc.PostgresProfile.api.longColumnType).===[Long, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[Long](user.id.getOrElse[Long](-1L))(slick.jdbc.PostgresProfile.api.longColumnType))(lifted.this.OptionMapper2.getOptionMapper2TT[Long, Long, Boolean](slick.jdbc.PostgresProfile.api.longColumnType))))(lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition).flatMap[whatson.db.EventTable, whatson.model.Event, Seq](((x$2: whatson.db.UserTable) =&gt; x$2.events));
     val s: slick.dbio.DBIOAction[Seq[whatson.model.detail.EventDetail],slick.dbio.NoStream,slick.dbio.Effect.Read with slick.dbio.Effect.Read with slick.dbio.Effect.Read with slick.dbio.Effect.Read] = whatson.model.detail.EventDetail.EventDetailQuery(whatson.db.Util.QueryUtils[whatson.db.EventTable, whatson.model.Event](q).queryPaged[play.api.mvc.AnyContent, Nothing, Nothing](request)).detailed(play.api.libs.concurrent.Execution.Implicits.defaultContext);
     whatson.db.Util.returnPaged[whatson.model.detail.EventDetail, whatson.db.EventTable, whatson.model.Event](s, q, UserController.this.db)(r, play.api.libs.concurrent.Execution.Implicits.defaultContext, whatson.model.detail.EventDetail.eventDetailWrites)
   }
@@ -1673,7 +1673,7 @@
         <td>
           3488
           -
-          3509
+          3510
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1682,7 +1682,7 @@
           slick.relational.RelationalProfile.API.valueToConstColumn
         </td>
         <td style="background: #AEF1AE">
-          slick.jdbc.PostgresProfile.api.valueToConstColumn[Int](user.id.getOrElse[Int](-1))(slick.jdbc.PostgresProfile.api.intColumnType)
+          slick.jdbc.PostgresProfile.api.valueToConstColumn[Long](user.id.getOrElse[Long](-1L))(slick.jdbc.PostgresProfile.api.longColumnType)
         </td>
       </tr><tr>
         <td>
@@ -1694,7 +1694,7 @@
         <td>
           3479
           -
-          3509
+          3510
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1703,7 +1703,7 @@
           slick.lifted.ColumnExtensionMethods.===
         </td>
         <td style="background: #AEF1AE">
-          slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](x$1.id)(slick.jdbc.PostgresProfile.api.intColumnType).===[Int, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[Int](user.id.getOrElse[Int](-1))(slick.jdbc.PostgresProfile.api.intColumnType))(lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType))
+          slick.jdbc.PostgresProfile.api.columnExtensionMethods[Long](x$1.id)(slick.jdbc.PostgresProfile.api.longColumnType).===[Long, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[Long](user.id.getOrElse[Long](-1L))(slick.jdbc.PostgresProfile.api.longColumnType))(lifted.this.OptionMapper2.getOptionMapper2TT[Long, Long, Boolean](slick.jdbc.PostgresProfile.api.longColumnType))
         </td>
       </tr><tr>
         <td>
@@ -1724,7 +1724,7 @@
           slick.lifted.OptionMapper2.getOptionMapper2TT
         </td>
         <td style="background: #AEF1AE">
-          lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType)
+          lifted.this.OptionMapper2.getOptionMapper2TT[Long, Long, Boolean](slick.jdbc.PostgresProfile.api.longColumnType)
         </td>
       </tr><tr>
         <td>
@@ -1755,9 +1755,9 @@
           1766
         </td>
         <td>
-          3519
+          3520
           -
-          3527
+          3528
         </td>
         <td>
           Select
@@ -1784,10 +1784,10 @@
           Select
         </td>
         <td>
-          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.longColumnType
         </td>
         <td style="background: #AEF1AE">
-          slick.jdbc.PostgresProfile.api.intColumnType
+          slick.jdbc.PostgresProfile.api.longColumnType
         </td>
       </tr><tr>
         <td>
@@ -1805,10 +1805,10 @@
           Select
         </td>
         <td>
-          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.longColumnType
         </td>
         <td style="background: #AEF1AE">
-          slick.jdbc.PostgresProfile.api.intColumnType
+          slick.jdbc.PostgresProfile.api.longColumnType
         </td>
       </tr><tr>
         <td>
@@ -1841,7 +1841,7 @@
         <td>
           3488
           -
-          3509
+          3510
         </td>
         <td>
           Apply
@@ -1850,7 +1850,7 @@
           scala.Option.getOrElse
         </td>
         <td style="background: #AEF1AE">
-          user.id.getOrElse[Int](-1)
+          user.id.getOrElse[Long](-1L)
         </td>
       </tr><tr>
         <td>
@@ -1868,10 +1868,10 @@
           Select
         </td>
         <td>
-          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.intColumnType
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.longColumnType
         </td>
         <td style="background: #AEF1AE">
-          slick.jdbc.PostgresProfile.api.intColumnType
+          slick.jdbc.PostgresProfile.api.longColumnType
         </td>
       </tr><tr>
         <td>
@@ -1883,7 +1883,7 @@
         <td>
           3457
           -
-          3528
+          3529
         </td>
         <td>
           Apply
@@ -1892,7 +1892,7 @@
           slick.lifted.Query.flatMap
         </td>
         <td style="background: #AEF1AE">
-          whatson.db.UserTable.user.filter[slick.lifted.Rep[Boolean]](((x$1: whatson.db.UserTable) =&gt; slick.jdbc.PostgresProfile.api.columnExtensionMethods[Int](x$1.id)(slick.jdbc.PostgresProfile.api.intColumnType).===[Int, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[Int](user.id.getOrElse[Int](-1))(slick.jdbc.PostgresProfile.api.intColumnType))(lifted.this.OptionMapper2.getOptionMapper2TT[Int, Int, Boolean](slick.jdbc.PostgresProfile.api.intColumnType))))(lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition).flatMap[whatson.db.EventTable, whatson.model.Event, Seq](((x$2: whatson.db.UserTable) =&gt; x$2.events))
+          whatson.db.UserTable.user.filter[slick.lifted.Rep[Boolean]](((x$1: whatson.db.UserTable) =&gt; slick.jdbc.PostgresProfile.api.columnExtensionMethods[Long](x$1.id)(slick.jdbc.PostgresProfile.api.longColumnType).===[Long, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[Long](user.id.getOrElse[Long](-1L))(slick.jdbc.PostgresProfile.api.longColumnType))(lifted.this.OptionMapper2.getOptionMapper2TT[Long, Long, Boolean](slick.jdbc.PostgresProfile.api.longColumnType))))(lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition).flatMap[whatson.db.EventTable, whatson.model.Event, Seq](((x$2: whatson.db.UserTable) =&gt; x$2.events))
         </td>
       </tr><tr>
         <td>
@@ -1902,9 +1902,9 @@
           1770
         </td>
         <td>
-          3541
+          3542
           -
-          3571
+          3572
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1923,9 +1923,9 @@
           1769
         </td>
         <td>
-          3563
+          3564
           -
-          3563
+          3564
         </td>
         <td>
           Select
@@ -1944,9 +1944,9 @@
           1768
         </td>
         <td>
-          3541
+          3542
           -
-          3562
+          3563
         </td>
         <td>
           Apply
@@ -1965,9 +1965,9 @@
           1773
         </td>
         <td>
-          3588
+          3589
           -
-          3588
+          3589
         </td>
         <td>
           Select
@@ -1986,9 +1986,9 @@
           1772
         </td>
         <td>
-          3588
+          3589
           -
-          3588
+          3589
         </td>
         <td>
           Select
@@ -2007,9 +2007,9 @@
           1771
         </td>
         <td>
-          3593
+          3594
           -
-          3595
+          3596
         </td>
         <td>
           Select
@@ -2028,9 +2028,9 @@
           1774
         </td>
         <td>
-          3577
+          3578
           -
-          3596
+          3597
         </td>
         <td>
           ApplyToImplicitArgs
