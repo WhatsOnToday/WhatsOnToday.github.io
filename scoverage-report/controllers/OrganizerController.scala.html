@@ -98,7 +98,7 @@
 </span>74 <span style=''></span><span style='background: #AEF1AE'>    returnPaged(s,q,db)
 </span>75 <span style=''></span><span style='background: #AEF1AE'>  }</span><span style=''>
 </span>76 <span style=''>
-</span>77 <span style=''>  def getLoggedInEvents(search: Option[String]) = </span><span style='background: #F0ADAD'>organizerRequest(parse.default) { case (request,organizer) =&gt;
+</span>77 <span style=''>  def getLoggedInEvents(search: Option[String], category: Option[Long]) = </span><span style='background: #F0ADAD'>organizerRequest(parse.default) { case (request,organizer) =&gt;
 </span>78 <span style=''></span><span style='background: #F0ADAD'>    log.debug(&quot;Rest request to get events of currently logged in organizer&quot;)
 </span>79 <span style=''></span><span style='background: #F0ADAD'>
 </span>80 <span style=''></span><span style='background: #F0ADAD'>    implicit val r = request
@@ -106,47 +106,48 @@
 </span>82 <span style=''></span><span style='background: #F0ADAD'>    val q = for {
 </span>83 <span style=''></span><span style='background: #F0ADAD'>      e &lt;- EventTable.event if e.creatorId === organizer.id.getOrElse(-1l)
 </span>84 <span style=''></span><span style='background: #F0ADAD'>                            if upper(e.name) like upper(search.map(y =&gt; &quot;%&quot;++y++&quot;%&quot;).getOrElse(&quot;%%&quot;).bind)
-</span>85 <span style=''></span><span style='background: #F0ADAD'>    } yield e
-</span>86 <span style=''></span><span style='background: #F0ADAD'>
-</span>87 <span style=''></span><span style='background: #F0ADAD'>    val s = q.queryPaged.detailed
-</span>88 <span style=''></span><span style='background: #F0ADAD'>    returnPaged(s,q,db)
-</span>89 <span style=''></span><span style='background: #F0ADAD'>  }</span><span style=''>
-</span>90 <span style=''>
-</span>91 <span style=''>  /**
-</span>92 <span style=''>   * Handles the submitted JSON data.
-</span>93 <span style=''>   *
-</span>94 <span style=''>   * @return The result to display.
-</span>95 <span style=''>   */
-</span>96 <span style=''>  def signUp = </span><span style='background: #AEF1AE'>organizerRequest(parse.json) { case (request,organizer) =&gt;
-</span>97 <span style=''></span><span style='background: #AEF1AE'>    implicit val req = request
-</span>98 <span style=''></span><span style='background: #AEF1AE'>    OrganizerSignUpForm.form.bindFromRequest.fold(
-</span>99 <span style=''></span><span style='background: #AEF1AE'>      form =&gt; {
-</span>100 <span style=''></span><span style='background: #AEF1AE'>        Future.successful(BadRequest(Json.toJson(form.errors)))
-</span>101 <span style=''></span><span style='background: #AEF1AE'>      }, { data =&gt;
-</span>102 <span style=''></span><span style='background: #AEF1AE'>      val loginInfo = LoginInfo(CredentialsProvider.ID, data.email)
-</span>103 <span style=''></span><span style='background: #AEF1AE'>      loginService.retrieveAll(loginInfo).flatMap {
-</span>104 <span style=''></span><span style='background: #AEF1AE'>        case Some(login) =&gt;
-</span>105 <span style=''></span><span style='background: #AEF1AE'>          Future.successful(BadRequest(Json.obj(&quot;message&quot; -&gt; &quot;user.exists&quot;)))
-</span>106 <span style=''></span><span style='background: #AEF1AE'>        case None =&gt;
-</span>107 <span style=''></span><span style='background: #AEF1AE'>          val authInfo = passwordHasher.hash(data.password)
-</span>108 <span style=''></span><span style='background: #AEF1AE'>          val login = Login(None, data.email, None, None, None, loginInfo.providerID, loginInfo.providerKey, false, &quot;organizer&quot;, None)
-</span>109 <span style=''></span><span style='background: #AEF1AE'>          for {
-</span>110 <span style=''></span><span style='background: #AEF1AE'>            login &lt;- loginService.save(login)
-</span>111 <span style=''></span><span style='background: #AEF1AE'>            authInfo &lt;- authInfoRepository.add(loginInfo, authInfo)
-</span>112 <span style=''></span><span style='background: #AEF1AE'>            authenticator &lt;- silhouette.env.authenticatorService.create(loginInfo)
-</span>113 <span style=''></span><span style='background: #AEF1AE'>            token &lt;- silhouette.env.authenticatorService.init(authenticator)
-</span>114 <span style=''></span><span style='background: #AEF1AE'>            avatar &lt;- avatarService.retrieveURL(data.email)
-</span>115 <span style=''></span><span style='background: #AEF1AE'>          } yield {
-</span>116 <span style=''></span><span style='background: #AEF1AE'>            silhouette.env.eventBus.publish(SignUpEvent(login, request))
-</span>117 <span style=''></span><span style='background: #AEF1AE'>            silhouette.env.eventBus.publish(LoginEvent(login, request))
-</span>118 <span style=''></span><span style='background: #AEF1AE'>            organizerService.save(login,data.name,avatar)
-</span>119 <span style=''></span><span style='background: #AEF1AE'>            mailService.sendOrganizerConfirmation(data.email,data.name,token)
-</span>120 <span style=''></span><span style='background: #AEF1AE'>            Ok(Json.obj(&quot;message&quot; -&gt; &quot;mail.sent&quot;))
-</span>121 <span style=''></span><span style='background: #AEF1AE'>          }
-</span>122 <span style=''></span><span style='background: #AEF1AE'>      }
-</span>123 <span style=''></span><span style='background: #AEF1AE'>    })
-</span>124 <span style=''></span><span style='background: #AEF1AE'>  }</span><span style=''>
-</span>125 <span style=''>}
+</span>85 <span style=''></span><span style='background: #F0ADAD'>                            if e.categories.filter(_.id === category.getOrElse(-1l)).exists || category.getOrElse(-1l).bind === -1l
+</span>86 <span style=''></span><span style='background: #F0ADAD'>    } yield e
+</span>87 <span style=''></span><span style='background: #F0ADAD'>
+</span>88 <span style=''></span><span style='background: #F0ADAD'>    val s = q.queryPaged.detailed
+</span>89 <span style=''></span><span style='background: #F0ADAD'>    returnPaged(s,q,db)
+</span>90 <span style=''></span><span style='background: #F0ADAD'>  }</span><span style=''>
+</span>91 <span style=''>
+</span>92 <span style=''>  /**
+</span>93 <span style=''>   * Handles the submitted JSON data.
+</span>94 <span style=''>   *
+</span>95 <span style=''>   * @return The result to display.
+</span>96 <span style=''>   */
+</span>97 <span style=''>  def signUp = </span><span style='background: #AEF1AE'>organizerRequest(parse.json) { case (request,organizer) =&gt;
+</span>98 <span style=''></span><span style='background: #AEF1AE'>    implicit val req = request
+</span>99 <span style=''></span><span style='background: #AEF1AE'>    OrganizerSignUpForm.form.bindFromRequest.fold(
+</span>100 <span style=''></span><span style='background: #AEF1AE'>      form =&gt; {
+</span>101 <span style=''></span><span style='background: #AEF1AE'>        Future.successful(BadRequest(Json.toJson(form.errors)))
+</span>102 <span style=''></span><span style='background: #AEF1AE'>      }, { data =&gt;
+</span>103 <span style=''></span><span style='background: #AEF1AE'>      val loginInfo = LoginInfo(CredentialsProvider.ID, data.email)
+</span>104 <span style=''></span><span style='background: #AEF1AE'>      loginService.retrieveAll(loginInfo).flatMap {
+</span>105 <span style=''></span><span style='background: #AEF1AE'>        case Some(login) =&gt;
+</span>106 <span style=''></span><span style='background: #AEF1AE'>          Future.successful(BadRequest(Json.obj(&quot;message&quot; -&gt; &quot;user.exists&quot;)))
+</span>107 <span style=''></span><span style='background: #AEF1AE'>        case None =&gt;
+</span>108 <span style=''></span><span style='background: #AEF1AE'>          val authInfo = passwordHasher.hash(data.password)
+</span>109 <span style=''></span><span style='background: #AEF1AE'>          val login = Login(None, data.email, None, None, None, loginInfo.providerID, loginInfo.providerKey, false, &quot;organizer&quot;, None)
+</span>110 <span style=''></span><span style='background: #AEF1AE'>          for {
+</span>111 <span style=''></span><span style='background: #AEF1AE'>            login &lt;- loginService.save(login)
+</span>112 <span style=''></span><span style='background: #AEF1AE'>            authInfo &lt;- authInfoRepository.add(loginInfo, authInfo)
+</span>113 <span style=''></span><span style='background: #AEF1AE'>            authenticator &lt;- silhouette.env.authenticatorService.create(loginInfo)
+</span>114 <span style=''></span><span style='background: #AEF1AE'>            token &lt;- silhouette.env.authenticatorService.init(authenticator)
+</span>115 <span style=''></span><span style='background: #AEF1AE'>            avatar &lt;- avatarService.retrieveURL(data.email)
+</span>116 <span style=''></span><span style='background: #AEF1AE'>          } yield {
+</span>117 <span style=''></span><span style='background: #AEF1AE'>            silhouette.env.eventBus.publish(SignUpEvent(login, request))
+</span>118 <span style=''></span><span style='background: #AEF1AE'>            silhouette.env.eventBus.publish(LoginEvent(login, request))
+</span>119 <span style=''></span><span style='background: #AEF1AE'>            organizerService.save(login,data.name,avatar)
+</span>120 <span style=''></span><span style='background: #AEF1AE'>            mailService.sendOrganizerConfirmation(data.email,data.name,token)
+</span>121 <span style=''></span><span style='background: #AEF1AE'>            Ok(Json.obj(&quot;message&quot; -&gt; &quot;mail.sent&quot;))
+</span>122 <span style=''></span><span style='background: #AEF1AE'>          }
+</span>123 <span style=''></span><span style='background: #AEF1AE'>      }
+</span>124 <span style=''></span><span style='background: #AEF1AE'>    })
+</span>125 <span style=''></span><span style='background: #AEF1AE'>  }</span><span style=''>
+</span>126 <span style=''>}
 </span></pre>
           </div>
           <div class="tab-pane" id="statementlist">
@@ -1186,12 +1187,12 @@
           77
         </td>
         <td>
-          1616
+          1640
         </td>
         <td>
-          2623
+          2647
           -
-          3069
+          3225
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1206,10 +1207,10 @@
     implicit val r: com.mohiva.play.silhouette.api.actions.SecuredRequest[whatson.auth.AuthEnv,play.api.mvc.AnyContent] = request;
     val q: slick.lifted.Query[whatson.db.EventTable,whatson.model.Event,Seq] = whatson.db.EventTable.event.withFilter[slick.lifted.Rep[Option[Boolean]]](((e: whatson.db.EventTable) =&gt; slick.jdbc.PostgresProfile.api.optionColumnExtensionMethods[Long](e.creatorId)(slick.jdbc.PostgresProfile.api.longColumnType).===[Long, Option[Boolean]](slick.jdbc.PostgresProfile.api.valueToConstColumn[Long](organizer.id.getOrElse[Long](-1L))(slick.jdbc.PostgresProfile.api.longColumnType))(lifted.this.OptionMapper2.getOptionMapper2OT[Long, Long, Boolean](slick.jdbc.PostgresProfile.api.longColumnType))))(lifted.this.CanBeQueryCondition.BooleanOptionColumnCanBeQueryCondition).withFilter[slick.lifted.Rep[Boolean]](((e: whatson.db.EventTable) =&gt; {
   &lt;artifact&gt; val qual$1: slick.lifted.StringColumnExtensionMethods[String] @scala.reflect.internal.annotations.uncheckedBounds = slick.jdbc.PostgresProfile.api.stringColumnExtensionMethods(whatson.db.Util.upper(e.name));
-  &lt;artifact&gt; val x$1: slick.lifted.Rep[String] @scala.reflect.internal.annotations.uncheckedBounds = whatson.db.Util.upper(slick.jdbc.PostgresProfile.api.valueToConstColumn[String](search.map[String](((y: String) =&gt; scala.Predef.augmentString(scala.Predef.augmentString(&quot;%&quot;).++[Char, String](scala.Predef.augmentString(y))(scala.Predef.StringCanBuildFrom)).++[Char, String](scala.Predef.augmentString(&quot;%&quot;))(scala.Predef.StringCanBuildFrom))).getOrElse[String](&quot;%%&quot;))(slick.jdbc.PostgresProfile.api.stringColumnType).bind);
-  &lt;artifact&gt; val x$2: Char = qual$1.like$default$2[Nothing, Nothing];
-  qual$1.like[String, Boolean](x$1, x$2)(lifted.this.OptionMapper2.getOptionMapper2TT[String, String, Boolean](slick.jdbc.PostgresProfile.api.stringColumnType))
-}))(lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition).map[whatson.db.EventTable, whatson.db.EventTable, whatson.model.Event](((e: whatson.db.EventTable) =&gt; e))(lifted.this.Shape.tableShape[slick.lifted.FlatShapeLevel, whatson.model.Event, whatson.db.EventTable](scala.Predef.$conforms[whatson.db.EventTable]));
+  &lt;artifact&gt; val x$2: slick.lifted.Rep[String] @scala.reflect.internal.annotations.uncheckedBounds = whatson.db.Util.upper(slick.jdbc.PostgresProfile.api.valueToConstColumn[String](search.map[String](((y: String) =&gt; scala.Predef.augmentString(scala.Predef.augmentString(&quot;%&quot;).++[Char, String](scala.Predef.augmentString(y))(scala.Predef.StringCanBuildFrom)).++[Char, String](scala.Predef.augmentString(&quot;%&quot;))(scala.Predef.StringCanBuildFrom))).getOrElse[String](&quot;%%&quot;))(slick.jdbc.PostgresProfile.api.stringColumnType).bind);
+  &lt;artifact&gt; val x$3: Char = qual$1.like$default$2[Nothing, Nothing];
+  qual$1.like[String, Boolean](x$2, x$3)(lifted.this.OptionMapper2.getOptionMapper2TT[String, String, Boolean](slick.jdbc.PostgresProfile.api.stringColumnType))
+}))(lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition).withFilter[slick.lifted.Rep[Boolean]](((e: whatson.db.EventTable) =&gt; slick.jdbc.PostgresProfile.api.booleanColumnExtensionMethods(e.categories.filter[slick.lifted.Rep[Boolean]](((x$1: whatson.db.CategoryTable) =&gt; slick.jdbc.PostgresProfile.api.columnExtensionMethods[Long](x$1.id)(slick.jdbc.PostgresProfile.api.longColumnType).===[Long, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[Long](category.getOrElse[Long](-1L))(slick.jdbc.PostgresProfile.api.longColumnType))(lifted.this.OptionMapper2.getOptionMapper2TT[Long, Long, Boolean](slick.jdbc.PostgresProfile.api.longColumnType))))(lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition).exists).||[Boolean, Boolean](slick.jdbc.PostgresProfile.api.columnExtensionMethods[Long](slick.jdbc.PostgresProfile.api.valueToConstColumn[Long](category.getOrElse[Long](-1L))(slick.jdbc.PostgresProfile.api.longColumnType).bind)(slick.jdbc.PostgresProfile.api.longColumnType).===[Long, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[Long](-1L)(slick.jdbc.PostgresProfile.api.longColumnType))(lifted.this.OptionMapper2.getOptionMapper2TT[Long, Long, Boolean](slick.jdbc.PostgresProfile.api.longColumnType)))(lifted.this.OptionMapper2.getOptionMapper2TT[Boolean, Boolean, Boolean](slick.jdbc.PostgresProfile.api.booleanColumnType))))(lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition).map[whatson.db.EventTable, whatson.db.EventTable, whatson.model.Event](((e: whatson.db.EventTable) =&gt; e))(lifted.this.Shape.tableShape[slick.lifted.FlatShapeLevel, whatson.model.Event, whatson.db.EventTable](scala.Predef.$conforms[whatson.db.EventTable]));
     val s: slick.dbio.DBIOAction[Seq[whatson.model.detail.EventDetail],slick.dbio.NoStream,slick.dbio.Effect.Read with slick.dbio.Effect.Read with slick.dbio.Effect.Read with slick.dbio.Effect.Read] = whatson.model.detail.EventDetail.EventDetailQuery(whatson.db.Util.QueryUtils[whatson.db.EventTable, whatson.model.Event](q).queryPaged[Any, Nothing, Nothing](r)).detailed(play.api.libs.concurrent.Execution.Implicits.defaultContext);
     whatson.db.Util.returnPaged[whatson.model.detail.EventDetail, whatson.db.EventTable, whatson.model.Event](s, q, OrganizerController.this.db)(r, play.api.libs.concurrent.Execution.Implicits.defaultContext, whatson.model.detail.EventDetail.eventDetailWrites)
   }
@@ -1223,9 +1224,9 @@
           1580
         </td>
         <td>
-          2640
+          2664
           -
-          2653
+          2677
         </td>
         <td>
           Select
@@ -1241,12 +1242,12 @@
           77
         </td>
         <td>
-          1615
+          1639
         </td>
         <td>
-          2655
+          2679
           -
-          2655
+          2679
         </td>
         <td>
           Select
@@ -1265,9 +1266,9 @@
           1581
         </td>
         <td>
-          2699
+          2723
           -
-          2760
+          2784
         </td>
         <td>
           Literal
@@ -1286,9 +1287,9 @@
           1583
         </td>
         <td>
-          2689
+          2713
           -
-          2761
+          2785
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1307,9 +1308,9 @@
           1582
         </td>
         <td>
-          2698
+          2722
           -
-          2698
+          2722
         </td>
         <td>
           Select
@@ -1325,33 +1326,12 @@
           83
         </td>
         <td>
-          1587
+          1629
         </td>
         <td>
-          2880
+          2843
           -
-          2880
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.longColumnType
-        </td>
-        <td style="background: #F0ADAD">
-          slick.jdbc.PostgresProfile.api.longColumnType
-        </td>
-      </tr><tr>
-        <td>
-          83
-        </td>
-        <td>
-          1605
-        </td>
-        <td>
-          2819
-          -
-          2819
+          2843
         </td>
         <td>
           TypeApply
@@ -1367,12 +1347,33 @@
           83
         </td>
         <td>
+          1587
+        </td>
+        <td>
+          2904
+          -
+          2904
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.longColumnType
+        </td>
+        <td style="background: #F0ADAD">
+          slick.jdbc.PostgresProfile.api.longColumnType
+        </td>
+      </tr><tr>
+        <td>
+          83
+        </td>
+        <td>
           1590
         </td>
         <td>
-          2854
+          2878
           -
-          2854
+          2878
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1391,9 +1392,9 @@
           1584
         </td>
         <td>
-          2842
+          2866
           -
-          2853
+          2877
         </td>
         <td>
           Select
@@ -1412,9 +1413,9 @@
           1592
         </td>
         <td>
-          2833
+          2857
           -
-          2833
+          2857
         </td>
         <td>
           Select
@@ -1430,12 +1431,33 @@
           83
         </td>
         <td>
+          1628
+        </td>
+        <td>
+          2857
+          -
+          2857
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.lifted.CanBeQueryCondition.BooleanColumnCanBeQueryCondition
+        </td>
+        <td style="background: #F0ADAD">
+          lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition
+        </td>
+      </tr><tr>
+        <td>
+          83
+        </td>
+        <td>
           1586
         </td>
         <td>
-          2858
+          2882
           -
-          2885
+          2909
         </td>
         <td>
           Apply
@@ -1454,9 +1476,9 @@
           1604
         </td>
         <td>
-          2833
+          2857
           -
-          2833
+          2857
         </td>
         <td>
           Select
@@ -1472,12 +1494,12 @@
           83
         </td>
         <td>
-          1607
+          1631
         </td>
         <td>
-          2805
+          2829
           -
-          3006
+          3162
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1488,10 +1510,10 @@
         <td style="background: #F0ADAD">
           whatson.db.EventTable.event.withFilter[slick.lifted.Rep[Option[Boolean]]](((e: whatson.db.EventTable) =&gt; slick.jdbc.PostgresProfile.api.optionColumnExtensionMethods[Long](e.creatorId)(slick.jdbc.PostgresProfile.api.longColumnType).===[Long, Option[Boolean]](slick.jdbc.PostgresProfile.api.valueToConstColumn[Long](organizer.id.getOrElse[Long](-1L))(slick.jdbc.PostgresProfile.api.longColumnType))(lifted.this.OptionMapper2.getOptionMapper2OT[Long, Long, Boolean](slick.jdbc.PostgresProfile.api.longColumnType))))(lifted.this.CanBeQueryCondition.BooleanOptionColumnCanBeQueryCondition).withFilter[slick.lifted.Rep[Boolean]](((e: whatson.db.EventTable) =&gt; {
   &lt;artifact&gt; val qual$1: slick.lifted.StringColumnExtensionMethods[String] @scala.reflect.internal.annotations.uncheckedBounds = slick.jdbc.PostgresProfile.api.stringColumnExtensionMethods(whatson.db.Util.upper(e.name));
-  &lt;artifact&gt; val x$1: slick.lifted.Rep[String] @scala.reflect.internal.annotations.uncheckedBounds = whatson.db.Util.upper(slick.jdbc.PostgresProfile.api.valueToConstColumn[String](search.map[String](((y: String) =&gt; scala.Predef.augmentString(scala.Predef.augmentString(&quot;%&quot;).++[Char, String](scala.Predef.augmentString(y))(scala.Predef.StringCanBuildFrom)).++[Char, String](scala.Predef.augmentString(&quot;%&quot;))(scala.Predef.StringCanBuildFrom))).getOrElse[String](&quot;%%&quot;))(slick.jdbc.PostgresProfile.api.stringColumnType).bind);
-  &lt;artifact&gt; val x$2: Char = qual$1.like$default$2[Nothing, Nothing];
-  qual$1.like[String, Boolean](x$1, x$2)(lifted.this.OptionMapper2.getOptionMapper2TT[String, String, Boolean](slick.jdbc.PostgresProfile.api.stringColumnType))
-}))(lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition).map[whatson.db.EventTable, whatson.db.EventTable, whatson.model.Event](((e: whatson.db.EventTable) =&gt; e))(lifted.this.Shape.tableShape[slick.lifted.FlatShapeLevel, whatson.model.Event, whatson.db.EventTable](scala.Predef.$conforms[whatson.db.EventTable]))
+  &lt;artifact&gt; val x$2: slick.lifted.Rep[String] @scala.reflect.internal.annotations.uncheckedBounds = whatson.db.Util.upper(slick.jdbc.PostgresProfile.api.valueToConstColumn[String](search.map[String](((y: String) =&gt; scala.Predef.augmentString(scala.Predef.augmentString(&quot;%&quot;).++[Char, String](scala.Predef.augmentString(y))(scala.Predef.StringCanBuildFrom)).++[Char, String](scala.Predef.augmentString(&quot;%&quot;))(scala.Predef.StringCanBuildFrom))).getOrElse[String](&quot;%%&quot;))(slick.jdbc.PostgresProfile.api.stringColumnType).bind);
+  &lt;artifact&gt; val x$3: Char = qual$1.like$default$2[Nothing, Nothing];
+  qual$1.like[String, Boolean](x$2, x$3)(lifted.this.OptionMapper2.getOptionMapper2TT[String, String, Boolean](slick.jdbc.PostgresProfile.api.stringColumnType))
+}))(lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition).withFilter[slick.lifted.Rep[Boolean]](((e: whatson.db.EventTable) =&gt; slick.jdbc.PostgresProfile.api.booleanColumnExtensionMethods(e.categories.filter[slick.lifted.Rep[Boolean]](((x$1: whatson.db.CategoryTable) =&gt; slick.jdbc.PostgresProfile.api.columnExtensionMethods[Long](x$1.id)(slick.jdbc.PostgresProfile.api.longColumnType).===[Long, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[Long](category.getOrElse[Long](-1L))(slick.jdbc.PostgresProfile.api.longColumnType))(lifted.this.OptionMapper2.getOptionMapper2TT[Long, Long, Boolean](slick.jdbc.PostgresProfile.api.longColumnType))))(lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition).exists).||[Boolean, Boolean](slick.jdbc.PostgresProfile.api.columnExtensionMethods[Long](slick.jdbc.PostgresProfile.api.valueToConstColumn[Long](category.getOrElse[Long](-1L))(slick.jdbc.PostgresProfile.api.longColumnType).bind)(slick.jdbc.PostgresProfile.api.longColumnType).===[Long, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[Long](-1L)(slick.jdbc.PostgresProfile.api.longColumnType))(lifted.this.OptionMapper2.getOptionMapper2TT[Long, Long, Boolean](slick.jdbc.PostgresProfile.api.longColumnType)))(lifted.this.OptionMapper2.getOptionMapper2TT[Boolean, Boolean, Boolean](slick.jdbc.PostgresProfile.api.booleanColumnType))))(lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition).map[whatson.db.EventTable, whatson.db.EventTable, whatson.model.Event](((e: whatson.db.EventTable) =&gt; e))(lifted.this.Shape.tableShape[slick.lifted.FlatShapeLevel, whatson.model.Event, whatson.db.EventTable](scala.Predef.$conforms[whatson.db.EventTable]))
         </td>
       </tr><tr>
         <td>
@@ -1501,9 +1523,9 @@
           1589
         </td>
         <td>
-          2854
+          2878
           -
-          2854
+          2878
         </td>
         <td>
           Select
@@ -1519,33 +1541,12 @@
           83
         </td>
         <td>
-          1606
-        </td>
-        <td>
-          2819
-          -
-          2819
-        </td>
-        <td>
-          ApplyToImplicitArgs
-        </td>
-        <td>
-          slick.lifted.AbstractTableShapeImplicits.tableShape
-        </td>
-        <td style="background: #F0ADAD">
-          lifted.this.Shape.tableShape[slick.lifted.FlatShapeLevel, whatson.model.Event, whatson.db.EventTable](scala.Predef.$conforms[whatson.db.EventTable])
-        </td>
-      </tr><tr>
-        <td>
-          83
-        </td>
-        <td>
           1591
         </td>
         <td>
-          2842
+          2866
           -
-          2885
+          2909
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1561,12 +1562,33 @@
           83
         </td>
         <td>
+          1630
+        </td>
+        <td>
+          2843
+          -
+          2843
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.AbstractTableShapeImplicits.tableShape
+        </td>
+        <td style="background: #F0ADAD">
+          lifted.this.Shape.tableShape[slick.lifted.FlatShapeLevel, whatson.model.Event, whatson.db.EventTable](scala.Predef.$conforms[whatson.db.EventTable])
+        </td>
+      </tr><tr>
+        <td>
+          83
+        </td>
+        <td>
           1585
         </td>
         <td>
-          2844
+          2868
           -
-          2844
+          2868
         </td>
         <td>
           Select
@@ -1585,9 +1607,9 @@
           1588
         </td>
         <td>
-          2858
+          2882
           -
-          2885
+          2909
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1606,9 +1628,9 @@
           1596
         </td>
         <td>
-          2942
+          2966
           -
-          2986
+          3010
         </td>
         <td>
           Apply
@@ -1627,9 +1649,9 @@
           1599
         </td>
         <td>
-          2936
+          2960
           -
-          2992
+          3016
         </td>
         <td>
           Apply
@@ -1648,9 +1670,9 @@
           1593
         </td>
         <td>
-          2923
+          2947
           -
-          2929
+          2953
         </td>
         <td>
           Select
@@ -1669,9 +1691,9 @@
           1602
         </td>
         <td>
-          2931
+          2955
           -
-          2931
+          2955
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1690,9 +1712,9 @@
           1601
         </td>
         <td>
-          2931
+          2955
           -
-          2931
+          2955
         </td>
         <td>
           Select
@@ -1711,9 +1733,9 @@
           1595
         </td>
         <td>
-          2917
+          2941
           -
-          2930
+          2954
         </td>
         <td>
           ApplyImplicitView
@@ -1732,9 +1754,9 @@
           1598
         </td>
         <td>
-          2942
+          2966
           -
-          2991
+          3015
         </td>
         <td>
           Select
@@ -1753,9 +1775,9 @@
           1597
         </td>
         <td>
-          2980
+          3004
           -
-          2980
+          3004
         </td>
         <td>
           Select
@@ -1774,9 +1796,9 @@
           1600
         </td>
         <td>
-          2931
+          2955
           -
-          2931
+          2955
         </td>
         <td>
           TypeApply
@@ -1795,9 +1817,9 @@
           1603
         </td>
         <td>
-          2917
+          2941
           -
-          2992
+          3016
         </td>
         <td>
           Apply
@@ -1806,7 +1828,7 @@
           slick.lifted.StringColumnExtensionMethods.like
         </td>
         <td style="background: #F0ADAD">
-          qual$1.like[String, Boolean](x$1, x$2)(lifted.this.OptionMapper2.getOptionMapper2TT[String, String, Boolean](slick.jdbc.PostgresProfile.api.stringColumnType))
+          qual$1.like[String, Boolean](x$2, x$3)(lifted.this.OptionMapper2.getOptionMapper2TT[String, String, Boolean](slick.jdbc.PostgresProfile.api.stringColumnType))
         </td>
       </tr><tr>
         <td>
@@ -1816,9 +1838,9 @@
           1594
         </td>
         <td>
-          2917
+          2941
           -
-          2930
+          2954
         </td>
         <td>
           Apply
@@ -1831,15 +1853,498 @@
         </td>
       </tr><tr>
         <td>
-          87
+          85
+        </td>
+        <td>
+          1620
+        </td>
+        <td>
+          3146
+          -
+          3146
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.longColumnType
+        </td>
+        <td style="background: #F0ADAD">
+          slick.jdbc.PostgresProfile.api.longColumnType
+        </td>
+      </tr><tr>
+        <td>
+          85
+        </td>
+        <td>
+          1605
+        </td>
+        <td>
+          3068
+          -
+          3072
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.db.CategoryTable.id
+        </td>
+        <td style="background: #F0ADAD">
+          x$1.id
+        </td>
+      </tr><tr>
+        <td>
+          85
+        </td>
+        <td>
+          1614
+        </td>
+        <td>
+          3048
+          -
+          3108
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.lifted.Query.exists
+        </td>
+        <td style="background: #F0ADAD">
+          e.categories.filter[slick.lifted.Rep[Boolean]](((x$1: whatson.db.CategoryTable) =&gt; slick.jdbc.PostgresProfile.api.columnExtensionMethods[Long](x$1.id)(slick.jdbc.PostgresProfile.api.longColumnType).===[Long, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[Long](category.getOrElse[Long](-1L))(slick.jdbc.PostgresProfile.api.longColumnType))(lifted.this.OptionMapper2.getOptionMapper2TT[Long, Long, Boolean](slick.jdbc.PostgresProfile.api.longColumnType))))(lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition).exists
+        </td>
+      </tr><tr>
+        <td>
+          85
+        </td>
+        <td>
+          1623
+        </td>
+        <td>
+          3141
+          -
+          3141
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.OptionMapper2.getOptionMapper2TT
+        </td>
+        <td style="background: #F0ADAD">
+          lifted.this.OptionMapper2.getOptionMapper2TT[Long, Long, Boolean](slick.jdbc.PostgresProfile.api.longColumnType)
+        </td>
+      </tr><tr>
+        <td>
+          85
+        </td>
+        <td>
+          1617
+        </td>
+        <td>
+          3112
+          -
+          3140
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.lifted.LiteralColumn.bind
+        </td>
+        <td style="background: #F0ADAD">
+          slick.jdbc.PostgresProfile.api.valueToConstColumn[Long](category.getOrElse[Long](-1L))(slick.jdbc.PostgresProfile.api.longColumnType).bind
+        </td>
+      </tr><tr>
+        <td>
+          85
+        </td>
+        <td>
+          1626
+        </td>
+        <td>
+          3109
+          -
+          3109
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.OptionMapper2.getOptionMapper2TT
+        </td>
+        <td style="background: #F0ADAD">
+          lifted.this.OptionMapper2.getOptionMapper2TT[Boolean, Boolean, Boolean](slick.jdbc.PostgresProfile.api.booleanColumnType)
+        </td>
+      </tr><tr>
+        <td>
+          85
         </td>
         <td>
           1608
         </td>
         <td>
-          3020
+          3095
           -
-          3032
+          3095
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.longColumnType
+        </td>
+        <td style="background: #F0ADAD">
+          slick.jdbc.PostgresProfile.api.longColumnType
+        </td>
+      </tr><tr>
+        <td>
+          85
+        </td>
+        <td>
+          1611
+        </td>
+        <td>
+          3073
+          -
+          3073
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.OptionMapper2.getOptionMapper2TT
+        </td>
+        <td style="background: #F0ADAD">
+          lifted.this.OptionMapper2.getOptionMapper2TT[Long, Long, Boolean](slick.jdbc.PostgresProfile.api.longColumnType)
+        </td>
+      </tr><tr>
+        <td>
+          85
+        </td>
+        <td>
+          1619
+        </td>
+        <td>
+          3146
+          -
+          3148
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          -1L
+        </td>
+      </tr><tr>
+        <td>
+          85
+        </td>
+        <td>
+          1610
+        </td>
+        <td>
+          3073
+          -
+          3073
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.longColumnType
+        </td>
+        <td style="background: #F0ADAD">
+          slick.jdbc.PostgresProfile.api.longColumnType
+        </td>
+      </tr><tr>
+        <td>
+          85
+        </td>
+        <td>
+          1613
+        </td>
+        <td>
+          3067
+          -
+          3067
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.lifted.CanBeQueryCondition.BooleanColumnCanBeQueryCondition
+        </td>
+        <td style="background: #F0ADAD">
+          lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition
+        </td>
+      </tr><tr>
+        <td>
+          85
+        </td>
+        <td>
+          1622
+        </td>
+        <td>
+          3141
+          -
+          3141
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.longColumnType
+        </td>
+        <td style="background: #F0ADAD">
+          slick.jdbc.PostgresProfile.api.longColumnType
+        </td>
+      </tr><tr>
+        <td>
+          85
+        </td>
+        <td>
+          1616
+        </td>
+        <td>
+          3130
+          -
+          3130
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.longColumnType
+        </td>
+        <td style="background: #F0ADAD">
+          slick.jdbc.PostgresProfile.api.longColumnType
+        </td>
+      </tr><tr>
+        <td>
+          85
+        </td>
+        <td>
+          1625
+        </td>
+        <td>
+          3109
+          -
+          3109
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.booleanColumnType
+        </td>
+        <td style="background: #F0ADAD">
+          slick.jdbc.PostgresProfile.api.booleanColumnType
+        </td>
+      </tr><tr>
+        <td>
+          85
+        </td>
+        <td>
+          1607
+        </td>
+        <td>
+          3077
+          -
+          3100
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Option.getOrElse
+        </td>
+        <td style="background: #F0ADAD">
+          category.getOrElse[Long](-1L)
+        </td>
+      </tr><tr>
+        <td>
+          85
+        </td>
+        <td>
+          1624
+        </td>
+        <td>
+          3112
+          -
+          3148
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.ColumnExtensionMethods.===
+        </td>
+        <td style="background: #F0ADAD">
+          slick.jdbc.PostgresProfile.api.columnExtensionMethods[Long](slick.jdbc.PostgresProfile.api.valueToConstColumn[Long](category.getOrElse[Long](-1L))(slick.jdbc.PostgresProfile.api.longColumnType).bind)(slick.jdbc.PostgresProfile.api.longColumnType).===[Long, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[Long](-1L)(slick.jdbc.PostgresProfile.api.longColumnType))(lifted.this.OptionMapper2.getOptionMapper2TT[Long, Long, Boolean](slick.jdbc.PostgresProfile.api.longColumnType))
+        </td>
+      </tr><tr>
+        <td>
+          85
+        </td>
+        <td>
+          1606
+        </td>
+        <td>
+          3070
+          -
+          3070
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.longColumnType
+        </td>
+        <td style="background: #F0ADAD">
+          slick.jdbc.PostgresProfile.api.longColumnType
+        </td>
+      </tr><tr>
+        <td>
+          85
+        </td>
+        <td>
+          1615
+        </td>
+        <td>
+          3112
+          -
+          3135
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Option.getOrElse
+        </td>
+        <td style="background: #F0ADAD">
+          category.getOrElse[Long](-1L)
+        </td>
+      </tr><tr>
+        <td>
+          85
+        </td>
+        <td>
+          1618
+        </td>
+        <td>
+          3136
+          -
+          3136
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.longColumnType
+        </td>
+        <td style="background: #F0ADAD">
+          slick.jdbc.PostgresProfile.api.longColumnType
+        </td>
+      </tr><tr>
+        <td>
+          85
+        </td>
+        <td>
+          1627
+        </td>
+        <td>
+          3048
+          -
+          3148
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.BooleanColumnExtensionMethods.||
+        </td>
+        <td style="background: #F0ADAD">
+          slick.jdbc.PostgresProfile.api.booleanColumnExtensionMethods(e.categories.filter[slick.lifted.Rep[Boolean]](((x$1: whatson.db.CategoryTable) =&gt; slick.jdbc.PostgresProfile.api.columnExtensionMethods[Long](x$1.id)(slick.jdbc.PostgresProfile.api.longColumnType).===[Long, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[Long](category.getOrElse[Long](-1L))(slick.jdbc.PostgresProfile.api.longColumnType))(lifted.this.OptionMapper2.getOptionMapper2TT[Long, Long, Boolean](slick.jdbc.PostgresProfile.api.longColumnType))))(lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition).exists).||[Boolean, Boolean](slick.jdbc.PostgresProfile.api.columnExtensionMethods[Long](slick.jdbc.PostgresProfile.api.valueToConstColumn[Long](category.getOrElse[Long](-1L))(slick.jdbc.PostgresProfile.api.longColumnType).bind)(slick.jdbc.PostgresProfile.api.longColumnType).===[Long, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[Long](-1L)(slick.jdbc.PostgresProfile.api.longColumnType))(lifted.this.OptionMapper2.getOptionMapper2TT[Long, Long, Boolean](slick.jdbc.PostgresProfile.api.longColumnType)))(lifted.this.OptionMapper2.getOptionMapper2TT[Boolean, Boolean, Boolean](slick.jdbc.PostgresProfile.api.booleanColumnType))
+        </td>
+      </tr><tr>
+        <td>
+          85
+        </td>
+        <td>
+          1609
+        </td>
+        <td>
+          3077
+          -
+          3100
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.relational.RelationalProfile.API.valueToConstColumn
+        </td>
+        <td style="background: #F0ADAD">
+          slick.jdbc.PostgresProfile.api.valueToConstColumn[Long](category.getOrElse[Long](-1L))(slick.jdbc.PostgresProfile.api.longColumnType)
+        </td>
+      </tr><tr>
+        <td>
+          85
+        </td>
+        <td>
+          1621
+        </td>
+        <td>
+          3146
+          -
+          3148
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.relational.RelationalProfile.API.valueToConstColumn
+        </td>
+        <td style="background: #F0ADAD">
+          slick.jdbc.PostgresProfile.api.valueToConstColumn[Long](-1L)(slick.jdbc.PostgresProfile.api.longColumnType)
+        </td>
+      </tr><tr>
+        <td>
+          85
+        </td>
+        <td>
+          1612
+        </td>
+        <td>
+          3068
+          -
+          3100
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.ColumnExtensionMethods.===
+        </td>
+        <td style="background: #F0ADAD">
+          slick.jdbc.PostgresProfile.api.columnExtensionMethods[Long](x$1.id)(slick.jdbc.PostgresProfile.api.longColumnType).===[Long, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[Long](category.getOrElse[Long](-1L))(slick.jdbc.PostgresProfile.api.longColumnType))(lifted.this.OptionMapper2.getOptionMapper2TT[Long, Long, Boolean](slick.jdbc.PostgresProfile.api.longColumnType))
+        </td>
+      </tr><tr>
+        <td>
+          88
+        </td>
+        <td>
+          1632
+        </td>
+        <td>
+          3176
+          -
+          3188
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1852,15 +2357,15 @@
         </td>
       </tr><tr>
         <td>
-          87
+          88
         </td>
         <td>
-          1610
+          1634
         </td>
         <td>
-          3020
+          3176
           -
-          3041
+          3197
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1873,15 +2378,15 @@
         </td>
       </tr><tr>
         <td>
-          87
+          88
         </td>
         <td>
-          1609
+          1633
         </td>
         <td>
-          3033
+          3189
           -
-          3033
+          3189
         </td>
         <td>
           Select
@@ -1894,15 +2399,15 @@
         </td>
       </tr><tr>
         <td>
-          88
+          89
         </td>
         <td>
-          1614
+          1638
         </td>
         <td>
-          3046
+          3202
           -
-          3065
+          3221
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1915,15 +2420,15 @@
         </td>
       </tr><tr>
         <td>
-          88
+          89
         </td>
         <td>
-          1611
+          1635
         </td>
         <td>
-          3062
+          3218
           -
-          3064
+          3220
         </td>
         <td>
           Select
@@ -1936,15 +2441,15 @@
         </td>
       </tr><tr>
         <td>
-          88
+          89
         </td>
         <td>
-          1613
+          1637
         </td>
         <td>
-          3057
+          3213
           -
-          3057
+          3213
         </td>
         <td>
           Select
@@ -1957,15 +2462,15 @@
         </td>
       </tr><tr>
         <td>
-          88
+          89
         </td>
         <td>
-          1612
+          1636
         </td>
         <td>
-          3057
+          3213
           -
-          3057
+          3213
         </td>
         <td>
           Select
@@ -1978,15 +2483,15 @@
         </td>
       </tr><tr>
         <td>
-          96
+          97
         </td>
         <td>
-          1680
+          1704
         </td>
         <td>
-          3206
+          3362
           -
-          3206
+          3362
         </td>
         <td>
           Select
@@ -1999,15 +2504,15 @@
         </td>
       </tr><tr>
         <td>
-          96
+          97
         </td>
         <td>
-          1617
+          1641
         </td>
         <td>
-          3194
+          3350
           -
-          3204
+          3360
         </td>
         <td>
           Select
@@ -2020,15 +2525,15 @@
         </td>
       </tr><tr>
         <td>
-          96
+          97
         </td>
         <td>
-          1681
+          1705
         </td>
         <td>
-          3177
+          3333
           -
-          4591
+          4747
         </td>
         <td>
           ApplyToImplicitArgs
@@ -2062,15 +2567,15 @@
         </td>
       </tr><tr>
         <td>
-          98
+          99
         </td>
         <td>
-          1679
+          1703
         </td>
         <td>
-          3271
+          3427
           -
-          4587
+          4743
         </td>
         <td>
           Apply
@@ -2099,36 +2604,15 @@
         </td>
       </tr><tr>
         <td>
-          100
+          101
         </td>
         <td>
-          1620
+          1647
         </td>
         <td>
-          3371
+          3498
           -
-          3395
-        </td>
-        <td>
-          ApplyToImplicitArgs
-        </td>
-        <td>
-          play.api.libs.json.Json.toJson
-        </td>
-        <td style="background: #AEF1AE">
-          play.api.libs.json.Json.toJson[Seq[play.api.data.FormError]](form.errors)(whatson.util.FormErrorJson.formErrorFormat)
-        </td>
-      </tr><tr>
-        <td>
-          100
-        </td>
-        <td>
-          1623
-        </td>
-        <td>
-          3342
-          -
-          3397
+          3553
         </td>
         <td>
           Apply
@@ -2141,15 +2625,36 @@
         </td>
       </tr><tr>
         <td>
-          100
+          101
         </td>
         <td>
-          1619
+          1644
         </td>
         <td>
-          3382
+          3527
           -
-          3382
+          3551
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          play.api.libs.json.Json.toJson
+        </td>
+        <td style="background: #AEF1AE">
+          play.api.libs.json.Json.toJson[Seq[play.api.data.FormError]](form.errors)(whatson.util.FormErrorJson.formErrorFormat)
+        </td>
+      </tr><tr>
+        <td>
+          101
+        </td>
+        <td>
+          1643
+        </td>
+        <td>
+          3538
+          -
+          3538
         </td>
         <td>
           Select
@@ -2162,15 +2667,15 @@
         </td>
       </tr><tr>
         <td>
-          100
+          101
         </td>
         <td>
-          1622
+          1646
         </td>
         <td>
-          3360
+          3516
           -
-          3396
+          3552
         </td>
         <td>
           ApplyToImplicitArgs
@@ -2183,15 +2688,15 @@
         </td>
       </tr><tr>
         <td>
-          100
+          101
         </td>
         <td>
-          1618
+          1642
         </td>
         <td>
-          3383
+          3539
           -
-          3394
+          3550
         </td>
         <td>
           Select
@@ -2204,15 +2709,15 @@
         </td>
       </tr><tr>
         <td>
-          100
+          101
         </td>
         <td>
-          1621
+          1645
         </td>
         <td>
-          3370
+          3526
           -
-          3370
+          3526
         </td>
         <td>
           Select
@@ -2225,15 +2730,15 @@
         </td>
       </tr><tr>
         <td>
-          102
+          103
         </td>
         <td>
-          1626
+          1650
         </td>
         <td>
-          3439
+          3595
           -
-          3484
+          3640
         </td>
         <td>
           Apply
@@ -2246,15 +2751,15 @@
         </td>
       </tr><tr>
         <td>
-          102
+          103
         </td>
         <td>
-          1625
+          1649
         </td>
         <td>
-          3473
+          3629
           -
-          3483
+          3639
         </td>
         <td>
           Select
@@ -2267,15 +2772,15 @@
         </td>
       </tr><tr>
         <td>
-          102
+          103
         </td>
         <td>
-          1624
+          1648
         </td>
         <td>
-          3449
+          3605
           -
-          3471
+          3627
         </td>
         <td>
           Select
@@ -2288,15 +2793,15 @@
         </td>
       </tr><tr>
         <td>
-          103
+          104
         </td>
         <td>
-          1677
+          1701
         </td>
         <td>
-          3535
+          3691
           -
-          3535
+          3691
         </td>
         <td>
           Select
@@ -2309,15 +2814,15 @@
         </td>
       </tr><tr>
         <td>
-          103
+          104
         </td>
         <td>
-          1678
+          1702
         </td>
         <td>
-          3491
+          3647
           -
-          4580
+          4736
         </td>
         <td>
           ApplyToImplicitArgs
@@ -2343,36 +2848,15 @@
         </td>
       </tr><tr>
         <td>
-          105
+          106
         </td>
         <td>
-          1629
+          1656
         </td>
         <td>
-          3626
+          3760
           -
-          3626
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          play.api.libs.json.DefaultWrites.StringWrites
-        </td>
-        <td style="background: #AEF1AE">
-          json.this.Writes.StringWrites
-        </td>
-      </tr><tr>
-        <td>
-          105
-        </td>
-        <td>
-          1632
-        </td>
-        <td>
-          3604
-          -
-          3640
+          3796
         </td>
         <td>
           Apply
@@ -2385,15 +2869,15 @@
         </td>
       </tr><tr>
         <td>
-          105
+          106
         </td>
         <td>
-          1635
+          1659
         </td>
         <td>
-          3575
+          3731
           -
-          3642
+          3798
         </td>
         <td>
           Apply
@@ -2406,36 +2890,36 @@
         </td>
       </tr><tr>
         <td>
-          105
+          106
         </td>
         <td>
-          1634
+          1653
         </td>
         <td>
-          3593
+          3782
           -
-          3641
+          3782
         </td>
         <td>
-          ApplyToImplicitArgs
+          Select
         </td>
         <td>
-          play.api.mvc.Results.Status.apply
+          play.api.libs.json.DefaultWrites.StringWrites
         </td>
         <td style="background: #AEF1AE">
-          OrganizerController.this.BadRequest.apply[play.api.libs.json.JsObject](play.api.libs.json.Json.obj(scala.Predef.ArrowAssoc[String](&quot;message&quot;).-&gt;[play.api.libs.json.Json.JsValueWrapper](json.this.Json.toJsFieldJsValueWrapper[String](&quot;user.exists&quot;)(json.this.Writes.StringWrites))))(http.this.Writeable.writeableOf_JsValue)
+          json.this.Writes.StringWrites
         </td>
       </tr><tr>
         <td>
-          105
+          106
         </td>
         <td>
-          1628
+          1652
         </td>
         <td>
-          3626
+          3782
           -
-          3639
+          3795
         </td>
         <td>
           Literal
@@ -2448,15 +2932,15 @@
         </td>
       </tr><tr>
         <td>
-          105
+          106
         </td>
         <td>
-          1631
+          1655
         </td>
         <td>
-          3613
+          3769
           -
-          3639
+          3795
         </td>
         <td>
           Apply
@@ -2469,15 +2953,36 @@
         </td>
       </tr><tr>
         <td>
-          105
+          106
         </td>
         <td>
-          1633
+          1658
         </td>
         <td>
-          3603
+          3749
           -
-          3603
+          3797
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          play.api.mvc.Results.Status.apply
+        </td>
+        <td style="background: #AEF1AE">
+          OrganizerController.this.BadRequest.apply[play.api.libs.json.JsObject](play.api.libs.json.Json.obj(scala.Predef.ArrowAssoc[String](&quot;message&quot;).-&gt;[play.api.libs.json.Json.JsValueWrapper](json.this.Json.toJsFieldJsValueWrapper[String](&quot;user.exists&quot;)(json.this.Writes.StringWrites))))(http.this.Writeable.writeableOf_JsValue)
+        </td>
+      </tr><tr>
+        <td>
+          106
+        </td>
+        <td>
+          1657
+        </td>
+        <td>
+          3759
+          -
+          3759
         </td>
         <td>
           Select
@@ -2490,15 +2995,15 @@
         </td>
       </tr><tr>
         <td>
-          105
+          106
         </td>
         <td>
-          1627
+          1651
         </td>
         <td>
-          3613
+          3769
           -
-          3622
+          3778
         </td>
         <td>
           Literal
@@ -2511,15 +3016,15 @@
         </td>
       </tr><tr>
         <td>
-          105
+          106
         </td>
         <td>
-          1630
+          1654
         </td>
         <td>
-          3626
+          3782
           -
-          3639
+          3795
         </td>
         <td>
           ApplyToImplicitArgs
@@ -2532,15 +3037,15 @@
         </td>
       </tr><tr>
         <td>
-          107
+          108
         </td>
         <td>
-          1637
+          1661
         </td>
         <td>
-          3689
+          3845
           -
-          3723
+          3879
         </td>
         <td>
           Apply
@@ -2553,15 +3058,15 @@
         </td>
       </tr><tr>
         <td>
-          107
+          108
         </td>
         <td>
-          1636
+          1660
         </td>
         <td>
-          3709
+          3865
           -
-          3722
+          3878
         </td>
         <td>
           Select
@@ -2574,15 +3079,15 @@
         </td>
       </tr><tr>
         <td>
-          108
+          109
         </td>
         <td>
-          1638
+          1665
         </td>
         <td>
-          3752
+          3932
           -
-          3756
+          3936
         </td>
         <td>
           Select
@@ -2595,57 +3100,15 @@
         </td>
       </tr><tr>
         <td>
-          108
+          109
         </td>
         <td>
-          1647
+          1668
         </td>
         <td>
-          3853
+          3966
           -
-          3857
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          scala.None
-        </td>
-        <td style="background: #AEF1AE">
-          scala.None
-        </td>
-      </tr><tr>
-        <td>
-          108
-        </td>
-        <td>
-          1641
-        </td>
-        <td>
-          3776
-          -
-          3780
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          scala.None
-        </td>
-        <td style="background: #AEF1AE">
-          scala.None
-        </td>
-      </tr><tr>
-        <td>
-          108
-        </td>
-        <td>
-          1644
-        </td>
-        <td>
-          3810
-          -
-          3831
+          3987
         </td>
         <td>
           Select
@@ -2658,36 +3121,57 @@
         </td>
       </tr><tr>
         <td>
-          108
+          109
         </td>
         <td>
-          1643
+          1662
         </td>
         <td>
-          3788
+          3908
           -
-          3808
+          3912
         </td>
         <td>
           Select
         </td>
         <td>
-          com.mohiva.play.silhouette.api.LoginInfo.providerID
+          scala.None
         </td>
         <td style="background: #AEF1AE">
-          loginInfo.providerID
+          scala.None
         </td>
       </tr><tr>
         <td>
-          108
+          109
         </td>
         <td>
-          1646
+          1671
         </td>
         <td>
-          3840
+          4009
           -
-          3851
+          4013
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #AEF1AE">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          109
+        </td>
+        <td>
+          1670
+        </td>
+        <td>
+          3996
+          -
+          4007
         </td>
         <td>
           Literal
@@ -2700,15 +3184,15 @@
         </td>
       </tr><tr>
         <td>
-          108
+          109
         </td>
         <td>
-          1640
+          1664
         </td>
         <td>
-          3770
+          3926
           -
-          3774
+          3930
         </td>
         <td>
           Select
@@ -2721,15 +3205,36 @@
         </td>
       </tr><tr>
         <td>
-          108
+          109
         </td>
         <td>
-          1642
+          1667
         </td>
         <td>
-          3782
+          3944
           -
-          3786
+          3964
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.mohiva.play.silhouette.api.LoginInfo.providerID
+        </td>
+        <td style="background: #AEF1AE">
+          loginInfo.providerID
+        </td>
+      </tr><tr>
+        <td>
+          109
+        </td>
+        <td>
+          1666
+        </td>
+        <td>
+          3938
+          -
+          3942
         </td>
         <td>
           Select
@@ -2742,15 +3247,15 @@
         </td>
       </tr><tr>
         <td>
-          108
+          109
         </td>
         <td>
-          1645
+          1669
         </td>
         <td>
-          3833
+          3989
           -
-          3838
+          3994
         </td>
         <td>
           Literal
@@ -2763,15 +3268,15 @@
         </td>
       </tr><tr>
         <td>
-          108
+          109
         </td>
         <td>
-          1639
+          1663
         </td>
         <td>
-          3758
+          3914
           -
-          3768
+          3924
         </td>
         <td>
           Select
@@ -2784,15 +3289,15 @@
         </td>
       </tr><tr>
         <td>
-          108
+          109
         </td>
         <td>
-          1648
+          1672
         </td>
         <td>
-          3746
+          3902
           -
-          3858
+          4014
         </td>
         <td>
           Apply
@@ -2805,15 +3310,15 @@
         </td>
       </tr><tr>
         <td>
-          110
+          111
         </td>
         <td>
-          1676
+          1700
         </td>
         <td>
-          3869
+          4025
           -
-          4572
+          4728
         </td>
         <td>
           ApplyToImplicitArgs
@@ -2832,15 +3337,15 @@
         </td>
       </tr><tr>
         <td>
-          110
+          111
         </td>
         <td>
-          1675
+          1699
         </td>
         <td>
-          3893
+          4049
           -
-          3893
+          4049
         </td>
         <td>
           Select
@@ -2853,15 +3358,15 @@
         </td>
       </tr><tr>
         <td>
-          111
+          112
         </td>
         <td>
-          1674
+          1698
         </td>
         <td>
-          3933
+          4089
           -
-          4572
+          4728
         </td>
         <td>
           ApplyToImplicitArgs
@@ -2880,15 +3385,15 @@
         </td>
       </tr><tr>
         <td>
-          111
+          112
         </td>
         <td>
-          1673
+          1697
         </td>
         <td>
-          3942
+          4098
           -
-          3942
+          4098
         </td>
         <td>
           Select
@@ -2901,15 +3406,15 @@
         </td>
       </tr><tr>
         <td>
-          112
+          113
         </td>
         <td>
-          1671
+          1695
         </td>
         <td>
-          4015
+          4171
           -
-          4015
+          4171
         </td>
         <td>
           Select
@@ -2922,15 +3427,15 @@
         </td>
       </tr><tr>
         <td>
-          112
+          113
         </td>
         <td>
-          1672
+          1696
         </td>
         <td>
-          4001
+          4157
           -
-          4572
+          4728
         </td>
         <td>
           ApplyToImplicitArgs
@@ -2949,15 +3454,15 @@
         </td>
       </tr><tr>
         <td>
-          113
+          114
         </td>
         <td>
-          1670
+          1694
         </td>
         <td>
-          4084
+          4240
           -
-          4572
+          4728
         </td>
         <td>
           ApplyToImplicitArgs
@@ -2976,15 +3481,15 @@
         </td>
       </tr><tr>
         <td>
-          113
+          114
         </td>
         <td>
-          1669
+          1693
         </td>
         <td>
-          4090
+          4246
           -
-          4090
+          4246
         </td>
         <td>
           Select
@@ -2997,15 +3502,15 @@
         </td>
       </tr><tr>
         <td>
-          114
+          115
         </td>
         <td>
-          1668
+          1692
         </td>
         <td>
-          4161
+          4317
           -
-          4572
+          4728
         </td>
         <td>
           ApplyToImplicitArgs
@@ -3024,36 +3529,15 @@
         </td>
       </tr><tr>
         <td>
-          114
+          115
         </td>
         <td>
-          1667
+          1673
         </td>
         <td>
-          4168
+          4353
           -
-          4168
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          play.api.libs.concurrent.Execution.Implicits.defaultContext
-        </td>
-        <td style="background: #AEF1AE">
-          play.api.libs.concurrent.Execution.Implicits.defaultContext
-        </td>
-      </tr><tr>
-        <td>
-          114
-        </td>
-        <td>
-          1649
-        </td>
-        <td>
-          4197
-          -
-          4207
+          4363
         </td>
         <td>
           Select
@@ -3066,15 +3550,36 @@
         </td>
       </tr><tr>
         <td>
-          116
+          115
         </td>
         <td>
-          1650
+          1691
         </td>
         <td>
-          4273
+          4324
           -
-          4300
+          4324
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.libs.concurrent.Execution.Implicits.defaultContext
+        </td>
+        <td style="background: #AEF1AE">
+          play.api.libs.concurrent.Execution.Implicits.defaultContext
+        </td>
+      </tr><tr>
+        <td>
+          117
+        </td>
+        <td>
+          1674
+        </td>
+        <td>
+          4429
+          -
+          4456
         </td>
         <td>
           Apply
@@ -3087,15 +3592,15 @@
         </td>
       </tr><tr>
         <td>
-          116
+          117
         </td>
         <td>
-          1651
+          1675
         </td>
         <td>
-          4241
+          4397
           -
-          4301
+          4457
         </td>
         <td>
           Apply
@@ -3108,15 +3613,15 @@
         </td>
       </tr><tr>
         <td>
-          117
+          118
         </td>
         <td>
-          1653
+          1677
         </td>
         <td>
-          4314
+          4470
           -
-          4373
+          4529
         </td>
         <td>
           Apply
@@ -3129,15 +3634,15 @@
         </td>
       </tr><tr>
         <td>
-          117
+          118
         </td>
         <td>
-          1652
+          1676
         </td>
         <td>
-          4346
+          4502
           -
-          4372
+          4528
         </td>
         <td>
           Apply
@@ -3150,15 +3655,15 @@
         </td>
       </tr><tr>
         <td>
-          118
+          119
         </td>
         <td>
-          1655
+          1679
         </td>
         <td>
-          4386
+          4542
           -
-          4431
+          4587
         </td>
         <td>
           Apply
@@ -3171,15 +3676,15 @@
         </td>
       </tr><tr>
         <td>
-          118
+          119
         </td>
         <td>
-          1654
+          1678
         </td>
         <td>
-          4414
+          4570
           -
-          4423
+          4579
         </td>
         <td>
           Select
@@ -3192,15 +3697,15 @@
         </td>
       </tr><tr>
         <td>
-          119
+          120
         </td>
         <td>
-          1656
+          1680
         </td>
         <td>
-          4482
+          4638
           -
-          4492
+          4648
         </td>
         <td>
           Select
@@ -3213,15 +3718,15 @@
         </td>
       </tr><tr>
         <td>
-          119
+          120
         </td>
         <td>
-          1658
+          1682
         </td>
         <td>
-          4444
+          4600
           -
-          4509
+          4665
         </td>
         <td>
           Apply
@@ -3234,15 +3739,15 @@
         </td>
       </tr><tr>
         <td>
-          119
+          120
         </td>
         <td>
-          1657
+          1681
         </td>
         <td>
-          4493
+          4649
           -
-          4502
+          4658
         </td>
         <td>
           Select
@@ -3255,15 +3760,15 @@
         </td>
       </tr><tr>
         <td>
-          120
+          121
         </td>
         <td>
-          1665
+          1689
         </td>
         <td>
-          4524
+          4680
           -
-          4524
+          4680
         </td>
         <td>
           Select
@@ -3276,15 +3781,15 @@
         </td>
       </tr><tr>
         <td>
-          120
+          121
         </td>
         <td>
-          1659
+          1683
         </td>
         <td>
-          4534
+          4690
           -
-          4543
+          4699
         </td>
         <td>
           Literal
@@ -3297,15 +3802,15 @@
         </td>
       </tr><tr>
         <td>
-          120
+          121
         </td>
         <td>
-          1662
+          1686
         </td>
         <td>
-          4547
+          4703
           -
-          4558
+          4714
         </td>
         <td>
           ApplyToImplicitArgs
@@ -3318,36 +3823,15 @@
         </td>
       </tr><tr>
         <td>
-          120
+          121
         </td>
         <td>
-          1661
+          1688
         </td>
         <td>
-          4547
+          4681
           -
-          4547
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          play.api.libs.json.DefaultWrites.StringWrites
-        </td>
-        <td style="background: #AEF1AE">
-          json.this.Writes.StringWrites
-        </td>
-      </tr><tr>
-        <td>
-          120
-        </td>
-        <td>
-          1664
-        </td>
-        <td>
-          4525
-          -
-          4559
+          4715
         </td>
         <td>
           Apply
@@ -3360,36 +3844,36 @@
         </td>
       </tr><tr>
         <td>
-          120
+          121
         </td>
         <td>
-          1666
+          1685
         </td>
         <td>
-          4522
+          4703
           -
-          4560
+          4703
         </td>
         <td>
-          ApplyToImplicitArgs
+          Select
         </td>
         <td>
-          play.api.mvc.Results.Status.apply
+          play.api.libs.json.DefaultWrites.StringWrites
         </td>
         <td style="background: #AEF1AE">
-          OrganizerController.this.Ok.apply[play.api.libs.json.JsObject](play.api.libs.json.Json.obj(scala.Predef.ArrowAssoc[String](&quot;message&quot;).-&gt;[play.api.libs.json.Json.JsValueWrapper](json.this.Json.toJsFieldJsValueWrapper[String](&quot;mail.sent&quot;)(json.this.Writes.StringWrites))))(http.this.Writeable.writeableOf_JsValue)
+          json.this.Writes.StringWrites
         </td>
       </tr><tr>
         <td>
-          120
+          121
         </td>
         <td>
-          1660
+          1684
         </td>
         <td>
-          4547
+          4703
           -
-          4558
+          4714
         </td>
         <td>
           Literal
@@ -3402,15 +3886,15 @@
         </td>
       </tr><tr>
         <td>
-          120
+          121
         </td>
         <td>
-          1663
+          1687
         </td>
         <td>
-          4534
+          4690
           -
-          4558
+          4714
         </td>
         <td>
           Apply
@@ -3420,6 +3904,27 @@
         </td>
         <td style="background: #AEF1AE">
           scala.Predef.ArrowAssoc[String](&quot;message&quot;).-&gt;[play.api.libs.json.Json.JsValueWrapper](json.this.Json.toJsFieldJsValueWrapper[String](&quot;mail.sent&quot;)(json.this.Writes.StringWrites))
+        </td>
+      </tr><tr>
+        <td>
+          121
+        </td>
+        <td>
+          1690
+        </td>
+        <td>
+          4678
+          -
+          4716
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          play.api.mvc.Results.Status.apply
+        </td>
+        <td style="background: #AEF1AE">
+          OrganizerController.this.Ok.apply[play.api.libs.json.JsObject](play.api.libs.json.Json.obj(scala.Predef.ArrowAssoc[String](&quot;message&quot;).-&gt;[play.api.libs.json.Json.JsValueWrapper](json.this.Json.toJsFieldJsValueWrapper[String](&quot;mail.sent&quot;)(json.this.Writes.StringWrites))))(http.this.Writeable.writeableOf_JsValue)
         </td>
       </tr>
     </table>
