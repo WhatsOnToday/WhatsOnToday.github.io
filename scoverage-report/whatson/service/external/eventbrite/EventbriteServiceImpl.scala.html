@@ -42,63 +42,78 @@
 </span>18 <span style=''>import java.sql.Timestamp
 </span>19 <span style=''>import java.net._
 </span>20 <span style=''>import whatson.model.detail.TaggedImage
-</span>21 <span style=''>
+</span>21 <span style=''>import whatson.service.geocoder.Geocoder
 </span>22 <span style=''>
-</span>23 <span style=''>class EventbriteServiceImpl @Inject()(protected val dbConfigProvider: DatabaseConfigProvider,
-</span>24 <span style=''>                           applicationConfig: ApplicationConfig,
-</span>25 <span style=''>                           ws: WSClient,
-</span>26 <span style=''>                           config: EventbriteConfig)
-</span>27 <span style=''>                          (implicit context: ExecutionContext)
-</span>28 <span style=''>    extends EventbriteService {
-</span>29 <span style=''>
-</span>30 <span style=''>  val log = </span><span style='background: #AEF1AE'>Logger(&quot;service.eventbrite&quot;)</span><span style=''>
+</span>23 <span style=''>
+</span>24 <span style=''>class EventbriteServiceImpl @Inject()(protected val dbConfigProvider: DatabaseConfigProvider,
+</span>25 <span style=''>                           applicationConfig: ApplicationConfig,
+</span>26 <span style=''>                           ws: WSClient,
+</span>27 <span style=''>                           config: EventbriteConfig,
+</span>28 <span style=''>                           geocoder: Geocoder)
+</span>29 <span style=''>                          (implicit context: ExecutionContext)
+</span>30 <span style=''>    extends EventbriteService {
 </span>31 <span style=''>
-</span>32 <span style=''>  val format = </span><span style='background: #AEF1AE'>new SimpleDateFormat(&quot;yyyy-MM-dd'T'HH:mm:ss&quot;)</span><span style=''>
+</span>32 <span style=''>  val log = </span><span style='background: #AEF1AE'>Logger(&quot;service.eventbrite&quot;)</span><span style=''>
 </span>33 <span style=''>
-</span>34 <span style=''>  def getEventData(id: String): Future[Option[Model.Event]] = {
-</span>35 <span style=''>    val request = </span><span style='background: #AEF1AE'>ws.url(config.url + &quot;/events/&quot; + id + &quot;?expand=venue,category,subcategory,logo&quot;)
-</span>36 <span style=''></span><span style='background: #AEF1AE'>      .addHttpHeaders(&quot;Authorization&quot; -&gt; (&quot;Bearer &quot; + config.apiKey))</span><span style=''>
-</span>37 <span style=''>      
-</span>38 <span style=''>    val result = </span><span style='background: #AEF1AE'>request.get()</span><span style=''>
-</span>39 <span style=''>
-</span>40 <span style=''>    </span><span style='background: #AEF1AE'>result.map { case x =&gt;
-</span>41 <span style=''></span><span style='background: #AEF1AE'>      log.debug(&quot;Got response from eventbrite api: &quot; + x.body)
-</span>42 <span style=''></span><span style='background: #AEF1AE'>      val res = x.json.validate[Model.Event]
-</span>43 <span style=''></span><span style='background: #AEF1AE'>      log.debug(res.toString())
-</span>44 <span style=''></span><span style='background: #AEF1AE'>      res.asOpt
-</span>45 <span style=''></span><span style='background: #AEF1AE'>    }</span><span style=''>
-</span>46 <span style=''>  }
-</span>47 <span style=''>
-</span>48 <span style=''>  def getEvent(url: String, login: Login): Future[Option[EventDetail]] = {
-</span>49 <span style=''>    val t = </span><span style='background: #AEF1AE'>new URI(url).getPath.split(&quot;/&quot;)</span><span style=''>
-</span>50 <span style=''>    val i = </span><span style='background: #AEF1AE'>t.indexOf(&quot;e&quot;)</span><span style=''>
-</span>51 <span style=''>    val name = </span><span style='background: #AEF1AE'>t(i+1).split(&quot;-&quot;)</span><span style=''>
-</span>52 <span style=''>    val id = </span><span style='background: #AEF1AE'>name.last</span><span style=''>
-</span>53 <span style=''>    </span><span style='background: #AEF1AE'>getEventData(id).map(_.map(x =&gt; toEventDetail(x)))</span><span style=''>
-</span>54 <span style=''>  }
-</span>55 <span style=''>
-</span>56 <span style=''>  def canImport(url: String, login: Login) = {
-</span>57 <span style=''>    val uri = </span><span style='background: #AEF1AE'>new URI(url)</span><span style=''>
-</span>58 <span style=''>    val split = </span><span style='background: #AEF1AE'>uri.getPath.split(&quot;/&quot;).indexOf(&quot;e&quot;)</span><span style=''>
-</span>59 <span style=''>    </span><span style='background: #AEF1AE'>(uri.getHost.equals(&quot;www.eventbrite.com&quot;) || uri.getHost.equals(&quot;www.eventbrite.de&quot;)) &amp;&amp; split &gt;= 0</span><span style=''>
-</span>60 <span style=''>  }
-</span>61 <span style=''>
-</span>62 <span style=''>  def toEventDetail(data: Model.Event): EventDetail = {
-</span>63 <span style=''>    val loc = </span><span style='background: #AEF1AE'>Location(None, data.venue.name.getOrElse(</span><span style='background: #F0ADAD'>data.venue.address.address_1.getOrElse(&quot;&quot;)</span><span style='background: #AEF1AE'>), Some(data.venue.address.latitude.toFloat), Some(data.venue.address.longitude.toFloat),
-</span>64 <span style=''></span><span style='background: #AEF1AE'>                            data.venue.address.country, data.venue.address.city, data.venue.address.address_1.getOrElse(&quot;&quot;), None,
-</span>65 <span style=''></span><span style='background: #AEF1AE'>                            None, None, None, data.venue.address.postal_code)</span><span style=''>
+</span>34 <span style=''>  val format = </span><span style='background: #AEF1AE'>new SimpleDateFormat(&quot;yyyy-MM-dd'T'HH:mm:ss&quot;)</span><span style=''>
+</span>35 <span style=''>
+</span>36 <span style=''>  def getEventData(id: String): Future[Option[Model.Event]] = {
+</span>37 <span style=''>    val request = </span><span style='background: #AEF1AE'>ws.url(config.url + &quot;/events/&quot; + id + &quot;?expand=venue,category,subcategory,logo&quot;)
+</span>38 <span style=''></span><span style='background: #AEF1AE'>      .addHttpHeaders(&quot;Authorization&quot; -&gt; (&quot;Bearer &quot; + config.apiKey))</span><span style=''>
+</span>39 <span style=''>      
+</span>40 <span style=''>    val result = </span><span style='background: #AEF1AE'>request.get()</span><span style=''>
+</span>41 <span style=''>
+</span>42 <span style=''>    </span><span style='background: #AEF1AE'>result.map { case x =&gt;
+</span>43 <span style=''></span><span style='background: #AEF1AE'>      log.debug(&quot;Got response from eventbrite api: &quot; + x.body)
+</span>44 <span style=''></span><span style='background: #AEF1AE'>      val res = x.json.validate[Model.Event]
+</span>45 <span style=''></span><span style='background: #AEF1AE'>      log.debug(res.toString())
+</span>46 <span style=''></span><span style='background: #AEF1AE'>      res.asOpt
+</span>47 <span style=''></span><span style='background: #AEF1AE'>    }</span><span style=''>
+</span>48 <span style=''>  }
+</span>49 <span style=''>
+</span>50 <span style=''>  def getEvent(url: String, login: Login): Future[Option[EventDetail]] = {
+</span>51 <span style=''>    val t = </span><span style='background: #AEF1AE'>new URI(url).getPath.split(&quot;/&quot;)</span><span style=''>
+</span>52 <span style=''>    val i = </span><span style='background: #AEF1AE'>t.indexOf(&quot;e&quot;)</span><span style=''>
+</span>53 <span style=''>    val name = </span><span style='background: #AEF1AE'>t(i+1).split(&quot;-&quot;)</span><span style=''>
+</span>54 <span style=''>    val id = </span><span style='background: #AEF1AE'>name.last</span><span style=''>
+</span>55 <span style=''>    </span><span style='background: #AEF1AE'>getEventData(id).flatMap {
+</span>56 <span style=''></span><span style='background: #AEF1AE'>      case Some(e) =&gt; toEventDetail(e).map(Some(_))
+</span>57 <span style=''></span><span style='background: #AEF1AE'>      case None =&gt; </span><span style='background: #F0ADAD'>Future.successful(None)</span><span style='background: #AEF1AE'>
+</span>58 <span style=''></span><span style='background: #AEF1AE'>    }</span><span style=''>
+</span>59 <span style=''>  }
+</span>60 <span style=''>
+</span>61 <span style=''>  def canImport(url: String, login: Login) = {
+</span>62 <span style=''>    val uri = </span><span style='background: #AEF1AE'>new URI(url)</span><span style=''>
+</span>63 <span style=''>    val split = </span><span style='background: #AEF1AE'>uri.getPath.split(&quot;/&quot;).indexOf(&quot;e&quot;)</span><span style=''>
+</span>64 <span style=''>    </span><span style='background: #AEF1AE'>(uri.getHost.equals(&quot;www.eventbrite.com&quot;) || uri.getHost.equals(&quot;www.eventbrite.de&quot;)) &amp;&amp; split &gt;= 0</span><span style=''>
+</span>65 <span style=''>  }
 </span>66 <span style=''>
-</span>67 <span style=''>    val from = </span><span style='background: #AEF1AE'>new Timestamp(format.parse(data.start.local).getTime)</span><span style=''>
-</span>68 <span style=''>    val to = </span><span style='background: #AEF1AE'>new Timestamp(format.parse(data.end.local).getTime)</span><span style=''>
-</span>69 <span style=''>
-</span>70 <span style=''>    </span><span style='background: #AEF1AE'>EventDetail(None, data.name.text, from,
-</span>71 <span style=''></span><span style='background: #AEF1AE'>                Some(to), data.description.text,
-</span>72 <span style=''></span><span style='background: #AEF1AE'>                Organizer(None,&quot;Organizer&quot;,-1,None), List(/*TODO Categories*/),
-</span>73 <span style=''></span><span style='background: #AEF1AE'>                None, loc,
-</span>74 <span style=''></span><span style='background: #AEF1AE'>                List(TaggedImage(None,None,None,Some(data.logo.url))), 0,
-</span>75 <span style=''></span><span style='background: #AEF1AE'>                None, None)</span><span style=''> //TODO Prices
-</span>76 <span style=''>  }
-</span>77 <span style=''>}
+</span>67 <span style=''>  def toEventDetail(data: Model.Event): Future[EventDetail] = {
+</span>68 <span style=''>    val loc = if(</span><span style='background: #AEF1AE'>data.venue.address.postal_code.isDefined</span><span style=''>) {
+</span>69 <span style=''>       </span><span style='background: #AEF1AE'>Future.successful(Location(None, data.venue.name.getOrElse(</span><span style='background: #F0ADAD'>data.venue.address.address_1.getOrElse(&quot;&quot;)</span><span style='background: #AEF1AE'>), Some(data.venue.address.latitude.toFloat), Some(data.venue.address.longitude.toFloat),
+</span>70 <span style=''></span><span style='background: #AEF1AE'>                            data.venue.address.country, data.venue.address.city, data.venue.address.address_1.getOrElse(&quot;&quot;), None,
+</span>71 <span style=''></span><span style='background: #AEF1AE'>                            None, None, None, data.venue.address.postal_code))</span><span style=''>
+</span>72 <span style=''>    } else {
+</span>73 <span style=''>      </span><span style='background: #F0ADAD'>geocoder.getZip(Geocoder.Address(data.venue.address.country, data.venue.address.city, data.venue.address.address_1.getOrElse(&quot;&quot;))).map {
+</span>74 <span style=''></span><span style='background: #F0ADAD'>        case zip =&gt; Location(None, data.venue.name.getOrElse(data.venue.address.address_1.getOrElse(&quot;&quot;)), Some(data.venue.address.latitude.toFloat), Some(data.venue.address.longitude.toFloat),
+</span>75 <span style=''></span><span style='background: #F0ADAD'>                            data.venue.address.country, data.venue.address.city, data.venue.address.address_1.getOrElse(&quot;&quot;), None,
+</span>76 <span style=''></span><span style='background: #F0ADAD'>                            None, None, None, zip)
+</span>77 <span style=''></span><span style='background: #F0ADAD'>      }</span><span style=''>
+</span>78 <span style=''>    }
+</span>79 <span style=''>
+</span>80 <span style=''>    val from = </span><span style='background: #AEF1AE'>new Timestamp(format.parse(data.start.local).getTime)</span><span style=''>
+</span>81 <span style=''>    val to = </span><span style='background: #AEF1AE'>new Timestamp(format.parse(data.end.local).getTime)</span><span style=''>
+</span>82 <span style=''>
+</span>83 <span style=''>    </span><span style='background: #AEF1AE'>loc.map {
+</span>84 <span style=''></span><span style='background: #AEF1AE'>      case l =&gt; EventDetail(None, data.name.text, from,
+</span>85 <span style=''></span><span style='background: #AEF1AE'>                Some(to), data.description.text,
+</span>86 <span style=''></span><span style='background: #AEF1AE'>                Organizer(None,&quot;Organizer&quot;,-1,None), List(/*TODO Categories*/),
+</span>87 <span style=''></span><span style='background: #AEF1AE'>                None, l,
+</span>88 <span style=''></span><span style='background: #AEF1AE'>                List(TaggedImage(None,None,None,Some(data.logo.url))), 0,
+</span>89 <span style=''></span><span style='background: #AEF1AE'>                None, None) //TODO Prices
+</span>90 <span style=''></span><span style='background: #AEF1AE'>    }</span><span style=''>
+</span>91 <span style=''>  }
+</span>92 <span style=''>}
 </span></pre>
           </div>
           <div class="tab-pane" id="statementlist">
@@ -112,15 +127,15 @@
         <th>Code</th>
       </tr><tr>
         <td>
-          30
+          32
         </td>
         <td>
           4310
         </td>
         <td>
-          999
+          1087
           -
-          1027
+          1115
         </td>
         <td>
           Apply
@@ -133,15 +148,15 @@
         </td>
       </tr><tr>
         <td>
-          32
+          34
         </td>
         <td>
           4311
         </td>
         <td>
-          1044
+          1132
           -
-          1089
+          1177
         </td>
         <td>
           Apply
@@ -154,15 +169,15 @@
         </td>
       </tr><tr>
         <td>
-          35
+          37
         </td>
         <td>
           4312
         </td>
         <td>
-          1180
+          1268
           -
-          1252
+          1340
         </td>
         <td>
           Apply
@@ -175,15 +190,15 @@
         </td>
       </tr><tr>
         <td>
-          36
+          38
         </td>
         <td>
           4318
         </td>
         <td>
-          1173
+          1261
           -
-          1323
+          1411
         </td>
         <td>
           Apply
@@ -196,15 +211,15 @@
         </td>
       </tr><tr>
         <td>
-          36
+          38
         </td>
         <td>
           4314
         </td>
         <td>
-          1296
+          1384
           -
-          1305
+          1393
         </td>
         <td>
           Literal
@@ -217,15 +232,15 @@
         </td>
       </tr><tr>
         <td>
-          36
+          38
         </td>
         <td>
           4317
         </td>
         <td>
-          1276
+          1364
           -
-          1322
+          1410
         </td>
         <td>
           Apply
@@ -238,15 +253,15 @@
         </td>
       </tr><tr>
         <td>
-          36
+          38
         </td>
         <td>
           4313
         </td>
         <td>
-          1276
+          1364
           -
-          1291
+          1379
         </td>
         <td>
           Literal
@@ -259,15 +274,15 @@
         </td>
       </tr><tr>
         <td>
-          36
+          38
         </td>
         <td>
           4316
         </td>
         <td>
-          1296
+          1384
           -
-          1321
+          1409
         </td>
         <td>
           Apply
@@ -280,15 +295,15 @@
         </td>
       </tr><tr>
         <td>
-          36
+          38
         </td>
         <td>
           4315
         </td>
         <td>
-          1308
+          1396
           -
-          1321
+          1409
         </td>
         <td>
           Select
@@ -301,15 +316,15 @@
         </td>
       </tr><tr>
         <td>
-          38
+          40
         </td>
         <td>
           4319
         </td>
         <td>
-          1348
+          1436
           -
-          1361
+          1449
         </td>
         <td>
           Apply
@@ -322,15 +337,15 @@
         </td>
       </tr><tr>
         <td>
-          40
+          42
         </td>
         <td>
           4332
         </td>
         <td>
-          1367
+          1455
           -
-          1551
+          1639
         </td>
         <td>
           ApplyToImplicitArgs
@@ -350,15 +365,15 @@
         </td>
       </tr><tr>
         <td>
-          40
+          42
         </td>
         <td>
           4331
         </td>
         <td>
-          1378
+          1466
           -
-          1378
+          1466
         </td>
         <td>
           Select
@@ -371,15 +386,15 @@
         </td>
       </tr><tr>
         <td>
-          41
+          43
         </td>
         <td>
           4321
         </td>
         <td>
-          1445
+          1533
           -
-          1451
+          1539
         </td>
         <td>
           Select
@@ -392,15 +407,15 @@
         </td>
       </tr><tr>
         <td>
-          41
+          43
         </td>
         <td>
           4320
         </td>
         <td>
-          1406
+          1494
           -
-          1442
+          1530
         </td>
         <td>
           Literal
@@ -413,15 +428,15 @@
         </td>
       </tr><tr>
         <td>
-          41
+          43
         </td>
         <td>
           4323
         </td>
         <td>
-          1405
+          1493
           -
-          1405
+          1493
         </td>
         <td>
           Select
@@ -434,15 +449,15 @@
         </td>
       </tr><tr>
         <td>
-          41
+          43
         </td>
         <td>
           4322
         </td>
         <td>
-          1406
+          1494
           -
-          1451
+          1539
         </td>
         <td>
           Apply
@@ -455,15 +470,15 @@
         </td>
       </tr><tr>
         <td>
-          41
+          43
         </td>
         <td>
           4324
         </td>
         <td>
-          1396
+          1484
           -
-          1452
+          1540
         </td>
         <td>
           ApplyToImplicitArgs
@@ -476,15 +491,15 @@
         </td>
       </tr><tr>
         <td>
-          42
+          44
         </td>
         <td>
           4326
         </td>
         <td>
-          1469
+          1557
           -
-          1497
+          1585
         </td>
         <td>
           ApplyToImplicitArgs
@@ -497,15 +512,15 @@
         </td>
       </tr><tr>
         <td>
-          42
+          44
         </td>
         <td>
           4325
         </td>
         <td>
-          1484
+          1572
           -
-          1484
+          1572
         </td>
         <td>
           Select
@@ -518,15 +533,15 @@
         </td>
       </tr><tr>
         <td>
-          43
+          45
         </td>
         <td>
           4327
         </td>
         <td>
-          1514
+          1602
           -
-          1528
+          1616
         </td>
         <td>
           Apply
@@ -539,15 +554,15 @@
         </td>
       </tr><tr>
         <td>
-          43
+          45
         </td>
         <td>
           4329
         </td>
         <td>
-          1504
+          1592
           -
-          1529
+          1617
         </td>
         <td>
           ApplyToImplicitArgs
@@ -560,15 +575,15 @@
         </td>
       </tr><tr>
         <td>
-          43
+          45
         </td>
         <td>
           4328
         </td>
         <td>
-          1513
+          1601
           -
-          1513
+          1601
         </td>
         <td>
           Select
@@ -581,15 +596,15 @@
         </td>
       </tr><tr>
         <td>
-          44
+          46
         </td>
         <td>
           4330
         </td>
         <td>
-          1536
+          1624
           -
-          1545
+          1633
         </td>
         <td>
           Select
@@ -602,15 +617,15 @@
         </td>
       </tr><tr>
         <td>
-          49
+          51
         </td>
         <td>
           4333
         </td>
         <td>
-          1644
+          1732
           -
-          1675
+          1763
         </td>
         <td>
           Apply
@@ -623,15 +638,15 @@
         </td>
       </tr><tr>
         <td>
-          50
+          52
         </td>
         <td>
           4334
         </td>
         <td>
-          1688
+          1776
           -
-          1702
+          1790
         </td>
         <td>
           Apply
@@ -644,15 +659,15 @@
         </td>
       </tr><tr>
         <td>
-          51
+          53
         </td>
         <td>
           4335
         </td>
         <td>
-          1718
+          1806
           -
-          1735
+          1823
         </td>
         <td>
           Apply
@@ -665,15 +680,15 @@
         </td>
       </tr><tr>
         <td>
-          52
+          54
         </td>
         <td>
           4336
         </td>
         <td>
-          1749
+          1837
           -
-          1758
+          1846
         </td>
         <td>
           Select
@@ -686,15 +701,39 @@
         </td>
       </tr><tr>
         <td>
-          53
+          55
         </td>
         <td>
-          4339
+          4343
         </td>
         <td>
-          1783
+          1851
           -
-          1783
+          1978
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.concurrent.Future.flatMap
+        </td>
+        <td style="background: #AEF1AE">
+          EventbriteServiceImpl.this.getEventData(id).flatMap[Option[whatson.model.detail.EventDetail]](((x0$2: Option[whatson.service.external.eventbrite.Model.Event]) =&gt; x0$2 match {
+  case (value: whatson.service.external.eventbrite.Model.Event)Some[whatson.service.external.eventbrite.Model.Event]((e @ _)) =&gt; EventbriteServiceImpl.this.toEventDetail(e).map[Some[whatson.model.detail.EventDetail]](((x$1: whatson.model.detail.EventDetail) =&gt; scala.Some.apply[whatson.model.detail.EventDetail](x$1)))(EventbriteServiceImpl.this.context)
+  case scala.None =&gt; scala.concurrent.Future.successful[None.type](scala.None)
+}))(EventbriteServiceImpl.this.context)
+        </td>
+      </tr><tr>
+        <td>
+          55
+        </td>
+        <td>
+          4342
+        </td>
+        <td>
+          1876
+          -
+          1876
         </td>
         <td>
           Select
@@ -707,57 +746,15 @@
         </td>
       </tr><tr>
         <td>
-          53
+          56
         </td>
         <td>
-          4338
+          4339
         </td>
         <td>
-          1784
+          1900
           -
-          1812
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          scala.Option.map
-        </td>
-        <td style="background: #AEF1AE">
-          x$1.map[whatson.model.detail.EventDetail](((x: whatson.service.external.eventbrite.Model.Event) =&gt; EventbriteServiceImpl.this.toEventDetail(x)))
-        </td>
-      </tr><tr>
-        <td>
-          53
-        </td>
-        <td>
-          4337
-        </td>
-        <td>
-          1795
-          -
-          1811
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          whatson.service.external.eventbrite.EventbriteServiceImpl.toEventDetail
-        </td>
-        <td style="background: #AEF1AE">
-          EventbriteServiceImpl.this.toEventDetail(x)
-        </td>
-      </tr><tr>
-        <td>
-          53
-        </td>
-        <td>
-          4340
-        </td>
-        <td>
-          1763
-          -
-          1813
+          1929
         </td>
         <td>
           ApplyToImplicitArgs
@@ -766,7 +763,49 @@
           scala.concurrent.Future.map
         </td>
         <td style="background: #AEF1AE">
-          EventbriteServiceImpl.this.getEventData(id).map[Option[whatson.model.detail.EventDetail]](((x$1: Option[whatson.service.external.eventbrite.Model.Event]) =&gt; x$1.map[whatson.model.detail.EventDetail](((x: whatson.service.external.eventbrite.Model.Event) =&gt; EventbriteServiceImpl.this.toEventDetail(x)))))(EventbriteServiceImpl.this.context)
+          EventbriteServiceImpl.this.toEventDetail(e).map[Some[whatson.model.detail.EventDetail]](((x$1: whatson.model.detail.EventDetail) =&gt; scala.Some.apply[whatson.model.detail.EventDetail](x$1)))(EventbriteServiceImpl.this.context)
+        </td>
+      </tr><tr>
+        <td>
+          56
+        </td>
+        <td>
+          4338
+        </td>
+        <td>
+          1920
+          -
+          1920
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.service.external.eventbrite.EventbriteServiceImpl.context
+        </td>
+        <td style="background: #AEF1AE">
+          EventbriteServiceImpl.this.context
+        </td>
+      </tr><tr>
+        <td>
+          56
+        </td>
+        <td>
+          4337
+        </td>
+        <td>
+          1921
+          -
+          1928
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Some.apply[whatson.model.detail.EventDetail](x$1)
         </td>
       </tr><tr>
         <td>
@@ -776,9 +815,51 @@
           4341
         </td>
         <td>
-          1880
+          1949
           -
-          1892
+          1972
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.concurrent.Future.successful
+        </td>
+        <td style="background: #F0ADAD">
+          scala.concurrent.Future.successful[None.type](scala.None)
+        </td>
+      </tr><tr>
+        <td>
+          57
+        </td>
+        <td>
+          4340
+        </td>
+        <td>
+          1967
+          -
+          1971
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #F0ADAD">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          62
+        </td>
+        <td>
+          4344
+        </td>
+        <td>
+          2045
+          -
+          2057
         </td>
         <td>
           Apply
@@ -791,15 +872,15 @@
         </td>
       </tr><tr>
         <td>
-          58
+          63
         </td>
         <td>
-          4342
+          4345
         </td>
         <td>
-          1909
+          2074
           -
-          1944
+          2109
         </td>
         <td>
           Apply
@@ -812,36 +893,15 @@
         </td>
       </tr><tr>
         <td>
-          59
+          64
         </td>
         <td>
-          4345
+          4347
         </td>
         <td>
-          2038
+          2159
           -
-          2048
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          scala.Int.&gt;=
-        </td>
-        <td style="background: #AEF1AE">
-          split.&gt;=(0)
-        </td>
-      </tr><tr>
-        <td>
-          59
-        </td>
-        <td>
-          4344
-        </td>
-        <td>
-          1994
-          -
-          2033
+          2198
         </td>
         <td>
           Apply
@@ -854,15 +914,15 @@
         </td>
       </tr><tr>
         <td>
-          59
+          64
         </td>
         <td>
-          4343
+          4346
         </td>
         <td>
-          1969
+          2134
           -
-          1989
+          2154
         </td>
         <td>
           Literal
@@ -875,15 +935,15 @@
         </td>
       </tr><tr>
         <td>
-          59
+          64
         </td>
         <td>
-          4346
+          4349
         </td>
         <td>
-          1949
+          2114
           -
-          2048
+          2213
         </td>
         <td>
           Apply
@@ -896,57 +956,57 @@
         </td>
       </tr><tr>
         <td>
-          63
+          64
         </td>
         <td>
-          4354
+          4348
         </td>
         <td>
-          2258
+          2203
           -
-          2294
+          2213
         </td>
         <td>
-          Select
+          Apply
         </td>
         <td>
-          scala.collection.immutable.StringLike.toFloat
+          scala.Int.&gt;=
         </td>
         <td style="background: #AEF1AE">
-          scala.Predef.augmentString(data.venue.address.longitude).toFloat
+          split.&gt;=(0)
         </td>
       </tr><tr>
         <td>
-          63
-        </td>
-        <td>
-          4347
-        </td>
-        <td>
-          2133
-          -
-          2137
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          scala.None
-        </td>
-        <td style="background: #AEF1AE">
-          scala.None
-        </td>
-      </tr><tr>
-        <td>
-          63
+          68
         </td>
         <td>
           4350
         </td>
         <td>
-          2215
+          2300
           -
-          2242
+          2340
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Option.isDefined
+        </td>
+        <td style="background: #AEF1AE">
+          data.venue.address.postal_code.isDefined
+        </td>
+      </tr><tr>
+        <td>
+          69
+        </td>
+        <td>
+          4354
+        </td>
+        <td>
+          2460
+          -
+          2487
         </td>
         <td>
           Select
@@ -959,36 +1019,15 @@
         </td>
       </tr><tr>
         <td>
-          63
+          69
         </td>
         <td>
-          4353
+          4356
         </td>
         <td>
-          2258
+          2455
           -
-          2286
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          whatson.service.external.eventbrite.Model.Address.longitude
-        </td>
-        <td style="background: #AEF1AE">
-          data.venue.address.longitude
-        </td>
-      </tr><tr>
-        <td>
-          63
-        </td>
-        <td>
-          4352
-        </td>
-        <td>
-          2210
-          -
-          2251
+          2496
         </td>
         <td>
           Apply
@@ -1001,15 +1040,15 @@
         </td>
       </tr><tr>
         <td>
-          63
+          69
         </td>
         <td>
-          4364
+          4368
         </td>
         <td>
-          2124
+          2369
           -
-          2505
+          2750
         </td>
         <td>
           Apply
@@ -1022,15 +1061,15 @@
         </td>
       </tr><tr>
         <td>
-          63
+          69
         </td>
         <td>
-          4355
+          4359
         </td>
         <td>
-          2253
+          2498
           -
-          2295
+          2540
         </td>
         <td>
           Apply
@@ -1043,15 +1082,15 @@
         </td>
       </tr><tr>
         <td>
-          63
+          69
         </td>
         <td>
-          4349
+          4353
         </td>
         <td>
-          2139
+          2384
           -
-          2208
+          2453
         </td>
         <td>
           Apply
@@ -1064,15 +1103,36 @@
         </td>
       </tr><tr>
         <td>
-          63
+          69
         </td>
         <td>
-          4348
+          4370
         </td>
         <td>
-          2165
+          2351
           -
-          2207
+          2751
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          scala.concurrent.Future.successful
+        </td>
+        <td style="background: #AEF1AE">
+          scala.concurrent.Future.successful[whatson.model.Location](whatson.model.Location.apply(scala.None, data.venue.name.getOrElse[String](data.venue.address.address_1.getOrElse[String](&quot;&quot;)), scala.Some.apply[Float](scala.Predef.augmentString(data.venue.address.latitude).toFloat), scala.Some.apply[Float](scala.Predef.augmentString(data.venue.address.longitude).toFloat), data.venue.address.country, data.venue.address.city, data.venue.address.address_1.getOrElse[String](&quot;&quot;), scala.None, scala.None, scala.None, scala.None, data.venue.address.postal_code))
+        </td>
+      </tr><tr>
+        <td>
+          69
+        </td>
+        <td>
+          4352
+        </td>
+        <td>
+          2410
+          -
+          2452
         </td>
         <td>
           Apply
@@ -1085,15 +1145,15 @@
         </td>
       </tr><tr>
         <td>
-          63
+          69
         </td>
         <td>
-          4351
+          4355
         </td>
         <td>
-          2215
+          2460
           -
-          2250
+          2495
         </td>
         <td>
           Select
@@ -1106,57 +1166,120 @@
         </td>
       </tr><tr>
         <td>
-          64
-        </td>
-        <td>
-          4356
-        </td>
-        <td>
-          2325
-          -
-          2351
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          whatson.service.external.eventbrite.Model.Address.country
-        </td>
-        <td style="background: #AEF1AE">
-          data.venue.address.country
-        </td>
-      </tr><tr>
-        <td>
-          64
-        </td>
-        <td>
-          4359
-        </td>
-        <td>
-          2422
-          -
-          2426
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          scala.None
-        </td>
-        <td style="background: #AEF1AE">
-          scala.None
-        </td>
-      </tr><tr>
-        <td>
-          64
+          69
         </td>
         <td>
           4358
         </td>
         <td>
+          2503
+          -
+          2539
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.immutable.StringLike.toFloat
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Predef.augmentString(data.venue.address.longitude).toFloat
+        </td>
+      </tr><tr>
+        <td>
+          69
+        </td>
+        <td>
+          4357
+        </td>
+        <td>
+          2503
+          -
+          2531
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.service.external.eventbrite.Model.Address.longitude
+        </td>
+        <td style="background: #AEF1AE">
+          data.venue.address.longitude
+        </td>
+      </tr><tr>
+        <td>
+          69
+        </td>
+        <td>
+          4369
+        </td>
+        <td>
+          2351
+          -
+          2751
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.concurrent.Future.successful
+        </td>
+        <td style="background: #AEF1AE">
+          scala.concurrent.Future.successful[whatson.model.Location](whatson.model.Location.apply(scala.None, data.venue.name.getOrElse[String](data.venue.address.address_1.getOrElse[String](&quot;&quot;)), scala.Some.apply[Float](scala.Predef.augmentString(data.venue.address.latitude).toFloat), scala.Some.apply[Float](scala.Predef.augmentString(data.venue.address.longitude).toFloat), data.venue.address.country, data.venue.address.city, data.venue.address.address_1.getOrElse[String](&quot;&quot;), scala.None, scala.None, scala.None, scala.None, data.venue.address.postal_code))
+        </td>
+      </tr><tr>
+        <td>
+          69
+        </td>
+        <td>
+          4351
+        </td>
+        <td>
           2378
           -
-          2420
+          2382
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #AEF1AE">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          70
+        </td>
+        <td>
+          4363
+        </td>
+        <td>
+          2667
+          -
+          2671
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #AEF1AE">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          70
+        </td>
+        <td>
+          4362
+        </td>
+        <td>
+          2623
+          -
+          2665
         </td>
         <td>
           Apply
@@ -1169,15 +1292,15 @@
         </td>
       </tr><tr>
         <td>
-          64
+          70
         </td>
         <td>
-          4357
+          4361
         </td>
         <td>
-          2353
+          2598
           -
-          2376
+          2621
         </td>
         <td>
           Select
@@ -1190,15 +1313,78 @@
         </td>
       </tr><tr>
         <td>
-          65
+          70
         </td>
         <td>
-          4363
+          4360
         </td>
         <td>
-          2474
+          2570
           -
-          2504
+          2596
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.service.external.eventbrite.Model.Address.country
+        </td>
+        <td style="background: #AEF1AE">
+          data.venue.address.country
+        </td>
+      </tr><tr>
+        <td>
+          71
+        </td>
+        <td>
+          4365
+        </td>
+        <td>
+          2707
+          -
+          2711
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #AEF1AE">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          71
+        </td>
+        <td>
+          4364
+        </td>
+        <td>
+          2701
+          -
+          2705
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #AEF1AE">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          71
+        </td>
+        <td>
+          4367
+        </td>
+        <td>
+          2719
+          -
+          2749
         </td>
         <td>
           Select
@@ -1211,15 +1397,15 @@
         </td>
       </tr><tr>
         <td>
-          65
+          71
         </td>
         <td>
-          4362
+          4366
         </td>
         <td>
-          2468
+          2713
           -
-          2472
+          2717
         </td>
         <td>
           Select
@@ -1232,15 +1418,334 @@
         </td>
       </tr><tr>
         <td>
-          65
+          73
         </td>
         <td>
-          4361
+          4372
         </td>
         <td>
-          2462
+          2832
           -
-          2466
+          2855
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.service.external.eventbrite.Model.Address.city
+        </td>
+        <td style="background: #F0ADAD">
+          data.venue.address.city
+        </td>
+      </tr><tr>
+        <td>
+          73
+        </td>
+        <td>
+          4371
+        </td>
+        <td>
+          2804
+          -
+          2830
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.service.external.eventbrite.Model.Address.country
+        </td>
+        <td style="background: #F0ADAD">
+          data.venue.address.country
+        </td>
+      </tr><tr>
+        <td>
+          73
+        </td>
+        <td>
+          4392
+        </td>
+        <td>
+          2906
+          -
+          2906
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.service.external.eventbrite.EventbriteServiceImpl.context
+        </td>
+        <td style="background: #F0ADAD">
+          EventbriteServiceImpl.this.context
+        </td>
+      </tr><tr>
+        <td>
+          73
+        </td>
+        <td>
+          4374
+        </td>
+        <td>
+          2787
+          -
+          2900
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          whatson.service.geocoder.Geocoder.Address.apply
+        </td>
+        <td style="background: #F0ADAD">
+          whatson.service.geocoder.Geocoder.Address.apply(data.venue.address.country, data.venue.address.city, data.venue.address.address_1.getOrElse[String](&quot;&quot;))
+        </td>
+      </tr><tr>
+        <td>
+          73
+        </td>
+        <td>
+          4394
+        </td>
+        <td>
+          2771
+          -
+          3290
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          scala.concurrent.Future.map
+        </td>
+        <td style="background: #F0ADAD">
+          EventbriteServiceImpl.this.geocoder.getZip(whatson.service.geocoder.Geocoder.Address.apply(data.venue.address.country, data.venue.address.city, data.venue.address.address_1.getOrElse[String](&quot;&quot;))).map[whatson.model.Location](((x0$3: Option[String]) =&gt; x0$3 match {
+  case (zip @ _) =&gt; whatson.model.Location.apply(scala.None, data.venue.name.getOrElse[String](data.venue.address.address_1.getOrElse[String](&quot;&quot;)), scala.Some.apply[Float](scala.Predef.augmentString(data.venue.address.latitude).toFloat), scala.Some.apply[Float](scala.Predef.augmentString(data.venue.address.longitude).toFloat), data.venue.address.country, data.venue.address.city, data.venue.address.address_1.getOrElse[String](&quot;&quot;), scala.None, scala.None, scala.None, scala.None, zip)
+}))(EventbriteServiceImpl.this.context)
+        </td>
+      </tr><tr>
+        <td>
+          73
+        </td>
+        <td>
+          4373
+        </td>
+        <td>
+          2857
+          -
+          2899
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Option.getOrElse
+        </td>
+        <td style="background: #F0ADAD">
+          data.venue.address.address_1.getOrElse[String](&quot;&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          73
+        </td>
+        <td>
+          4393
+        </td>
+        <td>
+          2771
+          -
+          3290
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.concurrent.Future.map
+        </td>
+        <td style="background: #F0ADAD">
+          EventbriteServiceImpl.this.geocoder.getZip(whatson.service.geocoder.Geocoder.Address.apply(data.venue.address.country, data.venue.address.city, data.venue.address.address_1.getOrElse[String](&quot;&quot;))).map[whatson.model.Location](((x0$3: Option[String]) =&gt; x0$3 match {
+  case (zip @ _) =&gt; whatson.model.Location.apply(scala.None, data.venue.name.getOrElse[String](data.venue.address.address_1.getOrElse[String](&quot;&quot;)), scala.Some.apply[Float](scala.Predef.augmentString(data.venue.address.latitude).toFloat), scala.Some.apply[Float](scala.Predef.augmentString(data.venue.address.longitude).toFloat), data.venue.address.country, data.venue.address.city, data.venue.address.address_1.getOrElse[String](&quot;&quot;), scala.None, scala.None, scala.None, scala.None, zip)
+}))(EventbriteServiceImpl.this.context)
+        </td>
+      </tr><tr>
+        <td>
+          74
+        </td>
+        <td>
+          4381
+        </td>
+        <td>
+          3062
+          -
+          3090
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.service.external.eventbrite.Model.Address.longitude
+        </td>
+        <td style="background: #F0ADAD">
+          data.venue.address.longitude
+        </td>
+      </tr><tr>
+        <td>
+          74
+        </td>
+        <td>
+          4380
+        </td>
+        <td>
+          3014
+          -
+          3055
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #F0ADAD">
+          scala.Some.apply[Float](scala.Predef.augmentString(data.venue.address.latitude).toFloat)
+        </td>
+      </tr><tr>
+        <td>
+          74
+        </td>
+        <td>
+          4383
+        </td>
+        <td>
+          3057
+          -
+          3099
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #F0ADAD">
+          scala.Some.apply[Float](scala.Predef.augmentString(data.venue.address.longitude).toFloat)
+        </td>
+      </tr><tr>
+        <td>
+          74
+        </td>
+        <td>
+          4377
+        </td>
+        <td>
+          2943
+          -
+          3012
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Option.getOrElse
+        </td>
+        <td style="background: #F0ADAD">
+          data.venue.name.getOrElse[String](data.venue.address.address_1.getOrElse[String](&quot;&quot;))
+        </td>
+      </tr><tr>
+        <td>
+          74
+        </td>
+        <td>
+          4379
+        </td>
+        <td>
+          3019
+          -
+          3054
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.immutable.StringLike.toFloat
+        </td>
+        <td style="background: #F0ADAD">
+          scala.Predef.augmentString(data.venue.address.latitude).toFloat
+        </td>
+      </tr><tr>
+        <td>
+          74
+        </td>
+        <td>
+          4391
+        </td>
+        <td>
+          2928
+          -
+          3282
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          whatson.model.Location.apply
+        </td>
+        <td style="background: #F0ADAD">
+          whatson.model.Location.apply(scala.None, data.venue.name.getOrElse[String](data.venue.address.address_1.getOrElse[String](&quot;&quot;)), scala.Some.apply[Float](scala.Predef.augmentString(data.venue.address.latitude).toFloat), scala.Some.apply[Float](scala.Predef.augmentString(data.venue.address.longitude).toFloat), data.venue.address.country, data.venue.address.city, data.venue.address.address_1.getOrElse[String](&quot;&quot;), scala.None, scala.None, scala.None, scala.None, zip)
+        </td>
+      </tr><tr>
+        <td>
+          74
+        </td>
+        <td>
+          4382
+        </td>
+        <td>
+          3062
+          -
+          3098
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.immutable.StringLike.toFloat
+        </td>
+        <td style="background: #F0ADAD">
+          scala.Predef.augmentString(data.venue.address.longitude).toFloat
+        </td>
+      </tr><tr>
+        <td>
+          74
+        </td>
+        <td>
+          4376
+        </td>
+        <td>
+          2969
+          -
+          3011
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Option.getOrElse
+        </td>
+        <td style="background: #F0ADAD">
+          data.venue.address.address_1.getOrElse[String](&quot;&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          74
+        </td>
+        <td>
+          4375
+        </td>
+        <td>
+          2937
+          -
+          2941
         </td>
         <td>
           Select
@@ -1248,20 +1753,104 @@
         <td>
           scala.None
         </td>
-        <td style="background: #AEF1AE">
+        <td style="background: #F0ADAD">
           scala.None
         </td>
       </tr><tr>
         <td>
-          65
+          74
         </td>
         <td>
-          4360
+          4378
         </td>
         <td>
-          2456
+          3019
           -
-          2460
+          3046
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.service.external.eventbrite.Model.Address.latitude
+        </td>
+        <td style="background: #F0ADAD">
+          data.venue.address.latitude
+        </td>
+      </tr><tr>
+        <td>
+          75
+        </td>
+        <td>
+          4386
+        </td>
+        <td>
+          3182
+          -
+          3224
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Option.getOrElse
+        </td>
+        <td style="background: #F0ADAD">
+          data.venue.address.address_1.getOrElse[String](&quot;&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          75
+        </td>
+        <td>
+          4385
+        </td>
+        <td>
+          3157
+          -
+          3180
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.service.external.eventbrite.Model.Address.city
+        </td>
+        <td style="background: #F0ADAD">
+          data.venue.address.city
+        </td>
+      </tr><tr>
+        <td>
+          75
+        </td>
+        <td>
+          4384
+        </td>
+        <td>
+          3129
+          -
+          3155
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.service.external.eventbrite.Model.Address.country
+        </td>
+        <td style="background: #F0ADAD">
+          data.venue.address.country
+        </td>
+      </tr><tr>
+        <td>
+          75
+        </td>
+        <td>
+          4387
+        </td>
+        <td>
+          3226
+          -
+          3230
         </td>
         <td>
           Select
@@ -1269,20 +1858,83 @@
         <td>
           scala.None
         </td>
-        <td style="background: #AEF1AE">
+        <td style="background: #F0ADAD">
           scala.None
         </td>
       </tr><tr>
         <td>
-          67
+          76
         </td>
         <td>
-          4365
+          4390
         </td>
         <td>
-          2536
+          3272
           -
-          2574
+          3276
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #F0ADAD">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          76
+        </td>
+        <td>
+          4389
+        </td>
+        <td>
+          3266
+          -
+          3270
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #F0ADAD">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          76
+        </td>
+        <td>
+          4388
+        </td>
+        <td>
+          3260
+          -
+          3264
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #F0ADAD">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          80
+        </td>
+        <td>
+          4395
+        </td>
+        <td>
+          3327
+          -
+          3365
         </td>
         <td>
           Apply
@@ -1295,15 +1947,15 @@
         </td>
       </tr><tr>
         <td>
-          67
+          80
         </td>
         <td>
-          4366
+          4396
         </td>
         <td>
-          2522
+          3313
           -
-          2575
+          3366
         </td>
         <td>
           Apply
@@ -1316,15 +1968,15 @@
         </td>
       </tr><tr>
         <td>
-          68
+          81
         </td>
         <td>
-          4368
+          4398
         </td>
         <td>
-          2589
+          3380
           -
-          2640
+          3431
         </td>
         <td>
           Apply
@@ -1337,15 +1989,15 @@
         </td>
       </tr><tr>
         <td>
-          68
+          81
         </td>
         <td>
-          4367
+          4397
         </td>
         <td>
-          2603
+          3394
           -
-          2639
+          3430
         </td>
         <td>
           Apply
@@ -1358,36 +2010,101 @@
         </td>
       </tr><tr>
         <td>
-          70
+          83
         </td>
         <td>
-          4390
+          4422
         </td>
         <td>
-          2646
+          3445
           -
-          2646
+          3445
         </td>
         <td>
           Select
         </td>
         <td>
-          whatson.model.detail.EventDetail.apply$default$14
+          whatson.service.external.eventbrite.EventbriteServiceImpl.context
         </td>
         <td style="background: #AEF1AE">
-          whatson.model.detail.EventDetail.apply$default$14
+          EventbriteServiceImpl.this.context
         </td>
       </tr><tr>
         <td>
-          70
+          83
         </td>
         <td>
-          4370
+          4423
         </td>
         <td>
-          2664
+          3437
           -
-          2678
+          3778
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.concurrent.Future.map
+        </td>
+        <td style="background: #AEF1AE">
+          loc.map[whatson.model.detail.EventDetail](((x0$4: whatson.model.Location) =&gt; x0$4 match {
+  case (l @ _) =&gt; whatson.model.detail.EventDetail.apply(scala.None, data.name.text, from, scala.Some.apply[java.sql.Timestamp](to), data.description.text, whatson.model.Organizer.apply(scala.None, &quot;Organizer&quot;, -1L, scala.None), scala.collection.immutable.Nil, scala.None, l, scala.collection.immutable.List.apply[whatson.model.detail.TaggedImage](whatson.model.detail.TaggedImage.apply(scala.None, scala.None, scala.None, scala.Some.apply[String](data.logo.url))), 0L, scala.None, scala.None, whatson.model.detail.EventDetail.apply$default$14)
+}))(EventbriteServiceImpl.this.context)
+        </td>
+      </tr><tr>
+        <td>
+          84
+        </td>
+        <td>
+          4399
+        </td>
+        <td>
+          3475
+          -
+          3479
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #AEF1AE">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          84
+        </td>
+        <td>
+          4421
+        </td>
+        <td>
+          3463
+          -
+          3758
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          whatson.model.detail.EventDetail.apply
+        </td>
+        <td style="background: #AEF1AE">
+          whatson.model.detail.EventDetail.apply(scala.None, data.name.text, from, scala.Some.apply[java.sql.Timestamp](to), data.description.text, whatson.model.Organizer.apply(scala.None, &quot;Organizer&quot;, -1L, scala.None), scala.collection.immutable.Nil, scala.None, l, scala.collection.immutable.List.apply[whatson.model.detail.TaggedImage](whatson.model.detail.TaggedImage.apply(scala.None, scala.None, scala.None, scala.Some.apply[String](data.logo.url))), 0L, scala.None, scala.None, whatson.model.detail.EventDetail.apply$default$14)
+        </td>
+      </tr><tr>
+        <td>
+          84
+        </td>
+        <td>
+          4400
+        </td>
+        <td>
+          3481
+          -
+          3495
         </td>
         <td>
           Select
@@ -1400,78 +2117,36 @@
         </td>
       </tr><tr>
         <td>
-          70
+          84
         </td>
         <td>
-          4391
+          4420
         </td>
         <td>
-          2646
+          3463
           -
-          2943
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          whatson.model.detail.EventDetail.apply
-        </td>
-        <td style="background: #AEF1AE">
-          whatson.model.detail.EventDetail.apply(scala.None, data.name.text, from, scala.Some.apply[java.sql.Timestamp](to), data.description.text, whatson.model.Organizer.apply(scala.None, &quot;Organizer&quot;, -1L, scala.None), scala.collection.immutable.Nil, scala.None, loc, scala.collection.immutable.List.apply[whatson.model.detail.TaggedImage](whatson.model.detail.TaggedImage.apply(scala.None, scala.None, scala.None, scala.Some.apply[String](data.logo.url))), 0L, scala.None, scala.None, whatson.model.detail.EventDetail.apply$default$14)
-        </td>
-      </tr><tr>
-        <td>
-          70
-        </td>
-        <td>
-          4369
-        </td>
-        <td>
-          2658
-          -
-          2662
+          3463
         </td>
         <td>
           Select
         </td>
         <td>
-          scala.None
+          whatson.model.detail.EventDetail.apply$default$14
         </td>
         <td style="background: #AEF1AE">
-          scala.None
+          whatson.model.detail.EventDetail.apply$default$14
         </td>
       </tr><tr>
         <td>
-          71
+          85
         </td>
         <td>
-          4372
+          4401
         </td>
         <td>
-          2712
+          3519
           -
-          2733
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          whatson.service.external.eventbrite.Model.MPText.text
-        </td>
-        <td style="background: #AEF1AE">
-          data.description.text
-        </td>
-      </tr><tr>
-        <td>
-          71
-        </td>
-        <td>
-          4371
-        </td>
-        <td>
-          2702
-          -
-          2710
+          3527
         </td>
         <td>
           Apply
@@ -1484,36 +2159,36 @@
         </td>
       </tr><tr>
         <td>
-          72
+          85
         </td>
         <td>
-          4374
+          4402
         </td>
         <td>
-          2766
+          3529
           -
-          2777
+          3550
         </td>
         <td>
-          Literal
+          Select
         </td>
         <td>
-          &lt;nosymbol&gt;
+          whatson.service.external.eventbrite.Model.MPText.text
         </td>
         <td style="background: #AEF1AE">
-          &quot;Organizer&quot;
+          data.description.text
         </td>
       </tr><tr>
         <td>
-          72
+          86
         </td>
         <td>
-          4377
+          4407
         </td>
         <td>
-          2751
+          3568
           -
-          2786
+          3603
         </td>
         <td>
           Apply
@@ -1526,15 +2201,36 @@
         </td>
       </tr><tr>
         <td>
-          72
+          86
         </td>
         <td>
-          4373
+          4404
         </td>
         <td>
-          2761
+          3583
           -
-          2765
+          3594
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;Organizer&quot;
+        </td>
+      </tr><tr>
+        <td>
+          86
+        </td>
+        <td>
+          4403
+        </td>
+        <td>
+          3578
+          -
+          3582
         </td>
         <td>
           Select
@@ -1547,15 +2243,15 @@
         </td>
       </tr><tr>
         <td>
-          72
+          86
         </td>
         <td>
-          4376
+          4406
         </td>
         <td>
-          2781
+          3598
           -
-          2785
+          3602
         </td>
         <td>
           Select
@@ -1568,15 +2264,36 @@
         </td>
       </tr><tr>
         <td>
-          72
+          86
         </td>
         <td>
-          4375
+          4408
         </td>
         <td>
-          2779
+          3605
           -
-          2780
+          3630
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.immutable.Nil
+        </td>
+        <td style="background: #AEF1AE">
+          scala.collection.immutable.Nil
+        </td>
+      </tr><tr>
+        <td>
+          86
+        </td>
+        <td>
+          4405
+        </td>
+        <td>
+          3596
+          -
+          3597
         </td>
         <td>
           Literal
@@ -1589,36 +2306,15 @@
         </td>
       </tr><tr>
         <td>
-          72
+          87
         </td>
         <td>
-          4378
+          4409
         </td>
         <td>
-          2788
+          3648
           -
-          2813
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          scala.collection.immutable.Nil
-        </td>
-        <td style="background: #AEF1AE">
-          scala.collection.immutable.Nil
-        </td>
-      </tr><tr>
-        <td>
-          73
-        </td>
-        <td>
-          4379
-        </td>
-        <td>
-          2831
-          -
-          2835
+          3652
         </td>
         <td>
           Select
@@ -1631,78 +2327,15 @@
         </td>
       </tr><tr>
         <td>
-          74
+          88
         </td>
         <td>
-          4381
+          4416
         </td>
         <td>
-          2880
+          3673
           -
-          2884
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          scala.None
-        </td>
-        <td style="background: #AEF1AE">
-          scala.None
-        </td>
-      </tr><tr>
-        <td>
-          74
-        </td>
-        <td>
-          4380
-        </td>
-        <td>
-          2875
-          -
-          2879
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          scala.None
-        </td>
-        <td style="background: #AEF1AE">
-          scala.None
-        </td>
-      </tr><tr>
-        <td>
-          74
-        </td>
-        <td>
-          4383
-        </td>
-        <td>
-          2895
-          -
-          2908
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          whatson.service.external.eventbrite.Model.Image.url
-        </td>
-        <td style="background: #AEF1AE">
-          data.logo.url
-        </td>
-      </tr><tr>
-        <td>
-          74
-        </td>
-        <td>
-          4386
-        </td>
-        <td>
-          2858
-          -
-          2911
+          3726
         </td>
         <td>
           Apply
@@ -1715,15 +2348,78 @@
         </td>
       </tr><tr>
         <td>
-          74
+          88
         </td>
         <td>
-          4385
+          4410
         </td>
         <td>
-          2863
+          3690
           -
-          2910
+          3694
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #AEF1AE">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          88
+        </td>
+        <td>
+          4413
+        </td>
+        <td>
+          3710
+          -
+          3723
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.service.external.eventbrite.Model.Image.url
+        </td>
+        <td style="background: #AEF1AE">
+          data.logo.url
+        </td>
+      </tr><tr>
+        <td>
+          88
+        </td>
+        <td>
+          4412
+        </td>
+        <td>
+          3700
+          -
+          3704
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #AEF1AE">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          88
+        </td>
+        <td>
+          4415
+        </td>
+        <td>
+          3678
+          -
+          3725
         </td>
         <td>
           Apply
@@ -1736,57 +2432,15 @@
         </td>
       </tr><tr>
         <td>
-          74
+          88
         </td>
         <td>
-          4382
+          4417
         </td>
         <td>
-          2885
+          3728
           -
-          2889
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          scala.None
-        </td>
-        <td style="background: #AEF1AE">
-          scala.None
-        </td>
-      </tr><tr>
-        <td>
-          74
-        </td>
-        <td>
-          4384
-        </td>
-        <td>
-          2890
-          -
-          2909
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          scala.Some.apply
-        </td>
-        <td style="background: #AEF1AE">
-          scala.Some.apply[String](data.logo.url)
-        </td>
-      </tr><tr>
-        <td>
-          74
-        </td>
-        <td>
-          4387
-        </td>
-        <td>
-          2913
-          -
-          2914
+          3729
         </td>
         <td>
           Literal
@@ -1799,15 +2453,15 @@
         </td>
       </tr><tr>
         <td>
-          75
+          88
         </td>
         <td>
-          4389
+          4411
         </td>
         <td>
-          2938
+          3695
           -
-          2942
+          3699
         </td>
         <td>
           Select
@@ -1820,15 +2474,57 @@
         </td>
       </tr><tr>
         <td>
-          75
+          88
         </td>
         <td>
-          4388
+          4414
         </td>
         <td>
-          2932
+          3705
           -
-          2936
+          3724
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Some.apply[String](data.logo.url)
+        </td>
+      </tr><tr>
+        <td>
+          89
+        </td>
+        <td>
+          4419
+        </td>
+        <td>
+          3753
+          -
+          3757
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #AEF1AE">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          89
+        </td>
+        <td>
+          4418
+        </td>
+        <td>
+          3747
+          -
+          3751
         </td>
         <td>
           Select
