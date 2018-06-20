@@ -104,7 +104,7 @@
 </span>80 <span style=''></span><span style='background: #F0ADAD'>    implicit val r = request
 </span>81 <span style=''></span><span style='background: #F0ADAD'>
 </span>82 <span style=''></span><span style='background: #F0ADAD'>    val t = EventTable.event
-</span>83 <span style=''></span><span style='background: #F0ADAD'>      .optionalFilter(organizer.id, (o: Long, e: EventTable) =&gt; e.creatorId == o)
+</span>83 <span style=''></span><span style='background: #F0ADAD'>      .filter(e =&gt; e.creatorId === organizer.id)
 </span>84 <span style=''></span><span style='background: #F0ADAD'>      .optionalFilter(search, (s: String,e: EventTable) =&gt; upper(e.name) like upper(&quot;%&quot; + s + &quot;%&quot;))
 </span>85 <span style=''></span><span style='background: #F0ADAD'>      .optionalFilter(category, (c: Long, e: EventTable) =&gt; e.categories.filter(_.id === c).exists)
 </span>86 <span style=''></span><span style='background: #F0ADAD'>
@@ -1186,40 +1186,6 @@
           77
         </td>
         <td>
-          1674
-        </td>
-        <td>
-          2647
-          -
-          3190
-        </td>
-        <td>
-          ApplyToImplicitArgs
-        </td>
-        <td>
-          controllers.Util.organizerRequest
-        </td>
-        <td style="background: #F0ADAD">
-          OrganizerController.this.organizerRequest[play.api.mvc.AnyContent](OrganizerController.this.parse.default)(((x0$1: com.mohiva.play.silhouette.api.actions.SecuredRequest[whatson.auth.AuthEnv,play.api.mvc.AnyContent], x1$1: whatson.model.Organizer) =&gt; scala.Tuple2.apply[com.mohiva.play.silhouette.api.actions.SecuredRequest[whatson.auth.AuthEnv,play.api.mvc.AnyContent], whatson.model.Organizer](x0$1, x1$1) match {
-  case (_1: com.mohiva.play.silhouette.api.actions.SecuredRequest[whatson.auth.AuthEnv,play.api.mvc.AnyContent], _2: whatson.model.Organizer)(com.mohiva.play.silhouette.api.actions.SecuredRequest[whatson.auth.AuthEnv,play.api.mvc.AnyContent], whatson.model.Organizer)((request @ _), (organizer @ _)) =&gt; {
-    OrganizerController.this.log.debug(&quot;Rest request to get events of currently logged in organizer&quot;)(api.this.MarkerContext.NoMarker);
-    implicit val r: com.mohiva.play.silhouette.api.actions.SecuredRequest[whatson.auth.AuthEnv,play.api.mvc.AnyContent] = request;
-    val t: slick.jdbc.PostgresProfile.api.Query[whatson.db.EventTable,whatson.db.EventTable#TableElementType,Seq] = whatson.db.Util.QueryUtils[whatson.db.EventTable, whatson.db.EventTable#TableElementType](whatson.db.Util.QueryUtils[whatson.db.EventTable, whatson.db.EventTable#TableElementType](whatson.db.Util.QueryUtils[whatson.db.EventTable, whatson.db.EventTable#TableElementType](whatson.db.EventTable.event).optionalFilter[Long](organizer.id, ((o: Long, e: whatson.db.EventTable) =&gt; slick.jdbc.PostgresProfile.api.valueToConstColumn[Boolean](e.creatorId.==(o))(slick.jdbc.PostgresProfile.api.booleanColumnType)))).optionalFilter[String](search, ((s: String, e: whatson.db.EventTable) =&gt; {
-  &lt;artifact&gt; val qual$1: slick.lifted.StringColumnExtensionMethods[String] @scala.reflect.internal.annotations.uncheckedBounds = slick.jdbc.PostgresProfile.api.stringColumnExtensionMethods(whatson.db.Util.upper(e.name));
-  &lt;artifact&gt; val x$2: slick.lifted.Rep[String] @scala.reflect.internal.annotations.uncheckedBounds = whatson.db.Util.upper(slick.jdbc.PostgresProfile.api.valueToConstColumn[String](&quot;%&quot;.+(s).+(&quot;%&quot;))(slick.jdbc.PostgresProfile.api.stringColumnType));
-  &lt;artifact&gt; val x$3: Char = qual$1.like$default$2[Nothing, Nothing];
-  qual$1.like[String, Boolean](x$2, x$3)(lifted.this.OptionMapper2.getOptionMapper2TT[String, String, Boolean](slick.jdbc.PostgresProfile.api.stringColumnType))
-}))).optionalFilter[Long](category, ((c: Long, e: whatson.db.EventTable) =&gt; e.categories.filter[slick.lifted.Rep[Boolean]](((x$1: whatson.db.CategoryTable) =&gt; slick.jdbc.PostgresProfile.api.columnExtensionMethods[Long](x$1.id)(slick.jdbc.PostgresProfile.api.longColumnType).===[Long, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[Long](c)(slick.jdbc.PostgresProfile.api.longColumnType))(lifted.this.OptionMapper2.getOptionMapper2TT[Long, Long, Boolean](slick.jdbc.PostgresProfile.api.longColumnType))))(lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition).exists));
-    val s: slick.dbio.DBIOAction[Seq[whatson.model.detail.EventDetail],slick.dbio.NoStream,slick.dbio.Effect.Read with slick.dbio.Effect.Read with slick.dbio.Effect.Read with slick.dbio.Effect.Read] = whatson.model.detail.EventDetail.EventDetailQuery(whatson.db.Util.QueryUtils[whatson.db.EventTable, whatson.db.EventTable#TableElementType](t).queryPaged[Any, Nothing, Nothing](r)).detailed(play.api.libs.concurrent.Execution.Implicits.defaultContext);
-    whatson.db.Util.returnPaged[whatson.model.detail.EventDetail, whatson.db.EventTable, whatson.db.EventTable#TableElementType](s, t, OrganizerController.this.db)(r, play.api.libs.concurrent.Execution.Implicits.defaultContext, whatson.model.detail.EventDetail.eventDetailWrites)
-  }
-}))(play.api.libs.concurrent.Execution.Implicits.defaultContext)
-        </td>
-      </tr><tr>
-        <td>
-          77
-        </td>
-        <td>
           1634
         </td>
         <td>
@@ -1241,7 +1207,41 @@
           77
         </td>
         <td>
-          1673
+          1679
+        </td>
+        <td>
+          2647
+          -
+          3157
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          controllers.Util.organizerRequest
+        </td>
+        <td style="background: #F0ADAD">
+          OrganizerController.this.organizerRequest[play.api.mvc.AnyContent](OrganizerController.this.parse.default)(((x0$1: com.mohiva.play.silhouette.api.actions.SecuredRequest[whatson.auth.AuthEnv,play.api.mvc.AnyContent], x1$1: whatson.model.Organizer) =&gt; scala.Tuple2.apply[com.mohiva.play.silhouette.api.actions.SecuredRequest[whatson.auth.AuthEnv,play.api.mvc.AnyContent], whatson.model.Organizer](x0$1, x1$1) match {
+  case (_1: com.mohiva.play.silhouette.api.actions.SecuredRequest[whatson.auth.AuthEnv,play.api.mvc.AnyContent], _2: whatson.model.Organizer)(com.mohiva.play.silhouette.api.actions.SecuredRequest[whatson.auth.AuthEnv,play.api.mvc.AnyContent], whatson.model.Organizer)((request @ _), (organizer @ _)) =&gt; {
+    OrganizerController.this.log.debug(&quot;Rest request to get events of currently logged in organizer&quot;)(api.this.MarkerContext.NoMarker);
+    implicit val r: com.mohiva.play.silhouette.api.actions.SecuredRequest[whatson.auth.AuthEnv,play.api.mvc.AnyContent] = request;
+    val t: slick.jdbc.PostgresProfile.api.Query[whatson.db.EventTable,whatson.db.EventTable#TableElementType,Seq] = whatson.db.Util.QueryUtils[whatson.db.EventTable, whatson.db.EventTable#TableElementType](whatson.db.Util.QueryUtils[whatson.db.EventTable, whatson.db.EventTable#TableElementType](whatson.db.EventTable.event.filter[slick.lifted.Rep[Option[Boolean]]](((e: whatson.db.EventTable) =&gt; slick.jdbc.PostgresProfile.api.optionColumnExtensionMethods[Long](e.creatorId)(slick.jdbc.PostgresProfile.api.longColumnType).===[Option[Long], Option[Boolean]](slick.jdbc.PostgresProfile.api.valueToConstColumn[Option[Long]](organizer.id)(ast.this.TypedType.typedTypeToOptionTypedType[Long](slick.jdbc.PostgresProfile.api.longColumnType)))(lifted.this.OptionMapper2.getOptionMapper2OO[Long, Long, Boolean](slick.jdbc.PostgresProfile.api.longColumnType))))(lifted.this.CanBeQueryCondition.BooleanOptionColumnCanBeQueryCondition)).optionalFilter[String](search, ((s: String, e: whatson.db.EventTable) =&gt; {
+  &lt;artifact&gt; val qual$1: slick.lifted.StringColumnExtensionMethods[String] @scala.reflect.internal.annotations.uncheckedBounds = slick.jdbc.PostgresProfile.api.stringColumnExtensionMethods(whatson.db.Util.upper(e.name));
+  &lt;artifact&gt; val x$2: slick.lifted.Rep[String] @scala.reflect.internal.annotations.uncheckedBounds = whatson.db.Util.upper(slick.jdbc.PostgresProfile.api.valueToConstColumn[String](&quot;%&quot;.+(s).+(&quot;%&quot;))(slick.jdbc.PostgresProfile.api.stringColumnType));
+  &lt;artifact&gt; val x$3: Char = qual$1.like$default$2[Nothing, Nothing];
+  qual$1.like[String, Boolean](x$2, x$3)(lifted.this.OptionMapper2.getOptionMapper2TT[String, String, Boolean](slick.jdbc.PostgresProfile.api.stringColumnType))
+}))).optionalFilter[Long](category, ((c: Long, e: whatson.db.EventTable) =&gt; e.categories.filter[slick.lifted.Rep[Boolean]](((x$1: whatson.db.CategoryTable) =&gt; slick.jdbc.PostgresProfile.api.columnExtensionMethods[Long](x$1.id)(slick.jdbc.PostgresProfile.api.longColumnType).===[Long, Boolean](slick.jdbc.PostgresProfile.api.valueToConstColumn[Long](c)(slick.jdbc.PostgresProfile.api.longColumnType))(lifted.this.OptionMapper2.getOptionMapper2TT[Long, Long, Boolean](slick.jdbc.PostgresProfile.api.longColumnType))))(lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition).exists));
+    val s: slick.dbio.DBIOAction[Seq[whatson.model.detail.EventDetail],slick.dbio.NoStream,slick.dbio.Effect.Read with slick.dbio.Effect.Read with slick.dbio.Effect.Read with slick.dbio.Effect.Read] = whatson.model.detail.EventDetail.EventDetailQuery(whatson.db.Util.QueryUtils[whatson.db.EventTable, whatson.db.EventTable#TableElementType](t).queryPaged[Any, Nothing, Nothing](r)).detailed(play.api.libs.concurrent.Execution.Implicits.defaultContext);
+    whatson.db.Util.returnPaged[whatson.model.detail.EventDetail, whatson.db.EventTable, whatson.db.EventTable#TableElementType](s, t, OrganizerController.this.db)(r, play.api.libs.concurrent.Execution.Implicits.defaultContext, whatson.model.detail.EventDetail.eventDetailWrites)
+  }
+}))(play.api.libs.concurrent.Execution.Implicits.defaultContext)
+        </td>
+      </tr><tr>
+        <td>
+          77
+        </td>
+        <td>
+          1678
         </td>
         <td>
           2679
@@ -1322,24 +1322,45 @@
         </td>
       </tr><tr>
         <td>
-          82
+          83
         </td>
         <td>
           1638
         </td>
         <td>
-          2829
+          2865
           -
-          2845
+          2876
         </td>
         <td>
           Select
         </td>
         <td>
-          whatson.db.EventTable.event
+          whatson.db.EventTable.creatorId
         </td>
         <td style="background: #F0ADAD">
-          whatson.db.EventTable.event
+          e.creatorId
+        </td>
+      </tr><tr>
+        <td>
+          83
+        </td>
+        <td>
+          1647
+        </td>
+        <td>
+          2859
+          -
+          2859
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.lifted.CanBeQueryCondition.BooleanOptionColumnCanBeQueryCondition
+        </td>
+        <td style="background: #F0ADAD">
+          lifted.this.CanBeQueryCondition.BooleanOptionColumnCanBeQueryCondition
         </td>
       </tr><tr>
         <td>
@@ -1349,18 +1370,39 @@
           1641
         </td>
         <td>
-          2922
+          2891
           -
-          2922
+          2891
         </td>
         <td>
           Select
         </td>
         <td>
-          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.booleanColumnType
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.longColumnType
         </td>
         <td style="background: #F0ADAD">
-          slick.jdbc.PostgresProfile.api.booleanColumnType
+          slick.jdbc.PostgresProfile.api.longColumnType
+        </td>
+      </tr><tr>
+        <td>
+          83
+        </td>
+        <td>
+          1644
+        </td>
+        <td>
+          2877
+          -
+          2877
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.longColumnType
+        </td>
+        <td style="background: #F0ADAD">
+          slick.jdbc.PostgresProfile.api.longColumnType
         </td>
       </tr><tr>
         <td>
@@ -1370,18 +1412,39 @@
           1643
         </td>
         <td>
-          2829
+          2881
           -
-          2927
+          2893
         </td>
         <td>
-          Apply
+          ApplyToImplicitArgs
         </td>
         <td>
-          whatson.db.Util.QueryUtils.optionalFilter
+          slick.relational.RelationalProfile.API.valueToConstColumn
         </td>
         <td style="background: #F0ADAD">
-          whatson.db.Util.QueryUtils[whatson.db.EventTable, whatson.db.EventTable#TableElementType](whatson.db.EventTable.event).optionalFilter[Long](organizer.id, ((o: Long, e: whatson.db.EventTable) =&gt; slick.jdbc.PostgresProfile.api.valueToConstColumn[Boolean](e.creatorId.==(o))(slick.jdbc.PostgresProfile.api.booleanColumnType)))
+          slick.jdbc.PostgresProfile.api.valueToConstColumn[Option[Long]](organizer.id)(ast.this.TypedType.typedTypeToOptionTypedType[Long](slick.jdbc.PostgresProfile.api.longColumnType))
+        </td>
+      </tr><tr>
+        <td>
+          83
+        </td>
+        <td>
+          1646
+        </td>
+        <td>
+          2865
+          -
+          2893
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.ColumnExtensionMethods.===
+        </td>
+        <td style="background: #F0ADAD">
+          slick.jdbc.PostgresProfile.api.optionColumnExtensionMethods[Long](e.creatorId)(slick.jdbc.PostgresProfile.api.longColumnType).===[Option[Long], Option[Boolean]](slick.jdbc.PostgresProfile.api.valueToConstColumn[Option[Long]](organizer.id)(ast.this.TypedType.typedTypeToOptionTypedType[Long](slick.jdbc.PostgresProfile.api.longColumnType)))(lifted.this.OptionMapper2.getOptionMapper2OO[Long, Long, Boolean](slick.jdbc.PostgresProfile.api.longColumnType))
         </td>
       </tr><tr>
         <td>
@@ -1391,51 +1454,9 @@
           1640
         </td>
         <td>
-          2910
+          2881
           -
-          2926
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          java.lang.Object.==
-        </td>
-        <td style="background: #F0ADAD">
-          e.creatorId.==(o)
-        </td>
-      </tr><tr>
-        <td>
-          83
-        </td>
-        <td>
-          1642
-        </td>
-        <td>
-          2910
-          -
-          2926
-        </td>
-        <td>
-          ApplyToImplicitArgs
-        </td>
-        <td>
-          slick.relational.RelationalProfile.API.valueToConstColumn
-        </td>
-        <td style="background: #F0ADAD">
-          slick.jdbc.PostgresProfile.api.valueToConstColumn[Boolean](e.creatorId.==(o))(slick.jdbc.PostgresProfile.api.booleanColumnType)
-        </td>
-      </tr><tr>
-        <td>
-          83
-        </td>
-        <td>
-          1639
-        </td>
-        <td>
-          2868
-          -
-          2880
+          2893
         </td>
         <td>
           Select
@@ -1448,188 +1469,99 @@
         </td>
       </tr><tr>
         <td>
-          84
+          83
         </td>
         <td>
-          1647
+          1642
         </td>
         <td>
-          3012
+          2891
           -
-          3025
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          java.lang.String.+
-        </td>
-        <td style="background: #F0ADAD">
-          &quot;%&quot;.+(s).+(&quot;%&quot;)
-        </td>
-      </tr><tr>
-        <td>
-          84
-        </td>
-        <td>
-          1650
-        </td>
-        <td>
-          3006
-          -
-          3026
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          whatson.db.Util.upper
-        </td>
-        <td style="background: #F0ADAD">
-          whatson.db.Util.upper(slick.jdbc.PostgresProfile.api.valueToConstColumn[String](&quot;%&quot;.+(s).+(&quot;%&quot;))(slick.jdbc.PostgresProfile.api.stringColumnType))
-        </td>
-      </tr><tr>
-        <td>
-          84
-        </td>
-        <td>
-          1653
-        </td>
-        <td>
-          3001
-          -
-          3001
+          2891
         </td>
         <td>
           ApplyToImplicitArgs
         </td>
         <td>
-          slick.lifted.OptionMapper2.getOptionMapper2TT
+          slick.ast.TypedType.typedTypeToOptionTypedType
         </td>
         <td style="background: #F0ADAD">
-          lifted.this.OptionMapper2.getOptionMapper2TT[String, String, Boolean](slick.jdbc.PostgresProfile.api.stringColumnType)
+          ast.this.TypedType.typedTypeToOptionTypedType[Long](slick.jdbc.PostgresProfile.api.longColumnType)
         </td>
       </tr><tr>
         <td>
-          84
+          83
         </td>
         <td>
-          1644
+          1645
         </td>
         <td>
-          2993
+          2877
           -
-          2999
+          2877
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.OptionMapper2.getOptionMapper2OO
+        </td>
+        <td style="background: #F0ADAD">
+          lifted.this.OptionMapper2.getOptionMapper2OO[Long, Long, Boolean](slick.jdbc.PostgresProfile.api.longColumnType)
+        </td>
+      </tr><tr>
+        <td>
+          83
+        </td>
+        <td>
+          1639
+        </td>
+        <td>
+          2867
+          -
+          2867
         </td>
         <td>
           Select
         </td>
         <td>
-          whatson.db.EventTable.name
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.longColumnType
         </td>
         <td style="background: #F0ADAD">
-          e.name
+          slick.jdbc.PostgresProfile.api.longColumnType
         </td>
       </tr><tr>
         <td>
-          84
+          83
         </td>
         <td>
-          1652
-        </td>
-        <td>
-          3001
-          -
-          3001
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.stringColumnType
-        </td>
-        <td style="background: #F0ADAD">
-          slick.jdbc.PostgresProfile.api.stringColumnType
-        </td>
-      </tr><tr>
-        <td>
-          84
-        </td>
-        <td>
-          1655
+          1648
         </td>
         <td>
           2829
           -
-          3027
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          whatson.db.Util.QueryUtils.optionalFilter
-        </td>
-        <td style="background: #F0ADAD">
-          whatson.db.Util.QueryUtils[whatson.db.EventTable, whatson.db.EventTable#TableElementType](whatson.db.Util.QueryUtils[whatson.db.EventTable, whatson.db.EventTable#TableElementType](whatson.db.EventTable.event).optionalFilter[Long](organizer.id, ((o: Long, e: whatson.db.EventTable) =&gt; slick.jdbc.PostgresProfile.api.valueToConstColumn[Boolean](e.creatorId.==(o))(slick.jdbc.PostgresProfile.api.booleanColumnType)))).optionalFilter[String](search, ((s: String, e: whatson.db.EventTable) =&gt; {
-  &lt;artifact&gt; val qual$1: slick.lifted.StringColumnExtensionMethods[String] @scala.reflect.internal.annotations.uncheckedBounds = slick.jdbc.PostgresProfile.api.stringColumnExtensionMethods(whatson.db.Util.upper(e.name));
-  &lt;artifact&gt; val x$2: slick.lifted.Rep[String] @scala.reflect.internal.annotations.uncheckedBounds = whatson.db.Util.upper(slick.jdbc.PostgresProfile.api.valueToConstColumn[String](&quot;%&quot;.+(s).+(&quot;%&quot;))(slick.jdbc.PostgresProfile.api.stringColumnType));
-  &lt;artifact&gt; val x$3: Char = qual$1.like$default$2[Nothing, Nothing];
-  qual$1.like[String, Boolean](x$2, x$3)(lifted.this.OptionMapper2.getOptionMapper2TT[String, String, Boolean](slick.jdbc.PostgresProfile.api.stringColumnType))
-}))
-        </td>
-      </tr><tr>
-        <td>
-          84
-        </td>
-        <td>
-          1646
-        </td>
-        <td>
-          2987
-          -
-          3000
-        </td>
-        <td>
-          ApplyImplicitView
-        </td>
-        <td>
-          slick.lifted.ExtensionMethodConversions.stringColumnExtensionMethods
-        </td>
-        <td style="background: #F0ADAD">
-          slick.jdbc.PostgresProfile.api.stringColumnExtensionMethods(whatson.db.Util.upper(e.name))
-        </td>
-      </tr><tr>
-        <td>
-          84
-        </td>
-        <td>
-          1649
-        </td>
-        <td>
-          3012
-          -
-          3025
+          2894
         </td>
         <td>
           ApplyToImplicitArgs
         </td>
         <td>
-          slick.relational.RelationalProfile.API.valueToConstColumn
+          slick.lifted.Query.filter
         </td>
         <td style="background: #F0ADAD">
-          slick.jdbc.PostgresProfile.api.valueToConstColumn[String](&quot;%&quot;.+(s).+(&quot;%&quot;))(slick.jdbc.PostgresProfile.api.stringColumnType)
+          whatson.db.EventTable.event.filter[slick.lifted.Rep[Option[Boolean]]](((e: whatson.db.EventTable) =&gt; slick.jdbc.PostgresProfile.api.optionColumnExtensionMethods[Long](e.creatorId)(slick.jdbc.PostgresProfile.api.longColumnType).===[Option[Long], Option[Boolean]](slick.jdbc.PostgresProfile.api.valueToConstColumn[Option[Long]](organizer.id)(ast.this.TypedType.typedTypeToOptionTypedType[Long](slick.jdbc.PostgresProfile.api.longColumnType)))(lifted.this.OptionMapper2.getOptionMapper2OO[Long, Long, Boolean](slick.jdbc.PostgresProfile.api.longColumnType))))(lifted.this.CanBeQueryCondition.BooleanOptionColumnCanBeQueryCondition)
         </td>
       </tr><tr>
         <td>
           84
         </td>
         <td>
-          1651
+          1656
         </td>
         <td>
-          3001
+          2968
           -
-          3001
+          2968
         </td>
         <td>
           TypeApply
@@ -1645,33 +1577,12 @@
           84
         </td>
         <td>
-          1654
+          1650
         </td>
         <td>
-          2987
+          2954
           -
-          3026
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          slick.lifted.StringColumnExtensionMethods.like
-        </td>
-        <td style="background: #F0ADAD">
-          qual$1.like[String, Boolean](x$2, x$3)(lifted.this.OptionMapper2.getOptionMapper2TT[String, String, Boolean](slick.jdbc.PostgresProfile.api.stringColumnType))
-        </td>
-      </tr><tr>
-        <td>
-          84
-        </td>
-        <td>
-          1645
-        </td>
-        <td>
-          2987
-          -
-          3000
+          2967
         </td>
         <td>
           Apply
@@ -1687,12 +1598,33 @@
           84
         </td>
         <td>
-          1648
+          1659
         </td>
         <td>
-          3020
+          2954
           -
-          3020
+          2993
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          slick.lifted.StringColumnExtensionMethods.like
+        </td>
+        <td style="background: #F0ADAD">
+          qual$1.like[String, Boolean](x$2, x$3)(lifted.this.OptionMapper2.getOptionMapper2TT[String, String, Boolean](slick.jdbc.PostgresProfile.api.stringColumnType))
+        </td>
+      </tr><tr>
+        <td>
+          84
+        </td>
+        <td>
+          1653
+        </td>
+        <td>
+          2987
+          -
+          2987
         </td>
         <td>
           Select
@@ -1705,15 +1637,251 @@
         </td>
       </tr><tr>
         <td>
+          84
+        </td>
+        <td>
+          1652
+        </td>
+        <td>
+          2979
+          -
+          2992
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.+
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;%&quot;.+(s).+(&quot;%&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          84
+        </td>
+        <td>
+          1655
+        </td>
+        <td>
+          2973
+          -
+          2993
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          whatson.db.Util.upper
+        </td>
+        <td style="background: #F0ADAD">
+          whatson.db.Util.upper(slick.jdbc.PostgresProfile.api.valueToConstColumn[String](&quot;%&quot;.+(s).+(&quot;%&quot;))(slick.jdbc.PostgresProfile.api.stringColumnType))
+        </td>
+      </tr><tr>
+        <td>
+          84
+        </td>
+        <td>
+          1658
+        </td>
+        <td>
+          2968
+          -
+          2968
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.lifted.OptionMapper2.getOptionMapper2TT
+        </td>
+        <td style="background: #F0ADAD">
+          lifted.this.OptionMapper2.getOptionMapper2TT[String, String, Boolean](slick.jdbc.PostgresProfile.api.stringColumnType)
+        </td>
+      </tr><tr>
+        <td>
+          84
+        </td>
+        <td>
+          1649
+        </td>
+        <td>
+          2960
+          -
+          2966
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.db.EventTable.name
+        </td>
+        <td style="background: #F0ADAD">
+          e.name
+        </td>
+      </tr><tr>
+        <td>
+          84
+        </td>
+        <td>
+          1657
+        </td>
+        <td>
+          2968
+          -
+          2968
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.stringColumnType
+        </td>
+        <td style="background: #F0ADAD">
+          slick.jdbc.PostgresProfile.api.stringColumnType
+        </td>
+      </tr><tr>
+        <td>
+          84
+        </td>
+        <td>
+          1660
+        </td>
+        <td>
+          2829
+          -
+          2994
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          whatson.db.Util.QueryUtils.optionalFilter
+        </td>
+        <td style="background: #F0ADAD">
+          whatson.db.Util.QueryUtils[whatson.db.EventTable, whatson.db.EventTable#TableElementType](whatson.db.EventTable.event.filter[slick.lifted.Rep[Option[Boolean]]](((e: whatson.db.EventTable) =&gt; slick.jdbc.PostgresProfile.api.optionColumnExtensionMethods[Long](e.creatorId)(slick.jdbc.PostgresProfile.api.longColumnType).===[Option[Long], Option[Boolean]](slick.jdbc.PostgresProfile.api.valueToConstColumn[Option[Long]](organizer.id)(ast.this.TypedType.typedTypeToOptionTypedType[Long](slick.jdbc.PostgresProfile.api.longColumnType)))(lifted.this.OptionMapper2.getOptionMapper2OO[Long, Long, Boolean](slick.jdbc.PostgresProfile.api.longColumnType))))(lifted.this.CanBeQueryCondition.BooleanOptionColumnCanBeQueryCondition)).optionalFilter[String](search, ((s: String, e: whatson.db.EventTable) =&gt; {
+  &lt;artifact&gt; val qual$1: slick.lifted.StringColumnExtensionMethods[String] @scala.reflect.internal.annotations.uncheckedBounds = slick.jdbc.PostgresProfile.api.stringColumnExtensionMethods(whatson.db.Util.upper(e.name));
+  &lt;artifact&gt; val x$2: slick.lifted.Rep[String] @scala.reflect.internal.annotations.uncheckedBounds = whatson.db.Util.upper(slick.jdbc.PostgresProfile.api.valueToConstColumn[String](&quot;%&quot;.+(s).+(&quot;%&quot;))(slick.jdbc.PostgresProfile.api.stringColumnType));
+  &lt;artifact&gt; val x$3: Char = qual$1.like$default$2[Nothing, Nothing];
+  qual$1.like[String, Boolean](x$2, x$3)(lifted.this.OptionMapper2.getOptionMapper2TT[String, String, Boolean](slick.jdbc.PostgresProfile.api.stringColumnType))
+}))
+        </td>
+      </tr><tr>
+        <td>
+          84
+        </td>
+        <td>
+          1651
+        </td>
+        <td>
+          2954
+          -
+          2967
+        </td>
+        <td>
+          ApplyImplicitView
+        </td>
+        <td>
+          slick.lifted.ExtensionMethodConversions.stringColumnExtensionMethods
+        </td>
+        <td style="background: #F0ADAD">
+          slick.jdbc.PostgresProfile.api.stringColumnExtensionMethods(whatson.db.Util.upper(e.name))
+        </td>
+      </tr><tr>
+        <td>
+          84
+        </td>
+        <td>
+          1654
+        </td>
+        <td>
+          2979
+          -
+          2992
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          slick.relational.RelationalProfile.API.valueToConstColumn
+        </td>
+        <td style="background: #F0ADAD">
+          slick.jdbc.PostgresProfile.api.valueToConstColumn[String](&quot;%&quot;.+(s).+(&quot;%&quot;))(slick.jdbc.PostgresProfile.api.stringColumnType)
+        </td>
+      </tr><tr>
+        <td>
           85
         </td>
         <td>
-          1656
+          1665
         </td>
         <td>
-          3108
+          3080
           -
-          3112
+          3080
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.longColumnType
+        </td>
+        <td style="background: #F0ADAD">
+          slick.jdbc.PostgresProfile.api.longColumnType
+        </td>
+      </tr><tr>
+        <td>
+          85
+        </td>
+        <td>
+          1668
+        </td>
+        <td>
+          3074
+          -
+          3074
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.lifted.CanBeQueryCondition.BooleanColumnCanBeQueryCondition
+        </td>
+        <td style="background: #F0ADAD">
+          lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition
+        </td>
+      </tr><tr>
+        <td>
+          85
+        </td>
+        <td>
+          1662
+        </td>
+        <td>
+          3077
+          -
+          3077
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.longColumnType
+        </td>
+        <td style="background: #F0ADAD">
+          slick.jdbc.PostgresProfile.api.longColumnType
+        </td>
+      </tr><tr>
+        <td>
+          85
+        </td>
+        <td>
+          1661
+        </td>
+        <td>
+          3075
+          -
+          3079
         </td>
         <td>
           Select
@@ -1729,12 +1897,12 @@
           85
         </td>
         <td>
-          1665
+          1670
         </td>
         <td>
           2829
           -
-          3127
+          3094
         </td>
         <td>
           Apply
@@ -1743,7 +1911,7 @@
           whatson.db.Util.QueryUtils.optionalFilter
         </td>
         <td style="background: #F0ADAD">
-          whatson.db.Util.QueryUtils[whatson.db.EventTable, whatson.db.EventTable#TableElementType](whatson.db.Util.QueryUtils[whatson.db.EventTable, whatson.db.EventTable#TableElementType](whatson.db.Util.QueryUtils[whatson.db.EventTable, whatson.db.EventTable#TableElementType](whatson.db.EventTable.event).optionalFilter[Long](organizer.id, ((o: Long, e: whatson.db.EventTable) =&gt; slick.jdbc.PostgresProfile.api.valueToConstColumn[Boolean](e.creatorId.==(o))(slick.jdbc.PostgresProfile.api.booleanColumnType)))).optionalFilter[String](search, ((s: String, e: whatson.db.EventTable) =&gt; {
+          whatson.db.Util.QueryUtils[whatson.db.EventTable, whatson.db.EventTable#TableElementType](whatson.db.Util.QueryUtils[whatson.db.EventTable, whatson.db.EventTable#TableElementType](whatson.db.EventTable.event.filter[slick.lifted.Rep[Option[Boolean]]](((e: whatson.db.EventTable) =&gt; slick.jdbc.PostgresProfile.api.optionColumnExtensionMethods[Long](e.creatorId)(slick.jdbc.PostgresProfile.api.longColumnType).===[Option[Long], Option[Boolean]](slick.jdbc.PostgresProfile.api.valueToConstColumn[Option[Long]](organizer.id)(ast.this.TypedType.typedTypeToOptionTypedType[Long](slick.jdbc.PostgresProfile.api.longColumnType)))(lifted.this.OptionMapper2.getOptionMapper2OO[Long, Long, Boolean](slick.jdbc.PostgresProfile.api.longColumnType))))(lifted.this.CanBeQueryCondition.BooleanOptionColumnCanBeQueryCondition)).optionalFilter[String](search, ((s: String, e: whatson.db.EventTable) =&gt; {
   &lt;artifact&gt; val qual$1: slick.lifted.StringColumnExtensionMethods[String] @scala.reflect.internal.annotations.uncheckedBounds = slick.jdbc.PostgresProfile.api.stringColumnExtensionMethods(whatson.db.Util.upper(e.name));
   &lt;artifact&gt; val x$2: slick.lifted.Rep[String] @scala.reflect.internal.annotations.uncheckedBounds = whatson.db.Util.upper(slick.jdbc.PostgresProfile.api.valueToConstColumn[String](&quot;%&quot;.+(s).+(&quot;%&quot;))(slick.jdbc.PostgresProfile.api.stringColumnType));
   &lt;artifact&gt; val x$3: Char = qual$1.like$default$2[Nothing, Nothing];
@@ -1755,12 +1923,12 @@
           85
         </td>
         <td>
-          1659
+          1664
         </td>
         <td>
-          3117
+          3084
           -
-          3118
+          3085
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1776,12 +1944,12 @@
           85
         </td>
         <td>
-          1662
+          1667
         </td>
         <td>
-          3108
+          3075
           -
-          3118
+          3085
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1797,12 +1965,12 @@
           85
         </td>
         <td>
-          1661
+          1666
         </td>
         <td>
-          3113
+          3080
           -
-          3113
+          3080
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1818,12 +1986,12 @@
           85
         </td>
         <td>
-          1664
+          1669
         </td>
         <td>
-          3088
+          3055
           -
-          3126
+          3093
         </td>
         <td>
           Select
@@ -1839,96 +2007,54 @@
           85
         </td>
         <td>
-          1658
-        </td>
-        <td>
-          3117
-          -
-          3117
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.longColumnType
-        </td>
-        <td style="background: #F0ADAD">
-          slick.jdbc.PostgresProfile.api.longColumnType
-        </td>
-      </tr><tr>
-        <td>
-          85
-        </td>
-        <td>
-          1657
-        </td>
-        <td>
-          3110
-          -
-          3110
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.longColumnType
-        </td>
-        <td style="background: #F0ADAD">
-          slick.jdbc.PostgresProfile.api.longColumnType
-        </td>
-      </tr><tr>
-        <td>
-          85
-        </td>
-        <td>
-          1660
-        </td>
-        <td>
-          3113
-          -
-          3113
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.longColumnType
-        </td>
-        <td style="background: #F0ADAD">
-          slick.jdbc.PostgresProfile.api.longColumnType
-        </td>
-      </tr><tr>
-        <td>
-          85
-        </td>
-        <td>
           1663
         </td>
         <td>
-          3107
+          3084
           -
-          3107
+          3084
         </td>
         <td>
           Select
         </td>
         <td>
-          slick.lifted.CanBeQueryCondition.BooleanColumnCanBeQueryCondition
+          slick.jdbc.JdbcTypesComponent.ImplicitColumnTypes.longColumnType
         </td>
         <td style="background: #F0ADAD">
-          lifted.this.CanBeQueryCondition.BooleanColumnCanBeQueryCondition
+          slick.jdbc.PostgresProfile.api.longColumnType
         </td>
       </tr><tr>
         <td>
           87
         </td>
         <td>
-          1668
+          1671
         </td>
         <td>
-          3141
+          3108
           -
-          3162
+          3120
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          whatson.db.Util.QueryUtils.queryPaged
+        </td>
+        <td style="background: #F0ADAD">
+          whatson.db.Util.QueryUtils[whatson.db.EventTable, whatson.db.EventTable#TableElementType](t).queryPaged[Any, Nothing, Nothing](r)
+        </td>
+      </tr><tr>
+        <td>
+          87
+        </td>
+        <td>
+          1673
+        </td>
+        <td>
+          3108
+          -
+          3129
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1944,75 +2070,12 @@
           87
         </td>
         <td>
-          1667
+          1672
         </td>
         <td>
-          3154
+          3121
           -
-          3154
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          play.api.libs.concurrent.Execution.Implicits.defaultContext
-        </td>
-        <td style="background: #F0ADAD">
-          play.api.libs.concurrent.Execution.Implicits.defaultContext
-        </td>
-      </tr><tr>
-        <td>
-          87
-        </td>
-        <td>
-          1666
-        </td>
-        <td>
-          3141
-          -
-          3153
-        </td>
-        <td>
-          ApplyToImplicitArgs
-        </td>
-        <td>
-          whatson.db.Util.QueryUtils.queryPaged
-        </td>
-        <td style="background: #F0ADAD">
-          whatson.db.Util.QueryUtils[whatson.db.EventTable, whatson.db.EventTable#TableElementType](t).queryPaged[Any, Nothing, Nothing](r)
-        </td>
-      </tr><tr>
-        <td>
-          88
-        </td>
-        <td>
-          1671
-        </td>
-        <td>
-          3178
-          -
-          3178
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          whatson.model.detail.EventDetail.eventDetailWrites
-        </td>
-        <td style="background: #F0ADAD">
-          whatson.model.detail.EventDetail.eventDetailWrites
-        </td>
-      </tr><tr>
-        <td>
-          88
-        </td>
-        <td>
-          1670
-        </td>
-        <td>
-          3178
-          -
-          3178
+          3121
         </td>
         <td>
           Select
@@ -2028,12 +2091,12 @@
           88
         </td>
         <td>
-          1669
+          1674
         </td>
         <td>
-          3183
+          3150
           -
-          3185
+          3152
         </td>
         <td>
           Select
@@ -2049,12 +2112,12 @@
           88
         </td>
         <td>
-          1672
+          1677
         </td>
         <td>
-          3167
+          3134
           -
-          3186
+          3153
         </td>
         <td>
           ApplyToImplicitArgs
@@ -2067,15 +2130,99 @@
         </td>
       </tr><tr>
         <td>
+          88
+        </td>
+        <td>
+          1676
+        </td>
+        <td>
+          3145
+          -
+          3145
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.model.detail.EventDetail.eventDetailWrites
+        </td>
+        <td style="background: #F0ADAD">
+          whatson.model.detail.EventDetail.eventDetailWrites
+        </td>
+      </tr><tr>
+        <td>
+          88
+        </td>
+        <td>
+          1675
+        </td>
+        <td>
+          3145
+          -
+          3145
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.libs.concurrent.Execution.Implicits.defaultContext
+        </td>
+        <td style="background: #F0ADAD">
+          play.api.libs.concurrent.Execution.Implicits.defaultContext
+        </td>
+      </tr><tr>
+        <td>
           96
         </td>
         <td>
-          1739
+          1743
         </td>
         <td>
-          3298
+          3294
           -
-          4712
+          3294
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.libs.concurrent.Execution.Implicits.defaultContext
+        </td>
+        <td style="background: #AEF1AE">
+          play.api.libs.concurrent.Execution.Implicits.defaultContext
+        </td>
+      </tr><tr>
+        <td>
+          96
+        </td>
+        <td>
+          1680
+        </td>
+        <td>
+          3282
+          -
+          3292
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.mvc.PlayBodyParsers.json
+        </td>
+        <td style="background: #AEF1AE">
+          OrganizerController.this.parse.json
+        </td>
+      </tr><tr>
+        <td>
+          96
+        </td>
+        <td>
+          1744
+        </td>
+        <td>
+          3265
+          -
+          4679
         </td>
         <td>
           ApplyToImplicitArgs
@@ -2109,57 +2256,15 @@
         </td>
       </tr><tr>
         <td>
-          96
-        </td>
-        <td>
-          1675
-        </td>
-        <td>
-          3315
-          -
-          3325
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          play.api.mvc.PlayBodyParsers.json
-        </td>
-        <td style="background: #AEF1AE">
-          OrganizerController.this.parse.json
-        </td>
-      </tr><tr>
-        <td>
-          96
-        </td>
-        <td>
-          1738
-        </td>
-        <td>
-          3327
-          -
-          3327
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          play.api.libs.concurrent.Execution.Implicits.defaultContext
-        </td>
-        <td style="background: #AEF1AE">
-          play.api.libs.concurrent.Execution.Implicits.defaultContext
-        </td>
-      </tr><tr>
-        <td>
           98
         </td>
         <td>
-          1737
+          1742
         </td>
         <td>
-          3392
+          3359
           -
-          4708
+          4675
         </td>
         <td>
           Apply
@@ -2191,96 +2296,12 @@
           100
         </td>
         <td>
-          1680
+          1683
         </td>
         <td>
-          3481
+          3459
           -
-          3517
-        </td>
-        <td>
-          ApplyToImplicitArgs
-        </td>
-        <td>
-          play.api.mvc.Results.Status.apply
-        </td>
-        <td style="background: #AEF1AE">
-          OrganizerController.this.BadRequest.apply[play.api.libs.json.JsValue](play.api.libs.json.Json.toJson[Seq[play.api.data.FormError]](form.errors)(whatson.util.FormErrorJson.formErrorFormat))(http.this.Writeable.writeableOf_JsValue)
-        </td>
-      </tr><tr>
-        <td>
-          100
-        </td>
-        <td>
-          1677
-        </td>
-        <td>
-          3503
-          -
-          3503
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          whatson.util.FormErrorJson.formErrorFormat
-        </td>
-        <td style="background: #AEF1AE">
-          whatson.util.FormErrorJson.formErrorFormat
-        </td>
-      </tr><tr>
-        <td>
-          100
-        </td>
-        <td>
-          1679
-        </td>
-        <td>
-          3491
-          -
-          3491
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          play.api.http.DefaultWriteables.writeableOf_JsValue
-        </td>
-        <td style="background: #AEF1AE">
-          http.this.Writeable.writeableOf_JsValue
-        </td>
-      </tr><tr>
-        <td>
-          100
-        </td>
-        <td>
-          1676
-        </td>
-        <td>
-          3504
-          -
-          3515
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          play.api.data.Form.errors
-        </td>
-        <td style="background: #AEF1AE">
-          form.errors
-        </td>
-      </tr><tr>
-        <td>
-          100
-        </td>
-        <td>
-          1678
-        </td>
-        <td>
-          3492
-          -
-          3516
+          3483
         </td>
         <td>
           ApplyToImplicitArgs
@@ -2296,12 +2317,12 @@
           100
         </td>
         <td>
-          1681
+          1686
         </td>
         <td>
-          3463
+          3430
           -
-          3518
+          3485
         </td>
         <td>
           Apply
@@ -2314,15 +2335,120 @@
         </td>
       </tr><tr>
         <td>
+          100
+        </td>
+        <td>
+          1682
+        </td>
+        <td>
+          3470
+          -
+          3470
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.util.FormErrorJson.formErrorFormat
+        </td>
+        <td style="background: #AEF1AE">
+          whatson.util.FormErrorJson.formErrorFormat
+        </td>
+      </tr><tr>
+        <td>
+          100
+        </td>
+        <td>
+          1685
+        </td>
+        <td>
+          3448
+          -
+          3484
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          play.api.mvc.Results.Status.apply
+        </td>
+        <td style="background: #AEF1AE">
+          OrganizerController.this.BadRequest.apply[play.api.libs.json.JsValue](play.api.libs.json.Json.toJson[Seq[play.api.data.FormError]](form.errors)(whatson.util.FormErrorJson.formErrorFormat))(http.this.Writeable.writeableOf_JsValue)
+        </td>
+      </tr><tr>
+        <td>
+          100
+        </td>
+        <td>
+          1684
+        </td>
+        <td>
+          3458
+          -
+          3458
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.http.DefaultWriteables.writeableOf_JsValue
+        </td>
+        <td style="background: #AEF1AE">
+          http.this.Writeable.writeableOf_JsValue
+        </td>
+      </tr><tr>
+        <td>
+          100
+        </td>
+        <td>
+          1681
+        </td>
+        <td>
+          3471
+          -
+          3482
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.data.Form.errors
+        </td>
+        <td style="background: #AEF1AE">
+          form.errors
+        </td>
+      </tr><tr>
+        <td>
           102
         </td>
         <td>
-          1683
+          1689
         </td>
         <td>
-          3594
+          3527
           -
-          3604
+          3572
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.mohiva.play.silhouette.api.LoginInfo.apply
+        </td>
+        <td style="background: #AEF1AE">
+          com.mohiva.play.silhouette.api.LoginInfo.apply(com.mohiva.play.silhouette.impl.providers.CredentialsProvider.ID, data.email)
+        </td>
+      </tr><tr>
+        <td>
+          102
+        </td>
+        <td>
+          1688
+        </td>
+        <td>
+          3561
+          -
+          3571
         </td>
         <td>
           Select
@@ -2338,12 +2464,12 @@
           102
         </td>
         <td>
-          1682
+          1687
         </td>
         <td>
-          3570
+          3537
           -
-          3592
+          3559
         </td>
         <td>
           Select
@@ -2356,36 +2482,15 @@
         </td>
       </tr><tr>
         <td>
-          102
-        </td>
-        <td>
-          1684
-        </td>
-        <td>
-          3560
-          -
-          3605
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          com.mohiva.play.silhouette.api.LoginInfo.apply
-        </td>
-        <td style="background: #AEF1AE">
-          com.mohiva.play.silhouette.api.LoginInfo.apply(com.mohiva.play.silhouette.impl.providers.CredentialsProvider.ID, data.email)
-        </td>
-      </tr><tr>
-        <td>
           103
         </td>
         <td>
-          1736
+          1741
         </td>
         <td>
-          3612
+          3579
           -
-          4701
+          4668
         </td>
         <td>
           ApplyToImplicitArgs
@@ -2414,12 +2519,12 @@
           103
         </td>
         <td>
-          1735
+          1740
         </td>
         <td>
-          3656
+          3623
           -
-          3656
+          3623
         </td>
         <td>
           Select
@@ -2435,138 +2540,12 @@
           105
         </td>
         <td>
-          1689
+          1698
         </td>
         <td>
-          3734
+          3663
           -
-          3760
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          scala.Predef.ArrowAssoc.-&gt;
-        </td>
-        <td style="background: #AEF1AE">
-          scala.Predef.ArrowAssoc[String](&quot;message&quot;).-&gt;[play.api.libs.json.Json.JsValueWrapper](json.this.Json.toJsFieldJsValueWrapper[String](&quot;user.exists&quot;)(json.this.Writes.StringWrites))
-        </td>
-      </tr><tr>
-        <td>
-          105
-        </td>
-        <td>
-          1692
-        </td>
-        <td>
-          3714
-          -
-          3762
-        </td>
-        <td>
-          ApplyToImplicitArgs
-        </td>
-        <td>
-          play.api.mvc.Results.Status.apply
-        </td>
-        <td style="background: #AEF1AE">
-          OrganizerController.this.BadRequest.apply[play.api.libs.json.JsObject](play.api.libs.json.Json.obj(scala.Predef.ArrowAssoc[String](&quot;message&quot;).-&gt;[play.api.libs.json.Json.JsValueWrapper](json.this.Json.toJsFieldJsValueWrapper[String](&quot;user.exists&quot;)(json.this.Writes.StringWrites))))(http.this.Writeable.writeableOf_JsValue)
-        </td>
-      </tr><tr>
-        <td>
-          105
-        </td>
-        <td>
-          1686
-        </td>
-        <td>
-          3747
-          -
-          3760
-        </td>
-        <td>
-          Literal
-        </td>
-        <td>
-          &lt;nosymbol&gt;
-        </td>
-        <td style="background: #AEF1AE">
-          &quot;user.exists&quot;
-        </td>
-      </tr><tr>
-        <td>
-          105
-        </td>
-        <td>
-          1688
-        </td>
-        <td>
-          3747
-          -
-          3760
-        </td>
-        <td>
-          ApplyToImplicitArgs
-        </td>
-        <td>
-          play.api.libs.json.Json.toJsFieldJsValueWrapper
-        </td>
-        <td style="background: #AEF1AE">
-          json.this.Json.toJsFieldJsValueWrapper[String](&quot;user.exists&quot;)(json.this.Writes.StringWrites)
-        </td>
-      </tr><tr>
-        <td>
-          105
-        </td>
-        <td>
-          1691
-        </td>
-        <td>
-          3724
-          -
-          3724
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          play.api.http.DefaultWriteables.writeableOf_JsValue
-        </td>
-        <td style="background: #AEF1AE">
-          http.this.Writeable.writeableOf_JsValue
-        </td>
-      </tr><tr>
-        <td>
-          105
-        </td>
-        <td>
-          1685
-        </td>
-        <td>
-          3734
-          -
-          3743
-        </td>
-        <td>
-          Literal
-        </td>
-        <td>
-          &lt;nosymbol&gt;
-        </td>
-        <td style="background: #AEF1AE">
-          &quot;message&quot;
-        </td>
-      </tr><tr>
-        <td>
-          105
-        </td>
-        <td>
-          1693
-        </td>
-        <td>
-          3696
-          -
-          3763
+          3730
         </td>
         <td>
           Apply
@@ -2582,12 +2561,12 @@
           105
         </td>
         <td>
-          1687
+          1692
         </td>
         <td>
-          3747
+          3714
           -
-          3747
+          3714
         </td>
         <td>
           Select
@@ -2603,12 +2582,12 @@
           105
         </td>
         <td>
-          1690
+          1695
         </td>
         <td>
-          3725
+          3692
           -
-          3761
+          3728
         </td>
         <td>
           Apply
@@ -2621,15 +2600,141 @@
         </td>
       </tr><tr>
         <td>
+          105
+        </td>
+        <td>
+          1694
+        </td>
+        <td>
+          3701
+          -
+          3727
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Predef.ArrowAssoc.-&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Predef.ArrowAssoc[String](&quot;message&quot;).-&gt;[play.api.libs.json.Json.JsValueWrapper](json.this.Json.toJsFieldJsValueWrapper[String](&quot;user.exists&quot;)(json.this.Writes.StringWrites))
+        </td>
+      </tr><tr>
+        <td>
+          105
+        </td>
+        <td>
+          1697
+        </td>
+        <td>
+          3681
+          -
+          3729
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          play.api.mvc.Results.Status.apply
+        </td>
+        <td style="background: #AEF1AE">
+          OrganizerController.this.BadRequest.apply[play.api.libs.json.JsObject](play.api.libs.json.Json.obj(scala.Predef.ArrowAssoc[String](&quot;message&quot;).-&gt;[play.api.libs.json.Json.JsValueWrapper](json.this.Json.toJsFieldJsValueWrapper[String](&quot;user.exists&quot;)(json.this.Writes.StringWrites))))(http.this.Writeable.writeableOf_JsValue)
+        </td>
+      </tr><tr>
+        <td>
+          105
+        </td>
+        <td>
+          1691
+        </td>
+        <td>
+          3714
+          -
+          3727
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;user.exists&quot;
+        </td>
+      </tr><tr>
+        <td>
+          105
+        </td>
+        <td>
+          1693
+        </td>
+        <td>
+          3714
+          -
+          3727
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          play.api.libs.json.Json.toJsFieldJsValueWrapper
+        </td>
+        <td style="background: #AEF1AE">
+          json.this.Json.toJsFieldJsValueWrapper[String](&quot;user.exists&quot;)(json.this.Writes.StringWrites)
+        </td>
+      </tr><tr>
+        <td>
+          105
+        </td>
+        <td>
+          1696
+        </td>
+        <td>
+          3691
+          -
+          3691
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.http.DefaultWriteables.writeableOf_JsValue
+        </td>
+        <td style="background: #AEF1AE">
+          http.this.Writeable.writeableOf_JsValue
+        </td>
+      </tr><tr>
+        <td>
+          105
+        </td>
+        <td>
+          1690
+        </td>
+        <td>
+          3701
+          -
+          3710
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;message&quot;
+        </td>
+      </tr><tr>
+        <td>
           107
         </td>
         <td>
-          1695
+          1700
         </td>
         <td>
-          3810
+          3777
           -
-          3844
+          3811
         </td>
         <td>
           Apply
@@ -2645,12 +2750,12 @@
           107
         </td>
         <td>
-          1694
+          1699
         </td>
         <td>
-          3830
+          3797
           -
-          3843
+          3810
         </td>
         <td>
           Select
@@ -2666,12 +2771,33 @@
           108
         </td>
         <td>
-          1698
+          1707
         </td>
         <td>
-          3891
+          3898
           -
-          3895
+          3919
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.mohiva.play.silhouette.api.LoginInfo.providerKey
+        </td>
+        <td style="background: #AEF1AE">
+          loginInfo.providerKey
+        </td>
+      </tr><tr>
+        <td>
+          108
+        </td>
+        <td>
+          1710
+        </td>
+        <td>
+          3941
+          -
+          3945
         </td>
         <td>
           Select
@@ -2690,9 +2816,72 @@
           1701
         </td>
         <td>
-          3909
+          3840
           -
-          3929
+          3844
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #AEF1AE">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          108
+        </td>
+        <td>
+          1704
+        </td>
+        <td>
+          3864
+          -
+          3868
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #AEF1AE">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          108
+        </td>
+        <td>
+          1703
+        </td>
+        <td>
+          3858
+          -
+          3862
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #AEF1AE">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          108
+        </td>
+        <td>
+          1706
+        </td>
+        <td>
+          3876
+          -
+          3896
         </td>
         <td>
           Select
@@ -2708,12 +2897,12 @@
           108
         </td>
         <td>
-          1704
+          1709
         </td>
         <td>
-          3961
+          3928
           -
-          3972
+          3939
         </td>
         <td>
           Literal
@@ -2729,33 +2918,12 @@
           108
         </td>
         <td>
-          1703
+          1702
         </td>
         <td>
-          3954
+          3846
           -
-          3959
-        </td>
-        <td>
-          Literal
-        </td>
-        <td>
-          &lt;nosymbol&gt;
-        </td>
-        <td style="background: #AEF1AE">
-          false
-        </td>
-      </tr><tr>
-        <td>
-          108
-        </td>
-        <td>
-          1697
-        </td>
-        <td>
-          3879
-          -
-          3889
+          3856
         </td>
         <td>
           Select
@@ -2771,12 +2939,12 @@
           108
         </td>
         <td>
-          1706
+          1711
         </td>
         <td>
-          3867
+          3834
           -
-          3979
+          3946
         </td>
         <td>
           Apply
@@ -2792,54 +2960,12 @@
           108
         </td>
         <td>
-          1700
-        </td>
-        <td>
-          3903
-          -
-          3907
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          scala.None
-        </td>
-        <td style="background: #AEF1AE">
-          scala.None
-        </td>
-      </tr><tr>
-        <td>
-          108
-        </td>
-        <td>
-          1702
-        </td>
-        <td>
-          3931
-          -
-          3952
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          com.mohiva.play.silhouette.api.LoginInfo.providerKey
-        </td>
-        <td style="background: #AEF1AE">
-          loginInfo.providerKey
-        </td>
-      </tr><tr>
-        <td>
-          108
-        </td>
-        <td>
           1705
         </td>
         <td>
-          3974
+          3870
           -
-          3978
+          3874
         </td>
         <td>
           Select
@@ -2855,54 +2981,33 @@
           108
         </td>
         <td>
-          1696
+          1708
         </td>
         <td>
-          3873
+          3921
           -
-          3877
+          3926
         </td>
         <td>
-          Select
+          Literal
         </td>
         <td>
-          scala.None
+          &lt;nosymbol&gt;
         </td>
         <td style="background: #AEF1AE">
-          scala.None
-        </td>
-      </tr><tr>
-        <td>
-          108
-        </td>
-        <td>
-          1699
-        </td>
-        <td>
-          3897
-          -
-          3901
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          scala.None
-        </td>
-        <td style="background: #AEF1AE">
-          scala.None
+          false
         </td>
       </tr><tr>
         <td>
           110
         </td>
         <td>
-          1734
+          1739
         </td>
         <td>
-          3990
+          3957
           -
-          4693
+          4660
         </td>
         <td>
           ApplyToImplicitArgs
@@ -2924,12 +3029,12 @@
           110
         </td>
         <td>
-          1733
+          1738
         </td>
         <td>
-          4014
+          3981
           -
-          4014
+          3981
         </td>
         <td>
           Select
@@ -2945,33 +3050,12 @@
           111
         </td>
         <td>
-          1731
+          1737
         </td>
         <td>
-          4063
+          4021
           -
-          4063
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          play.api.libs.concurrent.Execution.Implicits.defaultContext
-        </td>
-        <td style="background: #AEF1AE">
-          play.api.libs.concurrent.Execution.Implicits.defaultContext
-        </td>
-      </tr><tr>
-        <td>
-          111
-        </td>
-        <td>
-          1732
-        </td>
-        <td>
-          4054
-          -
-          4693
+          4660
         </td>
         <td>
           ApplyToImplicitArgs
@@ -2990,15 +3074,57 @@
         </td>
       </tr><tr>
         <td>
+          111
+        </td>
+        <td>
+          1736
+        </td>
+        <td>
+          4030
+          -
+          4030
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.libs.concurrent.Execution.Implicits.defaultContext
+        </td>
+        <td style="background: #AEF1AE">
+          play.api.libs.concurrent.Execution.Implicits.defaultContext
+        </td>
+      </tr><tr>
+        <td>
           112
         </td>
         <td>
-          1730
+          1734
         </td>
         <td>
-          4122
+          4103
           -
-          4693
+          4103
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.libs.concurrent.Execution.Implicits.defaultContext
+        </td>
+        <td style="background: #AEF1AE">
+          play.api.libs.concurrent.Execution.Implicits.defaultContext
+        </td>
+      </tr><tr>
+        <td>
+          112
+        </td>
+        <td>
+          1735
+        </td>
+        <td>
+          4089
+          -
+          4660
         </td>
         <td>
           ApplyToImplicitArgs
@@ -3017,36 +3143,15 @@
         </td>
       </tr><tr>
         <td>
-          112
-        </td>
-        <td>
-          1729
-        </td>
-        <td>
-          4136
-          -
-          4136
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          play.api.libs.concurrent.Execution.Implicits.defaultContext
-        </td>
-        <td style="background: #AEF1AE">
-          play.api.libs.concurrent.Execution.Implicits.defaultContext
-        </td>
-      </tr><tr>
-        <td>
           113
         </td>
         <td>
-          1728
+          1733
         </td>
         <td>
-          4205
+          4172
           -
-          4693
+          4660
         </td>
         <td>
           ApplyToImplicitArgs
@@ -3068,12 +3173,12 @@
           113
         </td>
         <td>
-          1727
+          1732
         </td>
         <td>
-          4211
+          4178
           -
-          4211
+          4178
         </td>
         <td>
           Select
@@ -3089,54 +3194,12 @@
           114
         </td>
         <td>
-          1707
+          1731
         </td>
         <td>
-          4318
+          4249
           -
-          4328
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          whatson.model.forms.OrganizerSignUpForm.Data.email
-        </td>
-        <td style="background: #AEF1AE">
-          data.email
-        </td>
-      </tr><tr>
-        <td>
-          114
-        </td>
-        <td>
-          1725
-        </td>
-        <td>
-          4289
-          -
-          4289
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          play.api.libs.concurrent.Execution.Implicits.defaultContext
-        </td>
-        <td style="background: #AEF1AE">
-          play.api.libs.concurrent.Execution.Implicits.defaultContext
-        </td>
-      </tr><tr>
-        <td>
-          114
-        </td>
-        <td>
-          1726
-        </td>
-        <td>
-          4282
-          -
-          4693
+          4660
         </td>
         <td>
           ApplyToImplicitArgs
@@ -3155,36 +3218,57 @@
         </td>
       </tr><tr>
         <td>
-          116
+          114
         </td>
         <td>
-          1709
+          1730
         </td>
         <td>
-          4362
+          4256
           -
-          4422
+          4256
         </td>
         <td>
-          Apply
+          Select
         </td>
         <td>
-          akka.event.SubchannelClassification.publish
+          play.api.libs.concurrent.Execution.Implicits.defaultContext
         </td>
         <td style="background: #AEF1AE">
-          OrganizerController.this.silhouette.env.eventBus.publish(com.mohiva.play.silhouette.api.SignUpEvent.apply[whatson.model.Login](login, request))
+          play.api.libs.concurrent.Execution.Implicits.defaultContext
+        </td>
+      </tr><tr>
+        <td>
+          114
+        </td>
+        <td>
+          1712
+        </td>
+        <td>
+          4285
+          -
+          4295
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.model.forms.OrganizerSignUpForm.Data.email
+        </td>
+        <td style="background: #AEF1AE">
+          data.email
         </td>
       </tr><tr>
         <td>
           116
         </td>
         <td>
-          1708
+          1713
         </td>
         <td>
-          4394
+          4361
           -
-          4421
+          4388
         </td>
         <td>
           Apply
@@ -3197,36 +3281,36 @@
         </td>
       </tr><tr>
         <td>
-          117
+          116
         </td>
         <td>
-          1710
+          1714
         </td>
         <td>
-          4467
+          4329
           -
-          4493
+          4389
         </td>
         <td>
           Apply
         </td>
         <td>
-          com.mohiva.play.silhouette.api.LoginEvent.apply
+          akka.event.SubchannelClassification.publish
         </td>
         <td style="background: #AEF1AE">
-          com.mohiva.play.silhouette.api.LoginEvent.apply[whatson.model.Login](login, request)
+          OrganizerController.this.silhouette.env.eventBus.publish(com.mohiva.play.silhouette.api.SignUpEvent.apply[whatson.model.Login](login, request))
         </td>
       </tr><tr>
         <td>
           117
         </td>
         <td>
-          1711
+          1716
         </td>
         <td>
-          4435
+          4402
           -
-          4494
+          4461
         </td>
         <td>
           Apply
@@ -3239,15 +3323,36 @@
         </td>
       </tr><tr>
         <td>
+          117
+        </td>
+        <td>
+          1715
+        </td>
+        <td>
+          4434
+          -
+          4460
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.mohiva.play.silhouette.api.LoginEvent.apply
+        </td>
+        <td style="background: #AEF1AE">
+          com.mohiva.play.silhouette.api.LoginEvent.apply[whatson.model.Login](login, request)
+        </td>
+      </tr><tr>
+        <td>
           118
         </td>
         <td>
-          1713
+          1718
         </td>
         <td>
-          4507
+          4474
           -
-          4552
+          4519
         </td>
         <td>
           Apply
@@ -3263,12 +3368,12 @@
           118
         </td>
         <td>
-          1712
+          1717
         </td>
         <td>
-          4535
+          4502
           -
-          4544
+          4511
         </td>
         <td>
           Select
@@ -3284,12 +3389,33 @@
           119
         </td>
         <td>
-          1716
+          1719
         </td>
         <td>
-          4565
+          4570
           -
-          4630
+          4580
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          whatson.model.forms.OrganizerSignUpForm.Data.email
+        </td>
+        <td style="background: #AEF1AE">
+          data.email
+        </td>
+      </tr><tr>
+        <td>
+          119
+        </td>
+        <td>
+          1721
+        </td>
+        <td>
+          4532
+          -
+          4597
         </td>
         <td>
           Apply
@@ -3305,12 +3431,12 @@
           119
         </td>
         <td>
-          1715
+          1720
         </td>
         <td>
-          4614
+          4581
           -
-          4623
+          4590
         </td>
         <td>
           Select
@@ -3323,162 +3449,15 @@
         </td>
       </tr><tr>
         <td>
-          119
-        </td>
-        <td>
-          1714
-        </td>
-        <td>
-          4603
-          -
-          4613
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          whatson.model.forms.OrganizerSignUpForm.Data.email
-        </td>
-        <td style="background: #AEF1AE">
-          data.email
-        </td>
-      </tr><tr>
-        <td>
           120
         </td>
         <td>
-          1719
+          1725
         </td>
         <td>
-          4668
+          4635
           -
-          4668
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          play.api.libs.json.DefaultWrites.StringWrites
-        </td>
-        <td style="background: #AEF1AE">
-          json.this.Writes.StringWrites
-        </td>
-      </tr><tr>
-        <td>
-          120
-        </td>
-        <td>
-          1722
-        </td>
-        <td>
           4646
-          -
-          4680
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          play.api.libs.json.Json.obj
-        </td>
-        <td style="background: #AEF1AE">
-          play.api.libs.json.Json.obj(scala.Predef.ArrowAssoc[String](&quot;message&quot;).-&gt;[play.api.libs.json.Json.JsValueWrapper](json.this.Json.toJsFieldJsValueWrapper[String](&quot;mail.sent&quot;)(json.this.Writes.StringWrites)))
-        </td>
-      </tr><tr>
-        <td>
-          120
-        </td>
-        <td>
-          1721
-        </td>
-        <td>
-          4655
-          -
-          4679
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          scala.Predef.ArrowAssoc.-&gt;
-        </td>
-        <td style="background: #AEF1AE">
-          scala.Predef.ArrowAssoc[String](&quot;message&quot;).-&gt;[play.api.libs.json.Json.JsValueWrapper](json.this.Json.toJsFieldJsValueWrapper[String](&quot;mail.sent&quot;)(json.this.Writes.StringWrites))
-        </td>
-      </tr><tr>
-        <td>
-          120
-        </td>
-        <td>
-          1724
-        </td>
-        <td>
-          4643
-          -
-          4681
-        </td>
-        <td>
-          ApplyToImplicitArgs
-        </td>
-        <td>
-          play.api.mvc.Results.Status.apply
-        </td>
-        <td style="background: #AEF1AE">
-          OrganizerController.this.Ok.apply[play.api.libs.json.JsObject](play.api.libs.json.Json.obj(scala.Predef.ArrowAssoc[String](&quot;message&quot;).-&gt;[play.api.libs.json.Json.JsValueWrapper](json.this.Json.toJsFieldJsValueWrapper[String](&quot;mail.sent&quot;)(json.this.Writes.StringWrites))))(http.this.Writeable.writeableOf_JsValue)
-        </td>
-      </tr><tr>
-        <td>
-          120
-        </td>
-        <td>
-          1718
-        </td>
-        <td>
-          4668
-          -
-          4679
-        </td>
-        <td>
-          Literal
-        </td>
-        <td>
-          &lt;nosymbol&gt;
-        </td>
-        <td style="background: #AEF1AE">
-          &quot;mail.sent&quot;
-        </td>
-      </tr><tr>
-        <td>
-          120
-        </td>
-        <td>
-          1717
-        </td>
-        <td>
-          4655
-          -
-          4664
-        </td>
-        <td>
-          Literal
-        </td>
-        <td>
-          &lt;nosymbol&gt;
-        </td>
-        <td style="background: #AEF1AE">
-          &quot;message&quot;
-        </td>
-      </tr><tr>
-        <td>
-          120
-        </td>
-        <td>
-          1720
-        </td>
-        <td>
-          4668
-          -
-          4679
         </td>
         <td>
           ApplyToImplicitArgs
@@ -3494,12 +3473,12 @@
           120
         </td>
         <td>
-          1723
+          1728
         </td>
         <td>
-          4645
+          4612
           -
-          4645
+          4612
         </td>
         <td>
           Select
@@ -3509,6 +3488,132 @@
         </td>
         <td style="background: #AEF1AE">
           http.this.Writeable.writeableOf_JsValue
+        </td>
+      </tr><tr>
+        <td>
+          120
+        </td>
+        <td>
+          1722
+        </td>
+        <td>
+          4622
+          -
+          4631
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;message&quot;
+        </td>
+      </tr><tr>
+        <td>
+          120
+        </td>
+        <td>
+          1724
+        </td>
+        <td>
+          4635
+          -
+          4635
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          play.api.libs.json.DefaultWrites.StringWrites
+        </td>
+        <td style="background: #AEF1AE">
+          json.this.Writes.StringWrites
+        </td>
+      </tr><tr>
+        <td>
+          120
+        </td>
+        <td>
+          1727
+        </td>
+        <td>
+          4613
+          -
+          4647
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          play.api.libs.json.Json.obj
+        </td>
+        <td style="background: #AEF1AE">
+          play.api.libs.json.Json.obj(scala.Predef.ArrowAssoc[String](&quot;message&quot;).-&gt;[play.api.libs.json.Json.JsValueWrapper](json.this.Json.toJsFieldJsValueWrapper[String](&quot;mail.sent&quot;)(json.this.Writes.StringWrites)))
+        </td>
+      </tr><tr>
+        <td>
+          120
+        </td>
+        <td>
+          1726
+        </td>
+        <td>
+          4622
+          -
+          4646
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Predef.ArrowAssoc.-&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Predef.ArrowAssoc[String](&quot;message&quot;).-&gt;[play.api.libs.json.Json.JsValueWrapper](json.this.Json.toJsFieldJsValueWrapper[String](&quot;mail.sent&quot;)(json.this.Writes.StringWrites))
+        </td>
+      </tr><tr>
+        <td>
+          120
+        </td>
+        <td>
+          1729
+        </td>
+        <td>
+          4610
+          -
+          4648
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          play.api.mvc.Results.Status.apply
+        </td>
+        <td style="background: #AEF1AE">
+          OrganizerController.this.Ok.apply[play.api.libs.json.JsObject](play.api.libs.json.Json.obj(scala.Predef.ArrowAssoc[String](&quot;message&quot;).-&gt;[play.api.libs.json.Json.JsValueWrapper](json.this.Json.toJsFieldJsValueWrapper[String](&quot;mail.sent&quot;)(json.this.Writes.StringWrites))))(http.this.Writeable.writeableOf_JsValue)
+        </td>
+      </tr><tr>
+        <td>
+          120
+        </td>
+        <td>
+          1723
+        </td>
+        <td>
+          4635
+          -
+          4646
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;mail.sent&quot;
         </td>
       </tr>
     </table>
